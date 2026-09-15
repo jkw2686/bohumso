@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>보험소 - 내 보험, 제대로 알기</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="visual.css">
+</head>
+<body class="home-page">
+
+<div class="nav">
+  <a href="index.html" class="logo"><span class="brand">보험소</span></a>
+  <span class="region-tag">서비스 준비 중</span>
+</div>
+
+<div class="container">
+  <section class="hero hero-premium">
+    <div class="hero-copy"><span class="eyebrow">YOUR LOCAL INSURANCE PARTNER</span>
+    <h1>보험이 막막할 때,<br>내 곁에 <em>보험소.</em></h1>
+    <p>어디에 물어볼지 몰랐던 보험 이야기.<br>이제 가까운 우리 동네에서 시작하세요.</p>
+    <div class="hero-actions"><a href="#find-office" class="btn">내 근처 보험소 찾기 <span aria-hidden="true">↗</span></a><a href="consult.html#consultForm" class="hero-link">보험금 청구 상담하기 →</a></div>
+    <div class="hero-footnote">가까운 거점 찾기 <span>·</span> 방문 상담 요청 <span>·</span> 청구 안내</div></div>
+    <div class="connection-art" role="img" aria-label="지도 위의 보험소와 상담을 연결하는 브랜드 그래픽">
+    <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+    <div class="map-platform"><svg viewBox="0 0 400 300" aria-hidden="true"><path fill="#e4edff" d="M0 0h400v300H0z"/><path fill="#ceddfa" d="M25 25h80v60H25zM150 20h90v70h-90zM290 30h85v60h-85zM35 130h100v50H35zM250 140h120v120H250zM30 220h100v60H30z"/><path fill="none" stroke="#fff" stroke-width="18" d="M0 108h400M160 0v300M0 204h250M272 0v300"/><path fill="none" stroke="#8db9ff" stroke-width="24" d="M-10 280Q70 140 195 173T420 10"/><path fill="none" stroke="#3169ee" stroke-width="5" stroke-dasharray="8 7" d="M72 190h87V110h133"/></svg></div>
+    <div class="hero-pin"><svg viewBox="0 0 80 100" aria-hidden="true"><path fill="currentColor" d="M40 0A40 40 0 0 0 0 40c0 25 40 60 40 60s40-35 40-60A40 40 0 0 0 40 0"/><circle cx="40" cy="39" r="17" fill="white"/></svg></div>
+    <div class="art-card art-card-top"><span class="art-symbol">⌖</span><div><small>멀리 찾지 마세요</small><strong>우리 동네에 있어요</strong></div></div>
+    <div class="art-card art-card-bottom"><span class="art-symbol blue">↗</span><div><small>보험금 청구부터 보장 점검까지</small><strong>질문부터, 편하게.</strong></div></div>
+    <span class="art-caption">정보보다 사람이 필요한 순간</span>
+    </div>
+  </section>
+  <div class="service-rail"><a href="consult.html#consultForm"><span class="rail-icon">↗</span><div><strong>보험금 청구</strong><small>어디서부터 시작할까요?</small></div><b>→</b></a><a href="dashboard.html"><span class="rail-icon">▤</span><div><strong>내 보험 확인</strong><small>가입한 보장을 한눈에</small></div><b>→</b></a></div>
+  <a id="nearbyCard" class="nearby-card" href="consult.html" hidden>
+    <span class="nc-ico">📍</span>
+    <span class="nc-body">
+      <span class="nc-label">가까운 보험소</span>
+      <span class="nc-name" id="ncName">-</span>
+      <span class="nc-sub" id="ncSub">-</span>
+    </span>
+    <span class="nc-go">방문·상담 ›</span>
+  </a>
+
+  <div class="section-heading" id="find-office"><div><span class="eyebrow">CLOSE TO YOU</span><h2>가까이에서, 함께.</h2></div><span>가까운 보험소 찾기</span></div>
+  <div class="card">
+    <p class="desc">우리 동네에 들어설 보험소를 지도에서 살펴보세요.</p>
+    <button class="more-btn" style="margin-bottom:12px;" onclick="locateAndApply(true)">📍 가까운 보험소 찾기</button>
+    <div class="coverage-controls" aria-label="지도 지역 선택"><button type="button" data-coverage-region="전체" aria-pressed="true">수도권</button><button type="button" data-coverage-region="서울" aria-pressed="false">서울</button><button type="button" data-coverage-region="경기" aria-pressed="false">경기</button><button type="button" data-coverage-region="인천" aria-pressed="false">인천</button></div><p class="coverage-count" id="coverageCount">서울·경기·인천 지역별 보험소 확장 구상</p><div class="coverage-legend"><span>서울·경기·인천 전 지역 개설 예정</span></div><div id="map" aria-label="보험소 거점 지도"></div><p class="map-credit">지도 © OpenStreetMap 기여자</p>
+  </div>
+
+  <div class="section-heading"><div><span class="eyebrow">HOW CAN WE HELP?</span><h2>어떤 도움이 필요하세요?</h2></div></div><div class="services-grid">
+
+  <div class="card" style="border-color:#bcd0ff;">
+    <h3>🧑‍⚖️ 보험금 청구 상담 <span style="color:var(--brand);font-size:13px;font-weight:700;">(계신 곳으로 가요)</span></h3>
+    <p class="desc">받지 못했거나 덜 받은 보험금, 상담을 통해 필요한 서류와 청구 절차를 함께 확인해 보세요.</p>
+    <a href="consult.html" class="btn">사전 상담 문의하기</a>
+  </div>
+
+  <div class="card">
+    <h3>📊 보장 분석 <span class="soon-badge">오픈예정</span></h3>
+    <p class="desc">방문 상담에서 설계사가 직접 보장을 점검해 드려요. 자동 정밀 분석은 준비 중입니다.</p>
+    <a href="analysis.html" class="btn secondary">미리보기(예시)</a>
+  </div>
+
+  <div class="card">
+    <h3>⚡ 간편 청구 안내 <span class="soon-badge">오픈예정</span></h3>
+    <p class="desc">실손24 등 무료 간편청구 연동을 준비 중이에요. 지금은 방문 상담에서 청구를 안내·동행해 드립니다.</p>
+    <span class="btn soon">오픈예정</span>
+  </div>
+
+  <div class="card">
+    <h3>📋 내 현황 대시보드</h3>
+    <p class="desc">보장 종합 점수와 가입 보험, 점검이 필요한 지점을 한 화면에서 확인</p>
+    <a href="dashboard.html" class="btn secondary">내 현황 보기</a>
+  </div>
+
+  <div class="card">
+    <h3>⚖️ 분쟁 가능성 진단 <span class="soon-badge">오픈예정</span></h3>
+    <p class="desc">방문 상담에서 설계사가 약관·서류로 직접 확인해요. 자동 진단은 준비 중입니다.</p>
+    <a href="diagnosis.html" class="btn secondary">자세히 보기</a>
+  </div>
+
+  <div class="card signup-cta">
+    <h3>🙋 보험소 시작하기</h3>
+    <p class="desc">보험 상담이 필요할 때, 다시 찾을 수 있는 우리 동네 연결 창구.</p>
+    <a href="signup.html" class="btn">회원가입</a>
+    <a href="partner.html" class="btn secondary" style="margin-top:8px;">전문가·파트너로 참여하기</a>
+  </div>
+
+  </div><div class="section-title">이런 고민, 상담에서 함께 확인하세요</div>
+  <div class="card">
+    <div class="case-item"><span class="tag">지급거절</span>상해 후 치료 중 폐렴 사망, 질병사망으로 처리돼 보험금이 절반만 나왔어요</div>
+    <div class="case-item"><span class="tag">과소지급</span>후유장해 등급 산정에 이의가 있어요</div>
+    <div class="case-item"><span class="tag">면책</span>고지의무 위반이라며 계약이 해지됐어요</div>
+  </div>
+</div>
+
+<!-- 방문 예약 시트 -->
+<div class="sheet-overlay" id="bookOverlay" onclick="closeBooking()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <h3 id="bookTitle">방문 예약</h3>
+    <p class="sheet-meta" id="bookMeta"></p>
+    <div id="bookInfo" class="book-info"></div>
+    <div class="field">
+      <label>방문 희망일</label>
+      <input type="date" id="bookDate">
+    </div>
+    <div class="field">
+      <label>희망 시간대</label>
+      <select id="bookTime">
+        <option>오전 (10:00~12:00)</option>
+        <option>오후 (13:00~15:00)</option>
+        <option>오후 (15:00~17:00)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>이름</label>
+      <input type="text" id="bookName" placeholder="홍길동">
+    </div>
+    <div class="field">
+      <label>연락처</label>
+      <input type="tel" id="bookPhone" placeholder="010-0000-0000">
+    </div>
+    <button class="btn" onclick="submitBooking()">방문 예약 신청</button>
+    <button class="btn ghost" style="margin-top:8px;" onclick="closeBooking()">닫기</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">접수되었습니다</div>
+
+<div class="bottom-nav">
+  <a href="index.html" class="active"><span class="icon" aria-hidden="true">⌂</span>홈</a>
+  <a href="dashboard.html"><span class="icon" aria-hidden="true">▤</span>내현황</a>
+  <a href="analysis.html"><span class="icon" aria-hidden="true">▥</span>보장분석</a>
+  <a href="diagnosis.html"><span class="icon" aria-hidden="true">⚖</span>분쟁진단</a>
+  <a href="consult.html"><span class="icon" aria-hidden="true">☏</span>상담신청</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="script.js"></script>
+<script src="coverage.js"></script>
+</body>
+</html>

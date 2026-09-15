@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>보장 분석 - 보험소</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="visual.css">
+</head>
+<body>
+
+<div class="nav">
+  <a href="index.html" class="logo"><span class="brand">보험소</span></a>
+  <span class="region-tag">서비스 준비 중</span>
+</div>
+
+<div class="container">
+  <div class="hero" style="padding-top:20px;">
+    <h1 style="font-size:20px;">보험소님 보장 분석 <span class="soon-badge">오픈예정</span></h1>
+    <p>분석일 <span id="today"></span> · 권장 기준 대비 내 보장 현황</p>
+  </div>
+
+  <div class="card" style="border-color:#dbe4ff; background:#f6f8fc;">
+    <p class="desc" style="margin:0;">아래는 <b>예시 미리보기</b>예요. 내 계약을 반영한 정밀 자동 분석은 <b>오픈예정</b>이며, 지금은 방문 상담에서 설계사가 직접 점검해 드립니다.</p>
+  </div>
+
+  <!-- 종합 요약 -->
+  <div class="card score-card">
+    <div class="gauge" id="covGauge" style="--val:0;">
+      <div class="gauge-inner">
+        <span class="gauge-num" id="covGaugeNum">0</span>
+        <span class="gauge-max">/ 100</span>
+      </div>
+    </div>
+    <div class="score-info">
+      <div class="score-lbl">내 보장 충족도</div>
+      <span class="badge warn" id="covGrade">점검 필요</span>
+      <p class="score-note" id="covHeadline" style="margin-top:8px;">-</p>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat"><div class="num" id="totalRec">-</div><div class="lbl">총 권장 보장</div></div>
+    <div class="stat accent"><div class="num" id="totalGap">-</div><div class="lbl">부족 합계</div></div>
+    <div class="stat"><div class="num" id="lackCount">-</div><div class="lbl">부족 항목</div></div>
+  </div>
+
+  <p class="desc" style="margin:2px 2px 0; font-size:11.5px;">※ 표시된 '내 보장금액'은 예시입니다. 보험 연동·상담 시 실제 내 계약 기준으로 채워져요.</p>
+
+  <!-- 카테고리별 부족 현황 -->
+  <div class="section-title">영역별 부족 현황</div>
+  <div class="card" id="catSummary"></div>
+
+  <!-- 대표 부족 항목 -->
+  <div class="section-title">가장 부족한 보장 TOP 3</div>
+  <div class="card" id="topLack"></div>
+
+  <button class="more-btn" id="fullBtn" onclick="toggleFull()">전체 43개 항목 자세히 보기</button>
+  <div id="covFull" hidden></div>
+
+  <a href="consult.html" class="btn" style="margin-top:10px;">부족한 보장 상담·보완하기</a>
+  <a href="diagnosis.html" class="btn secondary" style="margin-top:8px;">분쟁 가능성 진단해보기</a>
+</div>
+
+<div class="bottom-nav">
+  <a href="index.html"><span class="icon" aria-hidden="true">⌂</span>홈</a>
+  <a href="dashboard.html"><span class="icon" aria-hidden="true">▤</span>내현황</a>
+  <a href="analysis.html" class="active"><span class="icon" aria-hidden="true">▥</span>보장분석</a>
+  <a href="diagnosis.html"><span class="icon" aria-hidden="true">⚖</span>분쟁진단</a>
+  <a href="consult.html"><span class="icon" aria-hidden="true">☏</span>상담신청</a>
+</div>
+
+<script src="script.js"></script>
+<script>
+// [항목, 권장, 내 보장(예시), 설명] — 단위: 만원
+const COV = [
+  { cat: '큰병 보장', color: '#2fb3a3', groups: [
+    { sub: '암', items: [['일반암',10000,4199,'진단 시 목돈'],['고액암',10000,8199,'']] },
+    { sub: '뇌', items: [['뇌출혈',10000,1500,''],['뇌경색',10000,1500,''],['뇌혈관질환',3000,1500,'']] },
+    { sub: '심장', items: [['급성심근경색',10000,1500,''],['허혈심장질환',3000,1500,''],['부정맥',1000,0,'']] },
+  ] },
+  { cat: '암치료', color: '#3b76f0', groups: [
+    { sub: '항암치료', items: [['면역항암',10000,2700,'고가 치료 대비'],['고액항암(표적)',10000,2700,''],['항암방사선치료',3000,700,''],['항암약물치료',3000,200,'']] },
+    { sub: '암통원', items: [['상급병원 암통원',30,0,'1회당'],['종합병원 암통원',20,0,'1회당'],['암통원',10,0,'1회당']] },
+  ] },
+  { cat: '간병', color: '#a78bfa', groups: [
+    { sub: '요양', items: [['장기요양(중증)',10000,0,'1~2등급'],['장기요양(경증)',1000,0,'']] },
+    { sub: '치매', items: [['중등도치매',10000,0,''],['경증치매',1000,0,''],['경도인지장애',100,0,'']] },
+  ] },
+  { cat: '의료 서비스', color: '#8b5cf6', groups: [
+    { sub: '수술', items: [['신수술',1000,20,''],['질병종수술',500,320,''],['재해종수술',500,340,''],['질병수술',50,20,'1회당'],['재해수술',50,40,'1회당'],['암수술',300,35,''],['특정질병수술(N대)',300,1555,'']] },
+    { sub: '입원', items: [['암입원',15,0,'1일당'],['질병입원',3,0,'1일당'],['재해입원',3,1,'1일당'],['상급병실입원',3,2.5,'1일당'],['1일입원(신입원)',3,0,'1일당'],['질병입원 간병인사용',15,10,'1일당'],['재해입원 간병인사용',15,20,'1일당']] },
+    { sub: '생활보장', items: [['재해골절진단',50,30,''],['치과_보철치료',200,0,'임플란트 등'],['치과_보존치료',50,0,'']] },
+  ] },
+  { cat: '가족 보장', color: '#f472b6', groups: [
+    { sub: '사망', items: [['일반사망',10000,200,'유가족 생활비'],['질병사망',10000,1200,''],['암사망',10000,5200,''],['일반재해사망',10000,3700,'']] },
+    { sub: '후유장해', items: [['질병후유장해 80%',10000,1000,''],['재해후유장해 80%',10000,0,'']] },
+  ] },
+];
+
+function fmt(v) {
+  if (v === 0) return '없음';
+  if (v >= 10000) { const e = Math.floor(v / 10000), m = v % 10000; return e + '억' + (m ? ' ' + m.toLocaleString() + '만' : ''); }
+  return (Number.isInteger(v) ? v.toLocaleString() : v) + '만';
+}
+
+function itemRow(x) {
+  const gap = x.rec - x.has;
+  let badge, cls, fill, pct;
+  if (gap > 0) { badge = '부족 ' + fmt(gap); cls = 'lack'; fill = '#f59e0b'; }
+  else if (gap < 0) { badge = '초과'; cls = 'over'; fill = '#3b76f0'; }
+  else { badge = '충분'; cls = 'ok'; fill = '#1a9c6d'; }
+  pct = x.rec > 0 ? Math.min(100, Math.round((x.has / x.rec) * 100)) : 0;
+  if (gap < 0) pct = 100;
+  return '<div class="cov-row"><div class="r-top">' +
+    '<span class="cov-name">' + x.name + (x.note ? '<span class="cov-note">' + x.note + '</span>' : '') + '</span>' +
+    '<span class="badge ' + cls + '">' + badge + '</span></div>' +
+    '<div class="cov-track"><div class="cov-fill" style="width:' + pct + '%;background:' + fill + '"></div></div>' +
+    '<div class="cov-amt">권장 ' + fmt(x.rec) + ' · 내 보장 <b style="color:#111827">' + fmt(x.has) + '</b></div></div>';
+}
+
+// 집계
+let totalRec = 0, totalHas = 0, totalGap = 0, lackCount = 0;
+const flat = [], catStats = [];
+COV.forEach((c) => {
+  let cRec = 0, cGap = 0;
+  c.groups.forEach((g) => g.items.forEach((it) => {
+    const [name, rec, has, note] = it;
+    totalRec += rec; totalHas += has; cRec += rec;
+    const gap = rec - has;
+    if (gap > 0) { totalGap += gap; cGap += gap; lackCount++; }
+    flat.push({ name, rec, has, note, gap, color: c.color, cat: c.cat });
+  }));
+  catStats.push({ cat: c.cat, color: c.color, rec: cRec, gap: cGap });
+});
+
+// 요약 지표
+document.getElementById('totalRec').textContent = fmt(Math.round(totalRec));
+document.getElementById('totalGap').textContent = fmt(Math.round(totalGap));
+document.getElementById('lackCount').textContent = lackCount + '개';
+
+// 충족도 게이지
+const fill = Math.round((totalHas / totalRec) * 100);
+document.getElementById('covGaugeNum').textContent = fill;
+document.getElementById('covGauge').style.setProperty('--val', fill);
+document.getElementById('covHeadline').innerHTML = '권장 대비 <b>' + lackCount + '개 항목</b>이 부족해요. 부족액 <b style="color:#d64545">' + fmt(Math.round(totalGap)) + '</b>';
+document.getElementById('covGrade').textContent = fill >= 70 ? '양호' : (fill >= 40 ? '점검 필요' : '보완 시급');
+
+// 영역별 부족 현황
+document.getElementById('catSummary').innerHTML = catStats.map((c) => {
+  const pct = Math.round(((c.rec - c.gap) / c.rec) * 100);
+  return '<div class="cov-row"><div class="r-top">' +
+    '<span class="cov-name"><span class="dot" style="display:inline-block;width:9px;height:9px;border-radius:3px;background:' + c.color + ';margin-right:6px;"></span>' + c.cat + '</span>' +
+    (c.gap > 0 ? '<span class="badge lack">부족 ' + fmt(c.gap) + '</span>' : '<span class="badge ok">충분</span>') + '</div>' +
+    '<div class="cov-track"><div class="cov-fill" style="width:' + pct + '%;background:' + c.color + '"></div></div>' +
+    '<div class="cov-amt">충족 ' + pct + '%</div></div>';
+}).join('');
+
+// 대표 부족 TOP 3
+const topLackItems = flat.filter((x) => x.gap > 0).sort((a, b) => b.gap - a.gap).slice(0, 3);
+document.getElementById('topLack').innerHTML = topLackItems.map(itemRow).join('');
+
+// 전체 항목 (펼치기)
+document.getElementById('covFull').innerHTML = COV.map((c) => {
+  const body = c.groups.map((g) => {
+    const rows = g.items.map(([name, rec, has, note]) => itemRow({ name, rec, has, note })).join('');
+    return '<div class="cov-sub">' + g.sub + '</div>' + rows;
+  }).join('');
+  const cGap = catStats.find((s) => s.cat === c.cat).gap;
+  return '<div class="card"><div class="cov-cat"><span class="dot" style="background:' + c.color + '"></span>' + c.cat +
+    (cGap > 0 ? '<span class="cat-gap">부족 ' + fmt(cGap) + '</span>' : '') + '</div>' + body + '</div>';
+}).join('');
+
+function toggleFull() {
+  const f = document.getElementById('covFull');
+  const b = document.getElementById('fullBtn');
+  f.hidden = !f.hidden;
+  b.textContent = f.hidden ? '전체 43개 항목 자세히 보기' : '항목 접기';
+}
+
+(function () {
+  const d = new Date();
+  document.getElementById('today').textContent = d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+})();
+</script>
+</body>
+</html>

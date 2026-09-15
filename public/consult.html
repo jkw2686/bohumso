@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>상담 신청 - 보험소</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="visual.css">
+</head>
+<body>
+
+<div class="nav">
+  <a href="index.html" class="logo"><span class="brand">보험소</span></a>
+  <span class="region-tag">서비스 준비 중</span>
+</div>
+
+<div class="container">
+  <div class="hero" style="padding-top:20px;">
+    <h1 style="font-size:20px;">사전 상담 문의</h1>
+    <p>개설 전 상담 문의와 전문가 참여 신청을 받고 있어요.</p>
+  </div>
+
+  <div class="card">
+    <h3>📍 보험소 거점</h3>
+    <p class="desc">서울·경기·인천의 개설 예정 지역을 확인하세요.</p>
+    <button class="more-btn" style="margin-bottom:12px;" onclick="locateAndApply(true)">📍 가까운 보험소 찾기</button>
+    <div class="coverage-controls" aria-label="지도 지역 선택"><button type="button" data-coverage-region="전체" aria-pressed="true">수도권</button><button type="button" data-coverage-region="서울" aria-pressed="false">서울</button><button type="button" data-coverage-region="경기" aria-pressed="false">경기</button><button type="button" data-coverage-region="인천" aria-pressed="false">인천</button></div><p class="coverage-count" id="coverageCount">서울·경기·인천 지역별 보험소 확장 구상</p><div class="coverage-legend"><span>서울·경기·인천 전 지역 개설 예정</span></div><div id="map"></div>
+    <div style="height:8px;"></div>
+    <div id="officeList"></div>
+  </div>
+
+  <div class="section-title">어떤 도움이 필요하신가요?</div>
+  <div class="card">
+    <div id="consultForm"><h3>상담·방문 희망 일정</h3><p>로그인 후 요청을 등록하고, 담당자 배정 결과를 확인해 예약을 확정하세요. 회원 서비스 연결 전에는 접수가 열리지 않습니다.</p><a class="btn" href="/requests.html">상담·방문예약 신청</a></div>
+  </div>
+</div>
+
+<!-- 방문 예약 시트 -->
+<div class="sheet-overlay" id="bookOverlay" onclick="closeBooking()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <h3 id="bookTitle">방문 예약</h3>
+    <p class="sheet-meta" id="bookMeta"></p>
+    <div id="bookInfo" class="book-info"></div>
+    <div class="field">
+      <label>방문 희망일</label>
+      <input type="date" id="bookDate">
+    </div>
+    <div class="field">
+      <label>희망 시간대</label>
+      <select id="bookTime">
+        <option>오전 (10:00~12:00)</option>
+        <option>오후 (13:00~15:00)</option>
+        <option>오후 (15:00~17:00)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>이름</label>
+      <input type="text" id="bookName" placeholder="홍길동">
+    </div>
+    <div class="field">
+      <label>연락처</label>
+      <input type="tel" id="bookPhone" placeholder="010-0000-0000">
+    </div>
+    <button class="btn" onclick="submitBooking()">방문 예약 신청</button>
+    <button class="btn ghost" style="margin-top:8px;" onclick="closeBooking()">닫기</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">상담 신청이 접수되었습니다</div>
+
+<div class="bottom-nav">
+  <a href="index.html"><span class="icon" aria-hidden="true">⌂</span>홈</a>
+  <a href="dashboard.html"><span class="icon" aria-hidden="true">▤</span>내현황</a>
+  <a href="analysis.html"><span class="icon" aria-hidden="true">▥</span>보장분석</a>
+  <a href="diagnosis.html"><span class="icon" aria-hidden="true">⚖</span>분쟁진단</a>
+  <a href="consult.html" class="active"><span class="icon" aria-hidden="true">☏</span>상담신청</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="script.js"></script>
+<script src="coverage.js"></script>
+</body>
+</html>

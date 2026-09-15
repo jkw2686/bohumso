@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>내 현황 - 보험소</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="visual.css">
+</head>
+<body>
+
+<div class="nav">
+  <a href="index.html" class="logo"><span class="brand">보험소</span></a>
+  <span class="region-tag">서비스 준비 중</span>
+</div>
+
+<div class="container">
+  <p class="greet">안녕하세요 👋</p>
+  <h1>내 보험 현황을 정리했어요</h1>
+
+  <!-- 보장 종합 점수 -->
+  <div class="card score-card" style="margin-top:16px;">
+    <div class="gauge" style="--val:72;">
+      <div class="gauge-inner">
+        <span class="gauge-num">72</span>
+        <span class="gauge-max">/ 100</span>
+      </div>
+    </div>
+    <div class="score-info">
+      <div class="score-lbl">보장 종합 점수</div>
+      <span class="badge warn">보완 권장</span>
+      <p class="score-note">사망보장은 충분하나 <b>질병·상해 경계 보장</b>에 분쟁 소지가 있어요.</p>
+    </div>
+  </div>
+
+  <!-- 요약 지표 -->
+  <div class="stat-grid" style="margin-top:16px;">
+    <div class="stat"><div class="num">3건</div><div class="lbl">가입 보험</div></div>
+    <div class="stat"><div class="num">20.1만</div><div class="lbl">월 납입료</div></div>
+    <div class="stat accent"><div class="num">1건</div><div class="lbl">점검 필요</div></div>
+  </div>
+
+  <!-- 확인이 필요한 보장 -->
+  <div class="card" style="border-color:#fbbf24; background:#fffbeb;">
+    <h3>⚠️ 확인이 필요한 보장</h3>
+    <p class="desc" style="color:#92400e;">
+      <b>○○생명 종신보험</b>의 질병·상해사망 보장 범위가 좁아, 경계 사망 사유에서
+      지급 분쟁이 발생할 수 있습니다.
+    </p>
+    <a href="diagnosis.html" class="btn" style="background:#b45309;">분쟁 가능성 진단하기</a>
+  </div>
+
+  <!-- 내 가입 보험 -->
+  <div class="section-title list-head">
+    <span>내 가입 보험</span>
+    <a href="analysis.html">보장 분석 →</a>
+  </div>
+
+  <div class="policy">
+    <div class="policy-head">
+      <div>
+        <div class="ins">○○생명</div>
+        <div class="pname">무배당 종신보험</div>
+        <div class="ptype">종신 · 사망보장</div>
+      </div>
+      <span class="badge warn">점검필요</span>
+    </div>
+    <div class="prem">월 128,000원</div>
+  </div>
+
+  <div class="policy">
+    <div class="policy-head">
+      <div>
+        <div class="ins">△△손해보험</div>
+        <div class="pname">실손의료비보험</div>
+        <div class="ptype">실손 · 의료비</div>
+      </div>
+      <span class="badge ok">정상</span>
+    </div>
+    <div class="prem">월 42,500원</div>
+  </div>
+
+  <div class="policy" id="policy3" style="display:none;">
+    <div class="policy-head">
+      <div>
+        <div class="ins">□□화재</div>
+        <div class="pname">운전자·상해보험</div>
+        <div class="ptype">상해 · 운전자</div>
+      </div>
+      <span class="badge ok">정상</span>
+    </div>
+    <div class="prem">월 31,000원</div>
+  </div>
+
+  <button class="more-btn" id="moreBtn" onclick="togglePolicies()">보험 1건 더 보기</button>
+
+  <!-- 상담 현황 -->
+  <div class="section-title">상담 현황</div>
+  <div class="card">
+    <div class="consult-row">
+      <span class="consult-ico">🧑‍⚖️</span>
+      <div style="flex:1;">
+        <div class="ct">진행 중인 상담이 없어요</div>
+        <div class="cs">손해사정사·전문변호사를 연결해 드려요</div>
+      </div>
+    </div>
+    <a href="consult.html" class="btn secondary" style="margin-top:12px;">사전 상담 문의하기</a>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <a href="index.html"><span class="icon" aria-hidden="true">⌂</span>홈</a>
+  <a href="dashboard.html" class="active"><span class="icon" aria-hidden="true">▤</span>내현황</a>
+  <a href="analysis.html"><span class="icon" aria-hidden="true">▥</span>보장분석</a>
+  <a href="diagnosis.html"><span class="icon" aria-hidden="true">⚖</span>분쟁진단</a>
+  <a href="consult.html"><span class="icon" aria-hidden="true">☏</span>상담신청</a>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

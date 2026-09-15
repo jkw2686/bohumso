@@ -1,0 +1,30 @@
+import {test} from "node:test";import assert from "node:assert/strict";import {readFile} from "node:fs/promises";import {PGlite} from "@electric-sql/pglite";
+test("Database isolates customers and enforces partner approval",async()=>{
+ const db=new PGlite();const A="11111111-1111-4111-8111-111111111111",B="22222222-2222-4222-8222-222222222222",ADMIN="33333333-3333-4333-8333-333333333333";
+ await db.exec("create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key,email_confirmed_at timestamptz);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated;");
+ await db.exec(await readFile("supabase/001_accounts.sql","utf8"));
+ await db.query("insert into auth.users values ($1,now()),($2,now()),($3,now())",[A,B,ADMIN]);
+ await db.query("insert into private.admin_memberships values ($1)",[ADMIN]);
+ async function login(id){await db.exec("reset role");await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);await db.exec("set role authenticated");}
+ const member=()=>db.query("select public.complete_membership(true,true,true,false)");
+ const apply=()=>db.query("select public.apply_partner('테스트 설계사','planner','테스트 회사','서울','TEST-123',true)");
+ await login(A);
+ await assert.rejects(()=>db.query("select public.complete_membership(false,true,true,false)"));
+ await assert.rejects(apply);await member();await apply();
+ await assert.rejects(()=>db.query("update public.partner_applications set status='approved'"));
+ await assert.rejects(()=>db.query("insert into private.admin_memberships values ($1)",[A]));
+ await assert.rejects(()=>db.query("select public.review_partner($1,'approved','확인 완료')",[A]));
+ assert.equal((await db.query("select public.my_membership() m")).rows[0].m.partner_status,"pending");
+ await login(B);await member();assert.equal((await db.query("select * from public.partner_applications")).rows.length,0);
+ assert.equal((await db.query("select * from public.member_profiles")).rows.length,1);
+ await assert.rejects(()=>db.query("select * from private.partner_audit"));
+ await login(ADMIN);await member();assert.equal((await db.query("select * from public.partner_applications")).rows.length,1);
+ await db.query("select public.review_partner($1,'approved','등록 정보 확인 완료')",[A]);
+ await login(A);assert.equal((await db.query("select public.my_membership() m")).rows[0].m.partner_status,"approved");
+ await login(ADMIN);await db.query("select public.review_partner($1,'suspended','활동 재검토 필요')",[A]);
+ await login(A);assert.equal((await db.query("select public.my_membership() m")).rows[0].m.partner_status,"suspended");
+ await db.exec("reset role");assert.equal((await db.query("select * from private.partner_audit")).rows.length,3);
+ await db.exec("set role anon");await assert.rejects(()=>db.query("select * from public.partner_applications"));
+ await assert.rejects(()=>db.query("select public.my_membership()"));
+ await db.close();
+});
