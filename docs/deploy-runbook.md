@@ -58,7 +58,7 @@
 
 ## 7. 배포 전 최종 게이트
 - [ ] `docs/release-checklist.md` 게이트 A~E 전부 확인
-- [ ] 독립 PostgreSQL 동시성 부하검사 완료
+- [ ] 독립 PostgreSQL 동시성 부하검사 완료 — 일회용 Postgres에 `DATABASE_URL=... npm run concurrency` 실행(무료 쿠폰 과다배정·슬롯 이중예약 불변식). 운영/공용 DB 금지, 전용 스키마에 setup 후 정리
 - [ ] 도메인 확정 (bohumso.netlify.app 미확보)
 - [ ] 운영 데이터 존재 시 구형 요청 전환·동결·백업 계획 완료
 - [ ] **최종 사용자 배포 승인**

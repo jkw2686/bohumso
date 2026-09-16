@@ -43,6 +43,7 @@ Toss v2 일반 카드결제 코드와 승인/조회/전액 환불/웹훅 재조�
 - `supabase/_apply_all.sql`: 001~006 결합 붙여넣기용 · `supabase/_verify_after_apply.sql`: 적용 후 검증 쿼리
 - `npm run preflight`: (환경변수 설정 후) 키 형식·설정 검증. 시크릿 미출력, 읽기전용. `--net`으로 Supabase 도달성까지
 - `npm run smoke`: (키 설정+SQL 적용 후) 실연결 스모크 — Auth health·PostgREST·`planner_catalog` RPC 도달. `--config <origin>`으로 `/api/config`, `--toss`로 토스 키 인증까지
+- `npm run concurrency`: (일회용 Postgres에) `DATABASE_URL` 지정 후 실행 — 실 다중연결로 무료쿠폰 과다배정·슬롯 이중예약 불변식 검증(PGlite로는 불가). `--customers N`·`--keep`
 - `.github/workflows/verify.yml`: GitHub 연결 시 푸시/PR마다 자동 `build + npm test`(브라우저 불필요)
 - `docs/code-review-notes.md`: 결제·예약·매칭 경로 배포 전 QA 결과(버그 0)
 
