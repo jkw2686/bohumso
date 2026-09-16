@@ -1,11 +1,13 @@
-import {renderRequests} from "./requests.js";
+import {renderWorkflow as renderRequests,renderPaymentResult} from "./workflow.js";
+import {renderDirectory} from "./directory.js";
+import {renderProfileEditor} from "./profile-editor.js";
 import {createClient} from "@supabase/supabase-js";
 const $=id=>document.getElementById(id);const mode=document.body.dataset.accountPage;
 let client,config,user,membership;
 const status={pending:"심사 대기",approved:"승인 완료",rejected:"반려",suspended:"활동 정지"};
 const jobs={planner:"보험설계사",adjuster:"손해사정사",lawyer:"변호사",corporate:"기업보험 컨설턴트",tax:"세무사",office:"거점 운영자"};
 function message(text){$("accountMessage").textContent=text;}
-function safeError(error){if(error?.code==="23505")return "이미 처리되었거나 해당 시간이 예약되었습니다. 새로고침 후 다른 일정을 선택해 주세요.";const known={invalid_slot:"희망 일정은 30분 이후부터 90일 이내의 정각 또는 30분으로 선택해 주세요.",invalid_partner:"담당자의 직군·승인 상태가 맞지 않습니다. 다시 확인해 주세요.",request_limit:"진행 중인 요청은 최대 5건입니다.",request_forbidden:"이 요청을 처리할 권한이 없습니다.",address_required:"방문 장소의 정확한 주소를 입력해 주세요.",admin_required:"관리자 권한이 필요합니다.",self_review_forbidden:"본인 신청은 직접 심사할 수 없습니다.",invalid_transition:"신청 상태가 변경되었습니다. 새로고침해 주세요.",consent_required:"필수 동의를 확인해 주세요.",membership_required:"고객 가입을 먼저 완료해 주세요.",verified_account_required:"이메일 인증 후 다시 로그인해 주세요."};return known[error?.message]||"처리하지 못했습니다. 입력 내용과 연결 상태를 확인한 뒤 다시 시도해 주세요.";}
+function safeError(error){if(error?.code==="23505")return "이미 처리되었거나 해당 시간이 예약되었습니다. 새로고침 후 다른 일정을 선택해 주세요.";const known={stale_request:"다른 화면에서 예약이 변경되었습니다. 새로고침 후 다시 확인해 주세요.",planner_price_consent_required:"무료 이용권이 다른 예약에 배정되었습니다. 설계사가 유료 조건에 동의한 뒤 다시 확정할 수 있습니다.",balance_outstanding:"미결제 잔금이 있습니다. 기존 예약에서 결제하거나 이의를 접수해 주세요.",test_payment_not_configured:"테스트 결제 설정 전입니다. 실제 결제는 발생하지 않습니다.",price_changed:"가격 정책이 변경되었습니다. 새로고침하여 금액을 확인해 주세요.",payment_in_progress:"결제 상태를 확인 중입니다. 승인·환불 확인 후 다시 시도해 주세요.",select_planner:"설계사를 선택하거나 자동매칭에 동의해 주세요.",invalid_slot:"희망 일정은 30분 이후부터 90일 이내의 정각 또는 30분으로 선택해 주세요.",invalid_partner:"담당자의 직군·승인 상태가 맞지 않습니다. 다시 확인해 주세요.",request_limit:"진행 중인 요청은 최대 5건입니다.",request_forbidden:"이 요청을 처리할 권한이 없습니다.",address_required:"방문 장소의 정확한 주소를 입력해 주세요.",admin_required:"관리자 권한이 필요합니다.",self_review_forbidden:"본인 신청은 직접 심사할 수 없습니다.",invalid_transition:"신청 상태가 변경되었습니다. 새로고침해 주세요.",consent_required:"필수 동의를 확인해 주세요.",membership_required:"고객 가입을 먼저 완료해 주세요.",verified_account_required:"이메일 인증 후 다시 로그인해 주세요."};return known[error?.message]||"처리하지 못했습니다. 입력 내용과 연결 상태를 확인한 뒤 다시 시도해 주세요.";}
 async function action(form,fn){const buttons=[...form.querySelectorAll("button")];buttons.forEach(b=>b.disabled=true);message("");try{await fn()}catch(e){message(safeError(e))}finally{buttons.forEach(b=>b.disabled=false)}}
 function onForm(id,fn){$(id)?.addEventListener("submit",e=>{e.preventDefault();action(e.currentTarget,()=>fn(new FormData(e.currentTarget)));});}
 function checked(data,name){return data.get(name)==="on";}
@@ -43,9 +45,12 @@ async function renderAdmin(){
 }
 async function start(){
  const response=await fetch("/api/config",{cache:"no-store"});if(!response.ok)throw Error("configuration");config=await response.json();
+ if(!config.enabled&&mode==="directory"){await renderDirectory(null);return;}
  if(!config.enabled){$("accountNotice").textContent=config.message||"회원 서비스를 준비 중입니다.";return;}
  client=createClient(config.url,config.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce",storageKey:"woori-account"}});
+ if(config.visitMetrics){try{const day=new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul"}).format(new Date());const key="bohumso-visit-"+day;let id=sessionStorage.getItem(key);if(!id){id=crypto.randomUUID();sessionStorage.setItem(key,id);}client.rpc("record_visit_session",{session_id:id}).catch(()=>{});}catch{}}
  $("accountNotice").textContent="운영: "+config.operator+" · 문의: "+config.contact;$("accountContent").hidden=false;
+ if(mode==="directory"){await renderDirectory(client);return;}
  if(mode==="signup"){onForm("signupForm",async d=>{if(!checked(d,"signup_privacy")){message("개인정보 안내에 동의해 주세요.");return;}const {error}=await client.auth.signUp({email:String(d.get("email")).trim(),password:String(d.get("password")),options:{emailRedirectTo:location.origin+"/account.html",data:{signup_notice_version:"2026-09-14-v1"}}});fail(error);message("등록 가능한 이메일이면 인증 메일이 전송됩니다. 메일 확인 후 로그인하여 가입을 마무리해 주세요.");});return;}
  if(mode==="login"){
  onForm("loginForm",async d=>{const {error}=await client.auth.signInWithPassword({email:String(d.get("email")).trim(),password:String(d.get("password"))});if(error){message("이메일·비밀번호 또는 이메일 인증 상태를 확인해 주세요.");return}location.assign("/account.html");});
@@ -55,8 +60,9 @@ async function start(){
  if(mode==="reset"){onForm("passwordForm",async d=>{const {error}=await client.auth.updateUser({password:String(d.get("password"))});fail(error);message("비밀번호를 변경했습니다. 내 계정에서 계속 이용할 수 있습니다.");});return;}
  await refreshMembership();
  if(mode==="requests")await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action});
+ if(mode==="payment")await renderPaymentResult(client,message);
  if(mode==="account")await renderAccount();
- if(mode==="partner")await renderPartner();
+ if(mode==="partner"){await renderPartner();if(membership.profession==="planner")await renderProfileEditor(client,$("accountContent"));}
  if(mode==="admin"){await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
 }
 start().catch(e=>{message(safeError(e));$("accountContent").hidden=true;$("accountNotice").textContent="회원 서비스 연결 상태를 확인할 수 없습니다.";});

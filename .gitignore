@@ -3,3 +3,5 @@ node_modules/
 .netlify/
 public/assets/account.js
 artifacts/
+
+public/assets/visit.js

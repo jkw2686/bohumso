@@ -180,7 +180,7 @@ function renderDiagNudge() {
 
   const label = diag.level === 'high' ? '분쟁 가능성 높음' : '분쟁 가능성 중간';
   const txt = document.getElementById('diagNudgeText');
-  if (txt) txt.innerHTML = '최근 진단 결과 <b>' + label + '</b> — ' + office + '에서 상담받는 걸 권장';
+  if (txt) txt.textContent = '샘플 체험 결과 ' + label + ' · ' + office + '에서 상담을 문의할 수 있습니다';
   el.hidden = false;
 }
 

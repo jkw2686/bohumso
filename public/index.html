@@ -6,12 +6,12 @@
 <title>보험소 - 내 보험, 제대로 알기</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="visual.css">
+<link rel="stylesheet" href="visual.css"><link rel="stylesheet" href="/account.css">
 </head>
 <body class="home-page">
 
 <div class="nav">
-  <a href="index.html" class="logo"><span class="brand">보험소</span></a>
+  <a href="index.html" class="logo"><span class="local">우리동네</span><span class="brand">보험소</span></a>
   <span class="region-tag">서비스 준비 중</span>
 </div>
 
@@ -20,7 +20,7 @@
     <div class="hero-copy"><span class="eyebrow">YOUR LOCAL INSURANCE PARTNER</span>
     <h1>보험이 막막할 때,<br>내 곁에 <em>보험소.</em></h1>
     <p>어디에 물어볼지 몰랐던 보험 이야기.<br>이제 가까운 우리 동네에서 시작하세요.</p>
-    <div class="hero-actions"><a href="#find-office" class="btn">내 근처 보험소 찾기 <span aria-hidden="true">↗</span></a><a href="consult.html#consultForm" class="hero-link">보험금 청구 상담하기 →</a></div>
+    <div class="hero-actions"><a href="/find.html" class="btn">내 근처 설계사 찾기 <span aria-hidden="true">↗</span></a><a href="consult.html#consultForm" class="hero-link">보험금 청구 상담하기 →</a></div>
     <div class="hero-footnote">가까운 거점 찾기 <span>·</span> 방문 상담 요청 <span>·</span> 청구 안내</div></div>
     <div class="connection-art" role="img" aria-label="지도 위의 보험소와 상담을 연결하는 브랜드 그래픽">
     <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
@@ -31,7 +31,7 @@
     <span class="art-caption">정보보다 사람이 필요한 순간</span>
     </div>
   </section>
-  <div class="service-rail"><a href="consult.html#consultForm"><span class="rail-icon">↗</span><div><strong>보험금 청구</strong><small>어디서부터 시작할까요?</small></div><b>→</b></a><a href="dashboard.html"><span class="rail-icon">▤</span><div><strong>내 보험 확인</strong><small>가입한 보장을 한눈에</small></div><b>→</b></a></div>
+  <section class="card situation-start"><h2>지금 어떤 도움이 필요하세요?</h2><p>상황을 선택하고 가까운 설계사를 찾아보세요. 구체적인 건강정보는 입력받지 않습니다.</p><div class="situation-grid"><a href="/find.html?purpose=claim">가족이 돌아가셨어요 →</a><a href="/find.html?purpose=claim">가족이 암 진단을 받았어요 →</a><a href="/find.html?purpose=claim">병원에 있어요 →</a><a href="/find.html?purpose=claim">사고가 났어요 →</a><a href="/find.html?purpose=claim">보험금 청구가 궁금해요 →</a><a href="/find.html?purpose=management">가입한 보험이 궁금해요 →</a><a href="/find.html?purpose=new">보험 가입 상담을 받고 싶어요 →</a><a href="/find.html?purpose=other">기타 →</a></div><p>소비자 무료 · 보험 가입 의무 없음 · 연결 서비스 이용료는 설계사가 부담합니다.</p></section><div class="service-rail"><a href="consult.html#consultForm"><span class="rail-icon">↗</span><div><strong>보험금 청구</strong><small>어디서부터 시작할까요?</small></div><b>→</b></a><a href="dashboard.html"><span class="rail-icon">▤</span><div><strong>내 보험 확인</strong><small>가입한 보장을 한눈에</small></div><b>→</b></a></div>
   <a id="nearbyCard" class="nearby-card" href="consult.html" hidden>
     <span class="nc-ico">📍</span>
     <span class="nc-body">
@@ -141,5 +141,5 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="script.js"></script>
 <script src="coverage.js"></script>
-</body>
+<script type="module" src="/assets/visit.js"></script></body>
 </html>

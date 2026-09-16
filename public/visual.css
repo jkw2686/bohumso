@@ -14,5 +14,3 @@ html{scroll-behavior:smooth;scroll-padding-top:90px}body{padding-bottom:20px}but
 
 .coverage-marker span{background:#285eea;color:white;border:2px solid white;box-shadow:0 3px 9px #23498435}.coverage-legend{color:#476da8;background:#edf3ff;padding:10px 12px;border-radius:10px}.coverage-legend span:before{background:#285eea}
 
-/* Single-name brand: 보험소 */
-.nav .logo{display:inline-flex;align-items:center;white-space:nowrap;text-decoration:none}.nav .logo .brand{color:#17233d;font-size:28px;font-weight:800;letter-spacing:-1.2px;line-height:1.15}@media(max-width:480px){.nav .logo .brand{font-size:25px}}

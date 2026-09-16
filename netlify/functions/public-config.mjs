@@ -11,5 +11,5 @@ export default async function handler() {
   }
  }catch{}
  if(!ready||!valid)return Response.json({enabled:false,message:"회원 서비스를 준비 중입니다. 현재 가입과 개인정보 입력은 받지 않습니다."},{headers});
- return Response.json({enabled:true,url,key,operator:process.env.OPERATOR_NAME,contact:process.env.PRIVACY_CONTACT},{headers});
+ return Response.json({enabled:true,url,key,visitMetrics:process.env.VISIT_METRICS_ENABLED==="true",operator:process.env.OPERATOR_NAME,contact:process.env.PRIVACY_CONTACT},{headers});
 }

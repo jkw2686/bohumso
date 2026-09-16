@@ -1,0 +1,25 @@
+name: verify
+
+# 푸시/PR 시 프로덕션 빌드와 DB·결제 테스트(PGlite, 브라우저 불필요)를 실행한다.
+# 브라우저 e2e(Edge/Playwright)는 로컬 `npm run verify`에서 실행한다.
+# 이 워크플로는 GitHub 원격 연결 시 자동 활성화된다.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm test

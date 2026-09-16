@@ -10,11 +10,11 @@
 <body>
 
 <div class="nav">
-  <a href="index.html" class="logo"><span class="brand">보험소</span></a>
+  <a href="index.html" class="logo"><span class="local">우리동네</span><span class="brand">보험소</span></a>
   <span class="region-tag">서비스 준비 중</span>
 </div>
 
-<div class="container">
+<div class="container"><div class="card sample-banner"><strong>샘플 체험</strong><p>가상의 보험 데이터를 보여주는 예시입니다. 실제 보험증권·건강정보는 수집하지 않으며 개인별 분석이나 상품 추천 결과가 아닙니다.</p></div>
   <div class="hero" style="padding-top:20px;">
     <h1 style="font-size:20px;">보험소님 보장 분석 <span class="soon-badge">오픈예정</span></h1>
     <p>분석일 <span id="today"></span> · 권장 기준 대비 내 보장 현황</p>
@@ -180,8 +180,8 @@ function toggleFull() {
 
 (function () {
   const d = new Date();
-  document.getElementById('today').textContent = d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+  document.getElementById('today').textContent = new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'medium'}).format(d) + ' KST';
 })();
 </script>
-</body>
+<script type="module" src="/assets/visit.js"></script></body>
 </html>

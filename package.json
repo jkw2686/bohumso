@@ -1,17 +1,22 @@
 {
-  "name": "woori-bohumso-netlify",
-  "version": "0.2.0",
+  "name": "bohumso-netlify",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test --test-concurrency=1 tests/*.test.mjs",
+    "test:browser": "node tests/browser-smoke.cjs && node tests/commerce-browser.cjs",
+    "verify": "node scripts/verify.mjs",
+    "preflight": "node scripts/preflight.mjs",
+    "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
+    "@playwright/test": "^1.63.0",
     "esbuild": "^0.25.0"
   }
 }
