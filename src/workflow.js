@@ -7,7 +7,21 @@ export async function renderWorkflow({client,membership,workspace,message,action
  async function pay(body){const {data}=await client.auth.getSession();const response=await fetch('/api/payment',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+data.session.access_token},body:JSON.stringify(body)});const result=await response.json();if(!response.ok)throw Error(result.error);return result;}
  async function checkout(row,stage){const data=await pay({action:'checkout',bookingId:row.id,stage});if(!data.testOnly||!data.clientKey.startsWith('test_ck_'))throw Error('live_payments_blocked');
   if(!window.TossPayments)await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://js.tosspayments.com/v2/standard';script.onload=resolve;script.onerror=reject;document.head.append(script);});
-  await window.TossPayments(data.clientKey).payment({customerKey:data.order.customer_key}).requestPayment({method:'CARD',amount:{currency:'KRW',value:data.order.amount},orderId:data.order.id,orderName:'보험소 상담 연결 '+stage+'차 (테스트)',successUrl:data.successUrl,failUrl:data.failUrl,card:{useEscrow:false,flowMode:'DEFAULT',useCardPoint:false,useAppCardOnly:false}});
+  // 결제위젯: 카드 + 상점에서 켠 모든 간편결제를 한 화면에서 선택. 금액은 서버가 주문에 고정하고 승인 시 재검증한다.
+  const widgets=window.TossPayments(data.clientKey).widgets({customerKey:data.order.customer_key});
+  await widgets.setAmount({currency:'KRW',value:data.order.amount});
+  const overlay=el('div',undefined,document.body);overlay.className='sheet-overlay show pay-overlay';
+  const sheet=el('div',undefined,overlay);sheet.className='sheet';
+  el('h3','상담 연결 '+stage+'차 · '+won(data.order.amount)+' (테스트 결제)',sheet);
+  el('p','카드 또는 간편결제를 선택하세요. 테스트 상점 결제이며 실제 청구되지 않습니다.',sheet);
+  const methodBox=el('div',undefined,sheet);methodBox.id='payment-method';
+  const agreementBox=el('div',undefined,sheet);agreementBox.id='agreement';
+  const actions=el('div',undefined,sheet);actions.style.cssText='display:flex;gap:8px;margin-top:12px';
+  const payBtn=el('button','결제하기',actions);payBtn.type='button';payBtn.className='btn';
+  const cancelBtn=el('button','닫기',actions);cancelBtn.type='button';cancelBtn.className='btn ghost';
+  const close=()=>overlay.remove();cancelBtn.onclick=close;overlay.onclick=e=>{if(e.target===overlay)close();};
+  await Promise.all([widgets.renderPaymentMethods({selector:'#payment-method',variantKey:'DEFAULT'}),widgets.renderAgreement({selector:'#agreement',variantKey:'AGREEMENT'})]);
+  payBtn.onclick=async()=>{payBtn.disabled=true;try{await widgets.requestPayment({orderId:data.order.id,orderName:'보험소 상담 연결 '+stage+'차 (테스트)',successUrl:data.successUrl,failUrl:data.failUrl});}catch(e){payBtn.disabled=false;message('결제를 시작하지 못했습니다: '+(e&&e.message?e.message:e));}};
  }
  function submit(form,fn){form.onsubmit=e=>{e.preventDefault();action(form,async()=>{await fn(new FormData(form));await refresh();message('저장했습니다.');});};}
  function check(form,label,name){const node=input(form,label,name,'checkbox');node.value='on';return node;}
@@ -60,7 +74,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
    if(workspace==='customer'&&row.automatic&&['requested','unmatched'].includes(row.state)&&(row.state==='unmatched'||new Date(row.response_deadline)<=new Date()))btn(controls,'다음 후보 찾기',()=>run('rematch'));
    if(workspace==='partner'&&row.state==='scheduled'&&new Date(row.preferred_at)<=new Date())btn(controls,'미팅 완료 확인 요청',()=>run('complete_request'));
    if(workspace==='customer'&&row.state==='awaiting_completion'){el('p','보험 가입 여부와 관계없이 실제 미팅이 이루어졌을 때만 확인해 주세요.',card);btn(controls,'실제 미팅 완료 확인',()=>run('complete_confirm'));}
-   if(workspace==='partner'&&row.payment_state!=='confirming'&&!row.is_free&&((row.state==='confirmed'&&!row.first_paid)||(row.state==='completed'&&!row.second_paid))){const stage=row.first_paid?2:1;btn(controls,stage+'차 '+won(row.total_won/2)+' 테스트 카드결제',()=>checkout(row,stage));el('p','테스트 PG 설정 전에는 결제되지 않습니다. 자동 청구·구독·카드 등록은 없습니다.',card);}
+   if(workspace==='partner'&&row.payment_state!=='confirming'&&!row.is_free&&((row.state==='confirmed'&&!row.first_paid)||(row.state==='completed'&&!row.second_paid))){const stage=row.first_paid?2:1;btn(controls,stage+'차 '+won(row.total_won/2)+' 테스트 결제 (카드·간편결제)',()=>checkout(row,stage));el('p','테스트 PG 설정 전에는 결제되지 않습니다. 자동 청구·구독·카드 등록은 없습니다.',card);}
    if(workspace==='customer'&&row.state==='completed'&&!row.review){const form=el('form',undefined,card);el('h3','완료한 미팅 후기',form);select(form,'평점','rating',{'5':'5점','4':'4점','3':'3점','2':'2점','1':'1점'});const body=input(form,'후기 (병명·개인정보·보험계약 내용 입력 금지)','body');body.minLength=2;body.maxLength=500;body.required=true;check(form,'후기와 평점 공개에 동의합니다. 검토 후 공개됩니다.','public_consent').required=true;el('button','후기 제출',form).type='submit';submit(form,d=>command('review',{id:row.id,revision:row.revision,rating:Number(d.get('rating')),body:d.get('body'),public_consent:d.get('public_consent')==='on'}));}
    if(row.review){el('p','후기 '+row.review.rating+'점 · '+row.review.body+' · '+(row.review.visible?'공개':'검토 대기'),card);if(workspace==='admin'){const form=el('form',undefined,card);const reason=input(form,'개인정보·민감정보 검토 결과','reason');reason.minLength=5;reason.required=true;const visible=check(form,'후기 공개','visible');visible.checked=row.review.visible;el('button','후기 검토 저장',form).type='submit';submit(form,d=>command('publish_review',{id:row.id,revision:row.revision,reason:d.get('reason'),visible:d.get('visible')==='on'}));}}
    if(row.state==='completed'&&workspace!=='admin'){
