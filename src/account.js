@@ -44,7 +44,8 @@ async function renderAdmin(){
  }
 }
 async function start(){
- const response=await fetch("/api/config",{cache:"no-store"});if(!response.ok)throw Error("configuration");config=await response.json();
+ // 백엔드(Functions) 미배포·미설정 시 에러 대신 '준비 중'으로 degrade. 정적 공유 배포에서도 화면이 깨지지 않는다.
+ const response=await fetch("/api/config",{cache:"no-store"}).catch(()=>null);config=response&&response.ok?await response.json():{enabled:false};
  if(!config.enabled&&mode==="directory"){await renderDirectory(null);return;}
  if(!config.enabled){$("accountNotice").textContent=config.message||"회원 서비스를 준비 중입니다.";return;}
  client=createClient(config.url,config.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce",storageKey:"woori-account"}});
