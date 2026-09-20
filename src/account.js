@@ -52,8 +52,14 @@ async function start(){
  if(config.visitMetrics){try{const day=new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul"}).format(new Date());const key="bohumso-visit-"+day;let id=sessionStorage.getItem(key);if(!id){id=crypto.randomUUID();sessionStorage.setItem(key,id);}client.rpc("record_visit_session",{session_id:id}).catch(()=>{});}catch{}}
  $("accountNotice").textContent="운영: "+config.operator+" · 문의: "+config.contact;$("accountContent").hidden=false;
  if(mode==="directory"){await renderDirectory(client);return;}
- if(mode==="signup"){onForm("signupForm",async d=>{if(!checked(d,"signup_privacy")){message("개인정보 안내에 동의해 주세요.");return;}const {error}=await client.auth.signUp({email:String(d.get("email")).trim(),password:String(d.get("password")),options:{emailRedirectTo:location.origin+"/account.html",data:{signup_notice_version:"2026-09-14-v1"}}});fail(error);message("등록 가능한 이메일이면 인증 메일이 전송됩니다. 메일 확인 후 로그인하여 가입을 마무리해 주세요.");});return;}
+ if(mode==="signup"){
+  const consent=()=>{if(!$("signupPrivacy").checked){message("개인정보 안내에 동의해 주세요.");return false;}return true;};
+  const oauth=provider=>action($("accountContent"),async()=>{if(!consent())return;const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+"/account.html"}});fail(error);});
+  $("kakaoSignup")?.addEventListener("click",()=>oauth("kakao"));$("googleSignup")?.addEventListener("click",()=>oauth("google"));
+  onForm("signupForm",async d=>{if(!consent())return;const {error}=await client.auth.signUp({email:String(d.get("email")).trim(),password:String(d.get("password")),options:{emailRedirectTo:location.origin+"/account.html",data:{signup_notice_version:"2026-09-14-v1"}}});fail(error);message("등록 가능한 이메일이면 인증 메일이 전송됩니다. 메일 확인 후 로그인하여 가입을 마무리해 주세요.");});return;}
  if(mode==="login"){
+ const oauth=provider=>action($("accountContent"),async()=>{const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+"/account.html"}});fail(error);});
+ $("kakaoLogin")?.addEventListener("click",()=>oauth("kakao"));$("googleLogin")?.addEventListener("click",()=>oauth("google"));
  onForm("loginForm",async d=>{const {error}=await client.auth.signInWithPassword({email:String(d.get("email")).trim(),password:String(d.get("password"))});if(error){message("이메일·비밀번호 또는 이메일 인증 상태를 확인해 주세요.");return}location.assign("/account.html");});
  $("resetPassword").onclick=()=>action($("loginForm"),async()=>{const email=$("loginForm").elements.email;if(!email.reportValidity())return;const {error}=await client.auth.resetPasswordForEmail(email.value,{redirectTo:location.origin+"/reset-password.html"});fail(error);message("등록된 이메일이면 비밀번호 재설정 안내가 발송됩니다.");});return;
  }

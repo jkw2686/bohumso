@@ -6,3 +6,14 @@
 
 .pay-overlay .sheet{max-height:90dvh;overflow-y:auto;color:var(--text);background:var(--card)}
 #adSubscriptions .card{overflow-wrap:anywhere}
+
+.social-auth{display:grid;gap:10px;margin:16px 0}
+.social-auth .btn{width:100%}
+.btn-kakao{background:#FEE500;color:#191600;border:none}
+.btn-kakao:hover{background:#f4d800}
+.btn-social{background:#fff;color:#17233d;border:1px solid #cbd5e1}
+.btn-social:hover{background:#f8fafc}
+.auth-divider{display:flex;align-items:center;gap:12px;color:#94a3b8;font-size:13px;margin:6px 0 14px}
+.auth-divider::before,.auth-divider::after{content:"";flex:1;height:1px;background:#e3e9f3}
+.consent-row{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin:10px 0 4px}
+.consent-row input{width:auto;margin-top:3px;flex:none}
