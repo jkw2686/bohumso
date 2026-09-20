@@ -41,7 +41,6 @@ const flag = (k) => env(k) === 'true';
 add(true, `ACCOUNTS_ENABLED=${flag('ACCOUNTS_ENABLED')}`, flag('ACCOUNTS_ENABLED') ? '회원 기능 ON' : 'OFF (가입 비활성)');
 add(true, `POLICIES_APPROVED=${flag('POLICIES_APPROVED')}`, flag('POLICIES_APPROVED') ? '약관 확정됨' : 'OFF (약관 미확정)');
 add(true, `PAYMENTS_ENABLED=${flag('PAYMENTS_ENABLED')}`, flag('PAYMENTS_ENABLED') ? '테스트 결제 ON' : 'OFF');
-add(true, `MATCHING_WORKER_ENABLED=${flag('MATCHING_WORKER_ENABLED')}`, '');
 add(true, `VISIT_METRICS_ENABLED=${flag('VISIT_METRICS_ENABLED')}`, '');
 
 // 상호 일관성 경고 (실패 아님)

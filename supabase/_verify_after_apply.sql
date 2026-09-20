@@ -1,12 +1,12 @@
 -- 보험소 마이그레이션 적용 후 검증 (Supabase SQL Editor에서 실행)
--- 기대값: private 테이블 16개, public RPC 23개. 값이 다르면 적용 순서/중복을 점검한다.
+-- 기대값: private 테이블 16개, public RPC 22개. 값이 다르면 적용 순서/중복을 점검한다.
 
 -- 1) private 스키마 테이블 수 (기대: 16)
 select 'private_tables' as check, count(*) as actual, 16 as expected
 from pg_tables where schemaname = 'private';
 
--- 2) public 함수(RPC) 수 (기대: 23)
-select 'public_functions' as check, count(*) as actual, 23 as expected
+-- 2) public 함수(RPC) 수 (기대: 22)
+select 'public_functions' as check, count(*) as actual, 22 as expected
 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
 where n.nspname = 'public';
 

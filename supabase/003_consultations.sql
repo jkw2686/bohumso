@@ -19,7 +19,7 @@ create table private.consultations (
  purpose text not null check(purpose in ('claim','management','coverage','new','other')),
  region text not null check(length(region) between 2 and 120), method text not null check(method in ('phone','nearby','scheduled')),
  preferred_at timestamptz not null, latitude double precision, longitude double precision,
- location_consent boolean not null default false, automatic boolean not null default false, excluded uuid[] not null default '{}',
+ location_consent boolean not null default false, automatic boolean not null default false check (automatic=false), excluded uuid[] not null default '{}',
  state text not null default 'requested' check(state in ('requested','coordinating','confirmed','scheduled','awaiting_completion','completed','cancelled','no_show','dispute','unmatched')),
  customer_ok boolean not null default false, planner_ok boolean not null default false, revision integer not null default 1,
  policy_id bigint references private.connection_policies(id), total_won integer, is_free boolean, coupon_state text check(coupon_state in ('reserved','used','released')),
@@ -78,32 +78,6 @@ create function private.specialty_match(wanted text,tags text[]) returns boolean
  select wanted=any(tags) or (wanted='claim' and tags&&array['death','illness','medical','accident']) or (wanted='coverage' and tags&&array['remodel','life','nonlife','medical']) or (wanted='management' and tags&&array['life','nonlife','remodel']) or (wanted='new' and tags&&array['life','nonlife','corporate'])
 $$;
 revoke all on function private.specialty_match(text,text[]) from public,anon,authenticated;
--- Standalone deterministic matching module. No consumer medical details enter the score.
-create function private.rank_planners(wanted text,area text,slot timestamptz,lat double precision,lng double precision)
-returns table(planner_id uuid,score double precision) language sql stable security definer set search_path='' as $$
- select d.user_id,
- (case when private.specialty_match(wanted,d.specialties) then 40 else 0 end + case when p.region=area then 30 else 0 end
- + case when d.available then 10 else 0 end
- - least(20,(select count(*) from private.consultations c where c.planner_id=d.user_id and c.created_at>now()-interval '7 days')*2)
- + coalesce((select 10.0*count(*) filter(where c.state='completed')/nullif(count(*) filter(where c.planner_ok),0) from private.consultations c where c.planner_id=d.user_id),0)
- + coalesce((select 5.0*count(*) filter(where c.planner_ok)/nullif(count(*),0) from private.consultations c where c.planner_id=d.user_id),0)
- - case when lat is not null and lng is not null and d.latitude is not null and d.longitude is not null then least(30,sqrt(power((lat-d.latitude)*111,2)+power((lng-d.longitude)*88,2))) else 0 end)::double precision
- from private.planner_directory d join public.partner_applications p on p.user_id=d.user_id
- where private.planner_eligible(d.user_id) and d.available and (p.region=area or p.region like split_part(area,' ',1)||'%')
- and not exists(select 1 from private.consultations c where c.planner_id=d.user_id and c.preferred_at=slot and c.state in ('confirmed','scheduled','awaiting_completion'))
- and not exists(select 1 from private.consultations c where c.planner_id=d.user_id and c.state='completed' and c.is_free=false and c.first_paid and not c.second_paid and c.payment_state not in ('refund_requested','refunding','refunded','refund_failed'))
- order by 2 desc,d.user_id
-$$;
-create function private.offer_next(target uuid) returns void language plpgsql security definer set search_path='' as $$
-declare c private.consultations; candidate uuid;
-begin
- select * into c from private.consultations where id=target for update;
- if c.state not in ('requested','unmatched') then return;end if;
- select r.planner_id into candidate from private.rank_planners(c.purpose,c.region,c.preferred_at,c.latitude,c.longitude) r where r.planner_id<>c.customer_id and not(r.planner_id=any(c.excluded)) limit 1;
- update private.consultations set planner_id=candidate,state=case when candidate is null then 'unmatched' else 'requested' end,response_deadline=case when candidate is null then null else now()+interval '24 hours' end,updated_at=now() where id=target;
- insert into private.consultation_events(consultation_id,actor,event,metadata) values(target,auth.uid(),case when candidate is null then 'matching_failed' else 'offered' end,jsonb_build_object('planner',candidate));
-end $$;
-
 create function public.planner_catalog(area text default '',wanted text default '') returns jsonb language sql stable security definer set search_path='' as $$
  select jsonb_build_object('policy',(select jsonb_build_object('id',id,'free_meetings',free_meetings,'total_won',total_won) from private.connection_policies order by id desc limit 1),'planners',coalesce((
  select jsonb_agg(jsonb_build_object('id',d.user_id,'name',p.full_name,'organization',p.organization,'region',p.region,'specialties',d.specialties,'biography',d.biography,'experience',d.experience,'photo_url',d.photo_url,'available',d.available,'hours',d.hours,'latitude',d.latitude,'longitude',d.longitude,'is_sample',d.is_sample,'verified',d.verified_at is not null,'completed_count',(select count(*) from private.consultations c where c.planner_id=d.user_id and c.state='completed'),'rating',(select round(avg(r.rating),1) from private.consultation_reviews r where r.planner_id=d.user_id and r.visible),'reviews',(select coalesce(jsonb_agg(jsonb_build_object('rating',r.rating,'body',r.body,'created_at',r.created_at)),'[]') from private.consultation_reviews r where r.planner_id=d.user_id and r.visible)) order by p.full_name)
@@ -140,11 +114,11 @@ begin
   if (select count(*) from private.consultations where customer_id=auth.uid() and state not in ('cancelled','completed','unmatched'))>=5 then raise exception 'request_limit';end if;
   target:=(payload->>'planner_id')::uuid;
   if target is not null and (not private.planner_eligible(target) or not exists(select 1 from private.planner_directory where user_id=target and available)) then raise exception 'invalid_partner';end if;
-  if target is null and (payload->>'automatic')::boolean is distinct from true then raise exception 'select_planner';end if;
+  if target is null then raise exception 'select_planner';end if;
+  if coalesce((payload->>'automatic')::boolean,false) then raise exception 'automatic_not_allowed';end if;
   insert into private.consultations(customer_id,planner_id,purpose,region,method,preferred_at,automatic,location_consent,latitude,longitude,response_deadline)
-  values(auth.uid(),target,payload->>'purpose',trim(payload->>'region'),payload->>'method',proposed,coalesce((payload->>'automatic')::boolean,false),coalesce((payload->>'location_consent')::boolean,false),(payload->>'latitude')::double precision,(payload->>'longitude')::double precision,now()+interval '24 hours') returning consultations.id into id;
+  values(auth.uid(),target,payload->>'purpose',trim(payload->>'region'),payload->>'method',proposed,false,coalesce((payload->>'location_consent')::boolean,false),(payload->>'latitude')::double precision,(payload->>'longitude')::double precision,null) returning consultations.id into id;
   insert into private.consultation_events(consultation_id,actor,event) values(id,auth.uid(),'requested');
-  if target is null then perform private.offer_next(id);end if;
   return jsonb_build_object('id',id);
  end if;
  id:=(payload->>'id')::uuid;
@@ -158,10 +132,6 @@ begin
  if operation='pass' then
   if not is_planner or c.state<>'requested' then raise exception 'invalid_transition';end if;
   update private.consultations set excluded=array_append(excluded,c.planner_id),planner_id=null,state='unmatched' where consultations.id=id;
-  if c.automatic then update private.consultations set state='requested' where consultations.id=id;perform private.offer_next(id);end if;
- elsif operation='rematch' then
-  if not (is_customer or admin) or not c.automatic or c.state not in ('requested','unmatched') or (c.state='requested' and c.response_deadline>now()) then raise exception 'invalid_transition';end if;
-  update private.consultations set excluded=case when planner_id is null then excluded else array_append(excluded,planner_id) end,state='requested' where consultations.id=id;perform private.offer_next(id);
  elsif operation='accept' then
   if not is_planner or not private.planner_eligible(auth.uid()) or not exists(select 1 from private.planner_directory where user_id=auth.uid() and available) or c.state not in ('requested','coordinating') then raise exception 'invalid_transition';end if;
   perform 1 from private.planner_directory where user_id=auth.uid() for update;
@@ -261,7 +231,7 @@ begin
  'profile',(select to_jsonb(d)-'identity_key'-'evidence'-'verified_by' from private.planner_directory d where d.user_id=auth.uid()),
  'planner_profiles',case when workspace='admin' then (select coalesce(jsonb_agg(to_jsonb(d)-'identity_key'),'[]') from private.planner_directory d) else '[]'::jsonb end);
 end $$;
-revoke all on function private.planner_eligible(uuid),private.free_remaining(uuid,bigint),private.rank_planners(text,text,timestamptz,double precision,double precision),private.offer_next(uuid) from public,anon,authenticated;
+revoke all on function private.planner_eligible(uuid),private.free_remaining(uuid,bigint) from public,anon,authenticated;
 revoke all on function public.planner_catalog(text,text),public.consultation_command(text,jsonb),public.consultation_workspace(text) from public,anon,authenticated;
 grant execute on function public.planner_catalog(text,text) to anon,authenticated;
 grant execute on function public.consultation_command(text,jsonb),public.consultation_workspace(text) to authenticated;

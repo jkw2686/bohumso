@@ -1,6 +1,8 @@
-# 보험소 0.3 — 배포 전 검증본
+# 보험소 0.3 — 모델 전환 작업 중
 
-기존 Netlify 디자인과 Supabase 가입·파트너 심사를 유지하고, 설계사 직접 선택/자동매칭, 무료 이용권, 두 단계 테스트 결제 흐름을 추가했습니다.
+2026-09-20: 소비자 직접 선택으로 전환했습니다. 자동 재배정과 예약 만료 워커는 제거했습니다. 광고 노출 구독 전환은 아직 미완료이며 아래 상담별 결제 설명은 이전 구현입니다. 운영 준비 완료로 해석하지 마세요.
+
+기존 Netlify 디자인과 Supabase 가입·파트너 심사를 유지하고, 설계사 직접 선택, 무료 이용권, 두 단계 테스트 결제 흐름을 추가했습니다.
 **실제 배포·실결제·외부 메시지·운영 DB 변경은 하지 않았습니다.**
 
 ## 실행 및 검증
@@ -45,7 +47,7 @@ Toss v2 **결제위젯(renderPaymentMethods)**으로 카드 + 간편결제(카�
 - `npm run smoke`: (키 설정+SQL 적용 후) 실연결 스모크 — Auth health·PostgREST·`planner_catalog` RPC 도달. `--config <origin>`으로 `/api/config`, `--toss`로 토스 키 인증까지
 - `npm run concurrency`: (일회용 Postgres에) `DATABASE_URL` 지정 후 실행 — 실 다중연결로 무료쿠폰 과다배정·슬롯 이중예약 불변식 검증(PGlite로는 불가). `--customers N`·`--keep`
 - `.github/workflows/verify.yml`: GitHub 연결 시 푸시/PR마다 자동 `build + npm test`(브라우저 불필요)
-- `docs/code-review-notes.md`: 결제·예약·매칭 경로 배포 전 QA 결과(버그 0)
+- `docs/code-review-notes.md`: 기존 결제·예약 구현 검토 기록 (새 구독 모델 검증과 구분)
 
 ## 전달 문서
 - `docs/final-report.md`: 요청한 11개 항목의 결과와 남은 작업

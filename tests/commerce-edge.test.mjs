@@ -1,11 +1,12 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import {fixture,ids} from './commerce-fixture.mjs';
-test('Expiry, slot conflict, followup no-charge, refund isolation and stale revisions',async()=>{
+test('No expiry reassignment, slot conflict, followup no-charge, refund isolation and stale revisions',async()=>{
  const {db,rpc,login,cmd,row,slot}=await fixture();try{
  await login(ids.customer);const create=async(n,automatic=false)=>(await cmd('request',{purpose:'claim',region:'서울 마포구',method:'scheduled',preferred_at:slot(n),planner_id:automatic?null:ids.planner,automatic})).id;
- const auto=await create(0,true),old=(await row(auto)).planner_id;
- await db.exec('reset role');await db.query("update private.consultations set response_deadline=now()-interval '1 minute' where id=$1",[auto]);
- await login('','service_role');assert.equal(await rpc('expire_consultation_offers'),1);assert.equal(await rpc('expire_consultation_offers'),0);
- await login(ids.customer);assert.notEqual((await row(auto)).planner_id,old);
+ const direct=await create(0);
+ await db.exec('reset role');
+ await db.query("update private.consultations set response_deadline=now()-interval '1 minute' where id=$1",[direct]);
+ assert.equal((await db.query("select count(*)::int n from pg_proc where proname in ('rank_planners','offer_next','expire_consultation_offers')")).rows[0].n,0);
+ await login(ids.customer);assert.equal((await row(direct)).planner_id,ids.planner);
  const first=await create(1),same=await create(1);
  for(const id of [first,same]){await login(ids.planner);await cmd('accept',{id,revision:1,policy_id:1,paid_consent:false});}
  await login(ids.customer);const confirm=id=>cmd('confirm',{id,revision:2,name:'가상 고객',phone:'01011112222',share_consent:true});await confirm(first);await assert.rejects(()=>confirm(same),/consultation_slot/);

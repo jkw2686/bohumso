@@ -71,7 +71,6 @@ export async function renderWorkflow({client,membership,workspace,message,action
    }
    if(['customer','partner'].includes(workspace)&&['requested','coordinating','confirmed','scheduled'].includes(row.state))scheduleForm(card,row);
    if(['requested','coordinating','confirmed','scheduled','unmatched'].includes(row.state))btn(controls,'예약 취소',async()=>{if(confirm('이 예약을 취소할까요? 결제된 건은 환불 검토 상태가 됩니다.'))await run('cancel');});
-   if(workspace==='customer'&&row.automatic&&['requested','unmatched'].includes(row.state)&&(row.state==='unmatched'||new Date(row.response_deadline)<=new Date()))btn(controls,'다음 후보 찾기',()=>run('rematch'));
    if(workspace==='partner'&&row.state==='scheduled'&&new Date(row.preferred_at)<=new Date())btn(controls,'미팅 완료 확인 요청',()=>run('complete_request'));
    if(workspace==='customer'&&row.state==='awaiting_completion'){el('p','보험 가입 여부와 관계없이 실제 미팅이 이루어졌을 때만 확인해 주세요.',card);btn(controls,'실제 미팅 완료 확인',()=>run('complete_confirm'));}
    if(workspace==='partner'&&row.payment_state!=='confirming'&&!row.is_free&&((row.state==='confirmed'&&!row.first_paid)||(row.state==='completed'&&!row.second_paid))){const stage=row.first_paid?2:1;btn(controls,stage+'차 '+won(row.total_won/2)+' 테스트 결제 (카드·간편결제)',()=>checkout(row,stage));el('p','테스트 PG 설정 전에는 결제되지 않습니다. 자동 청구·구독·카드 등록은 없습니다.',card);}
@@ -96,13 +95,12 @@ export async function renderWorkflow({client,membership,workspace,message,action
   form.replaceChildren();form.hidden=false;el('h2','상담 희망 일정 제출',form);el('p','소비자 무료 · 보험 가입 의무 없음 · 유료 연결료는 설계사가 부담합니다. 민감정보는 입력받지 않습니다.',form);
   const params=new URLSearchParams(location.search);const catalog=await rpc('planner_catalog',{area:'',wanted:''});
   const choices=Object.fromEntries(catalog.planners.map(p=>[p.id,(p.is_sample?'[테스트] ':'')+p.name+' · '+p.region]));
-  select(form,'설계사 직접 선택','planner_id',{'':'자동매칭 선택 시 비워두세요',...choices},params.get('planner'));
-  const auto=check(form,'직접 선택하지 않고 규칙 기반 자동매칭에 동의합니다. 패스·기한 경과 시 다음 후보에게 요청이 전달됩니다.','automatic');
+  select(form,'설계사 직접 선택','planner_id',{'':'설계사를 직접 선택해 주세요',...choices},params.get('planner')).required=true;
   select(form,'상담 목적','purpose',purposes,params.get('purpose')||'claim');const area=input(form,'희망 지역','region','text',params.get('region')||'서울 마포구');area.required=true;area.maxLength=120;
   select(form,'상담 방식','method',{phone:'통화 요청 (설계사 확인 후)',nearby:'근처에서 만나기',scheduled:'시간 약속하기'},params.get('method')||'scheduled');
   input(form,'희망 날짜 (KST)','date','date').required=true;const time=input(form,'희망 시간 (KST, 30분 단위)','time','time');time.required=true;time.step=1800;
   el('p','통화 요청도 설계사 수락 후 진행합니다. 긴급 대응이나 즉시 연결을 보장하지 않습니다.',form);el('button','상담 요청 (무료)',form).type='submit';
-  submit(form,d=>command('request',{purpose:d.get('purpose'),region:d.get('region'),method:d.get('method'),planner_id:auto.checked?null:d.get('planner_id')||null,automatic:auto.checked,preferred_at:new Date(d.get('date')+'T'+d.get('time')+':00+09:00').toISOString()}));
+  submit(form,d=>command('request',{purpose:d.get('purpose'),region:d.get('region'),method:d.get('method'),planner_id:d.get('planner_id'),automatic:false,preferred_at:new Date(d.get('date')+'T'+d.get('time')+':00+09:00').toISOString()}));
  }
  document.getElementById('workflowFilters')?.addEventListener('submit',e=>{e.preventDefault();action(content,refresh);});
  await refresh();

@@ -33,14 +33,17 @@ test('Free allocation, immutable paid quote, two-stage ledger, consent and custo
  await login('', 'anon');const cat=await rpc('planner_catalog',['서울','claim']);assert.equal(cat.planners.length,2);assert.ok(cat.planners.every(p=>p.is_sample));assert.ok(cat.planners.every(p=>!p.phone));await assert.rejects(()=>rpc('consultation_workspace',['admin']));
  }finally{await db.close();}
 });
-test('Automatic matching pass, explicit choice isolation, no-show restoration and identity uniqueness',async()=>{
+test('Direct selection required, no reassignment, no-show restoration and identity uniqueness',async()=>{
  const {db,rpc,login,cmd,row,slot}=await fixture();try{
- await login(ids.customer);const auto=(await cmd('request',{purpose:'claim',region:'서울 마포구',method:'phone',preferred_at:slot(),automatic:true})).id;let a=await row(auto);const first=a.planner_id;
- await login(first);await cmd('pass',{id:auto,revision:a.revision});assert.equal((await rpc('consultation_workspace',['partner'])).bookings.length,0);
- await login(ids.customer);a=await row(auto);assert.notEqual(a.planner_id,first);
- await login(a.planner_id);await cmd('pass',{id:auto,revision:a.revision});await login(ids.customer);assert.equal((await row(auto)).state,'unmatched');
+ await login(ids.customer);
+ const request={purpose:'claim',region:'서울 마포구',method:'phone',preferred_at:slot()};
+ await assert.rejects(()=>cmd('request',{...request,automatic:true}),/select_planner/);
+ await assert.rejects(()=>cmd('request',request),/select_planner/);
+ await assert.rejects(()=>cmd('request',{...request,planner_id:ids.planner,automatic:true}),/automatic_not_allowed/);
  const direct=(await cmd('request',{planner_id:ids.planner,purpose:'claim',region:'서울 마포구',method:'scheduled',preferred_at:slot(1)})).id;
  await login(ids.planner);await cmd('pass',{id:direct,revision:(await row(direct,'partner')).revision});await login(ids.customer);assert.equal((await row(direct)).planner_id,null);assert.equal((await row(direct)).automatic,false);
+ await assert.rejects(()=>cmd('rematch',{id:direct,revision:(2)}),/unknown_operation/);
+ await login(ids.next);assert.equal((await rpc('consultation_workspace',['partner'])).bookings.length,0);
  await login(ids.admin);await assert.rejects(()=>cmd('verify_planner',{planner_id:ids.next,identity_key:'TEST-REGISTRY-planner',evidence:'중복 등록 테스트',checked:true,is_sample:true}),/duplicate key/);await assert.rejects(()=>cmd('verify_planner',{planner_id:ids.next,checked:true}),/verification_required/);
  await login(ids.customer);const free=(await cmd('request',{planner_id:ids.planner,purpose:'claim',region:'서울 마포구',method:'nearby',preferred_at:slot(2)})).id;
  await login(ids.planner);await cmd('accept',{id:free,revision:1,policy_id:1,paid_consent:false});await login(ids.customer);await cmd('confirm',{id:free,revision:2,name:'가상 고객',phone:'01011112222',share_consent:true});
