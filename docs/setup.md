@@ -1,6 +1,6 @@
 # 연결 및 설정
 
-현재는 로컬 테스트 구현입니다. 실제 서비스 설정 변경·배포는 수행하지 않습니다.
+2026-09-20 공개 사이트의 Supabase 인증·공개 목록 연결을 읽기 전용으로 확인했습니다. 이메일 가입은 활성, 카카오/구글은 비활성입니다. 인증 마무리는 `auth-launch-checklist.md`를 따릅니다. 이번 점검에서 서버 설정 변경·배포는 수행하지 않았습니다.
 
 ## 새 테스트 DB
 001_accounts.sql → 002_requests.sql → 003_consultations.sql → 004_payment_ledger.sql → 005_matching_worker.sql(예약 번호만 유지, 실행 작업 없음) → 006_metrics.sql.

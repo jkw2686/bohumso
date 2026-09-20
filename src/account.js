@@ -8,7 +8,7 @@ const status={pending:"심사 대기",approved:"승인 완료",rejected:"반려"
 const jobs={planner:"보험설계사",adjuster:"손해사정사",lawyer:"변호사",corporate:"기업보험 컨설턴트",tax:"세무사",office:"거점 운영자"};
 function message(text){$("accountMessage").textContent=text;}
 function safeError(error){if(error?.code==="23505")return "이미 처리되었거나 해당 시간이 예약되었습니다. 새로고침 후 다른 일정을 선택해 주세요.";const known={plan_not_available:"구독 조건이 아직 확정되지 않았습니다.",slot_unavailable:"이용 중이거나 결제 확인 중인 광고 슬롯입니다. 기존 주문 상태를 확인해 주세요.",order_expired:"주문 시간이 만료됐습니다. 구독 화면에서 새로 선택해 주세요.",refund_not_eligible:"기간 종료와 약정 노출 미달 여부를 확인해 주세요.",refund_evidence_required:"관리자의 플랫폼 귀책 확인 근거가 필요합니다.",stale_request:"다른 화면에서 예약이 변경되었습니다. 새로고침 후 다시 확인해 주세요.",test_payment_not_configured:"테스트 결제 설정 전입니다. 실제 결제는 발생하지 않습니다.",price_changed:"구독 조건이 변경되었습니다. 새로고침하여 확인해 주세요.",payment_in_progress:"결제 상태를 확인 중입니다. 승인·환불 확인 후 다시 시도해 주세요.",automatic_not_allowed:"자동 배정은 지원하지 않습니다. 설계사를 직접 선택해 주세요.",select_planner:"목록에서 설계사를 직접 선택해 주세요.",invalid_slot:"희망 일정은 30분 이후부터 90일 이내의 정각 또는 30분으로 선택해 주세요.",invalid_partner:"담당자의 직군·승인 상태가 맞지 않습니다. 다시 확인해 주세요.",request_limit:"진행 중인 요청은 최대 5건입니다.",request_forbidden:"이 요청을 처리할 권한이 없습니다.",address_required:"방문 장소의 정확한 주소를 입력해 주세요.",admin_required:"관리자 권한이 필요합니다.",self_review_forbidden:"본인 신청은 직접 심사할 수 없습니다.",invalid_transition:"신청 상태가 변경되었습니다. 새로고침해 주세요.",consent_required:"필수 동의를 확인해 주세요.",membership_required:"고객 가입을 먼저 완료해 주세요.",verified_account_required:"이메일 인증 후 다시 로그인해 주세요."};return known[error?.message]||"처리하지 못했습니다. 입력 내용과 연결 상태를 확인한 뒤 다시 시도해 주세요.";}
-async function action(form,fn){const buttons=[...form.querySelectorAll("button")];buttons.forEach(b=>b.disabled=true);message("");try{await fn()}catch(e){message(safeError(e))}finally{buttons.forEach(b=>b.disabled=false)}}
+async function action(form,fn){const buttons=[...form.querySelectorAll("button")];const disabled=buttons.map(b=>b.disabled);buttons.forEach(b=>b.disabled=true);message("");try{await fn()}catch(e){message(safeError(e))}finally{buttons.forEach((b,i)=>b.disabled=disabled[i])}}
 function onForm(id,fn){$(id)?.addEventListener("submit",e=>{e.preventDefault();action(e.currentTarget,()=>fn(new FormData(e.currentTarget)));});}
 function checked(data,name){return data.get(name)==="on";}
 function fail(error){if(error)throw error;}
@@ -43,6 +43,14 @@ async function renderAdmin(){
  for(const [decision,title]of options){const btn=document.createElement("button");btn.type="button";btn.textContent=title;actions.append(btn);btn.onclick=()=>action(card,async()=>{if(reason.value.trim().length<3){message("검토 사유를 3자 이상 입력해 주세요.");return}const {error}=await client.rpc("review_partner",{target_user:row.user_id,decision,reason:reason.value.trim()});fail(error);await renderAdmin();message("심사 결과를 저장했습니다.");});}
  }
 }
+async function configureSocialAuth(){
+ const providers=[['kakao','카카오'],['google','Google']];
+ const buttons=providers.map(([provider,label])=>({provider,label,button:$(provider+(mode==='signup'?'Signup':'Login'))})).filter(x=>x.button);
+ for(const {button} of buttons)button.disabled=true;
+ let external={};
+ try{const response=await fetch(config.url.replace(/\/$/,'')+'/auth/v1/settings',{headers:{apikey:config.key},cache:'no-store',signal:AbortSignal.timeout(8000)});if(response.ok)external=(await response.json()).external||{};}catch{}
+ for(const {provider,label,button} of buttons){const enabled=external[provider]===true;button.disabled=!enabled;button.textContent=enabled?label+(mode==='signup'?'로 시작하기':'로 로그인'):label+' 로그인 준비 중';}
+}
 async function start(){
  // 백엔드(Functions) 미배포·미설정 시 에러 대신 '준비 중'으로 degrade. 정적 공유 배포에서도 화면이 깨지지 않는다.
  const response=await fetch("/api/config",{cache:"no-store"}).catch(()=>null);config=response&&response.ok?await response.json():{enabled:false};
@@ -52,6 +60,7 @@ async function start(){
  if(config.visitMetrics){try{const day=new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul"}).format(new Date());const key="bohumso-visit-"+day;let id=sessionStorage.getItem(key);if(!id){id=crypto.randomUUID();sessionStorage.setItem(key,id);}client.rpc("record_visit_session",{session_id:id}).catch(()=>{});}catch{}}
  $("accountNotice").textContent="운영: "+config.operator+" · 문의: "+config.contact;$("accountContent").hidden=false;
  if(mode==="directory"){await renderDirectory(client);return;}
+ if(mode==="signup"||mode==="login")void configureSocialAuth();
  if(mode==="signup"){
   const consent=()=>{if(!$("signupPrivacy").checked){message("개인정보 안내에 동의해 주세요.");return false;}return true;};
   const oauth=provider=>action($("accountContent"),async()=>{if(!consent())return;const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+"/account.html"}});fail(error);});

@@ -2,9 +2,9 @@
 갱신: 2026-09-20 (KST) · Claude ↔ Codex 교대 작업
 
 ## 0. 지금 바로
-- 프로젝트: `C:\Users\AdMins\Documents\bohumso-netlify` · git 브랜치 `feature/consultation-commerce`
+- 프로젝트: `C:\Users\AdMins\Documents\bohumso-netlify` · git 브랜치 `main`
 - 먼저 읽기: 이 문서 → `CLAUDE.md`(마스터 규칙) → `design-system.md`(네이비 가드레일) → `docs/final-report.md`
-- **실배포·실결제 금지**(명시 승인 전). 토스 test-only(라이브 차단). Supabase 프로젝트 아직 없음(사용자 생성). 시크릿 채팅/프런트/repo 금지. 사업자·검증 사실 지어내지 말 것(미확정 공란).
+- **실배포·실결제 금지**(명시 승인 전). 토스 test-only(라이브 차단). 공개 사이트의 Supabase 인증/공개 목록 연결 확인(2026-09-20). 대시보드 URL 설정과 메일 실제 도착은 미검증. 시크릿 채팅/프런트/repo 금지. 사업자·검증 사실 지어내지 말 것(미확정 공란).
 
 ## 1. 확정된 방향
 기존 풀앱(네이비 디자인·지도·회원가입·전 기능) 유지 + 합법 구조를 위한 모델 2개 변경. `design-system.md` 토큰만 사용.
@@ -18,7 +18,7 @@ UI 자동매칭/다음후보 제거, 서버 automatic 요청 거부, rank/offer/
 - 상담에서 가격·무료이용권·단계별 주문·미결제 제한 제거. 상담 확정/완료/취소/분쟁은 광고와 **분리**.
 - 신규: `ad_plans·ad_slots·ad_subscriptions·ad_impressions·ad_audit` + RPC(`ad_checkout/begin_confirm/reconcile/refund_request/refund_failure/workspace/admin_command/user_order/order_lookup/public_slots/record_impression`).
 - 3요금제(베이직/프리미엄/지역독점)는 조건 NULL·비활성(사업자 확정 대기). 지역독점 슬롯 잠금, 주문조건 고정, **환불=약정 노출 미달+플랫폼 귀책만**(전액), 지연승인 무시, 만료 해제.
-- **노출집계 = display-only**(과금·환불과 무연결). 서버 서명 토큰·10분 만료·중복방지·기본 비활성.
+- **상담 건수 = display-only**(과금·환불과 무연결). 광고 노출집계는 약정 노출 미달 환불 판단에 사용. 서버 서명 토큰·10분 만료·중복방지·기본 비활성.
 - 신규 파일: `netlify/functions/ads.mts`·`_shared/impressions.mjs`, `src/ad-subscription.js`·`sponsored.js`, `tests/impressions.test.mjs`.
 - 토스 위젯 키 `test_gck_/test_gsk_`(의도적), 라이브 차단, 간편결제 잔액 응답 검증.
 
@@ -28,15 +28,24 @@ UI 자동매칭/다음후보 제거, 서버 automatic 요청 거부, rank/offer/
 - 배포 전 도구: `preflight`(env 형식) · `smoke`(실연결) · `concurrency`(일회용 Postgres 경합).
 
 ## 4. 남은 일 = 전부 인적 게이트 / 후속 범위
-- **인적 게이트(사용자·법률):** 실제 Supabase 프로젝트+키, 토스 테스트 상점 승인·취소·웹훅, 운영자·설계사 자격 확인, 요금/약정·약관·환불/보유기간 법률 검토. → `docs/deploy-runbook.md`·`release-checklist.md` 순서.
+- **인적 게이트(사용자·법률):** Supabase 복귀 URL·메일 인증·권한 실제 검증, 토스 테스트 상점 승인·취소·웹훅, 운영자·설계사 자격 확인, 요금/약정·약관·환불/보유기간 법률 검토. → `docs/deploy-runbook.md`·`release-checklist.md` 순서.
 - **미구현 후속 범위(당장 불필요):** 저장카드 자동갱신, 부분환불, 노출크레딧 충전형 상품.
-- **DB 이관:** 현재 SQL 합본(`_apply_all.sql`)은 **새 빈 테스트 DB 전용**. 기존 003/004 적용 DB가 있으면 전환 마이그레이션·거래 보존 별도 필요(현재 실 DB 없음).
+- **DB 이관:** 현재 SQL 합본(`_apply_all.sql`)은 **새 빈 테스트 DB 전용**. 기존 003/004 적용 DB가 있으면 전환 마이그레이션·거래 보존 별도 필요(공개 Supabase 연결 확인됨 — 현재 DB에 합본 재실행 금지).
 
 ## 5. Git
-- 브랜치 `feature/consultation-commerce`, base `68524e2`.
+- 브랜치 `main`, base `68524e2`.
 - 최근: `05dc73d`(광고구독) · `ced2a55`(직접선택) · `b5fd77a`(degrade) · `60fd7a9`(결제위젯) · `55ba999`(동시성) · `e54c48d`(구현+배포도구).
-- 작업 트리 클린. identity(local) `jkw2686@gmail.com`. 원격 없음(GitHub 수동 연결).
+- 작업 트리 클린. identity(local) `jkw2686@gmail.com`. 원격 연결 상태는 이번 인수 작업에서 검증하지 않음.
 
 ## 6. 주의
 - 합법 원칙(§1~2) 반영 상태 유지 — 상담과 광고 과금은 절대 다시 엮지 말 것.
 - UI 변경 시 `design-system.md` 자가검사(네이비 토큰·대비 4.5:1·간격/radius·360px·focus) 후 종료. 각 변경 후 `npm run verify` 유지.
+
+## 7. Codex 인수 후 공개 연결 확인 (2026-09-20)
+- Claude의 c34e731/e565ed5 커밋을 확인한 후 이어서 수정. 기존 연결/데이터/디자인 유지.
+- https://bohumso.netlify.app 및 가입·로그인·계정·복구 화면 HTTP 200. 공개 설정 enabled=true, 이메일 가입 활성, planner_catalog 정상.
+- Kakao/Google provider는 둘 다 비활성. 로컬에서 실제 provider 설정에 맞춰 버튼 준비 상태를 표시하도록 보강.
+- docs/auth-launch-checklist.md에 정확한 수동 설정 경로와 검증 범위 정리. node scripts/check-public-auth.mjs로 공개 읽기 전용 재확인.
+- 이번 로컬 변경은 배포하지 않음. URL allowlist·이메일 도착·실제 OAuth 왕복·결제 성공은 아직 확인하지 않음.
+
+- 최신 로컬 검증: 2026-09-20 23:41 KST, 전체 passed=true (단위 19 + 가입 회귀 + 모바일/PC). 현재 브랜치 main 확인.
