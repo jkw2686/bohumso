@@ -49,8 +49,8 @@ try {
   });
   if (r.ok) {
     const data = await r.json();
-    const hasPolicy = data && typeof data === 'object' && 'policy' in data && 'planners' in data;
-    line(hasPolicy, 'RPC planner_catalog', hasPolicy ? 'policy·planners 반환 (마이그레이션 OK)' : '형태 예상과 다름');
+    const okShape = data && typeof data === 'object' && Array.isArray(data.planners);
+    line(okShape, 'RPC planner_catalog', okShape ? `planners 배열 반환 (마이그레이션 OK, 등록 설계사 ${data.planners.length}명)` : '형태 예상과 다름');
   } else if (r.status === 404) {
     line(false, 'RPC planner_catalog', '404 — 마이그레이션(003) 미적용으로 보임');
   } else {
