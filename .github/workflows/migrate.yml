@@ -1,0 +1,39 @@
+name: migrate
+
+# main에 push되어 supabase/ 마이그레이션이 바뀌면 라이브 Supabase에 자동 적용한다.
+# DATABASE_URL(Supabase 연결 문자열, 비밀)은 GitHub Secrets에 둔다. 로그에 값이 찍히지 않는다.
+# 최초 1회는 MIGRATE_BASELINE 이전 파일을 '이미 적용됨'으로 기록만 하고 그 이후만 실제 적용한다.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+      - 'scripts/migrate.mjs'
+      - '.github/workflows/migrate.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migrate-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Apply pending migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # 라이브 DB는 이미 001~006이 수동 적용됨 → 그 지점까지 기준선으로 잡고 007+만 적용.
+          # 이력 테이블이 채워진 뒤에는 이 값은 무시된다(신규만 적용).
+          MIGRATE_BASELINE: '006_metrics.sql'
+        run: node scripts/migrate.mjs
