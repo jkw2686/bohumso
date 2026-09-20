@@ -288,15 +288,38 @@ function closeBooking() {
   if (el) el.classList.remove('show');
 }
 
+// 지도 보험소(지역) 마커에서 방문 예약 열기
+function bookArea(region, name) {
+  const overlay = document.getElementById('bookOverlay');
+  if (!overlay) return;
+  const label = region + ' ' + name + ' 보험소';
+  currentOffice = { name: label, area: label, meta: '방문 상담 예약 · 등록 설계사 배정 후 연락드립니다' };
+  document.getElementById('bookTitle').textContent = label + ' 방문 예약';
+  document.getElementById('bookMeta').textContent = currentOffice.meta;
+  document.getElementById('bookInfo').innerHTML =
+    '<div class="bi-row">🕘 방문 상담 가능 시간 10:00~17:00</div>' +
+    '<div class="bi-row">🙌 소비자 무료 · 보험 가입 강요 없음</div>';
+  const today = new Date(); today.setDate(today.getDate() + 1);
+  const d = document.getElementById('bookDate'); if (d) { d.min = today.toISOString().slice(0, 10); }
+  if (map && map.closePopup) map.closePopup();
+  overlay.classList.add('show');
+}
+
 function submitBooking() {
-  const body =
-    '📅 방문 예약\n' +
-    '거점: ' + (currentOffice ? currentOffice.name : '-') + '\n' +
-    '희망일: ' + (document.getElementById('bookDate').value || '-') + '\n' +
-    '시간대: ' + document.getElementById('bookTime').value + '\n' +
-    '이름: ' + (document.getElementById('bookName').value || '-') + '\n' +
-    '연락처: ' + (document.getElementById('bookPhone').value || '-');
-  const phone = document.getElementById('bookPhone').value;
+  const date = document.getElementById('bookDate').value;
+  const time = document.getElementById('bookTime').value;
+  const name = (document.getElementById('bookName').value || '').trim();
+  const phone = (document.getElementById('bookPhone').value || '').trim();
+  if (!date || !name || phone.replace(/[^0-9]/g, '').length < 8) {
+    showToast('희망일·이름·연락처를 확인해 주세요');
+    return;
+  }
+  const area = currentOffice ? (currentOffice.area || currentOffice.name) : '-';
+  try {
+    const arr = JSON.parse(localStorage.getItem('woori_visit_bookings') || '[]');
+    arr.push({ area: area, date: date, time: time, name: name, phone: phone, at: Date.now() });
+    localStorage.setItem('woori_visit_bookings', JSON.stringify(arr.slice(-20)));
+  } catch (e) {}
   closeBooking();
-  pushLead({ body: body, phone: phone, okMsg: '방문 예약이 접수되었습니다' });
+  showToast('방문 예약이 접수되었습니다 · ' + date + ' ' + time);
 }

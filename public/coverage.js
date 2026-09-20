@@ -592,7 +592,7 @@ function renderCoverage(region='전체') {
  const icon=L.divIcon({className:'coverage-marker',html:'<span aria-hidden="true">보</span>',iconSize:[27,31],iconAnchor:[13,31]});
  items.forEach(o=>L.marker([o.lat,o.lng],{icon,title:o.region+' '+o.name+' 보험소 · 개설 예정'}).addTo(coverageLayer)
  .bindTooltip(o.name+' 보험소',{direction:'top'})
- .bindPopup('<div class="mk-pop"><div class="mk-name">'+o.region+' '+o.name+' 보험소</div><p class="coverage-status">개설 예정</p><p>우리 동네 보험소를 준비하고 있습니다.<br>정확한 위치는 개설 시 안내됩니다.</p><a href="signup.html#expert" class="btn">전문가·파트너 참여</a></div>'));
+ .bindPopup('<div class="mk-pop"><div class="mk-name">'+o.region+' '+o.name+' 보험소</div><p class="coverage-status">방문 상담 예약</p><p>이 지역 방문 상담을 예약하면 등록 설계사가 배정되어 연락드립니다. (개설 준비 중)</p><button class="btn" onclick="bookArea(\''+o.region+'\',\''+o.name+'\')">방문 예약</button><a href="signup.html#expert" class="btn secondary" style="margin-top:8px;">전문가로 참여</a></div>'));
  if(items.length)map.fitBounds(L.latLngBounds(items.map(o=>[o.lat,o.lng])).pad(.08));
  document.querySelectorAll('[data-coverage-region]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.coverageRegion===region)));
  const c=document.getElementById('coverageCount');if(c)c.textContent=items.length+'개 지역 확장 구상';

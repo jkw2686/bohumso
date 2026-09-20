@@ -101,11 +101,16 @@
       <input type="date" id="bookDate">
     </div>
     <div class="field">
-      <label>희망 시간대</label>
-      <select id="bookTime">
-        <option>오전 (10:00~12:00)</option>
-        <option>오후 (13:00~15:00)</option>
-        <option>오후 (15:00~17:00)</option>
+      <label>희망 시간 (10:00~17:00, 30분 단위)</label>
+      <select id="bookTime" aria-label="방문 희망 시간">
+        <option value="10:00">10:00</option><option value="10:30">10:30</option>
+        <option value="11:00">11:00</option><option value="11:30">11:30</option>
+        <option value="12:00">12:00</option><option value="12:30">12:30</option>
+        <option value="13:00">13:00</option><option value="13:30">13:30</option>
+        <option value="14:00">14:00</option><option value="14:30">14:30</option>
+        <option value="15:00">15:00</option><option value="15:30">15:30</option>
+        <option value="16:00">16:00</option><option value="16:30">16:30</option>
+        <option value="17:00">17:00</option>
       </select>
     </div>
     <div class="field">
