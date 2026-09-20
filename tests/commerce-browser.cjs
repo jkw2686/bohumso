@@ -50,6 +50,16 @@ const {chromium,expect}=require(process.argv[2]||'@playwright/test');const http=
   const q=await pageFor('next',360);await q.goto(base+'/partner-work.html');await expect(q.locator('[data-booking-id="'+declined+'"]')).toHaveCount(0);
   c.once('dialog',d=>d.accept());await c.locator('[data-booking-id="'+declined+'"]').getByRole('button',{name:'예약 취소',exact:true}).click();await expect(c.locator('[data-booking-id="'+declined+'"] .request-status')).toHaveText('취소');
 
+  const applicant=await pageFor('other',360);await applicant.goto(base+'/partner.html');
+  const applicationForm=applicant.locator('#partnerForm');await expect(applicationForm).toBeVisible();
+  for(const [name,value] of Object.entries({full_name:'가상 신규 전문가',organization:'테스트 회사',region:'서울 마포구',credential_reference:'TEST-EXPERT',credential_issuer:'테스트 확인 기관',business_contact:'01000000000',career_years:'4'}))await applicationForm.locator('[name='+name+']').fill(value);
+  await applicationForm.locator('[name=consultation_modes][value=remote]').check();await applicationForm.locator('[name=verification_consent]').check();
+  await applicationForm.getByRole('button',{name:'전문가 심사 신청',exact:true}).click();await expect(applicant.locator('#partnerState')).toHaveText('심사 대기');
+  await a.goto(base+'/admin.html');const applicationCard=a.locator('#applications .card').filter({hasText:'가상 신규 전문가'});await applicationCard.locator('textarea').fill('등록 정보 추가 확인 필요');await applicationCard.getByRole('button',{name:'반려',exact:true}).click();await expect(a.locator('#accountMessage')).toHaveText('심사 결과를 저장했습니다.');
+  await applicant.reload();await expect(applicant.locator('#partnerState')).toHaveText('보완 후 재신청');await applicationForm.locator('[name=credential_reference]').fill('TEST-UPDATED');await applicationForm.locator('[name=verification_consent]').check();await applicationForm.getByRole('button',{name:'보완 후 재신청',exact:true}).click();await expect(applicant.locator('#partnerState')).toHaveText('심사 대기');
+  await applicant.getByRole('button',{name:'신청 철회',exact:true}).click();await expect(applicant.locator('#partnerState')).toHaveText('신청 철회');
+  if(await applicant.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))throw Error('expert signup mobile overflow');
+  fs.mkdirSync('artifacts',{recursive:true});await applicant.screenshot({path:'artifacts/expert-onboarding.png',fullPage:true});
   await c.goto(base+'/admin-requests.html');await expect(c.locator('#accountContent')).toBeHidden();
   await c.goto(base+'/find.html');if(await c.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))throw Error('mobile overflow');
   fs.mkdirSync('artifacts',{recursive:true});await c.screenshot({path:'artifacts/mobile-directory.png',fullPage:true});await p.screenshot({path:'artifacts/planner-payments.png',fullPage:true});

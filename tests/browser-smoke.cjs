@@ -14,10 +14,10 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
   const page=await browser.newPage({viewport:{width:360,height:800}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   let enabled=false,providers=false,settingsFailure=false;const requests=[];
-  await page.route('**/api/config',r=>r.fulfill({json:enabled?{enabled:true,url:'https://test.supabase.co',key:'sb_publishable_test',operator:'Test',contact:'test@example.com'}:{enabled:false,message:'회원 서비스를 준비 중입니다.'}}));
+  await page.route('**/api/config',r=>r.fulfill({json:enabled?{enabled:true,naverLogin:providers,url:'https://test.supabase.co',key:'sb_publishable_test',operator:'Test',contact:'test@example.com'}:{enabled:false,message:'회원 서비스를 준비 중입니다.'}}));
   await page.route('https://test.supabase.co/**',async route=>{
    const req=route.request(),url=new URL(req.url());
-   if(url.pathname.endsWith('/settings')){await route.fulfill({status:settingsFailure?503:200,json:{external:{kakao:providers,google:providers}}});return}
+   if(url.pathname.endsWith('/settings')){await route.fulfill({status:settingsFailure?503:200,json:{external:{kakao:providers,google:providers,apple:providers,facebook:providers}}});return}
    requests.push({url,body:req.postData()?req.postDataJSON():null});
    if(url.pathname.endsWith('/signup'))await route.fulfill({json:{user:{id:'11111111-1111-4111-8111-111111111111',email:'test@example.com'},session:null}});
    else if(url.pathname.endsWith('/recover'))await route.fulfill({json:{}});
@@ -31,6 +31,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
   await expect(page.locator('#kakaoSignup')).toHaveText('카카오 로그인 준비 중');
   await expect(page.locator('#kakaoSignup')).toBeDisabled();
   await expect(page.locator('#googleSignup')).toBeDisabled();
+  for(const id of ['naver','apple','facebook'])await expect(page.locator('#'+id+'Signup')).toBeDisabled();
   await page.locator('[name=email]').fill('test@example.com');
   await page.locator('[name=password]').fill('test-password-1234');
   await page.getByRole('button',{name:'인증 메일 받고 가입 시작'}).click();
@@ -56,7 +57,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
   await expect(page.locator('#googleLogin')).toBeDisabled();
   await expect(page.locator('#loginForm')).toBeVisible();
   settingsFailure=false;providers=true;
-  for(const mode of ['signup','login'])for(const provider of ['kakao','google']){
+  for(const mode of ['signup','login'])for(const provider of ['kakao','google','naver','apple','facebook']){
    await page.goto(base+'/'+mode+'.html');
    const button=page.locator('#'+provider+(mode==='signup'?'Signup':'Login'));
    await expect(button).toBeEnabled();
@@ -67,7 +68,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
    }
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
    await button.click();await page.waitForURL('https://test.supabase.co/auth/v1/authorize**');
-   const auth=new URL(page.url());expect(auth.searchParams.get('provider')).toBe(provider);
+   const auth=new URL(page.url());expect(auth.searchParams.get('provider')).toBe(provider==='naver'?'custom:naver':provider);
    expect(auth.searchParams.get('redirect_to')).toBe(base+'/account.html');
    expect(auth.searchParams.get('code_challenge')).toBeTruthy();
   }

@@ -15,7 +15,7 @@ try{
  // Roles are cluster-wide. Reuse standard roles without modifying privileges.
  for(const name of ['anon','authenticated','service_role']){if(!(await control.query('select 1 from pg_roles where rolname=$1',[name])).rowCount)await control.query('CREATE ROLE '+name+' NOLOGIN');}
  await admin.query("create schema auth;create table auth.users(id uuid primary key,email_confirmed_at timestamptz);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated;");
- for(const name of ['001_accounts.sql','002_requests.sql','003_consultations.sql','004_payment_ledger.sql','005_matching_worker.sql','006_metrics.sql'])await admin.query(await readFile('supabase/'+name,'utf8'));
+ for(const name of ['001_accounts.sql','002_requests.sql','003_consultations.sql','004_payment_ledger.sql','005_matching_worker.sql','006_metrics.sql','007_partner_onboarding.sql'])await admin.query(await readFile('supabase/'+name,'utf8'));
  for(const id of Object.values(ids))await admin.query('insert into auth.users values($1,now())',[id]);
  await admin.query('insert into private.admin_memberships values($1)',[ids.admin]);
  for(const id of Object.values(ids)){await login(admin,id);await rpc(admin,'complete_membership',[true,true,true,false]);}
