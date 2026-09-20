@@ -12,9 +12,8 @@ begin
  'today_requests',(select count(*) from private.consultations where (created_at at time zone 'Asia/Seoul')::date=today),
  'active_planners',(select count(*) from private.planner_directory d where private.planner_eligible(d.user_id) and d.available),
  'new_planners',(select count(*) from public.partner_applications where (created_at at time zone 'Asia/Seoul')::date=today and profession='planner'),
- 'expected_paid',(select count(*) from private.consultations where is_free=false and state not in ('cancelled','no_show','dispute')),
- 'test_paid_won',(select coalesce(sum(amount-refunded_won),0) from private.consultation_orders where state in ('paid','refunding','refund_failed','refunded')),
- 'planner_summary',(select coalesce(jsonb_agg(jsonb_build_object('id',d.user_id,'name',p.full_name,'sample',d.is_sample,'completed',(select count(*) from private.consultations c where c.planner_id=d.user_id and c.state='completed'),'free_remaining',private.free_remaining(d.user_id,(select id from private.connection_policies order by id desc limit 1)))),'[]') from private.planner_directory d join public.partner_applications p on p.user_id=d.user_id));
+ 'test_paid_won',(select coalesce(sum(amount-refunded_won),0) from private.ad_subscriptions where state in ('active','refunding','refund_failed','refunded')),
+ 'planner_summary',(select coalesce(jsonb_agg(jsonb_build_object('id',d.user_id,'name',p.full_name,'sample',d.is_sample,'completed',(select count(*) from private.consultations c where c.planner_id=d.user_id and c.state='completed'))),'[]') from private.planner_directory d join public.partner_applications p on p.user_id=d.user_id));
 end $$;
 revoke all on function public.record_visit_session(uuid),public.consultation_metrics() from public,anon,authenticated;
 grant execute on function public.record_visit_session(uuid) to anon,authenticated;

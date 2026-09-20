@@ -7,7 +7,7 @@ test('Public payment endpoints reject disabled/live config, bad origins and anon
   assert.equal((await payment(new Request('http://localhost:3100/api/payment'))).status,405);
   assert.equal((await payment(request())).status,503);
   Object.assign(values,{PAYMENTS_ENABLED:'true',TOSS_MODE:'live',TOSS_CLIENT_KEY:'live_ck_x',TOSS_SECRET_KEY:'live_sk_x',APP_ORIGIN:'http://localhost:3100'});assert.equal((await payment(request())).status,503);
-  Object.assign(values,{TOSS_MODE:'test',TOSS_CLIENT_KEY:'test_ck_x',TOSS_SECRET_KEY:'test_sk_x'});assert.equal((await payment(request({},'https://untrusted.example'))).status,403);assert.equal((await payment(request())).status,401);
+  Object.assign(values,{TOSS_MODE:'test',TOSS_CLIENT_KEY:'test_gck_x',TOSS_SECRET_KEY:'test_gsk_x'});assert.equal((await payment(request({},'https://untrusted.example'))).status,403);assert.equal((await payment(request())).status,401);
   assert.equal((await webhook(new Request('http://localhost:3100/api/payment-webhook',{method:'POST',body:JSON.stringify({data:{orderId:'unknown',status:'DONE',totalAmount:70000}})}))).status,200);
   assert.equal(calls,0);
  }finally{globalThis.fetch=oldFetch;globalThis.Netlify=before;}

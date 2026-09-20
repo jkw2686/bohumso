@@ -1,31 +1,22 @@
--- 보험소 마이그레이션 적용 후 검증 (Supabase SQL Editor에서 실행)
--- 기대값: private 테이블 16개, public RPC 22개. 값이 다르면 적용 순서/중복을 점검한다.
+-- NEW empty test DB only. Counts on a clean fixture: 18 private tables, 26 public RPCs.
+-- Supabase extensions add public functions; do not compare the total public function count.
+select expected.name as missing_table
+from (values ('planner_directory'),('consultations'),('ad_plans'),('ad_slots'),('ad_subscriptions'),('ad_impressions'),('ad_audit')) expected(name)
+where not exists(select 1 from information_schema.tables t where t.table_schema='private' and t.table_name=expected.name);
 
--- 1) private 스키마 테이블 수 (기대: 16)
-select 'private_tables' as check, count(*) as actual, 16 as expected
-from pg_tables where schemaname = 'private';
+select expected.name as missing_rpc
+from (values ('ad_checkout'),('ad_begin_confirm'),('ad_reconcile'),('ad_workspace'),('ad_admin_command'),('ad_user_order'),('ad_order_lookup'),('ad_refund_request'),('ad_refund_failure'),('ad_public_slots'),('ad_record_impression'),('consultation_command')) expected(name)
+where not exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname=expected.name);
 
--- 2) public 함수(RPC) 수 (기대: 22)
-select 'public_functions' as check, count(*) as actual, 22 as expected
-from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-where n.nspname = 'public';
+-- All queries below should return zero rows.
+select table_name,grantee,privilege_type from information_schema.role_table_grants
+where table_schema='private' and grantee in ('anon','authenticated');
 
--- 3) private 테이블에 anon/authenticated 직접 권한이 남아있지 않은지 (기대: 0건)
---    민감 테이블은 RPC로만 접근해야 한다.
-select table_schema, table_name, grantee, privilege_type
-from information_schema.role_table_grants
-where table_schema = 'private' and grantee in ('anon','authenticated')
-order by table_name, grantee;
+select p.proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+where (n.nspname='public' and (p.proname like 'connection_%' or p.proname='expire_consultation_offers'))
+or (n.nspname='private' and p.proname in ('offer_next','rank_planners','free_remaining'));
 
--- 4) 구형 예약 쓰기 API 권한 회수 확인 (003 이후 authenticated 실행권한이 없어야 함, 기대: 0건)
-select p.proname, r.grantee
-from information_schema.role_routine_grants r
-join pg_proc p on p.proname = r.routine_name
-where r.routine_schema = 'public'
-  and r.grantee = 'authenticated'
-  and p.proname in ('create_service_request','assign_service_request','confirm_service_request','change_service_request')
-order by p.proname;
-
--- 5) 첫 관리자 지정 안내 (실행 아님 — 인증 완료한 사용자 UUID로 수동 등록)
---    select id, email from auth.users where email = '관리자이메일';
---    insert into private.admin_memberships(user_id) values ('여기에-UUID'::uuid);
+select p.proname,r.rolname from pg_proc p join pg_namespace n on n.oid=p.pronamespace cross join pg_roles r
+where n.nspname='public' and r.rolname in ('anon','authenticated')
+and p.proname in ('ad_reconcile','ad_order_lookup','ad_refund_failure','ad_public_slots','ad_record_impression','create_service_request','assign_service_request','confirm_service_request','change_service_request')
+and has_function_privilege(r.oid,p.oid,'execute');

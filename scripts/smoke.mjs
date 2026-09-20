@@ -6,7 +6,7 @@
 //   SUPABASE_URL=... SUPABASE_PUBLISHABLE_KEY=... node scripts/smoke.mjs
 //   옵션:
 //     --config https://앱-origin   : /api/config 엔드포인트 확인
-//     --toss                        : TOSS_SECRET_KEY(test_sk_)로 토스 인증 확인(외부 호출)
+//     --toss                        : TOSS_SECRET_KEY(test_gsk_)로 토스 인증 확인(외부 호출)
 //
 // 종료코드: 필수 확인 모두 통과 0, 하나라도 실패 1.
 
@@ -76,8 +76,8 @@ if (base) {
 // 5) (옵션) 토스 인증 확인 — 존재하지 않는 주문 조회로 키 인증만 검증
 if (has('--toss')) {
   const sk = env('TOSS_SECRET_KEY');
-  if (env('TOSS_MODE') !== 'test' || !sk.startsWith('test_sk_')) {
-    line(false, '토스 인증', 'TOSS_MODE=test 및 test_sk_ 키 필요');
+  if (env('TOSS_MODE') !== 'test' || !sk.startsWith('test_gsk_')) {
+    line(false, '토스 인증', 'TOSS_MODE=test 및 test_gsk_ 키 필요');
   } else {
     try {
       const r = await fetch('https://api.tosspayments.com/v1/payments/orders/boh_smoke_nonexistent_1', {

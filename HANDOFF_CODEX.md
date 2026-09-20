@@ -1,3 +1,5 @@
+> 2026-09-20 후속 변경: 광고 노출 기간제 선불 구독으로 전환. 상담과 과금 분리, 가격·기간·약정 공란/비활성, 광고 슬롯·노출·환불 원장 및 UI 구현. 자동 갱신은 미구현(매 기간 직접 결제). 최신 상태는 docs/final-report.md 및 artifacts/verification-report.json을 확인. 아래는 이전 인계 원문이며 당시 상태를 포함합니다.
+
 > Codex 진행 기록 — 2026-09-20
 > ① 직접 선택 필수화 완료: UI 자동매칭/다음 후보 제거, 서버 automatic 요청 거부, rank/offer/만료 워커 제거, DB automatic=false 제약. 신규 테스트 DB용 SQL 통합본 갱신.
 > 전체 verify 통과 (2026-09-20T09:04:31.446Z): 빌드·DB/PG·가입 회귀·360px/PC 모의 흐름. 실제 Supabase/PG 미검증, 배포 없음.

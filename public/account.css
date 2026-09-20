@@ -3,3 +3,6 @@
 #accountMessage:empty,#accountNotice:empty{display:none}
 
 .admin-sidebar{padding:20px;background:white;border:1px solid #e3e9f3;border-radius:18px;margin:16px}.admin-sidebar nav{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}.admin-sidebar a{color:#285eea;text-decoration:none;padding:8px;border-radius:8px}.admin-sidebar a:hover{background:#eef3ff}@media(min-width:1100px){.admin-sidebar{position:fixed;top:92px;left:20px;width:220px;max-height:80vh;overflow:auto}.admin-sidebar nav{display:grid;gap:6px}.admin-main{margin-left:max(290px,calc((100vw - 760px)/2));max-width:calc(100vw - 330px);width:900px}}
+
+.pay-overlay .sheet{max-height:90dvh;overflow-y:auto;color:var(--text);background:var(--card)}
+#adSubscriptions .card{overflow-wrap:anywhere}

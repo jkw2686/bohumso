@@ -1,3 +1,5 @@
+> 이전 모델의 참고 기록입니다. 2026-09-20 광고 구독 전환 결과는 final-report.md를 확인하세요. 과거 검토 결과는 새 모델 검증을 대신하지 않습니다.
+
 # 코드 검토 노트 — 결제·예약·매칭 경로 (배포 전 QA)
 
 범위: `supabase/003_consultations.sql`, `004_payment_ledger.sql`, `005_matching_worker.sql`, `netlify/functions/payment.mts`, `_shared/payments.mjs`, `public-config.mjs`.

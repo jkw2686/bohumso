@@ -1,20 +1,39 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {fixture,ids} from './commerce-fixture.mjs';
-test('Refund retry, delayed success, dispute holds and payment permissions',async()=>{
- const {db,rpc,login,cmd,row,slot}=await fixture();try{
- await login(ids.admin);await cmd('policy',{free_meetings:0,total_won:70000,reason:'환불 테스트'});
- await login(ids.customer);const id=(await cmd('request',{planner_id:ids.planner,purpose:'other',region:'서울 마포구',method:'scheduled',preferred_at:slot()})).id;
- await login(ids.planner);await cmd('accept',{id,revision:1,policy_id:2,paid_consent:true});await login(ids.customer);await cmd('confirm',{id,revision:2,name:'가상 고객',phone:'01011112222',share_consent:true});
- await login(ids.planner);const o=await rpc('connection_checkout',[id,1]);await rpc('connection_begin_confirm',[o.id,'refund_key',35000]);
- await login(ids.customer);await cmd('issue',{id,category:'dispute',reason:'승인 중 가상 문제 신고'});
- await login('','service_role');await rpc('connection_reconcile',[o.id,'refund_key',35000,'DONE',null,'first']);
- await login(ids.planner);assert.equal((await row(id,'partner')).state,'dispute');await assert.rejects(()=>rpc('connection_checkout',[id,2]));await assert.rejects(()=>rpc('connection_refund_request',[o.id,'비관리자 환불 요청']));
- await login(ids.admin);await rpc('connection_refund_request',[o.id,'테스트 분쟁 확인 후 전액 환불']);
- await login('','service_role');await rpc('connection_refund_failure',[o.id]);
- await login(ids.admin);assert.equal((await row(id,'admin')).payment_state,'refund_failed');await rpc('connection_refund_request',[o.id,'테스트 환불 재확인']);
- await login('','service_role');await rpc('connection_reconcile',[o.id,'refund_key',35000,'CANCELED',null,'cancel']);await rpc('connection_reconcile',[o.id,'refund_key',35000,'DONE',null,'late']);
- await login(ids.planner);assert.equal((await row(id,'partner')).payment_state,'refunded');assert.equal((await row(id,'partner')).orders[0].refunded_won,35000);
- await login(ids.other);await assert.rejects(()=>rpc('connection_begin_confirm',[o.id,'refund_key',35000]),/request_forbidden/);await assert.rejects(()=>rpc('connection_order_lookup',[o.id]),/permission denied/);await assert.rejects(()=>rpc('connection_user_order',[o.id]),/request_forbidden/);await login(ids.planner);assert.equal((await rpc('connection_user_order',[o.id])).state,'refunded');
- await login('', 'anon');const visitor='90000000-0000-4000-8000-000000000001';await rpc('record_visit_session',[visitor]);await rpc('record_visit_session',[visitor]);await assert.rejects(()=>rpc('consultation_metrics'),/permission denied/);
- await login(ids.admin);assert.equal((await rpc('consultation_metrics')).visit_sessions,1);
- }finally{await db.close();}
+import {test} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {fixture,ids} from './commerce-fixture.mjs';
+test('Refund requires expired exposure shortfall and platform evidence; stale callbacks never restore refunded ads',async()=>{
+ const f=await fixture();try{
+ await f.login(ids.admin);
+ const p=(await f.rpc('ad_admin_command',['plan',{code:'regional_exclusive',amount:12000,period_days:1,guaranteed_impressions:2,enabled:true,reason:'TEST ONLY refund plan'}])).id;
+ const slot=(await f.rpc('ad_admin_command',['slot',{code:'regional_exclusive',region:'서울',enabled:true,reason:'TEST ONLY refund slot'}])).id;
+ await f.login(ids.planner);const o=await f.rpc('ad_checkout',[p,slot,randomUUID(),true]);await f.rpc('ad_begin_confirm',[o.id,'refund_key',12000]);
+ await f.login(ids.next);await assert.rejects(()=>f.rpc('ad_checkout',[p,slot,randomUUID(),true]),/slot_unavailable/);
+ await f.login('','service_role');await f.rpc('ad_reconcile',[o.id,'refund_key',12000,'DONE']);
+ const sid=(await f.rpc('ad_public_slots',['서울']))[0].subscription_id,event=randomUUID();await f.rpc('ad_record_impression',[sid,event]);await f.rpc('ad_record_impression',[sid,event]);
+ await f.login(ids.planner);assert.equal((await f.rpc('ad_workspace')).subscriptions[0].impressions,1);await assert.rejects(()=>f.rpc('ad_record_impression',[sid,randomUUID()]),/permission denied/);
+ await assert.rejects(()=>f.rpc('ad_refund_request',[o.id,'fake fault claim',true]),/refund_evidence_required/);
+ await f.login(ids.admin);await assert.rejects(()=>f.rpc('ad_refund_request',[o.id,'TEST platform shortfall',true]),/refund_not_eligible/);
+ await f.db.exec('reset role');await f.db.query("update private.ad_subscriptions set starts_at=now()-interval '2 days',ends_at=now()-interval '1 day' where id=$1",[sid]);
+ await f.login('','service_role');assert.equal((await f.rpc('ad_public_slots',['서울'])).length,0);await f.rpc('ad_record_impression',[sid,randomUUID()]);
+ await f.login(ids.admin);assert.equal((await f.rpc('ad_workspace')).subscriptions[0].impressions,1);
+ await assert.rejects(()=>f.rpc('ad_refund_request',[o.id,'TEST platform shortfall',false]),/refund_evidence_required/);
+ await f.rpc('ad_refund_request',[o.id,'TEST verified platform shortfall',true]);await f.login('','service_role');await f.rpc('ad_refund_failure',[o.id]);
+ await f.rpc('ad_reconcile',[o.id,'refund_key',12000,'DONE']);await f.rpc('ad_reconcile',[o.id,'refund_key',12000,'EXPIRED']);
+ await f.login(ids.admin);assert.equal((await f.rpc('ad_user_order',[o.id])).state,'refund_failed');await f.rpc('ad_refund_request',[o.id,'TEST retry original refund',true]);
+ await f.login('','service_role');await f.rpc('ad_reconcile',[o.id,'refund_key',12000,'CANCELED']);await f.rpc('ad_reconcile',[o.id,'refund_key',12000,'DONE']);
+ await f.login(ids.planner);const refunded=await f.rpc('ad_user_order',[o.id]);assert.equal(refunded.state,'refunded');assert.equal(refunded.refunded_won,12000);
+ await f.login('','anon');const visitor=randomUUID();await f.rpc('record_visit_session',[visitor]);await f.rpc('record_visit_session',[visitor]);await assert.rejects(()=>f.rpc('consultation_metrics'),/permission denied/);
+ await f.login(ids.admin);assert.equal((await f.rpc('consultation_metrics')).visit_sessions,1);
+ }finally{await f.db.close();}
+});
+test('Exposure target satisfied prevents shortfall refund; expired unpaid holds release exclusive slot',async()=>{
+ const f=await fixture();try{
+ await f.login(ids.admin);const p=(await f.rpc('ad_admin_command',['plan',{code:'regional_exclusive',amount:12000,period_days:1,guaranteed_impressions:1,enabled:true,reason:'TEST ONLY exposure'}])).id;
+ const slot=(await f.rpc('ad_admin_command',['slot',{code:'regional_exclusive',region:'경기',enabled:true,reason:'TEST ONLY exposure'}])).id;
+ await f.login(ids.planner);const abandoned=await f.rpc('ad_checkout',[p,slot,randomUUID(),true]);
+ await f.db.exec('reset role');await f.db.query("update private.ad_subscriptions set hold_until=now()-interval '1 hour' where order_id=$1",[abandoned.id]);
+ await f.login(ids.planner);await assert.rejects(()=>f.rpc('ad_begin_confirm',[abandoned.id,'expired',12000]),/order_expired/);
+ await f.login(ids.next);const o=await f.rpc('ad_checkout',[p,slot,randomUUID(),true]);await f.rpc('ad_begin_confirm',[o.id,'satisfied',12000]);
+ await f.login('','service_role');await f.rpc('ad_reconcile',[o.id,'satisfied',12000,'DONE']);const sid=(await f.rpc('ad_public_slots',['경기']))[0].subscription_id;await f.rpc('ad_record_impression',[sid,randomUUID()]);
+ await f.db.exec('reset role');await f.db.query("update private.ad_subscriptions set ends_at=now()-interval '1 hour' where id=$1",[sid]);
+ await f.login(ids.admin);await assert.rejects(()=>f.rpc('ad_refund_request',[o.id,'TEST platform responsibility',true]),/refund_not_eligible/);
+ }finally{await f.db.close();}
 });

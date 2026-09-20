@@ -25,8 +25,8 @@ add(present('PRIVACY_CONTACT'), 'PRIVACY_CONTACT', '개인정보 문의처');
 
 // --- 결제(토스, 테스트 전용) ---
 add(env('TOSS_MODE') === 'test', 'TOSS_MODE=test', '라이브는 이 코드에서 차단');
-add(env('TOSS_CLIENT_KEY').startsWith('test_ck_'), 'TOSS_CLIENT_KEY', 'test_ck_ 접두사');
-add(env('TOSS_SECRET_KEY').startsWith('test_sk_'), 'TOSS_SECRET_KEY', 'test_sk_ 접두사 (서버 전용)');
+add(env('TOSS_CLIENT_KEY').startsWith('test_gck_'), 'TOSS_CLIENT_KEY', 'test_gck_ 접두사');
+add(env('TOSS_SECRET_KEY').startsWith('test_gsk_'), 'TOSS_SECRET_KEY', 'test_gsk_ 접두사 (서버 전용)');
 
 // --- origin ---
 let originOk = false;
@@ -42,6 +42,8 @@ add(true, `ACCOUNTS_ENABLED=${flag('ACCOUNTS_ENABLED')}`, flag('ACCOUNTS_ENABLED
 add(true, `POLICIES_APPROVED=${flag('POLICIES_APPROVED')}`, flag('POLICIES_APPROVED') ? '약관 확정됨' : 'OFF (약관 미확정)');
 add(true, `PAYMENTS_ENABLED=${flag('PAYMENTS_ENABLED')}`, flag('PAYMENTS_ENABLED') ? '테스트 결제 ON' : 'OFF');
 add(true, `VISIT_METRICS_ENABLED=${flag('VISIT_METRICS_ENABLED')}`, '');
+
+add(!flag('AD_EXPOSURE_ENABLED')||env('AD_IMPRESSION_SECRET').length>=32,'AD_IMPRESSION_SECRET','노출 수집 활성화 시 서버 전용 32자 이상 필요');
 
 // 상호 일관성 경고 (실패 아님)
 const warns = [];

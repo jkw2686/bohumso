@@ -1,4 +1,4 @@
--- Fresh test databases only; do not re-run against existing databases.
+-- NEW EMPTY TEST DATABASES ONLY. Existing databases require a separate reviewed migration.
 
 -- 001_accounts.sql
 begin;
@@ -218,12 +218,6 @@ commit;
 -- 003_consultations.sql
 begin;
 -- Additive schema: previous service_requests and their audit records remain intact.
-create table private.connection_policies (
- id bigint generated always as identity primary key, free_meetings integer not null check(free_meetings between 0 and 20),
- total_won integer not null check(total_won>0 and total_won%2=0), created_by uuid,
- reason text not null, created_at timestamptz not null default now()
-);
-insert into private.connection_policies(free_meetings,total_won,reason) values(2,70000,'Initial test policy; VAT included; no automatic charging');
 create table private.planner_directory (
  user_id uuid primary key references public.partner_applications(user_id), specialties text[] not null default '{}',
  biography text not null default '' check(length(biography)<=1000), experience integer not null default 0 check(experience between 0 and 70),
@@ -240,9 +234,7 @@ create table private.consultations (
  location_consent boolean not null default false, automatic boolean not null default false check (automatic=false), excluded uuid[] not null default '{}',
  state text not null default 'requested' check(state in ('requested','coordinating','confirmed','scheduled','awaiting_completion','completed','cancelled','no_show','dispute','unmatched')),
  customer_ok boolean not null default false, planner_ok boolean not null default false, revision integer not null default 1,
- policy_id bigint references private.connection_policies(id), total_won integer, is_free boolean, coupon_state text check(coupon_state in ('reserved','used','released')),
- paid_consent boolean not null default false, payment_state text not null default 'unpaid' check(payment_state in ('free','unpaid','confirming','first_paid','balance_due','paid','failed','refund_requested','refunding','refunded','refund_failed')),
- first_paid boolean not null default false, second_paid boolean not null default false, completion_requested_at timestamptz, completed_at timestamptz,
+ completion_requested_at timestamptz, completed_at timestamptz,
  response_deadline timestamptz, created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
  check(customer_id is distinct from planner_id), check((latitude is null and longitude is null) or (location_consent and latitude between -90 and 90 and longitude between -180 and 180))
 );
@@ -274,37 +266,24 @@ create table private.consultation_issues (
  category text not null check(category in ('question','no_show','dispute','refund')), reason text not null check(length(reason) between 3 and 1000),
  resolved boolean not null default false, resolution text, resolved_by uuid, resolved_at timestamptz, created_at timestamptz not null default now()
 );
-create table private.consultation_orders (
- id text primary key, consultation_id uuid not null references private.consultations(id), stage integer not null check(stage in (1,2)),
- amount integer not null check(amount>0), state text not null default 'unpaid' check(state in ('unpaid','confirming','paid','failed','refund_requested','refunding','refunded','refund_failed')),
- payment_key text unique, receipt_url text, refunded_won integer not null default 0, created_at timestamptz not null default now(),
- updated_at timestamptz not null default now(), unique(consultation_id,stage)
-);
-create table private.payment_attempts (
- id uuid primary key default gen_random_uuid(), order_id text not null references private.consultation_orders(id),
- action text not null, outcome text not null, transaction_key text, created_at timestamptz not null default now()
-);
-revoke all on private.connection_policies,private.planner_directory,private.consultations,private.consultation_contacts,private.consultation_events,private.consultation_issues,private.consultation_orders,private.payment_attempts from public,anon,authenticated;
+revoke all on private.planner_directory,private.consultations,private.consultation_contacts,private.consultation_events,private.consultation_issues from public,anon,authenticated;
 
 create function private.planner_eligible(target uuid) returns boolean language sql stable security definer set search_path='' as $$
  select exists(select 1 from private.planner_directory d join public.partner_applications p on p.user_id=d.user_id where d.user_id=target and d.verified_at is not null and p.status='approved' and p.profession='planner')
-$$;
-create function private.free_remaining(target uuid,policy bigint) returns integer language sql stable security definer set search_path='' as $$
- select greatest(0,(select free_meetings from private.connection_policies where id=policy)-(select count(*)::integer from private.consultations where planner_id=target and coupon_state in ('reserved','used')))
 $$;
 create function private.specialty_match(wanted text,tags text[]) returns boolean language sql immutable set search_path='' as $$
  select wanted=any(tags) or (wanted='claim' and tags&&array['death','illness','medical','accident']) or (wanted='coverage' and tags&&array['remodel','life','nonlife','medical']) or (wanted='management' and tags&&array['life','nonlife','remodel']) or (wanted='new' and tags&&array['life','nonlife','corporate'])
 $$;
 revoke all on function private.specialty_match(text,text[]) from public,anon,authenticated;
 create function public.planner_catalog(area text default '',wanted text default '') returns jsonb language sql stable security definer set search_path='' as $$
- select jsonb_build_object('policy',(select jsonb_build_object('id',id,'free_meetings',free_meetings,'total_won',total_won) from private.connection_policies order by id desc limit 1),'planners',coalesce((
+ select jsonb_build_object('planners',coalesce((
  select jsonb_agg(jsonb_build_object('id',d.user_id,'name',p.full_name,'organization',p.organization,'region',p.region,'specialties',d.specialties,'biography',d.biography,'experience',d.experience,'photo_url',d.photo_url,'available',d.available,'hours',d.hours,'latitude',d.latitude,'longitude',d.longitude,'is_sample',d.is_sample,'verified',d.verified_at is not null,'completed_count',(select count(*) from private.consultations c where c.planner_id=d.user_id and c.state='completed'),'rating',(select round(avg(r.rating),1) from private.consultation_reviews r where r.planner_id=d.user_id and r.visible),'reviews',(select coalesce(jsonb_agg(jsonb_build_object('rating',r.rating,'body',r.body,'created_at',r.created_at)),'[]') from private.consultation_reviews r where r.planner_id=d.user_id and r.visible)) order by p.full_name)
  from private.planner_directory d join public.partner_applications p on p.user_id=d.user_id where private.planner_eligible(d.user_id) and (area='' or p.region like area||'%') and (wanted='' or private.specialty_match(wanted,d.specialties))),'[]'::jsonb))
 $$;
 
 create function public.consultation_command(operation text,payload jsonb default '{}') returns jsonb language plpgsql security definer set search_path='' as $$
 #variable_conflict use_variable
-declare c private.consultations; id uuid; target uuid; pol private.connection_policies; n integer; proposed timestamptz; is_customer boolean; is_planner boolean; admin boolean; ev text;
+declare c private.consultations; id uuid; target uuid; proposed timestamptz; is_customer boolean; is_planner boolean; admin boolean; ev text;
 begin
  if auth.uid() is null or not exists(select 1 from public.member_profiles where user_id=auth.uid()) then raise exception 'membership_required';end if;
  admin:=private.is_admin();
@@ -320,10 +299,6 @@ begin
   update private.planner_directory set identity_key=regexp_replace(lower(payload->>'identity_key'),'[^a-z0-9가-힣]','','g'),verified_by=auth.uid(),verified_at=now(),evidence=payload->>'evidence',is_sample=coalesce((payload->>'is_sample')::boolean,true) where user_id=target;
   if not found then raise exception 'profile_required';end if;
   insert into private.consultation_events(actor,event,reason,metadata) values(auth.uid(),'planner_verified',payload->>'evidence',jsonb_build_object('planner',target,'sample',coalesce((payload->>'is_sample')::boolean,true)));
-  return jsonb_build_object('saved',true);
- elsif operation='policy' then
-  if not admin or coalesce(length(trim(payload->>'reason')),0)<3 then raise exception 'admin_required';end if;
-  insert into private.connection_policies(free_meetings,total_won,created_by,reason) values((payload->>'free_meetings')::integer,(payload->>'total_won')::integer,auth.uid(),payload->>'reason');
   return jsonb_build_object('saved',true);
  elsif operation='request' then
   proposed:=(payload->>'preferred_at')::timestamptz;
@@ -345,18 +320,13 @@ begin
  is_customer:=c.customer_id=auth.uid();is_planner:=c.planner_id=auth.uid();
  if not (is_customer or coalesce(is_planner,false) or admin) then raise exception 'request_forbidden';end if;
  if operation not in ('issue','resolve_issue') and (payload->>'revision')::integer is distinct from c.revision then raise exception 'stale_request';end if;
- -- Every mutation shares the same booking lock with approval/refund reconciliation.
- if c.payment_state in ('confirming','refunding') and operation not in ('issue') then raise exception 'payment_in_progress';end if;
  if operation='pass' then
   if not is_planner or c.state<>'requested' then raise exception 'invalid_transition';end if;
   update private.consultations set excluded=array_append(excluded,c.planner_id),planner_id=null,state='unmatched' where consultations.id=id;
  elsif operation='accept' then
   if not is_planner or not private.planner_eligible(auth.uid()) or not exists(select 1 from private.planner_directory where user_id=auth.uid() and available) or c.state not in ('requested','coordinating') then raise exception 'invalid_transition';end if;
   perform 1 from private.planner_directory where user_id=auth.uid() for update;
-  if exists(select 1 from private.consultations where planner_id=auth.uid() and state='completed' and is_free=false and first_paid and not second_paid and payment_state not in ('refund_requested','refunding','refunded','refund_failed')) then raise exception 'balance_outstanding';end if;
-  select * into pol from private.connection_policies order by connection_policies.id desc limit 1;
-  if c.is_free is null and (payload->>'policy_id')::bigint is distinct from pol.id then raise exception 'price_changed';end if;
-  update private.consultations set planner_ok=true,state='coordinating',paid_consent=coalesce((payload->>'paid_consent')::boolean,false),policy_id=case when is_free is null then pol.id else policy_id end where consultations.id=id;
+  update private.consultations set planner_ok=true,state='coordinating' where consultations.id=id;
  elsif operation='propose' then
   if not (is_customer or is_planner) or c.state not in ('requested','coordinating','confirmed','scheduled') then raise exception 'invalid_transition';end if;
   proposed:=(payload->>'preferred_at')::timestamptz;
@@ -367,21 +337,15 @@ begin
   if (payload->>'share_consent')::boolean is distinct from true then raise exception 'consent_required';end if;
   perform 1 from private.planner_directory where user_id=c.planner_id for update;
   if exists(select 1 from private.followup_meetings where planner_id=c.planner_id and preferred_at=c.preferred_at and state='confirmed') then raise exception 'invalid_slot';end if;
-  if c.is_free is null then
-   select * into pol from private.connection_policies where connection_policies.id=c.policy_id;
-   n:=private.free_remaining(c.planner_id,pol.id);
-   if n=0 and not c.paid_consent then raise exception 'planner_price_consent_required';end if;
-   update private.consultations set is_free=(n>0),coupon_state=case when n>0 then 'reserved' end,total_won=case when n>0 then 0 else pol.total_won end,payment_state=case when n>0 then 'free' else 'unpaid' end where consultations.id=id;
-  end if;
   insert into private.consultation_contacts(consultation_id,customer_name,phone,recipient,version) values(id,trim(payload->>'name'),regexp_replace(payload->>'phone','[- ]','','g'),c.planner_id,'contact-v1') on conflict(consultation_id) do update set customer_name=excluded.customer_name,phone=excluded.phone,consented_at=now();
-  update private.consultations set customer_ok=true,state=case when is_free or first_paid then 'scheduled' else 'confirmed' end where consultations.id=id;
+  update private.consultations set customer_ok=true,state='scheduled' where consultations.id=id;
  elsif operation='complete_request' then
   if not is_planner or not private.planner_eligible(auth.uid()) or c.state<>'scheduled' or c.preferred_at>now() then raise exception 'invalid_transition';end if;
   update private.consultations set state='awaiting_completion',completion_requested_at=now() where consultations.id=id;
  elsif operation='complete_confirm' then
   if not is_customer or c.state<>'awaiting_completion' then raise exception 'invalid_transition';end if;
   perform 1 from private.planner_directory where user_id=c.planner_id for update;
-  update private.consultations set state='completed',completed_at=now(),coupon_state=case when is_free then 'used' else coupon_state end,payment_state=case when is_free then 'free' when second_paid then 'paid' else 'balance_due' end where consultations.id=id;
+  update private.consultations set state='completed',completed_at=now() where consultations.id=id;
  elsif operation='review' then
   if not is_customer or c.state<>'completed' or (payload->>'public_consent')::boolean is distinct from true then raise exception 'invalid_transition';end if;
   insert into private.consultation_reviews(consultation_id,planner_id,rating,body,consent_version) values(id,c.planner_id,(payload->>'rating')::integer,trim(payload->>'body'),'review-public-v1');
@@ -406,18 +370,16 @@ begin
   if not found then raise exception 'invalid_transition';end if;
  elsif operation='cancel' then
   if not (is_customer or is_planner or admin) or c.state not in ('requested','coordinating','confirmed','scheduled','unmatched') then raise exception 'invalid_transition';end if;
-  update private.consultations set state='cancelled',coupon_state=case when coupon_state='reserved' then 'released' else coupon_state end,payment_state=case when first_paid then 'refund_requested' else payment_state end where consultations.id=id;
+  update private.consultations set state='cancelled' where consultations.id=id;
  elsif operation='issue' then
   if length(trim(payload->>'reason')) not between 3 and 1000 or payload->>'category' not in ('question','no_show','dispute','refund') then raise exception 'invalid_issue';end if;
   if payload->>'category'='no_show' and (c.preferred_at>now() or c.state not in ('scheduled','awaiting_completion')) then raise exception 'invalid_transition';end if;
   insert into private.consultation_issues(consultation_id,actor,category,reason) values(id,auth.uid(),payload->>'category',trim(payload->>'reason'));
   if payload->>'category' in ('no_show','dispute') then update private.consultations set state=case when payload->>'category'='no_show' then 'no_show' else 'dispute' end where consultations.id=id;end if;
-  if payload->>'category'='refund' then update private.consultations set payment_state='refund_requested' where consultations.id=id and first_paid;end if;
  elsif operation='resolve_issue' then
   if not admin or coalesce(length(trim(payload->>'reason')),0)<5 or payload->>'outcome' not in ('cancelled','scheduled') then raise exception 'admin_required';end if;
-  if c.state not in ('dispute','no_show') or c.payment_state in ('confirming','refunding') then raise exception 'invalid_transition';end if;
-  if payload->>'outcome'='scheduled' and not (c.is_free or c.first_paid) then raise exception 'payment_required';end if;
-  update private.consultations set state=payload->>'outcome',coupon_state=case when payload->>'outcome'='cancelled' and coupon_state='reserved' then 'released' else coupon_state end,payment_state=case when payload->>'outcome'='cancelled' and first_paid then 'refund_requested' else payment_state end where consultations.id=id;
+  if c.state not in ('dispute','no_show') then raise exception 'invalid_transition';end if;
+  update private.consultations set state=payload->>'outcome' where consultations.id=id;
   update private.consultation_issues set resolved=true,resolution=payload->>'reason',resolved_by=auth.uid(),resolved_at=now() where consultation_id=id and not resolved;
  else raise exception 'unknown_operation';end if;
  update private.consultations set revision=revision+1,updated_at=now() where consultations.id=id;
@@ -426,11 +388,10 @@ begin
 end $$;
 
 create function public.consultation_workspace(workspace text) returns jsonb language plpgsql stable security definer set search_path='' as $$
-declare result jsonb; pol private.connection_policies;
+declare result jsonb;
 begin
  if auth.uid() is null or workspace not in ('customer','partner','admin') or workspace is null then raise exception 'request_forbidden';end if;
  if workspace='admin' and not private.is_admin() then raise exception 'admin_required';end if;
- select * into pol from private.connection_policies order by id desc limit 1;
  select coalesce(jsonb_agg(q.item order by q.created_at desc),'[]') into result from (
  select c.created_at,(to_jsonb(c)-'latitude'-'longitude'-'excluded'-'customer_id')||jsonb_build_object('planner_name',p.full_name,'organization',p.organization,'planner_sample',d.is_sample,
  'contact',case when workspace='customer' or workspace='admin' or (workspace='partner' and private.planner_eligible(auth.uid()) and c.customer_ok and c.state in ('scheduled','awaiting_completion')) then (select jsonb_build_object('name',x.customer_name,'phone',x.phone) from private.consultation_contacts x where x.consultation_id=c.id) end,
@@ -438,18 +399,15 @@ begin
  'events',case when workspace='admin' then (select coalesce(jsonb_agg(to_jsonb(e) order by e.created_at),'[]') from private.consultation_events e where e.consultation_id=c.id) else '[]'::jsonb end,
  'review',(select to_jsonb(r)-'reviewed_by' from private.consultation_reviews r where r.consultation_id=c.id),
  'followups',(select coalesce(jsonb_agg(to_jsonb(f)||jsonb_build_object('can_confirm',f.proposed_by<>auth.uid())),'[]') from private.followup_meetings f where f.consultation_id=c.id),
- 'orders',(select coalesce(jsonb_agg(to_jsonb(o)-'payment_key'),'[]') from private.consultation_orders o where o.consultation_id=c.id),
  'issues',(select coalesce(jsonb_agg(to_jsonb(i)-'actor'),'[]') from private.consultation_issues i where i.consultation_id=c.id),
  'needs_admin_review',c.state='awaiting_completion' and c.completion_requested_at<now()-interval '48 hours') item
  from private.consultations c left join public.partner_applications p on p.user_id=c.planner_id left join private.planner_directory d on d.user_id=c.planner_id
  where workspace='admin' or (workspace='customer' and c.customer_id=auth.uid()) or (workspace='partner' and c.planner_id=auth.uid()) order by c.created_at desc limit 200) q;
- return jsonb_build_object('bookings',result,'policy',to_jsonb(pol)-'created_by','free_remaining',private.free_remaining(auth.uid(),pol.id),
- 'free_reserved',(select count(*) from private.consultations where planner_id=auth.uid() and coupon_state='reserved'),
- 'free_used',(select count(*) from private.consultations where planner_id=auth.uid() and coupon_state='used'),
+ return jsonb_build_object('bookings',result,
  'profile',(select to_jsonb(d)-'identity_key'-'evidence'-'verified_by' from private.planner_directory d where d.user_id=auth.uid()),
  'planner_profiles',case when workspace='admin' then (select coalesce(jsonb_agg(to_jsonb(d)-'identity_key'),'[]') from private.planner_directory d) else '[]'::jsonb end);
 end $$;
-revoke all on function private.planner_eligible(uuid),private.free_remaining(uuid,bigint) from public,anon,authenticated;
+revoke all on function private.planner_eligible(uuid) from public,anon,authenticated;
 revoke all on function public.planner_catalog(text,text),public.consultation_command(text,jsonb),public.consultation_workspace(text) from public,anon,authenticated;
 grant execute on function public.planner_catalog(text,text) to anon,authenticated;
 grant execute on function public.consultation_command(text,jsonb),public.consultation_workspace(text) to authenticated;
@@ -461,106 +419,192 @@ commit;
 
 -- 004_payment_ledger.sql
 begin;
-create function public.connection_checkout(booking_id uuid,requested_stage integer) returns jsonb language plpgsql security definer set search_path='' as $$
-declare c private.consultations; o private.consultation_orders; order_name text;
+-- Fresh databases only. Existing installations require a reviewed migration.
+create table private.ad_plans (
+ id uuid primary key default gen_random_uuid(),
+ code text not null check(code in ('basic','premium','regional_exclusive')),
+ name text not null, amount integer check(amount>0),
+ period_days integer check(period_days between 1 and 366),
+ guaranteed_impressions integer check(guaranteed_impressions>0),
+ enabled boolean not null default false, reason text not null,
+ created_by uuid, created_at timestamptz not null default now(),
+ check(not enabled or (amount is not null and period_days is not null and guaranteed_impressions is not null))
+);
+insert into private.ad_plans(code,name,reason) values
+ ('basic','베이직','조건 미확정'),('premium','프리미엄','조건 미확정'),('regional_exclusive','지역독점','조건 미확정');
+create table private.ad_slots (
+ id uuid primary key default gen_random_uuid(), code text not null check(code in ('basic','premium','regional_exclusive')),
+ region text not null check(length(region) between 2 and 120), enabled boolean not null default false,
+ unique(code,region)
+);
+create table private.ad_subscriptions (
+ id uuid primary key default gen_random_uuid(), order_id text not null unique,
+ planner_id uuid not null references private.planner_directory(user_id), plan_id uuid not null references private.ad_plans(id),
+ slot_id uuid not null references private.ad_slots(id), request_key uuid not null,
+ plan_name text not null, amount integer not null check(amount>0),
+ period_days integer not null check(period_days between 1 and 366),
+ guaranteed_impressions integer not null check(guaranteed_impressions>0),
+ state text not null default 'unpaid' check(state in ('unpaid','confirming','active','failed','cancelled','refunding','refund_failed','refunded')),
+ payment_key text unique, receipt_url text, refunded_won integer not null default 0 check(refunded_won>=0 and refunded_won<=amount),
+ hold_until timestamptz not null default now()+interval '30 minutes',
+ starts_at timestamptz, ends_at timestamptz, created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
+ unique(planner_id,request_key)
+);
+create table private.ad_impressions (
+ event_id uuid primary key, subscription_id uuid not null references private.ad_subscriptions(id),
+ recorded_at timestamptz not null default now()
+);
+create index ad_impression_subscription on private.ad_impressions(subscription_id);
+create table private.ad_audit (
+ id bigint generated always as identity primary key, subscription_id uuid references private.ad_subscriptions(id),
+ actor uuid, event text not null, reason text not null default '', created_at timestamptz not null default now()
+);
+revoke all on private.ad_plans,private.ad_slots,private.ad_subscriptions,private.ad_impressions,private.ad_audit from public,anon,authenticated;
+
+create function public.ad_workspace() returns jsonb language plpgsql stable security definer set search_path='' as $$
 begin
- select * into c from private.consultations where id=booking_id for update;
- if auth.uid() is null or c.planner_id is distinct from auth.uid() or not private.planner_eligible(auth.uid()) then raise exception 'request_forbidden';end if;
- if c.is_free is distinct from false then raise exception 'free_no_payment';end if;
- if requested_stage is null or requested_stage not in (1,2) then raise exception 'invalid_stage';end if;
- if (requested_stage=1 and (c.state<>'confirmed' or c.first_paid)) or (requested_stage=2 and (c.state<>'completed' or not c.first_paid or c.second_paid or c.payment_state not in ('balance_due','confirming','failed'))) then raise exception 'invalid_stage';end if;
- if exists(select 1 from private.consultation_issues where consultation_id=booking_id and not resolved and category in ('dispute','refund','no_show')) then raise exception 'dispute_on_hold';end if;
- if c.payment_state in ('refund_requested','refunding','refunded','refund_failed') then raise exception 'refund_on_hold';end if;
- order_name:='boh_'||replace(booking_id::text,'-','')||'_'||requested_stage::text;
- insert into private.consultation_orders(id,consultation_id,stage,amount) values(order_name,booking_id,requested_stage,c.total_won/2) on conflict(consultation_id,stage) do nothing;
- select * into o from private.consultation_orders where id=order_name;
- if o.state not in ('unpaid','confirming','failed') then raise exception 'invalid_stage';end if;
- return (to_jsonb(o)-'payment_key')||jsonb_build_object('customer_key',c.planner_id,'test_only',true);
+ if auth.uid() is null or not (private.is_admin() or exists(select 1 from public.partner_applications where user_id=auth.uid() and profession='planner')) then raise exception 'request_forbidden';end if;
+ return jsonb_build_object(
+ 'plans',(select coalesce(jsonb_agg(to_jsonb(p)-'created_by' order by p.created_at desc),'[]') from private.ad_plans p),
+ 'slots',(select coalesce(jsonb_agg(to_jsonb(s) order by s.region),'[]') from private.ad_slots s where enabled or private.is_admin()),
+ 'subscriptions',(select coalesce(jsonb_agg(to_jsonb(s)-'payment_key'-'request_key' ||
+ jsonb_build_object('resume_key',s.request_key,'impressions',(select count(*) from private.ad_impressions i where i.subscription_id=s.id),
+ 'expired',s.ends_at is not null and s.ends_at<=now(),
+ 'events',case when private.is_admin() then (select coalesce(jsonb_agg(to_jsonb(a) order by a.id),'[]') from private.ad_audit a where a.subscription_id=s.id) else '[]'::jsonb end) order by s.created_at desc),'[]')
+ from private.ad_subscriptions s where s.planner_id=auth.uid() or private.is_admin()));
 end $$;
-create function public.connection_begin_confirm(order_id text,provided_key text,provided_amount integer) returns jsonb language plpgsql security definer set search_path='' as $$
-declare c private.consultations; o private.consultation_orders;
+
+create function public.ad_admin_command(operation text,payload jsonb) returns jsonb language plpgsql security definer set search_path='' as $$
+declare result uuid;
 begin
- select * into o from private.consultation_orders where id=order_id;
- select * into c from private.consultations where id=o.consultation_id for update;
- if c.id is null or c.planner_id is distinct from auth.uid() or not private.planner_eligible(auth.uid()) then raise exception 'request_forbidden';end if;
- select * into o from private.consultation_orders where id=order_id for update;
- if provided_key is null or length(provided_key) not between 1 and 200 or provided_amount is distinct from o.amount then raise exception 'payment_mismatch';end if;
- if o.payment_key is not null and o.payment_key<>provided_key then raise exception 'payment_key_conflict';end if;
- if o.state='paid' then return jsonb_build_object('already_paid',true,'id',o.id,'amount',o.amount,'payment_key',o.payment_key);end if;
- if (o.stage=1 and c.state<>'confirmed') or (o.stage=2 and c.state<>'completed') or c.payment_state in ('refund_requested','refunding','refunded','refund_failed') then raise exception 'invalid_stage';end if;
- if exists(select 1 from private.consultation_issues where consultation_id=c.id and not resolved and category in ('dispute','refund','no_show')) then raise exception 'dispute_on_hold';end if;
- update private.consultation_orders set state='confirming',payment_key=provided_key,updated_at=now() where id=order_id;
- update private.consultations set payment_state='confirming',updated_at=now() where id=c.id;
- insert into private.payment_attempts(order_id,action,outcome) values(order_id,'confirm','started');
- return jsonb_build_object('id',o.id,'amount',o.amount,'payment_key',provided_key);
+ if not private.is_admin() or coalesce(length(trim(payload->>'reason')),0)<5 then raise exception 'admin_required';end if;
+ if operation='plan' then
+  -- Plan versions are immutable. Checkout snapshots terms; later versions cannot change an order.
+  update private.ad_plans set enabled=false where code=payload->>'code';
+  insert into private.ad_plans(code,name,amount,period_days,guaranteed_impressions,enabled,reason,created_by)
+  values(payload->>'code',case payload->>'code' when 'basic' then '베이직' when 'premium' then '프리미엄' when 'regional_exclusive' then '지역독점' end,
+   (payload->>'amount')::integer,(payload->>'period_days')::integer,(payload->>'guaranteed_impressions')::integer,
+   coalesce((payload->>'enabled')::boolean,false),trim(payload->>'reason'),auth.uid()) returning id into result;
+ elsif operation='slot' then
+  insert into private.ad_slots(code,region,enabled) values(payload->>'code',trim(payload->>'region'),coalesce((payload->>'enabled')::boolean,false))
+  on conflict(code,region) do update set enabled=excluded.enabled returning id into result;
+ else raise exception 'unknown_operation';end if;
+ insert into private.ad_audit(actor,event,reason) values(auth.uid(),'configure_'||operation,trim(payload->>'reason'));
+ return jsonb_build_object('id',result);
 end $$;
-create function public.connection_order_lookup(order_id text) returns jsonb language sql stable security definer set search_path='' as $$
- select to_jsonb(o) from private.consultation_orders o where o.id=order_id
+
+create function public.ad_checkout(plan_id uuid,slot_id uuid,request_key uuid,consent boolean) returns jsonb language plpgsql security definer set search_path='' as $$
+#variable_conflict use_variable
+declare p private.ad_plans; sl private.ad_slots; s private.ad_subscriptions; sid uuid:=gen_random_uuid();
+begin
+ if auth.uid() is null or not private.planner_eligible(auth.uid()) then raise exception 'request_forbidden';end if;
+ if consent is distinct from true or request_key is null then raise exception 'consent_required';end if;
+ -- All order transitions lock the slot before the subscription, including refunds and reconciliation.
+ select * into sl from private.ad_slots a where a.id=slot_id for update;
+ if sl.id is null then raise exception 'slot_unavailable';end if;
+ select * into s from private.ad_subscriptions a where a.planner_id=auth.uid() and a.request_key=request_key;
+ if s.id is not null then
+  if s.plan_id<>plan_id or s.slot_id<>slot_id then raise exception 'request_key_conflict';end if;
+  return (to_jsonb(s)-'payment_key')||jsonb_build_object('id',s.order_id,'customer_key',s.planner_id);
+ end if;
+ select * into p from private.ad_plans a where a.id=plan_id;
+ if p.id is null or not p.enabled or not sl.enabled or sl.code<>p.code then raise exception 'plan_not_available';end if;
+ if exists(select 1 from private.ad_subscriptions a where a.slot_id=slot_id
+ and (a.planner_id=auth.uid() or sl.code='regional_exclusive')
+ and ((a.state='unpaid' and a.hold_until>now()) or a.state in ('confirming','refunding','refund_failed')
+ or (a.state='active' and a.ends_at>now()))) then raise exception 'slot_unavailable';end if;
+ insert into private.ad_subscriptions(id,order_id,planner_id,plan_id,slot_id,request_key,plan_name,amount,period_days,guaranteed_impressions)
+ values(sid,'ad_'||replace(sid::text,'-',''),auth.uid(),p.id,sl.id,request_key,p.name,p.amount,p.period_days,p.guaranteed_impressions) returning * into s;
+ insert into private.ad_audit(subscription_id,actor,event,reason) values(s.id,auth.uid(),'checkout','ad-terms-v1; prepaid; manual renewal');
+ return (to_jsonb(s)-'payment_key')||jsonb_build_object('id',s.order_id,'customer_key',s.planner_id);
+end $$;
+
+create function public.ad_begin_confirm(order_id text,provided_key text,provided_amount integer) returns jsonb language plpgsql security definer set search_path='' as $$
+#variable_conflict use_variable
+declare s private.ad_subscriptions;
+begin
+ select * into s from private.ad_subscriptions a where a.order_id=order_id;
+ if s.id is null or s.planner_id is distinct from auth.uid() then raise exception 'request_forbidden';end if;
+ perform 1 from private.ad_slots where id=s.slot_id for update;
+ select * into s from private.ad_subscriptions a where a.order_id=order_id for update;
+ if provided_key is null or length(provided_key) not between 1 and 200 or provided_amount is distinct from s.amount then raise exception 'payment_mismatch';end if;
+ if s.payment_key is not null and s.payment_key<>provided_key then raise exception 'payment_key_conflict';end if;
+ if s.state not in ('unpaid','confirming','active') then raise exception 'invalid_transition';end if;
+ if s.state='unpaid' and (s.hold_until<=now() or not private.planner_eligible(auth.uid())) then raise exception 'order_expired';end if;
+ if s.state<>'active' then update private.ad_subscriptions set state='confirming',payment_key=provided_key,updated_at=now() where id=s.id;end if;
+ return jsonb_build_object('id',s.order_id,'amount',s.amount,'payment_key',provided_key);
+end $$;
+
+create function public.ad_order_lookup(order_id text) returns jsonb language sql stable security definer set search_path='' as $$
+ select to_jsonb(s)||jsonb_build_object('id',s.order_id) from private.ad_subscriptions s where s.order_id=ad_order_lookup.order_id
 $$;
--- Only the server service role may reconcile a provider-confirmed payment.
-create function public.connection_reconcile(order_id text,provided_key text,provided_amount integer,provider_status text,receipt text default null,transaction_id text default null) returns jsonb language plpgsql security definer set search_path='' as $$
-declare o private.consultation_orders; c private.consultations;
+create function public.ad_user_order(order_id text) returns jsonb language plpgsql stable security definer set search_path='' as $$
+declare s private.ad_subscriptions;
 begin
- select * into o from private.consultation_orders where id=order_id;
- select * into c from private.consultations where id=o.consultation_id for update;
- select * into o from private.consultation_orders where id=order_id for update;
- if o.id is null or o.amount is distinct from provided_amount or o.payment_key is distinct from provided_key then raise exception 'payment_mismatch';end if;
+ select * into s from private.ad_subscriptions a where a.order_id=ad_user_order.order_id and (a.planner_id=auth.uid() or private.is_admin());
+ if s.id is null then raise exception 'request_forbidden';end if;
+ return to_jsonb(s)||jsonb_build_object('id',s.order_id);
+end $$;
+
+create function public.ad_reconcile(order_id text,provided_key text,provided_amount integer,provider_status text,receipt text default null,transaction_id text default null) returns jsonb language plpgsql security definer set search_path='' as $$
+#variable_conflict use_variable
+declare s private.ad_subscriptions;
+begin
+ select * into s from private.ad_subscriptions a where a.order_id=order_id;
+ if s.id is null then raise exception 'payment_mismatch';end if;
+ perform 1 from private.ad_slots where id=s.slot_id for update;
+ select * into s from private.ad_subscriptions a where a.order_id=order_id for update;
+ if provided_key is null or s.payment_key is distinct from provided_key or s.amount is distinct from provided_amount then raise exception 'payment_mismatch';end if;
  if provider_status='DONE' then
-  -- A delayed success notification must never revive a refunded payment.
-  if o.state in ('refunded','refunding','refund_failed','refund_requested') then return jsonb_build_object('reconcile_refund',true);end if;
-  update private.consultation_orders set state='paid',receipt_url=receipt,updated_at=now() where id=order_id;
-  update private.consultations set first_paid=case when o.stage=1 then true else first_paid end,second_paid=case when o.stage=2 then true else second_paid end,
-  state=case when o.stage=1 and state='confirmed' then 'scheduled' else state end,
-  payment_state=case when state='cancelled' or payment_state='refund_requested' then 'refund_requested' when o.stage=2 or second_paid then 'paid' when state='completed' then 'balance_due' else 'first_paid' end,updated_at=now() where id=c.id;
+  if s.state in ('refunding','refund_failed','refunded','active') then return jsonb_build_object('unchanged',true);end if;
+  if s.state<>'confirming' then raise exception 'invalid_transition';end if;
+  update private.ad_subscriptions set state='active',starts_at=now(),ends_at=now()+s.period_days*interval '1 day',receipt_url=receipt,updated_at=now() where id=s.id;
  elsif provider_status='CANCELED' then
-  update private.consultation_orders set state='refunded',refunded_won=amount,updated_at=now() where id=order_id;
-  update private.consultations set payment_state=case when exists(select 1 from private.consultation_orders other where other.consultation_id=c.id and other.state='paid') then 'refund_requested' else 'refunded' end where id=c.id;
- elsif provider_status in ('ABORTED','EXPIRED') and o.state not in ('paid','refunded') then
-  update private.consultation_orders set state='failed',payment_key=null,updated_at=now() where id=order_id;
-  update private.consultations set payment_state=case when o.stage=2 then 'balance_due' else 'failed' end where id=c.id;
+  if s.state='refunded' then return jsonb_build_object('unchanged',true);end if;
+  update private.ad_subscriptions set state='refunded',refunded_won=amount,updated_at=now() where id=s.id;
+ elsif provider_status in ('ABORTED','EXPIRED') and s.state='confirming' then
+  update private.ad_subscriptions set state='failed',updated_at=now() where id=s.id;
  else return jsonb_build_object('pending',true);end if;
- insert into private.payment_attempts(order_id,action,outcome,transaction_key) values(order_id,'reconcile',provider_status,transaction_id);
+ insert into private.ad_audit(subscription_id,event,reason) values(s.id,'provider_'||provider_status,coalesce(transaction_id,''));
  return jsonb_build_object('saved',true);
 end $$;
-create function public.connection_refund_request(order_id text,reason text) returns jsonb language plpgsql security definer set search_path='' as $$
-declare o private.consultation_orders; c private.consultations;
-begin
- if not private.is_admin() or coalesce(length(trim(reason)),0)<5 then raise exception 'admin_required';end if;
- select * into o from private.consultation_orders where id=order_id;
- select * into c from private.consultations where id=o.consultation_id for update;
- if c.id is null or c.payment_state='confirming' or c.state not in ('cancelled','dispute','no_show') then raise exception 'invalid_transition';end if;
- if o.state='refunded' then return jsonb_build_object('already_refunded',true);end if;
- if o.state not in ('paid','refunding','refund_failed','refund_requested') then raise exception 'invalid_transition';end if;
- update private.consultation_orders set state='refunding',updated_at=now() where id=order_id;
- update private.consultations set payment_state='refunding' where id=c.id;
- insert into private.consultation_events(consultation_id,actor,event,reason) values(c.id,auth.uid(),'refund_approved',reason);
- return jsonb_build_object('id',o.id,'payment_key',o.payment_key,'amount',o.amount,'reason',reason);
-end $$;
-create function public.connection_refund_failure(order_id text) returns void language plpgsql security definer set search_path='' as $$
-declare booking uuid;
-begin
- select consultation_id into booking from private.consultation_orders where id=order_id;
- perform 1 from private.consultations where id=booking for update;
- update private.consultation_orders set state='refund_failed' where id=order_id and state='refunding';
- if found then update private.consultations set payment_state='refund_failed' where id=booking;end if;
- insert into private.payment_attempts(order_id,action,outcome) values(order_id,'refund','needs_reconciliation');
-end $$;
-revoke all on function public.connection_checkout(uuid,integer),public.connection_begin_confirm(text,text,integer),public.connection_order_lookup(text),public.connection_reconcile(text,text,integer,text,text,text),public.connection_refund_request(text,text),public.connection_refund_failure(text) from public,anon,authenticated;
-grant execute on function public.connection_checkout(uuid,integer),public.connection_begin_confirm(text,text,integer),public.connection_refund_request(text,text) to authenticated;
-grant execute on function public.connection_order_lookup(text),public.connection_reconcile(text,text,integer,text,text,text),public.connection_refund_failure(text) to service_role;
-commit;
 
-
-begin;
-create function public.connection_user_order(order_id text) returns jsonb language plpgsql stable security definer set search_path='' as $$
-declare result jsonb;
+create function public.ad_refund_request(order_id text,reason text,platform_fault boolean) returns jsonb language plpgsql security definer set search_path='' as $$
+#variable_conflict use_variable
+declare s private.ad_subscriptions; delivered bigint;
 begin
- select to_jsonb(o) into result from private.consultation_orders o join private.consultations c on c.id=o.consultation_id where o.id=order_id and (c.planner_id=auth.uid() or private.is_admin());
- if result is null then raise exception 'request_forbidden';end if;
- return result;
+ if not private.is_admin() or platform_fault is distinct from true or coalesce(length(trim(reason)),0)<5 then raise exception 'refund_evidence_required';end if;
+ select * into s from private.ad_subscriptions a where a.order_id=order_id;
+ if s.id is null then raise exception 'request_forbidden';end if;
+ perform 1 from private.ad_slots where id=s.slot_id for update;
+ select * into s from private.ad_subscriptions a where a.order_id=order_id for update;
+ if s.state='refunded' then return jsonb_build_object('already_refunded',true);end if;
+ select count(*) into delivered from private.ad_impressions where subscription_id=s.id;
+ if s.state not in ('active','refunding','refund_failed') or s.ends_at is null or s.ends_at>now() or delivered>=s.guaranteed_impressions then raise exception 'refund_not_eligible';end if;
+ update private.ad_subscriptions set state='refunding',updated_at=now() where id=s.id;
+ insert into private.ad_audit(subscription_id,actor,event,reason) values(s.id,auth.uid(),'refund_platform_shortfall',trim(reason));
+ return jsonb_build_object('id',s.order_id,'payment_key',s.payment_key,'amount',s.amount,'reason',reason);
 end $$;
-revoke all on function public.connection_user_order(text) from public,anon,authenticated;
-grant execute on function public.connection_user_order(text) to authenticated;
+create function public.ad_refund_failure(order_id text) returns void language sql security definer set search_path='' as $$
+ update private.ad_subscriptions set state='refund_failed',updated_at=now() where order_id=ad_refund_failure.order_id and state='refunding'
+$$;
+
+create function public.ad_public_slots(area text) returns jsonb language sql stable security definer set search_path='' as $$
+ select coalesce(jsonb_agg(jsonb_build_object('subscription_id',s.id,'planner_id',s.planner_id,'name',p.full_name,'region',sl.region,'plan_name',s.plan_name)),'[]')
+ from private.ad_subscriptions s join private.ad_slots sl on sl.id=s.slot_id join public.partner_applications p on p.user_id=s.planner_id
+ where s.state='active' and s.starts_at<=now() and s.ends_at>now() and sl.enabled and (area='' or sl.region like area||'%') and private.planner_eligible(s.planner_id)
+$$;
+create function public.ad_record_impression(subscription_id uuid,event_id uuid) returns void language plpgsql security definer set search_path='' as $$
+declare s private.ad_subscriptions;
+begin
+ select * into s from private.ad_subscriptions where id=subscription_id for update;
+ if s.state is distinct from 'active' or s.starts_at>now() or s.ends_at<=now() or not private.planner_eligible(s.planner_id) or not exists(select 1 from private.ad_slots where id=s.slot_id and enabled) then return;end if;
+ insert into private.ad_impressions(event_id,subscription_id) values(event_id,s.id) on conflict do nothing;
+end $$;
+
+revoke all on function public.ad_workspace(),public.ad_admin_command(text,jsonb),public.ad_checkout(uuid,uuid,uuid,boolean),public.ad_begin_confirm(text,text,integer),public.ad_user_order(text),public.ad_order_lookup(text),public.ad_reconcile(text,text,integer,text,text,text),public.ad_refund_request(text,text,boolean),public.ad_refund_failure(text),public.ad_public_slots(text),public.ad_record_impression(uuid,uuid) from public,anon,authenticated;
+grant execute on function public.ad_workspace(),public.ad_admin_command(text,jsonb),public.ad_checkout(uuid,uuid,uuid,boolean),public.ad_begin_confirm(text,text,integer),public.ad_user_order(text),public.ad_refund_request(text,text,boolean) to authenticated;
+grant execute on function public.ad_order_lookup(text),public.ad_reconcile(text,text,integer,text,text,text),public.ad_refund_failure(text),public.ad_public_slots(text),public.ad_record_impression(uuid,uuid) to service_role;
 commit;
 
 
@@ -585,9 +629,8 @@ begin
  'today_requests',(select count(*) from private.consultations where (created_at at time zone 'Asia/Seoul')::date=today),
  'active_planners',(select count(*) from private.planner_directory d where private.planner_eligible(d.user_id) and d.available),
  'new_planners',(select count(*) from public.partner_applications where (created_at at time zone 'Asia/Seoul')::date=today and profession='planner'),
- 'expected_paid',(select count(*) from private.consultations where is_free=false and state not in ('cancelled','no_show','dispute')),
- 'test_paid_won',(select coalesce(sum(amount-refunded_won),0) from private.consultation_orders where state in ('paid','refunding','refund_failed','refunded')),
- 'planner_summary',(select coalesce(jsonb_agg(jsonb_build_object('id',d.user_id,'name',p.full_name,'sample',d.is_sample,'completed',(select count(*) from private.consultations c where c.planner_id=d.user_id and c.state='completed'),'free_remaining',private.free_remaining(d.user_id,(select id from private.connection_policies order by id desc limit 1)))),'[]') from private.planner_directory d join public.partner_applications p on p.user_id=d.user_id));
+ 'test_paid_won',(select coalesce(sum(amount-refunded_won),0) from private.ad_subscriptions where state in ('active','refunding','refund_failed','refunded')),
+ 'planner_summary',(select coalesce(jsonb_agg(jsonb_build_object('id',d.user_id,'name',p.full_name,'sample',d.is_sample,'completed',(select count(*) from private.consultations c where c.planner_id=d.user_id and c.state='completed'))),'[]') from private.planner_directory d join public.partner_applications p on p.user_id=d.user_id));
 end $$;
 revoke all on function public.record_visit_session(uuid),public.consultation_metrics() from public,anon,authenticated;
 grant execute on function public.record_visit_session(uuid) to anon,authenticated;

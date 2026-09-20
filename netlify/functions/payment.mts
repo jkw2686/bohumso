@@ -17,30 +17,30 @@ export default async (request:Request)=>{
   async function rpc(c:any,name:string,args:any){const result=await c.rpc(name,args);if(result.error)throw Error(result.error.message);return result.data;}
   const gateway=createTossGateway(settings.secretKey);
   if(body.action==='checkout'){
-   const order=await rpc(client,'connection_checkout',{booking_id:body.bookingId,requested_stage:body.stage});
+   const order=await rpc(client,'ad_checkout',{plan_id:body.planId,slot_id:body.slotId,request_key:body.requestKey,consent:body.consent});
    return reply({order,clientKey:settings.clientKey,successUrl:settings.origin+'/payment-result.html',failUrl:settings.origin+'/payment-result.html?failed=1',testOnly:true});
   }
   if(body.action==='confirm'){
    if(!Number.isSafeInteger(body.amount))return reply({error:'invalid_amount'},400);
-   const order=await rpc(client,'connection_begin_confirm',{order_id:body.orderId,provided_key:body.paymentKey,provided_amount:body.amount});
-   const result=await confirmAndReconcile(order,gateway,args=>rpc(server,'connection_reconcile',args));return reply(result);
+   const order=await rpc(client,'ad_begin_confirm',{order_id:body.orderId,provided_key:body.paymentKey,provided_amount:body.amount});
+   const result=await confirmAndReconcile(order,gateway,args=>rpc(server,'ad_reconcile',args));return reply(result);
   }
   if(body.action==='status'){
-   const order=await rpc(client,'connection_user_order',{order_id:body.orderId});if(!order.payment_key)return reply({status:order.state});
-   const payment=await gateway.lookup(order.id);await rpc(server,'connection_reconcile',verifiedPayment(payment,order));return reply({status:payment.status});
+   const order=await rpc(client,'ad_user_order',{order_id:body.orderId});if(!order.payment_key)return reply({status:order.state});
+   const payment=await gateway.lookup(order.id);await rpc(server,'ad_reconcile',verifiedPayment(payment,order));return reply({status:payment.status});
   }
   if(body.action==='refund'){
-   const order=await rpc(client,'connection_refund_request',{order_id:body.orderId,reason:body.reason});if(order.already_refunded)return reply({status:'CANCELED'});
+   const order=await rpc(client,'ad_refund_request',{order_id:body.orderId,reason:body.reason,platform_fault:body.platformFault});if(order.already_refunded)return reply({status:'CANCELED'});
    try{
     let payment=await gateway.lookup(order.id);
     if(payment.status!=='CANCELED')payment=await gateway.cancel(order);
-    await rpc(server,'connection_reconcile',verifiedPayment(payment,order));return reply({status:payment.status});
+    await rpc(server,'ad_reconcile',verifiedPayment(payment,order));return reply({status:payment.status});
    }catch{
     // Mark for reconciliation. Retry uses the same refund idempotency key, never a new refund.
-    await rpc(server,'connection_refund_failure',{order_id:order.id});return reply({error:'refund_needs_reconciliation'},503);
+    await rpc(server,'ad_refund_failure',{order_id:order.id});return reply({error:'refund_needs_reconciliation'},503);
    }
   }
   return reply({error:'unknown_action'},400);
- }catch(error){const code=error instanceof Error?error.message:'unknown';const allowed=['test_payment_not_configured','live_payments_blocked','payment_status_pending','free_no_payment','dispute_on_hold','invalid_stage','payment_mismatch','payment_key_conflict','request_forbidden','server_not_configured'];return reply({error:allowed.includes(code)?code:'payment_unavailable'},503);}
+ }catch(error){const code=error instanceof Error?error.message:'unknown';const allowed=['test_payment_not_configured','live_payments_blocked','payment_status_pending','plan_not_available','slot_unavailable','order_expired','invalid_transition','consent_required','refund_not_eligible','refund_evidence_required','request_key_conflict','payment_mismatch','payment_key_conflict','request_forbidden','server_not_configured'];return reply({error:allowed.includes(code)?code:'payment_unavailable'},503);}
 };
 export const config={path:'/api/payment'};

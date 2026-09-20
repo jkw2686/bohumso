@@ -1,9 +1,9 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
 import {testPaymentConfig,createTossGateway,verifiedPayment,confirmAndReconcile} from '../netlify/functions/_shared/payments.mjs';
-const order={id:'boh_test_1',amount:35000,payment_key:'test_payment_key'};
+const order={id:'ad_test',amount:35000,payment_key:'test_payment_key'};
 const payment={orderId:order.id,paymentKey:order.payment_key,totalAmount:35000,currency:'KRW',type:'NORMAL',method:'카드',card:{number:'NEVER_STORE'},status:'DONE',receipt:{url:'https://dashboard.tosspayments.com/receipt'},lastTransactionKey:'transaction'};
 test('Payment config is test-only and disabled unless explicitly configured',()=>{
- const env={PAYMENTS_ENABLED:'true',TOSS_MODE:'test',TOSS_CLIENT_KEY:'test_ck_example',TOSS_SECRET_KEY:'test_sk_example',APP_ORIGIN:'http://localhost:3100'};assert.equal(testPaymentConfig(k=>env[k]).clientKey,'test_ck_example');
+ const env={PAYMENTS_ENABLED:'true',TOSS_MODE:'test',TOSS_CLIENT_KEY:'test_gck_example',TOSS_SECRET_KEY:'test_gsk_example',APP_ORIGIN:'http://localhost:3100'};assert.equal(testPaymentConfig(k=>env[k]).clientKey,'test_gck_example');
  for(const patch of [{PAYMENTS_ENABLED:'false'},{TOSS_MODE:'live'},{TOSS_SECRET_KEY:'live_sk_example'},{TOSS_CLIENT_KEY:'live_ck_example'}])assert.throws(()=>testPaymentConfig(k=>({...env,...patch})[k]));
  assert.throws(()=>createTossGateway('live_sk_example'));
 });
@@ -23,6 +23,12 @@ test('Uncertain transaction is not falsely marked failed or paid',async()=>{
  let reads=0,writes=0;await assert.rejects(()=>confirmAndReconcile(order,{lookup:async()=>{if(++reads===1)return {...payment,status:'IN_PROGRESS'};throw Error('timeout');},confirm:async()=>{throw Error('timeout');}},async()=>{writes++;}),/payment_status_pending/);assert.equal(writes,0);
 });
 test('Approval and refund retries carry stable separate idempotency keys',async()=>{
- const requests=[];const g=createTossGateway('test_sk_example',async(url,options)=>{requests.push({url,options});return {ok:true,json:async()=>payment};});
+ const requests=[];const g=createTossGateway('test_gsk_example',async(url,options)=>{requests.push({url,options});return {ok:true,json:async()=>payment};});
  await g.confirm(order);await g.confirm(order);await g.cancel({...order,reason:'테스트 환불'});assert.equal(requests[0].options.headers['Idempotency-Key'],requests[1].options.headers['Idempotency-Key']);assert.notEqual(requests[0].options.headers['Idempotency-Key'],requests[2].options.headers['Idempotency-Key']);assert.equal(JSON.parse(requests[0].options.body).amount,35000);
+});
+
+test('Wallet-balance easy-pay is accepted without a card object, but mismatched methods are rejected',()=>{
+ const easy={...payment,method:'간편결제',card:null,easyPay:{provider:'토스페이',amount:35000,discountAmount:0}};
+ assert.equal(verifiedPayment(easy,order).provided_amount,35000);
+ assert.throws(()=>verifiedPayment({...easy,easyPay:null},order));
 });

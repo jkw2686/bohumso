@@ -1,57 +1,66 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {fixture,ids} from './commerce-fixture.mjs';
-test('Free allocation, immutable paid quote, two-stage ledger, consent and customer completion',async()=>{
- const f=await fixture();const {db,rpc,login,cmd,row,slot}=f;try{
- async function request(n){await login(ids.customer);return (await cmd('request',{planner_id:ids.planner,purpose:'claim',region:'서울 마포구',method:'scheduled',preferred_at:slot(n)})).id;}
- async function accept(id,paid=false){await login(ids.planner);const b=await row(id,'partner'),w=await rpc('consultation_workspace',['partner']);return cmd('accept',{id,revision:b.revision,policy_id:w.policy.id,paid_consent:paid});}
- async function confirm(id){await login(ids.customer);const b=await row(id);return cmd('confirm',{id,revision:b.revision,name:'가상 고객',phone:'01011112222',share_consent:true});}
- const a=await request(0),b=await request(1),c=await request(2);
- await accept(a);await confirm(a);await accept(b);await confirm(b);
- await login(ids.planner);let w=await rpc('consultation_workspace',['partner']);assert.equal(w.free_remaining,0);assert.equal(w.free_reserved,2);
- await assert.rejects(()=>rpc('connection_checkout',[a,1]),/free_no_payment/);
- await accept(c);await assert.rejects(()=>confirm(c),/planner_price_consent_required/);await accept(c,true);await confirm(c);
- assert.equal((await row(c)).total_won,70000);assert.equal((await row(c)).state,'confirmed');
- const before=await row(a);await cmd('cancel',{id:a,revision:before.revision});assert.equal((await row(c)).is_free,false);
- await login(ids.planner);assert.equal((await rpc('consultation_workspace',['partner'])).free_remaining,1);
- const order=await rpc('connection_checkout',[c,1]);assert.equal(order.amount,35000);assert.equal((await rpc('connection_checkout',[c,1])).id,order.id);
- await assert.rejects(()=>rpc('connection_checkout',[c,2]),/invalid_stage/);
- await assert.rejects(()=>rpc('connection_begin_confirm',[order.id,'test_payment_key',1]),/payment_mismatch/);
- await rpc('connection_begin_confirm',[order.id,'test_payment_key',35000]);
- await login(ids.customer);await assert.rejects(async()=>cmd('cancel',{id:c,revision:(await row(c)).revision}),/payment_in_progress/);
- await login(ids.planner);await assert.rejects(()=>rpc('connection_reconcile',[order.id,'test_payment_key',35000,'DONE',null,null]),/permission denied/);
- await login('', 'service_role');await rpc('connection_reconcile',[order.id,'test_payment_key',35000,'DONE','https://dashboard.tosspayments.com/receipt','test-transaction']);await rpc('connection_reconcile',[order.id,'test_payment_key',35000,'DONE',null,'test-transaction']);
- await login(ids.planner);let paid=await row(c,'partner');assert.equal(paid.first_paid,true);assert.equal(paid.state,'scheduled');await assert.rejects(()=>cmd('complete_confirm',{id:c,revision:paid.revision}),/invalid_transition/);
- await db.exec('reset role');await db.query("update private.consultations set preferred_at=now()-interval '1 hour' where id=$1",[c]);
- await login(ids.planner);await cmd('complete_request',{id:c,revision:(await row(c,'partner')).revision});
- await assert.rejects(()=>rpc('connection_checkout',[c,2]),/invalid_stage/);
- await login(ids.customer);await cmd('complete_confirm',{id:c,revision:(await row(c)).revision});assert.equal((await row(c)).payment_state,'balance_due');
- const extra=await request(3);await assert.rejects(()=>accept(extra,true),/balance_outstanding/);
- await login(ids.planner);const second=await rpc('connection_checkout',[c,2]);assert.equal(second.amount,35000);assert.notEqual(second.id,order.id);
- await rpc('connection_begin_confirm',[second.id,'test_second',35000]);await login('', 'service_role');await rpc('connection_reconcile',[second.id,'test_second',35000,'DONE',null,'second-tx']);
- await login(ids.customer);assert.equal((await row(c)).payment_state,'paid');
- await login(ids.other);assert.equal((await rpc('consultation_workspace',['customer'])).bookings.length,0);await assert.rejects(()=>cmd('cancel',{id:c,revision:1}));
- await login(ids.admin);await cmd('policy',{free_meetings:4,total_won:80000,reason:'신규 정책 테스트'});await login(ids.customer);assert.equal((await row(c)).total_won,70000);
- await login('', 'anon');const cat=await rpc('planner_catalog',['서울','claim']);assert.equal(cat.planners.length,2);assert.ok(cat.planners.every(p=>p.is_sample));assert.ok(cat.planners.every(p=>!p.phone));await assert.rejects(()=>rpc('consultation_workspace',['admin']));
- }finally{await db.close();}
+import {test} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {fixture,ids} from './commerce-fixture.mjs';
+export async function plan(f,code='basic'){
+ await f.login(ids.admin);
+ const p=await f.rpc('ad_admin_command',['plan',{code,amount:12000,period_days:30,guaranteed_impressions:100,enabled:true,reason:'TEST ONLY fixture conditions'}]);
+ const s=await f.rpc('ad_admin_command',['slot',{code,region:'서울 마포구',enabled:true,reason:'TEST ONLY fixture slot'}]);
+ return {plan:p.id,slot:s.id};
+}
+test('Unconfigured plans cannot be bought; snapshot, ownership and idempotency protect prepaid subscriptions',async()=>{
+ const f=await fixture();try{
+ await f.login(ids.planner);const initial=await f.rpc('ad_workspace');assert.equal(initial.plans.length,3);assert.ok(initial.plans.every(p=>p.amount===null&&!p.enabled));
+ const {plan:p,slot}=await plan(f);await f.login(ids.planner);const key=randomUUID();
+ const o=await f.rpc('ad_checkout',[p,slot,key,true]);assert.equal(o.amount,12000);
+ assert.equal((await f.rpc('ad_checkout',[p,slot,key,true])).id,o.id);
+ await assert.rejects(()=>f.rpc('ad_checkout',[p,slot,randomUUID(),false]),/consent_required/);
+ await assert.rejects(()=>f.rpc('ad_checkout',[p,slot,randomUUID(),true]),/slot_unavailable/);
+ await assert.rejects(()=>f.rpc('ad_checkout',[initial.plans[0].id,slot,key,true]),/request_key_conflict/);
+ await assert.rejects(()=>f.rpc('ad_begin_confirm',[o.id,'fixture',1]),/payment_mismatch/);
+ await f.rpc('ad_begin_confirm',[o.id,'fixture',12000]);
+ await assert.rejects(()=>f.rpc('ad_begin_confirm',[o.id,'different',12000]),/payment_key_conflict/);
+ await assert.rejects(()=>f.rpc('ad_reconcile',[o.id,'fixture',12000,'DONE']),/permission denied/);
+ await f.login(ids.other);await assert.rejects(()=>f.rpc('ad_user_order',[o.id]),/request_forbidden/);await assert.rejects(()=>f.rpc('ad_begin_confirm',[o.id,'fixture',12000]),/request_forbidden/);
+ await f.login('','service_role');await f.rpc('ad_reconcile',[o.id,'fixture',12000,'DONE']);
+ await f.login(ids.planner);const first=await f.rpc('ad_user_order',[o.id]);
+ await f.login('','service_role');await f.rpc('ad_reconcile',[o.id,'fixture',12000,'DONE']);await f.rpc('ad_reconcile',[o.id,'fixture',12000,'EXPIRED']);
+ await f.login(ids.planner);const again=await f.rpc('ad_user_order',[o.id]);assert.equal(again.state,'active');assert.equal(first.ends_at,again.ends_at);
+ await f.login(ids.admin);await f.rpc('ad_admin_command',['plan',{code:'basic',amount:90000,period_days:60,guaranteed_impressions:900,enabled:true,reason:'TEST ONLY version change'}]);
+ await f.login(ids.planner);assert.equal((await f.rpc('ad_user_order',[o.id])).amount,12000);
+ await f.login('','anon');await assert.rejects(()=>f.rpc('ad_workspace'),/permission denied/);
+ }finally{await f.db.close();}
 });
-test('Direct selection required, no reassignment, no-show restoration and identity uniqueness',async()=>{
- const {db,rpc,login,cmd,row,slot}=await fixture();try{
- await login(ids.customer);
- const request={purpose:'claim',region:'서울 마포구',method:'phone',preferred_at:slot()};
- await assert.rejects(()=>cmd('request',{...request,automatic:true}),/select_planner/);
- await assert.rejects(()=>cmd('request',request),/select_planner/);
- await assert.rejects(()=>cmd('request',{...request,planner_id:ids.planner,automatic:true}),/automatic_not_allowed/);
- const direct=(await cmd('request',{planner_id:ids.planner,purpose:'claim',region:'서울 마포구',method:'scheduled',preferred_at:slot(1)})).id;
- await login(ids.planner);await cmd('pass',{id:direct,revision:(await row(direct,'partner')).revision});await login(ids.customer);assert.equal((await row(direct)).planner_id,null);assert.equal((await row(direct)).automatic,false);
- await assert.rejects(()=>cmd('rematch',{id:direct,revision:(2)}),/unknown_operation/);
- await login(ids.next);assert.equal((await rpc('consultation_workspace',['partner'])).bookings.length,0);
- await login(ids.admin);await assert.rejects(()=>cmd('verify_planner',{planner_id:ids.next,identity_key:'TEST-REGISTRY-planner',evidence:'중복 등록 테스트',checked:true,is_sample:true}),/duplicate key/);await assert.rejects(()=>cmd('verify_planner',{planner_id:ids.next,checked:true}),/verification_required/);
- await login(ids.customer);const free=(await cmd('request',{planner_id:ids.planner,purpose:'claim',region:'서울 마포구',method:'nearby',preferred_at:slot(2)})).id;
- await login(ids.planner);await cmd('accept',{id:free,revision:1,policy_id:1,paid_consent:false});await login(ids.customer);await cmd('confirm',{id:free,revision:2,name:'가상 고객',phone:'01011112222',share_consent:true});
- await db.exec('reset role');await db.query("update private.consultations set preferred_at=now()-interval '1 hour' where id=$1",[free]);
- await login(ids.planner);await cmd('issue',{id:free,category:'no_show',reason:'테스트 미팅 미진행'});assert.equal((await rpc('consultation_workspace',['partner'])).free_reserved,1);
- await login(ids.admin);await cmd('resolve_issue',{id:free,outcome:'cancelled',reason:'고객과 설계사 확인 후 미완료 처리'});
- await login(ids.planner);assert.equal((await rpc('consultation_workspace',['partner'])).free_reserved,0);assert.equal((await rpc('consultation_workspace',['partner'])).free_remaining,2);
- await assert.rejects(()=>rpc('change_service_request',[free,'completed']),/permission denied/);
- }finally{await db.close();}
+test('Consultations remain free of billing through accept, confirm, completion, cancellation and dispute',async()=>{
+ const f=await fixture();try{
+ const {plan:p,slot}=await plan(f);await f.login(ids.planner);const o=await f.rpc('ad_checkout',[p,slot,randomUUID(),true]);
+ const before=await f.rpc('ad_user_order',[o.id]);
+ for(let i=0;i<3;i++){
+ await f.login(ids.customer);const id=(await f.cmd('request',{planner_id:ids.planner,purpose:'claim',region:'서울 마포구',method:'scheduled',preferred_at:f.slot(i)})).id;
+ await f.login(ids.planner);await f.cmd('accept',{id,revision:1});
+ await f.login(ids.customer);await f.cmd('confirm',{id,revision:2,name:'가상 고객',phone:'01011112222',share_consent:true});
+ assert.equal((await f.row(id)).state,'scheduled');assert.equal((await f.row(id)).payment_state,undefined);
+ if(i===0){await f.db.exec('reset role');await f.db.query("update private.consultations set preferred_at=now()-interval '1 hour' where id=$1",[id]);
+ await f.login(ids.planner);await f.cmd('complete_request',{id,revision:3});await assert.rejects(()=>f.cmd('complete_confirm',{id,revision:4}),/invalid_transition/);
+ await f.login(ids.customer);await f.cmd('complete_confirm',{id,revision:4});}
+ if(i===1)await f.cmd('cancel',{id,revision:3});
+ if(i===2)await f.cmd('issue',{id,category:'dispute',reason:'테스트 문제 신고'});
+ }
+ await f.login(ids.planner);assert.deepEqual(await f.rpc('ad_user_order',[o.id]),before);
+ await f.db.exec('reset role');assert.equal((await f.db.query("select count(*)::int n from pg_proc where proname like 'connection_%'")).rows[0].n,0);
+ assert.equal((await f.db.query("select count(*)::int n from information_schema.columns where table_schema='private' and table_name='ad_subscriptions' and column_name in ('consultation_id','stage')")).rows[0].n,0);
+ }finally{await f.db.close();}
 });
-
+test('Direct selection only, no reassignment, no-show resolution and identity uniqueness',async()=>{
+ const f=await fixture();try{
+ await f.login(ids.customer);const request={purpose:'claim',region:'서울 마포구',method:'phone',preferred_at:f.slot()};
+ await assert.rejects(()=>f.cmd('request',{...request,automatic:true}),/select_planner/);
+ await assert.rejects(()=>f.cmd('request',{...request,planner_id:ids.planner,automatic:true}),/automatic_not_allowed/);
+ const id=(await f.cmd('request',{...request,planner_id:ids.planner})).id;await f.login(ids.planner);await f.cmd('pass',{id,revision:1});
+ await f.login(ids.customer);assert.equal((await f.row(id)).planner_id,null);await assert.rejects(()=>f.cmd('rematch',{id,revision:2}),/unknown_operation/);
+ await f.login(ids.next);assert.equal((await f.rpc('consultation_workspace',['partner'])).bookings.length,0);
+ await f.login(ids.admin);await assert.rejects(()=>f.cmd('verify_planner',{planner_id:ids.next,identity_key:'TEST-REGISTRY-planner',evidence:'중복 등록 테스트',checked:true,is_sample:true}),/duplicate key/);
+ await f.login(ids.customer);const b=(await f.cmd('request',{...request,planner_id:ids.planner,preferred_at:f.slot(1)})).id;
+ await f.login(ids.planner);await f.cmd('accept',{id:b,revision:1});await f.login(ids.customer);await f.cmd('confirm',{id:b,revision:2,name:'가상 고객',phone:'01011112222',share_consent:true});
+ await f.db.exec('reset role');await f.db.query("update private.consultations set preferred_at=now()-interval '1 hour' where id=$1",[b]);
+ await f.login(ids.planner);await f.cmd('issue',{id:b,category:'no_show',reason:'가상 일정 미진행'});
+ await f.login(ids.admin);await f.cmd('resolve_issue',{id:b,outcome:'cancelled',reason:'양측 확인 후 미완료 처리'});assert.equal((await f.row(b,'admin')).state,'cancelled');
+ }finally{await f.db.close();}
+});

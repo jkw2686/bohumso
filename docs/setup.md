@@ -1,57 +1,29 @@
-> 2026-09-20: 자동 재배정 기능과 MATCHING_WORKER_ENABLED 설정은 폐기되었습니다. 기존 DB 적용 이력이 있다면 변경된 003을 재실행하지 마세요. 새 테스트 DB용 001~006을 사용하며 기존 DB에는 별도 이관이 필요합니다. 광고 노출 구독 전환은 미완료이므로 배포 승인을 위한 최종본이 아닙니다.
+# 연결 및 설정
 
-# 배포 전 연결·검증 안내
-이번 작업에서는 아래 외부 설정을 변경하거나 배포를 실행하지 않았다. 기존 공개 사이트는 그대로다.
+현재는 로컬 테스트 구현입니다. 실제 서비스 설정 변경·배포는 수행하지 않습니다.
 
-## DB 적용
-- 별도 Supabase 테스트 프로젝트에서 001~006 SQL을 순서대로 적용한다. 기존 적용 이력은 확인 후 건너뛴다.
-- 빠른 적용: `supabase/_apply_all.sql`(001~006을 순서대로 결합한 붙여넣기용 단일 파일)을 SQL Editor에 한 번 붙여넣어 실행한다. 원본 6개 파일을 수정하면 이 파일을 재생성해야 한다(단순 결합). 이미 적용된 프로젝트에는 중복 실행하지 않는다.
-- 적용 후 검증: `supabase/_verify_after_apply.sql`을 실행해 private 테이블 16개·public RPC 23개, 민감 테이블 직접권한 0건, 구형 쓰기 API의 authenticated 실행권한 0건을 확인한다. (로컬 PGlite에서 단일 실행 적용·개수·권한 회수 검증 완료.)
-- 서비스 역할 키는 서버에만 둔다. 공개 키와 혼동하지 않는다.
-- 003 이후 구형 예약 쓰기 API 권한은 제거된다. 이력은 삭제되지 않으며 조회 화면으로 남는다.
-- 첫 관리자 지정은 SQL Editor에서 인증 완료한 사용자 UUID를 private.admin_memberships에 추가하는 운영 절차로만 한다.
-- 설계사 입점 승인 이후에도 프로필 저장 및 등록기관/등록번호·소속 확인 근거를 별도로 기록해야 수락할 수 있다.
-- 샘플 확인은 샘플로 표시하며 실제 자격 검증·운영 승인을 의미하지 않는다.
+## 새 테스트 DB
+001_accounts.sql → 002_requests.sql → 003_consultations.sql → 004_payment_ledger.sql → 005_matching_worker.sql(예약 번호만 유지, 실행 작업 없음) → 006_metrics.sql.
+_apply_all.sql은 동일 파일의 합본입니다. 기존 DB에는 적용하지 않습니다.
+첫 관리자 지정은 인증 완료 UUID를 private.admin_memberships에 등록하는 별도 운영 절차입니다. 검증된 설계사만 활성화합니다.
 
-## 서버 환경변수
-| 변수 | 용도 | 현재 기본값 |
-|---|---|---|
-| SUPABASE_URL | DB/Auth 프로젝트 | 빈 값 |
-| SUPABASE_PUBLISHABLE_KEY | 브라우저용 publishable 또는 anon 키 | 빈 값 |
-| SUPABASE_SERVICE_ROLE_KEY | 서버의 거래 조회·동기화·매칭 작업 전용 | 빈 값 |
-| OPERATOR_NAME | 실제 운영 주체 | 빈 값 |
-| PRIVACY_CONTACT | 실제 개인정보 문의처 | 빈 값 |
-| POLICIES_APPROVED | 약관·동의 문서 확정 여부 | false |
-| ACCOUNTS_ENABLED | 회원 기능 활성화 | false |
-| APP_ORIGIN | 허용할 정확한 앱 origin | 로컬 예시만 |
-| TOSS_MODE | 결제 모드 | test만 허용 |
-| TOSS_CLIENT_KEY | 일반결제 테스트 클라이언트 키 | 빈 값, test_ck_만 허용 |
-| TOSS_SECRET_KEY | 서버 테스트 시크릿 키 | 빈 값, test_sk_만 허용 |
-| PAYMENTS_ENABLED | 테스트 PG 호출 허용 | false |
-| MATCHING_WORKER_ENABLED | 15분 주기 응답 만료 재배정 | false |
-| VISIT_METRICS_ENABLED | 익명 방문 세션 집계 | false |
+## 환경
+config/production.env.example의 값은 공란 또는 비활성입니다.
+- SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY: 인증·공개 RPC
+- SUPABASE_SERVICE_ROLE_KEY: 서버 전용 원장 동기화·광고 기록
+- OPERATOR_NAME / PRIVACY_CONTACT: 실제 확인 후 입력
+- ACCOUNTS_ENABLED / POLICIES_APPROVED: 실제 정보·동의문 확정 전 false
+- TOSS_MODE=test, TOSS_CLIENT_KEY=test_gck_..., TOSS_SECRET_KEY=test_gsk_...: 같은 상점의 위젯용 테스트 키
+- PAYMENTS_ENABLED=false: 서버의 외부 테스트 결제 호출 허용 여부
+- APP_ORIGIN: 정확한 허용 origin
+- AD_EXPOSURE_ENABLED=false: 광고 게재 및 노출 수집 허용 여부
+- AD_IMPRESSION_SECRET: 노출 서명용 서버 전용 임의 값, 32자 이상
+- VISIT_METRICS_ENABLED=false: 선택적 방문 집계
+폐기한 MATCHING_WORKER_ENABLED는 사용하지 않습니다. 비밀값은 저장소·채팅·프런트엔드에 넣지 않습니다.
 
-시크릿 키는 HTML/소스/채팅/ZIP에 넣지 않는다. 카드번호·CVC는 직접 입력받거나 저장하지 않는다. 방문 집계는 홈·탐색·계정·샘플 페이지의 세션 토큰으로 중복을 줄인 참고 지표이며 방문자 실인원은 아니다. IP·위치·계정 ID를 방문 로그에 저장하지 않는다. 기본값은 수집 비활성이며, 수집 및 보유 안내 확정 후 사용한다.
-
-## 계정 연결 검증
-- Supabase 이메일 확인, SMTP, 발송 제한과 필요 시 CAPTCHA를 설정한다. 실제 메일 수신/만료 링크/비밀번호 재설정을 테스트한다.
-- Auth Site URL과 허용 Redirect URLs에 최종 테스트 origin, /account.html, /reset-password.html을 명시한다. 전체 와일드카드는 사용하지 않는다.
-- 테스트 사용자 외에는 신규 가입을 열지 않는다. 앱 설정뿐 아니라 Supabase Auth 가입 허용도 확인한다.
-- 관리자 다중 인증과 운영 권한 부여·회수 절차는 별도 검증한다.
-
-## 토스 테스트 상점 검증 (아직 수행하지 않음)
-- 토스 일반결제 테스트 상점의 공개/시크릿 키를 서버 환경에 설정한다. 실제 상점 라이브 키는 이 코드에서 거부된다.
-- 성공/실패 이동은 /payment-result.html이다. 성공 URL 도착은 완료 조건이 아니다.
-- /api/payment가 본인 설계사·예약·단계·금액·주문·허용 origin을 검증하고 토스 승인/조회 결과를 저장한다.
-- /api/payment-webhook은 payload 상태를 신뢰하지 않고 저장된 주문을 토스에서 다시 조회한다. 실외부 웹훅 전달 검증은 아직 미실행이다.
-- 두 단계 테스트 승인, 새로고침/중복 클릭, 승인 타임아웃 후 조회, 환불 타임아웃과 동일 멱등키 재시도, 역순 웹훅, 분쟁 중 잔금 보류를 테스트 상점에서도 확인한다.
-- 현재 환불 UI는 관리자 근거 입력 후 주문별 전액 환불만 지원한다. 부분 환불·취소 수수료는 임의로 정하지 않았다.
-- 테스트 조회/승인에서 불명확한 거래는 승인 확인 중으로 남기고 같은 주문을 재조회한다. 새로운 주문으로 이중 청구하지 않는다.
-
-## 운영 전 확인
-- 실제 사업자 정보, 이용약관, 제3자 제공 대상·목적·보유 기간, 위치/후기/방문 집계 안내, 삭제·익명화 절차를 확정한다.
-- 연결료 모델·직군별 업무 범위·표현·환불 기준은 별도 검토한다. 이 코드의 동작이 법률 검토 완료를 의미하지 않는다.
-- 실제 제휴 설계사 자격·소속·사진 사용 권한·거점 좌표·상담가능 시간을 검증한다.
-- 독립된 PostgreSQL 연결로 동시 확정/완료/결제/취소 부하 검사를 추가한다. 현재 동시성 검사는 로컬 PostgreSQL 호환 엔진의 직렬 요청·잠금/제약조건 검사다.
-- 운영 데이터가 존재하면 구형 요청의 전환·동결 계획과 백업을 먼저 마련한다. 삭제는 수행하지 않았다.
-- 실제 배포/실결제는 별도 명시적 승인이 있기 전까지 수행하지 않는다.
+## 테스트
+실제 인증 메일·복구·역할 격리를 확인합니다. Supabase 가입 허용과 redirect URL도 제한합니다.
+관리자 화면에서 테스트 요금제 금액·기간·약정 노출수 및 지역 슬롯을 설정합니다. 테스트 표시는 실제 사업 정보 확인을 대체하지 않습니다.
+광고 구독 테스트 승인·조회·중복 승인·환불 재시도·웹훅 역순을 검증합니다.
+광고 계측은 서명된 10분 유효 토큰과 이벤트 중복 방지를 사용합니다. 브라우저가 50% 이상 표시를 1초 유지하면 기록을 요청합니다.
+이 방식은 봇/반복 사용자 검증이 아니므로 운영 전에 별도 보강이 필요합니다.
