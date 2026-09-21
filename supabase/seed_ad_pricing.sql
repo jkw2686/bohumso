@@ -4,19 +4,15 @@
 -- 값은 테스트용 예시. 실제 운영가는 확정 후 ad_admin_command RPC 또는 이 파일로 갱신.
 begin;
 
--- 요금제 3종: 가격/기간/약정노출 설정 + 활성화
-update private.ad_plans set amount= 99000, period_days=30, guaranteed_impressions= 3000, enabled=true, reason='테스트 가격 2026-09'
+-- 기본 요금제: 월 3만원(30일). 약정노출 1,000회(환불 가드용, 조정 가능).
+update private.ad_plans set amount=30000, period_days=30, guaranteed_impressions=1000, enabled=true, reason='월 3만원 2026-09'
  where code='basic';
-update private.ad_plans set amount=199000, period_days=30, guaranteed_impressions= 8000, enabled=true, reason='테스트 가격 2026-09'
- where code='premium';
-update private.ad_plans set amount=490000, period_days=30, guaranteed_impressions=20000, enabled=true, reason='테스트 가격 2026-09'
- where code='regional_exclusive';
+-- 상위 티어는 가격 미정 → 비활성 유지(추후 가격 확정 시 활성화).
+update private.ad_plans set enabled=false where code in ('premium','regional_exclusive');
 
--- 노출 슬롯: 요금제 code와 지역 조합. 수도권 3개 지역 개설.
+-- 노출 슬롯: 활성 요금제(basic)만 수도권 3개 지역 개설.
 insert into private.ad_slots(code,region,enabled) values
- ('basic','서울',true),('basic','경기',true),('basic','인천',true),
- ('premium','서울',true),('premium','경기',true),('premium','인천',true),
- ('regional_exclusive','서울',true),('regional_exclusive','경기',true),('regional_exclusive','인천',true)
+ ('basic','서울',true),('basic','경기',true),('basic','인천',true)
 on conflict(code,region) do update set enabled=true;
 
 commit;
