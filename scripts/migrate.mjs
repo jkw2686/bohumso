@@ -19,9 +19,24 @@ if (!url) { console.error('DATABASE_URL 환경변수가 필요합니다(Supabase
 const baseline = (process.env.MIGRATE_BASELINE || '').trim();
 
 const files = (await readdir('supabase')).filter(f => /^\d{3}_.*\.sql$/.test(f)).sort();
-const client = new pg.Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
+const client = new pg.Client({ connectionString: url, ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 15000 });
 
-await client.connect();
+// 연결 실패는 별도로 잡아 안전한 진단(호스트/포트/에러코드)만 출력한다. 비밀번호는 절대 로그로 나가지 않는다.
+let host = '(알 수 없음)', port = '5432';
+try { const u = new URL(url); host = u.hostname; port = u.port || '5432'; } catch {}
+try {
+  await client.connect();
+} catch (e) {
+  console.error(`DB 연결 실패 — host=${host} port=${port} code=${e.code || '?'} : ${e.message}`);
+  if (e.code === 'ENETUNREACH' || e.code === 'EHOSTUNREACH') {
+    console.error('힌트: 이 호스트가 IPv6 전용(Direct 연결)일 수 있습니다. GitHub Actions는 IPv4만 되므로 Supabase "Session pooler"(...pooler.supabase.com, 사용자명 postgres.<ref>) 문자열을 쓰세요.');
+  } else if (e.code === 'ENOTFOUND') {
+    console.error('힌트: 호스트 이름이 잘못되었습니다. Supabase Settings→Database의 연결 문자열을 다시 확인하세요.');
+  } else if (/password|authentication|SASL/i.test(e.message)) {
+    console.error('힌트: 비밀번호가 틀렸거나 [YOUR-PASSWORD] 자리표시자가 실제 비밀번호로 치환되지 않았습니다.');
+  }
+  process.exit(1);
+}
 try {
   await client.query('create schema if not exists private');
   await client.query('create table if not exists private.schema_migrations(name text primary key, applied_at timestamptz not null default now())');
