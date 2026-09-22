@@ -45,7 +45,11 @@ async function start(){
  // 백엔드(Functions) 미배포·미설정 시 에러 대신 '준비 중'으로 degrade. 정적 공유 배포에서도 화면이 깨지지 않는다.
  const response=await fetch("/api/config",{cache:"no-store"}).catch(()=>null);config=response&&response.ok?await response.json():{enabled:false};
  if(!config.enabled&&mode==="directory"){await renderDirectory(null);return;}
- if(!config.enabled){$("accountNotice").textContent=config.message||"회원 서비스를 준비 중입니다.";return;}
+ if(!config.enabled){
+ const local=['127.0.0.1','localhost'].includes(location.hostname);
+ $("accountNotice").textContent=local?'디자인 미리보기입니다. 실제 가입·로그인은 공개 사이트에서 진행해 주세요.':config.message||'회원 서비스 연결을 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.';
+ if(local&&['signup','login','account'].includes(mode)){const a=document.createElement('a');a.className='btn';a.href='https://bohumso.netlify.app/'+(mode==='signup'?'signup.html':'login.html');a.textContent=mode==='signup'?'실제 사이트에서 가입하기':'실제 사이트에서 로그인하기';$("accountNotice").append(a);}return;
+}
  client=createClient(config.url,config.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce",storageKey:"woori-account"}});
  if(config.visitMetrics){try{const day=new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul"}).format(new Date());const key="bohumso-visit-"+day;let id=sessionStorage.getItem(key);if(!id){id=crypto.randomUUID();sessionStorage.setItem(key,id);}client.rpc("record_visit_session",{session_id:id}).catch(()=>{});}catch{}}
  $("accountNotice").textContent="운영: "+config.operator+" · 문의: "+config.contact;$("accountContent").hidden=false;
