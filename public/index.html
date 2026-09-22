@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>보험소 - 내 보험, 제대로 알기</title>
+<title>우리곁에 보험소 | 보험이 급할 때 가까운 보험 전문가</title>
+<meta name="description" content="사고, 질병, 입원, 사망 등 갑자기 보험 도움이 필요한 순간. 우리곁에 보험소에서 지금 도움 가능한 가까운 보험 전문가를 찾아보세요.">
+<meta property="og:title" content="우리곁에 보험소 | 보험이 급할 때 가까운 보험 전문가">
+<meta property="og:description" content="보험이 급한 순간, 가까운 보험 전문가가 바로 곁으로.">
+<meta property="og:type" content="website">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual.css"><link rel="stylesheet" href="/account.css">
@@ -11,22 +15,22 @@
 <body class="home-page">
 
 <div class="nav">
-  <a href="index.html" class="logo"><span class="local">우리동네</span><span class="brand">보험소</span></a>
+  <a href="index.html" class="logo"><span class="local">우리곁에</span><span class="brand">보험소</span></a>
   <span class="nav-auth"><a href="/login.html" class="nav-login">로그인</a><a href="/signup.html" class="btn nav-join">회원가입</a></span>
 </div>
 
 <div class="container">
   <section class="hero hero-premium">
-    <div class="hero-copy"><span class="eyebrow">YOUR LOCAL INSURANCE PARTNER</span>
-    <h1>보험이 막막할 때,<br>내 곁에 <em>보험소.</em></h1>
-    <p>어디에 물어볼지 몰랐던 보험 이야기.<br>이제 가까운 우리 동네에서 시작하세요.</p>
-    <div class="hero-actions"><a href="/find.html" class="btn">내 근처 설계사 찾기 <span aria-hidden="true">↗</span></a><a href="consult.html#consultForm" class="hero-link">보험금 청구 상담하기 →</a></div>
-    <div class="hero-footnote">가까운 거점 찾기 <span>·</span> 방문 상담 요청 <span>·</span> 청구 안내</div></div>
+    <div class="hero-copy"><span class="eyebrow">우리곁에 보험소</span>
+    <h1>예방은 보건소에서,<br><em>보험금 청구는 보험소에서.</em></h1>
+    <p>보험이 급한 순간,<br>가까운 보험 전문가가 바로 곁으로.</p>
+    <div class="hero-actions"><a href="#help-situations" class="btn">지금 도움받기 <span aria-hidden="true">↗</span></a><a href="consult.html#consultForm" class="hero-link">보험금 청구 상담하기 →</a></div>
+    <div class="hero-footnote">상황 선택 <span>·</span> 가까운 전문가 확인 <span>·</span> 직접 도움 요청</div></div>
     <div class="connection-art" role="img" aria-label="지도 위의 보험소와 상담을 연결하는 브랜드 그래픽">
     <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
     <div class="map-platform"><svg viewBox="0 0 400 300" aria-hidden="true"><path fill="#e4edff" d="M0 0h400v300H0z"/><path fill="#ceddfa" d="M25 25h80v60H25zM150 20h90v70h-90zM290 30h85v60h-85zM35 130h100v50H35zM250 140h120v120H250zM30 220h100v60H30z"/><path fill="none" stroke="#fff" stroke-width="18" d="M0 108h400M160 0v300M0 204h250M272 0v300"/><path fill="none" stroke="#8db9ff" stroke-width="24" d="M-10 280Q70 140 195 173T420 10"/><path fill="none" stroke="#3169ee" stroke-width="5" stroke-dasharray="8 7" d="M72 190h87V110h133"/></svg></div>
     <div class="hero-pin"><svg viewBox="0 0 80 100" aria-hidden="true"><path fill="currentColor" d="M40 0A40 40 0 0 0 0 40c0 25 40 60 40 60s40-35 40-60A40 40 0 0 0 40 0"/><circle cx="40" cy="39" r="17" fill="white"/></svg></div>
-    <div class="art-card art-card-top"><span class="art-symbol">⌖</span><div><small>멀리 찾지 마세요</small><strong>우리 동네에 있어요</strong></div></div>
+    <div class="art-card art-card-top"><span class="art-symbol">⌖</span><div><small>멀리 찾지 마세요</small><strong>가까운 전문가 찾기</strong></div></div>
     <div class="art-card art-card-bottom"><span class="art-symbol blue">↗</span><div><small>보험금 청구부터 보장 점검까지</small><strong>질문부터, 편하게.</strong></div></div>
     <span class="art-caption">정보보다 사람이 필요한 순간</span>
     </div>
@@ -36,7 +40,7 @@
     <div class="trust-item"><span class="trust-ico" aria-hidden="true">🆓</span><div><strong>소비자는 무료</strong><small>보험 가입 의무 없음</small></div></div>
     <div class="trust-item"><span class="trust-ico" aria-hidden="true">🤝</span><div><strong>도움이 먼저예요</strong><small>어려운 순간, 곁에서 함께</small></div></div>
   </div>
-  <section class="card situation-start"><h2>지금 어떤 도움이 필요하세요?</h2><p>상황을 선택하고 가까운 설계사를 찾아보세요. 구체적인 건강정보는 입력받지 않습니다.</p><div class="situation-grid"><a href="/find.html?purpose=claim">가족이 돌아가셨어요 →</a><a href="/find.html?purpose=claim">가족이 암 진단을 받았어요 →</a><a href="/find.html?purpose=claim">병원에 있어요 →</a><a href="/find.html?purpose=claim">사고가 났어요 →</a><a href="/find.html?purpose=claim">보험금 청구가 궁금해요 →</a><a href="/find.html?purpose=management">가입한 보험이 궁금해요 →</a><a href="/find.html?purpose=new">보험 가입 상담을 받고 싶어요 →</a><a href="/find.html?purpose=other">기타 →</a></div><p>소비자 무료 · 보험 가입 의무 없음 · 광고 노출 구독은 상담 이용과 별도입니다.</p></section><div class="service-rail"><a href="consult.html#consultForm"><span class="rail-icon">↗</span><div><strong>보험금 청구</strong><small>어디서부터 시작할까요?</small></div><b>→</b></a><a href="dashboard.html"><span class="rail-icon">▤</span><div><strong>내 보험 확인</strong><small>가입한 보장을 한눈에</small></div><b>→</b></a></div>
+  <section id="help-situations" class="card situation-start"><h2>무슨 일이 있으셨나요?</h2><p>상황을 선택하고 가까운 설계사를 찾아보세요. 구체적인 건강정보는 입력받지 않습니다.</p><div class="situation-grid"><a href="/find.html?purpose=claim">가족이 돌아가셨어요 →</a><a href="/find.html?purpose=claim">암 진단을 받았어요 →</a><a href="/find.html?purpose=claim">병원에 입원했어요 →</a><a href="/find.html?purpose=claim">사고가 났어요 →</a><a href="/find.html?purpose=claim">보험금 청구가 필요해요 →</a><a href="/find.html?purpose=management">가입한 보험을 모르겠어요 →</a><a href="/find.html?purpose=coverage">받을 수 있는 보험금이 궁금해요 →</a><a href="/find.html?purpose=other">기타 도움이 필요해요 →</a></div><p>소비자 무료 · 보험 가입 의무 없음 · 광고 노출 구독은 상담 이용과 별도입니다.</p></section><div class="service-rail"><a href="consult.html#consultForm"><span class="rail-icon">↗</span><div><strong>보험금 청구</strong><small>어디서부터 시작할까요?</small></div><b>→</b></a><a href="dashboard.html"><span class="rail-icon">▤</span><div><strong>내 보험 확인</strong><small>보험검진 · 샘플 화면</small></div><b>→</b></a></div>
   <a id="nearbyCard" class="nearby-card" href="consult.html" hidden>
     <span class="nc-ico">📍</span>
     <span class="nc-body">
@@ -49,7 +53,7 @@
 
   <div class="section-heading" id="find-office"><div><span class="eyebrow">CLOSE TO YOU</span><h2>가까이에서, 함께.</h2></div><span>가까운 보험소 찾기</span></div>
   <div class="card">
-    <p class="desc">우리 동네에 들어설 보험소를 지도에서 살펴보세요.</p>
+    <p class="desc">아래 지도는 개설 구상입니다. 실제 도움 가능한 전문가는 전문가 목록에서 확인해 주세요.</p>
     <button class="more-btn" style="margin-bottom:12px;" onclick="locateAndApply(true)">📍 가까운 보험소 찾기</button>
     <div class="coverage-controls" aria-label="지도 지역 선택"><button type="button" data-coverage-region="전체" aria-pressed="true">수도권</button><button type="button" data-coverage-region="서울" aria-pressed="false">서울</button><button type="button" data-coverage-region="경기" aria-pressed="false">경기</button><button type="button" data-coverage-region="인천" aria-pressed="false">인천</button></div><p class="coverage-count" id="coverageCount">서울·경기·인천 지역별 보험소 확장 구상</p><div class="coverage-legend"><span>서울·경기·인천 전 지역 개설 예정</span></div><div id="map" aria-label="보험소 거점 지도"></div><p class="map-credit">지도 © OpenStreetMap 기여자</p>
   </div>
@@ -57,14 +61,14 @@
   <div class="section-heading"><div><span class="eyebrow">HOW CAN WE HELP?</span><h2>어떤 도움이 필요하세요?</h2></div></div><div class="services-grid">
 
   <div class="card" style="border-color:#bcd0ff;">
-    <h3>🧑‍⚖️ 보험금 청구 상담 <span style="color:var(--brand);font-size:13px;font-weight:700;">(계신 곳으로 가요)</span></h3>
+    <h3>🧑‍⚖️ 보험금 청구 상담 <span style="color:var(--brand);font-size:13px;font-weight:700;">(만날 장소 협의)</span></h3>
     <p class="desc">받지 못했거나 덜 받은 보험금, 상담을 통해 필요한 서류와 청구 절차를 함께 확인해 보세요.</p>
     <a href="consult.html" class="btn">사전 상담 문의하기</a>
   </div>
 
   <div class="card">
-    <h3>📋 내 현황 대시보드</h3>
-    <p class="desc">보장 종합 점수와 가입 보험, 점검이 필요한 지점을 한 화면에서 확인</p>
+    <h3>📋 보험검진 · 샘플</h3>
+    <p class="desc">향후 가입보험·보장 공백·중복보장을 점검하는 보조 서비스입니다. 현재는 샘플만 제공합니다.</p>
     <a href="dashboard.html" class="btn secondary">내 현황 보기</a>
   </div>
 
@@ -75,7 +79,7 @@
   </div>
 
   <div class="card signup-cta">
-    <h3>🙋 보험소 시작하기</h3>
+    <h3>🙋 우리곁에 보험소 시작하기</h3>
     <p class="desc">보험 상담이 필요할 때, 다시 찾을 수 있는 우리 동네 연결 창구.</p>
     <a href="signup.html" class="btn">회원가입</a>
     <a href="partner.html" class="btn secondary" style="margin-top:8px;">전문가·파트너로 참여하기</a>

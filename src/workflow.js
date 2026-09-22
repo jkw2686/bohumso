@@ -27,7 +27,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
   for(const row of rows){
    const card=el('article',undefined,host);card.className='card booking-card';card.dataset.bookingId=row.id;
    el('h2',purposes[row.purpose]+' · '+row.region,card);el('p',states[row.state],card).className='request-status';
-   el('p',kst(row.preferred_at)+' KST · '+({phone:'통화 요청',nearby:'근처에서 만나기',scheduled:'시간 약속하기'}[row.method]),card);
+   el('p',kst(row.preferred_at)+' KST · '+({phone:'통화 요청',nearby:'바로 만나기 (장소·일정 협의)',scheduled:'시간 예약'}[row.method]),card);
    el('p',row.planner_name?(row.planner_sample?'테스트 설계사: ':'선택한 설계사: ')+row.planner_name+' · '+row.organization:'전문가 모집 중',card);
    if(row.contact)el('p','예약자 '+row.contact.name+' · '+row.contact.phone,card);
    if(workspace==='customer'&&row.planner_phone)link(card,'설계사에게 전화하기','tel:'+row.planner_phone);
@@ -70,7 +70,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
   select(form,'상담 목적','purpose',purposes,params.get('purpose')||'claim');const area=input(form,'희망 지역','region','text',params.get('region')||'서울 마포구');area.required=true;area.maxLength=120;
   select(form,'상담 방식','method',{phone:'통화 요청 (설계사 확인 후)',nearby:'근처에서 만나기',scheduled:'시간 약속하기'},params.get('method')||'scheduled');
   input(form,'희망 날짜 (KST)','date','date').required=true;const time=input(form,'희망 시간 (KST, 30분 단위)','time','time');time.required=true;time.step=1800;
-  el('p','통화 요청도 설계사 수락 후 진행합니다. 긴급 대응이나 즉시 연결을 보장하지 않습니다.',form);el('button','상담 요청 (무료)',form).type='submit';
+  el('p','병원·장례식장 인근·집 근처·회사 근처·카페 등 만날 장소는 선택한 전문가와 협의하세요. 연락처는 별도 동의 후 전달됩니다.',form);el('p','통화 요청도 설계사 수락 후 진행합니다. 긴급 대응이나 즉시 연결을 보장하지 않습니다.',form);el('button','상담 요청 (무료)',form).type='submit';
   submit(form,d=>command('request',{purpose:d.get('purpose'),region:d.get('region'),method:d.get('method'),planner_id:d.get('planner_id'),automatic:false,preferred_at:new Date(d.get('date')+'T'+d.get('time')+':00+09:00').toISOString()}));
  }
  document.getElementById('workflowFilters')?.addEventListener('submit',e=>{e.preventDefault();action(content,refresh);});

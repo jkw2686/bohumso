@@ -29,3 +29,5 @@
 .trust-item strong{display:block;font-size:14px;color:var(--text);letter-spacing:-.01em}
 .trust-item small{color:var(--muted);font-size:12px}
 @media(max-width:600px){.trust-strip{grid-template-columns:1fr;gap:12px;padding:16px 18px}}
+
+#help-situations{scroll-margin-top:90px}.availability-status{font-weight:700;color:var(--text)}.hero-copy{min-width:0}.hero-copy h1{word-break:keep-all;overflow-wrap:anywhere}

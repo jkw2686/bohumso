@@ -1,6 +1,12 @@
+import {availabilityLabels,availabilityOf} from './availability.js';
 import {el,input,select,specialties} from './consultation-ui.js';
 export async function renderProfileEditor(client,parent){
  const {data,error}=await client.rpc('consultation_workspace',{workspace:'partner'});if(error)return;const p=data.profile||{};
+ const stateForm=el('form',undefined,parent);stateForm.className='card';el('h2','지금 도움 가능한가요?',stateForm);
+ const state=select(stateForm,'상담 가능 상태','availability_status',availabilityLabels,availabilityOf(p));
+ el('p','지금 가능은 1시간, 오늘 가능은 오늘 자정(KST)까지 유효합니다. 이후 예약 가능으로 표시됩니다. 등록 확인된 전문가만 변경할 수 있습니다.',stateForm);
+ const stateButton=el('button','상태 저장',stateForm);stateButton.type='submit';const stateMessage=el('p','',stateForm);stateMessage.setAttribute('role','status');
+ stateForm.onsubmit=async e=>{e.preventDefault();stateButton.disabled=true;try{const {error}=await client.rpc('set_planner_availability',{status:state.value});if(error)throw error;stateMessage.textContent='상담 가능 상태를 저장했습니다.';}catch{stateMessage.textContent='저장하지 못했습니다. 등록 확인 및 상담 가능 상태 기능 연결을 확인해 주세요.';}finally{stateButton.disabled=false;}};
  const details=el('details',undefined,parent);details.className='card';el('summary','설계사 프로필·상담가능 상태 관리',details);
  const form=el('form',undefined,details);input(form,'자기소개 (건강정보·고객정보 입력 금지)','biography','text',p.biography||'').maxLength=1000;
  input(form,'경력 (년)','experience','number',p.experience||0).min=0;input(form,'프로필 사진 HTTPS 주소 (사용 권한이 있는 사진)','photo_url','url',p.photo_url||'');

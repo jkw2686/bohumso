@@ -290,19 +290,7 @@ function closeBooking() {
 
 // 지도 보험소(지역) 마커에서 방문 예약 열기
 function bookArea(region, name) {
-  const overlay = document.getElementById('bookOverlay');
-  if (!overlay) return;
-  const label = region + ' ' + name + ' 보험소';
-  currentOffice = { name: label, area: label, meta: '방문 상담 예약 · 등록 설계사 배정 후 연락드립니다' };
-  document.getElementById('bookTitle').textContent = label + ' 방문 예약';
-  document.getElementById('bookMeta').textContent = currentOffice.meta;
-  document.getElementById('bookInfo').innerHTML =
-    '<div class="bi-row">🕘 방문 상담 가능 시간 10:00~17:00</div>' +
-    '<div class="bi-row">🙌 소비자 무료 · 보험 가입 강요 없음</div>';
-  const today = new Date(); today.setDate(today.getDate() + 1);
-  const d = document.getElementById('bookDate'); if (d) { d.min = today.toISOString().slice(0, 10); }
-  if (map && map.closePopup) map.closePopup();
-  overlay.classList.add('show');
+  location.href='/find.html?region='+encodeURIComponent(region)+'&purpose=claim';
 }
 
 function submitBooking() {

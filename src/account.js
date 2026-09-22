@@ -1,3 +1,4 @@
+import {bindMembershipConsent} from "./membership-consent.js";
 import {socialProviders,configureSocialAuth} from "./social-auth.js";
 import {renderPartnerApplication} from "./partner-onboarding.js";
 import {renderWorkflow as renderRequests,renderPaymentResult} from "./workflow.js";
@@ -21,6 +22,7 @@ async function renderAccount(){
  $("identity").textContent=user.email;$("operator").textContent=config.operator;$("privacyContact").textContent=config.contact;
  $("membershipState").textContent=membership.member?"회원 가입 완료":"이메일 확인 완료 · 가입 동의가 필요합니다.";
  $("membershipForm").hidden=membership.member;$("adminLink").hidden=!membership.admin;
+ bindMembershipConsent($("membershipForm"));
  onForm("membershipForm",async d=>{const {error}=await client.rpc("complete_membership",{terms_accepted:checked(d,"terms"),privacy_accepted:checked(d,"privacy"),age_accepted:checked(d,"age"),marketing_accepted:checked(d,"marketing")});fail(error);location.reload();});
  $("logout").onclick=async()=>{const {error}=await client.auth.signOut();if(error){message("로그아웃하지 못했습니다. 다시 시도해 주세요.");return}location.replace("/login.html");};
 }
