@@ -1,9 +1,6 @@
 export const socialProviders=[
- {id:'kakao',provider:'kakao',label:'카카오'},
  {id:'google',provider:'google',label:'Google'},
- {id:'naver',provider:'custom:naver',label:'네이버'},
- {id:'apple',provider:'apple',label:'Apple'},
- {id:'facebook',provider:'facebook',label:'Facebook'}
+ {id:'kakao',provider:'kakao',label:'카카오'}
 ];
 export async function configureSocialAuth(config,mode){
  const items=socialProviders.map(p=>({...p,button:document.getElementById(p.id+(mode==='signup'?'Signup':'Login'))})).filter(p=>p.button);

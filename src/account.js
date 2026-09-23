@@ -57,11 +57,11 @@ async function start(){
  if(mode==="signup"||mode==="login")void configureSocialAuth(config,mode);
  if(mode==="signup"){
   const consent=()=>{if(!$("signupPrivacy").checked){message("개인정보 안내에 동의해 주세요.");return false;}try{sessionStorage.setItem("bohumso-signup-intent",document.querySelector("[name=signup_role]:checked")?.value||"customer");}catch{}return true;};
-  const oauth=provider=>action($("accountContent"),async()=>{if(!consent())return;const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+"/account.html",...(provider==="kakao"?{scopes:"profile_nickname profile_image"}:{})}});fail(error);});
+  const oauth=provider=>action($("accountContent"),async()=>{if(!consent())return;const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+"/account.html"}});fail(error);});
   for(const p of socialProviders)$(p.id+"Signup")?.addEventListener("click",()=>oauth(p.provider));
   onForm("signupForm",async d=>{if(!consent())return;const {error}=await client.auth.signUp({email:String(d.get("email")).trim(),password:String(d.get("password")),options:{emailRedirectTo:location.origin+"/account.html",data:{signup_notice_version:"2026-09-14-v1"}}});fail(error);message("등록 가능한 이메일이면 인증 메일이 전송됩니다. 메일 확인 후 로그인하여 가입을 마무리해 주세요.");});return;}
  if(mode==="login"){
- const oauth=provider=>action($("accountContent"),async()=>{const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+"/account.html",...(provider==="kakao"?{scopes:"profile_nickname profile_image"}:{})}});fail(error);});
+ const oauth=provider=>action($("accountContent"),async()=>{const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+"/account.html"}});fail(error);});
  for(const p of socialProviders)$(p.id+"Login")?.addEventListener("click",()=>oauth(p.provider));
  onForm("loginForm",async d=>{const {error}=await client.auth.signInWithPassword({email:String(d.get("email")).trim(),password:String(d.get("password"))});if(error){message("이메일·비밀번호 또는 이메일 인증 상태를 확인해 주세요.");return}location.assign("/account.html");});
  $("resetPassword").onclick=()=>action($("loginForm"),async()=>{const email=$("loginForm").elements.email;if(!email.reportValidity())return;const {error}=await client.auth.resetPasswordForEmail(email.value,{redirectTo:location.origin+"/reset-password.html"});fail(error);message("등록된 이메일이면 비밀번호 재설정 안내가 발송됩니다.");});return;
