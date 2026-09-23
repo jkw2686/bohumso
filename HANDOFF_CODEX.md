@@ -1,51 +1,42 @@
-# 인수인계 — 우리동네 보험소 (현행 상태)
-갱신: 2026-09-20 (KST) · Claude ↔ Codex 교대 작업
+# 인수인계 (Claude → Codex) — 2026-09-22
 
-## 0. 지금 바로
-- 프로젝트: `C:\Users\AdMins\Documents\bohumso-netlify` · git 브랜치 `main`
-- 먼저 읽기: 이 문서 → `CLAUDE.md`(마스터 규칙) → `design-system.md`(네이비 가드레일) → `docs/final-report.md`
-- **실배포·실결제 금지**(명시 승인 전). 토스 test-only(라이브 차단). 공개 사이트의 Supabase 인증/공개 목록 연결 확인(2026-09-20). 대시보드 URL 설정과 메일 실제 도착은 미검증. 시크릿 채팅/프런트/repo 금지. 사업자·검증 사실 지어내지 말 것(미확정 공란).
+우리곁에 보험소(bohumso) 풀앱. 이 문서는 Claude 세션 종료 시점의 현재 상태와 다음 작업을 정리한다.
+**규칙은 항상 `CLAUDE.md`·`design-system.md` 준수** (자동매칭 금지·건당과금 금지·정액 광고구독만·네이비 디자인 토큰).
 
-## 1. 확정된 방향
-기존 풀앱(네이비 디자인·지도·회원가입·전 기능) 유지 + 합법 구조를 위한 모델 2개 변경. `design-system.md` 토큰만 사용.
-합법 원칙(CLAUDE.md §1~3): 소비자 직접 선택·먼저 연락 / 고객정보 제3자 분배·판매 금지 / **연결·연락처 트리거 과금 금지(정액 구독만)** / 지급보장 표현 금지.
+## 접속/환경
+- 코드: `C:\Users\AdMins\Documents\bohumso-netlify` · GitHub: `jkw2686/bohumso` (main push→Netlify 자동배포)
+- 라이브: https://bohumso.netlify.app · 어드민: https://bohumso.netlify.app/admin-requests.html
+- Supabase ref `xyexphhspykwwlhfokfl` (리전 Sydney ap-southeast-2)
+- 스택: 정적 HTML/CSS/JS + esbuild(`npm run build` → src/account.js·visit.js를 public/assets/로 번들) + Netlify Functions(.mts) + Supabase + Toss(테스트)
+- `public/assets/account.js`는 **gitignore**(빌드산출물). 소스는 `src/account.js`. Netlify가 배포 때 빌드함.
 
-## 2. 완료 상태 ✅ (둘 다 구현·커밋·verify green)
-### ① 자동매칭 제거 → 소비자 직접 선택만 — 완료 (commit `ced2a55`)
-UI 자동매칭/다음후보 제거, 서버 automatic 요청 거부, rank/offer/만료워커 제거, DB automatic=false 제약.
+## ⚠️ 지금 당장 확인할 것 (in-flight)
+1. **최신 커밋 `0c30d17`(소셜버튼 정리)이 라이브 미전파**. `curl -s https://bohumso.netlify.app/login.html | grep facebookLogin` 가 아직 매치됨(=옛버전). 3분 넘게 안 올라옴 → **Netlify 빌드 실패/지연 의심**. Netlify 대시보드 Deploys에서 빌드 로그 확인 필요. (로컬 `npm run build`는 통과함.)
+2. **회원가입 버튼 "반응 없음" 이슈**: 원인은 **동의 체크박스(signupPrivacy) 미체크 시 조용히 막힘**(`src/account.js` consent()). 사용자가 체크 안 하고 눌러서 반응 없어 보임. → **개선 필요: 동의 미체크 시 눈에 띄는 피드백**(체크박스 하이라이트/메시지 스크롤). 법적 동의라 게이트 자체는 유지.
 
-### ② 건당 과금 → 광고 노출 구독(선불·수동갱신) — 완료 (commit `05dc73d`)
-- 상담에서 가격·무료이용권·단계별 주문·미결제 제한 제거. 상담 확정/완료/취소/분쟁은 광고와 **분리**.
-- 신규: `ad_plans·ad_slots·ad_subscriptions·ad_impressions·ad_audit` + RPC(`ad_checkout/begin_confirm/reconcile/refund_request/refund_failure/workspace/admin_command/user_order/order_lookup/public_slots/record_impression`).
-- 3요금제(베이직/프리미엄/지역독점)는 조건 NULL·비활성(사업자 확정 대기). 지역독점 슬롯 잠금, 주문조건 고정, **환불=약정 노출 미달+플랫폼 귀책만**(전액), 지연승인 무시, 만료 해제.
-- **상담 건수 = display-only**(과금·환불과 무연결). 광고 노출집계는 약정 노출 미달 환불 판단에 사용. 서버 서명 토큰·10분 만료·중복방지·기본 비활성.
-- 신규 파일: `netlify/functions/ads.mts`·`_shared/impressions.mjs`, `src/ad-subscription.js`·`sponsored.js`, `tests/impressions.test.mjs`.
-- 토스 위젯 키 `test_gck_/test_gsk_`(의도적), 라이브 차단, 간편결제 잔액 응답 검증.
+## 이번 세션 완료 (라이브 반영됨, 0c30d17 제외)
+- **어드민 콘솔 통합·배포**(admin-requests.html + admin-console.js/.css). 008 라이브 적용. account.js/workflow.js admin 워크스페이스 위 UI층.
+- **결제(광고구독) 백엔드 ON**: Netlify env(PAYMENTS_ENABLED=true,TOSS_MODE=test,TOSS_CLIENT_KEY=test_gck_,TOSS_SECRET_KEY=test_gsk_,APP_ORIGIN) 등록·검증(`/api/payment` 4단계 통과). 요금제 basic=월3만원 DB 반영, 수도권 슬롯 활성.
+- **DB 마이그레이션 001~009 전부 라이브 적용 + private.schema_migrations 이력 기록**(자동화 켜면 010부터).
+- **Codex 이전작업 배포**: 브랜드 "우리곁에 보험소"(우리동네→우리곁에), social-auth 상태 명확화, 009 설계사 가용시간.
+- **간편로그인 구글=완성**: Google Cloud `bohumso-auth` OAuth 웹클라이언트, Supabase external.google=true, authorize 리디렉트 검증. **로그인/가입 UI를 구글(맨위)+카카오만 남기고 네이버·애플·페북 삭제**(0c30d17, 미전파).
+- **사용자 계정**: jkw2686@gmail.com (auth.users id `089a8ca3-a1aa-4306-9f07-2c30a903d5ff`) 가입·인증 완료, **admin_memberships 등록=관리자**. 로그인만 하면 어드민 사용 가능.
 
-## 3. 검증
-- `npm run verify` green: **단위 19 + 브라우저 e2e + 가입 회귀**. DB=PGlite, auth/PG 모의, 브라우저=Edge.
-- 최신 실행: `artifacts/verification-report.json` 확인. Node 22+. `npm ci → build → test → verify`.
-- 배포 전 도구: `preflight`(env 형식) · `smoke`(실연결) · `concurrency`(일회용 Postgres 경합).
+## 남은 로드맵 / TODO
+1. **배포 전파 문제 해결**(위 in-flight #1) — 최우선.
+2. **회원가입 UX 개선**(위 #2) + **이메일 확인 끄기**: Supabase Auth → "Confirm email" OFF 권장(mailer_autoconfirm=false라 신규 가입자가 확인메일 필요 → 지인 테스트 불편). Supabase 대시보드에서 토글.
+3. **카카오 로그인 미완**: 카카오 앱(ID 1586338) 등록·Redirect URI·Client Secret·external.kakao=true 다 됐으나, **개인 카카오앱은 account_email "권한 없음"**이고 Supabase가 account_email 강제 요청 → **KOE205**. 해결=카카오 **비즈니스 앱 전환(사업자번호)** 후 이메일 권한 신청. 그전까지 카카오 버튼은 "준비 중" 비활성 유지. (Supabase Kakao provider scope에서 account_email 제거는 대시보드에 없음; 클라 scope override는 append돼 무효—시도했다 되돌림.)
+4. **카드결제 실제 테스트**: 결제창은 승인된 설계사/관리자 로그인 시 `/partner-work.html` 광고구독 섹션에 뜸. 실제 카드클릭 테스트하려면 승인된 설계사 계정 필요. (원하면 사용자 계정을 planner_directory에 넣어 테스트 가능.)
+5. **마이그레이션 자동화 완성**: `.github/workflows/migrate.yml`+`scripts/migrate.mjs`. GitHub `DATABASE_URL` 시크릿을 **Session pooler** 문자열로 교체해야 작동: `postgresql://postgres.xyexphhspykwwlhfokfl:[PW]@aws-0-ap-southeast-2.pooler.supabase.com:5432/postgres` (비번 특수문자 percent-encode). 이력은 이미 시드됨.
+6. **운영자명 불일치**: 브랜드는 "우리곁에 보험소"인데 Netlify `OPERATOR_NAME`=아직 "우리동네 보험소"(푸터 법적표시). 통일 필요(Netlify env 수정).
+7. **상위 요금제**(프리미엄·지역독점) 가격 미정 비활성 — 정해지면 `supabase/seed_ad_pricing.sql` 방식으로 반영.
 
-## 4. 남은 일 = 전부 인적 게이트 / 후속 범위
-- **인적 게이트(사용자·법률):** Supabase 복귀 URL·메일 인증·권한 실제 검증, 토스 테스트 상점 승인·취소·웹훅, 운영자·설계사 자격 확인, 요금/약정·약관·환불/보유기간 법률 검토. → `docs/deploy-runbook.md`·`release-checklist.md` 순서.
-- **미구현 후속 범위(당장 불필요):** 저장카드 자동갱신, 부분환불, 노출크레딧 충전형 상품.
-- **DB 이관:** 현재 SQL 합본(`_apply_all.sql`)은 **새 빈 테스트 DB 전용**. 기존 003/004 적용 DB가 있으면 전환 마이그레이션·거래 보존 별도 필요(공개 Supabase 연결 확인됨 — 현재 DB에 합본 재실행 금지).
+## DB 직접 접근 (중요)
+- 이 PC에서 pg로 라이브 DB 직접 SQL 실행 가능(마이그레이션·시드·계정관리 이렇게 처리해옴). Session pooler: host `aws-0-ap-southeast-2.pooler.supabase.com`, port 5432, user `postgres.xyexphhspykwwlhfokfl`, db postgres, ssl(rejectUnauthorized:false).
+- **DB 비밀번호는 사용자만 보유(어디에도 저장 안 함)**. 필요 시 사용자에게 재요청. Netlify env 수정(비번 재설정 등)은 auto-mode classifier가 "shared resource"로 막을 수 있음 → 사용자 승인 필요.
+- **시크릿 값(DB비번·Toss secret·Kakao/Google secret)은 이 문서/코드/깃에 저장 금지.** 위치만 참조.
 
-## 5. Git
-- 브랜치 `main`, base `68524e2`.
-- 최근: `05dc73d`(광고구독) · `ced2a55`(직접선택) · `b5fd77a`(degrade) · `60fd7a9`(결제위젯) · `55ba999`(동시성) · `e54c48d`(구현+배포도구).
-- 작업 트리 클린. identity(local) `jkw2686@gmail.com`. 원격 연결 상태는 이번 인수 작업에서 검증하지 않음.
-
-## 6. 주의
-- 합법 원칙(§1~2) 반영 상태 유지 — 상담과 광고 과금은 절대 다시 엮지 말 것.
-- UI 변경 시 `design-system.md` 자가검사(네이비 토큰·대비 4.5:1·간격/radius·360px·focus) 후 종료. 각 변경 후 `npm run verify` 유지.
-
-## 7. Codex 인수 후 공개 연결 확인 (2026-09-20)
-- Claude의 c34e731/e565ed5 커밋을 확인한 후 이어서 수정. 기존 연결/데이터/디자인 유지.
-- https://bohumso.netlify.app 및 가입·로그인·계정·복구 화면 HTTP 200. 공개 설정 enabled=true, 이메일 가입 활성, planner_catalog 정상.
-- Kakao/Google provider는 둘 다 비활성. 로컬에서 실제 provider 설정에 맞춰 버튼 준비 상태를 표시하도록 보강.
-- docs/auth-launch-checklist.md에 정확한 수동 설정 경로와 검증 범위 정리. node scripts/check-public-auth.mjs로 공개 읽기 전용 재확인.
-- 이번 로컬 변경은 배포하지 않음. URL allowlist·이메일 도착·실제 OAuth 왕복·결제 성공은 아직 확인하지 않음.
-
-- 최신 로컬 검증: 2026-09-20 23:41 KST, 전체 passed=true (단위 19 + 가입 회귀 + 모바일/PC). 현재 브랜치 main 확인.
+## 검증
+- `npm run build` (functions 컴파일+키누출 검사), `node tests/admin-console.cjs`, `node --test tests/*.test.mjs`.
+- ⚠️ 이 PC는 메모리 부족으로 PGlite 테스트가 "Array buffer allocation failed"로 로컬 실패함(로직결함 아님). GitHub Actions verify.yml에서 깨끗이 검증됨.
+- 배포 검증: `/api/config`(enabled·operator), `/api/payment`(결제 config), `/auth/v1/settings`(소셜 provider), authorize 리디렉트.
