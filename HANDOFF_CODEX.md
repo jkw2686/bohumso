@@ -11,7 +11,7 @@
 - `public/assets/account.js`는 **gitignore**(빌드산출물). 소스는 `src/account.js`. Netlify가 배포 때 빌드함.
 
 ## ⚠️ 지금 당장 확인할 것 (in-flight)
-1. **Netlify 자동배포 멈춤(확실)**: 커밋 `0c30d17`·`01741eb` 등 여러 푸시가 **약 10분+ 재시도에도 라이브 미전파**. `curl -s https://bohumso.netlify.app/login.html | grep facebookLogin` 아직 매치(=옛버전). 로컬 `npm run build` 통과하므로 코드 문제 아님. → **Netlify Deploys 페이지(https://app.netlify.com/projects/bohumso/deploys)에서 최신 배포 상태 확인 필수**: (a) Failed(빨강)면 빌드 로그 확인, (b) Building/Queued면 대기, (c) 아무 배포도 안 생겼으면 GitHub 연동 끊김/자동배포 중지 → Site configuration → Build & deploy에서 재연결/재개. 마지막으로 확실히 전파된 커밋은 `4eb5bf8`(kakao scope) 무렵.
+1. **Netlify 프로덕션 배포 "일시정지"(원인 확정)**: **무료 플랜 배포 크레딧 소진** → Netlify가 "operational credits" 모드로 전환, production deploys paused. 최근 커밋(`0c30d17`·`01741eb`·`8a96aa4` 등)이 "Skipped"로 표시되고 라이브 미반영. **현재 published=`4eb5bf8`**(정상 작동, 사이트 라이브 유지). Auto publishing은 켜져 있음. 코드/빌드 문제 아님. **해결: (a) 다음 결제주기까지 대기(무료, 크레딧 리셋되면 자동 재개) 또는 (b) 팀 업그레이드(유료, 즉시).** 재개되면 git의 미배포 커밋들이 반영됨. Deploys 페이지 상단 빨간 배너로 확인. (오늘 배포를 十여 번 트리거해서 소진된 것—앞으로 불필요한 재배포 자제.)
 2. **회원가입 버튼 "반응 없음" 이슈**: 원인은 **동의 체크박스(signupPrivacy) 미체크 시 조용히 막힘**(`src/account.js` consent()). 사용자가 체크 안 하고 눌러서 반응 없어 보임. → **개선 필요: 동의 미체크 시 눈에 띄는 피드백**(체크박스 하이라이트/메시지 스크롤). 법적 동의라 게이트 자체는 유지.
 
 ## 이번 세션 완료 (라이브 반영됨, 0c30d17 제외)
