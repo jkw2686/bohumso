@@ -17,12 +17,14 @@
 
   // 지인 테스트용 샘플 거점(실데이터 아님, 삭제 가능). 실제 목록은 추후 planner_catalog 연동.
   var SPOTS = [
-    { id: 's1', name: '마포 보험소', job: '보험설계사', specialty: '보험금 청구', lat: 37.5563, lng: 126.9236, rating: 4.8, pledge: true },
-    { id: 's2', name: '여의도 보험소', job: '손해사정사', specialty: '분쟁·과소지급', lat: 37.5219, lng: 126.9245, rating: 4.6, pledge: true },
-    { id: 's3', name: '강남 보험소', job: '보험설계사', specialty: '보장 점검', lat: 37.4979, lng: 127.0276, rating: 4.9, pledge: false },
-    { id: 's4', name: '용산 보험소', job: '기업보험 컨설턴트', specialty: '기업·단체보험', lat: 37.5326, lng: 126.9905, rating: 4.4, pledge: true },
-    { id: 's5', name: '성동 보험소', job: '보험설계사', specialty: '신규 가입 상담', lat: 37.5636, lng: 127.0369, rating: 4.7, pledge: true }
+    { id: 's1', name: '마포 보험소', job: '보험설계사', specialty: '보험금 청구', region: '서울 마포구', lat: 37.5563, lng: 126.9236, rating: 4.8, pledge: true },
+    { id: 's2', name: '여의도 보험소', job: '손해사정사', specialty: '분쟁·과소지급', region: '서울 영등포구', lat: 37.5219, lng: 126.9245, rating: 4.6, pledge: true },
+    { id: 's3', name: '강남 보험소', job: '보험설계사', specialty: '보장 점검', region: '서울 강남구', lat: 37.4979, lng: 127.0276, rating: 4.9, pledge: false },
+    { id: 's4', name: '용산 보험소', job: '기업보험 컨설턴트', specialty: '기업·단체보험', region: '서울 용산구', lat: 37.5326, lng: 126.9905, rating: 4.4, pledge: true },
+    { id: 's5', name: '성동 보험소', job: '보험설계사', specialty: '신규 가입 상담', region: '서울 성동구', lat: 37.5636, lng: 127.0369, rating: 4.7, pledge: true }
   ];
+  // 지도 방식 → 기존 요청 흐름의 method 값 매핑(전화 통화 / 바로 만나기 / 시간 예약)
+  var WAY_METHOD = { visit_office: 'scheduled', request_visit: 'nearby', call: 'phone', message: 'phone' };
 
   var GU = {
     '서울': ['마포구', '영등포구', '강남구', '용산구', '성동구'],
@@ -139,10 +141,13 @@
   }
 
   function chooseWay(s, way) {
-    // 소비자 선택만 기록. 전문가에게 자동 전송 없음. 다음은 상담 신청 단계.
-    try { sessionStorage.setItem('bohumso-consult-intent', JSON.stringify({ spot: s.id, name: s.name, way: way, at: Date.now() })); } catch (e) {}
-    if (way === 'call' || way === 'message') { location.href = '/consult.html'; return; }
-    location.href = '/consult.html';
+    // 소비자가 직접 고른 전문가·방식으로 기존 요청 흐름(requests.html, 로그인 게이트)에 넘긴다.
+    // 전문가에게 정보 자동 전송·자동매칭 없음 — 소비자가 요청을 개시한다(CLAUDE.md §1).
+    var params = 'planner=' + encodeURIComponent(s.id) +
+      '&purpose=' + encodeURIComponent(PURPOSE || 'other') +
+      '&method=' + (WAY_METHOD[way] || 'scheduled');
+    if (s.region) params += '&region=' + encodeURIComponent(s.region);
+    location.href = '/requests.html?' + params;
   }
 
   /* 시트 드래그(그립) — 간단한 열기/닫기 */
@@ -174,7 +179,7 @@
           id: p.id, name: p.name || p.organization || '보험소',
           job: p.organization || '보험 전문가',
           specialty: (Array.isArray(p.specialties) && p.specialties.length ? p.specialties.join('·') : '상담'),
-          lat: p.latitude, lng: p.longitude, rating: p.rating || 0, pledge: !!p.verified
+          region: p.region || '', lat: p.latitude, lng: p.longitude, rating: p.rating || 0, pledge: !!p.verified
         };
       });
       return spots.length ? spots : null;
