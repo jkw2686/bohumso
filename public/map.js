@@ -24,6 +24,8 @@
     { id: 's5', name: '성동 보험소', job: '보험설계사', specialty: '신규 가입 상담', region: '서울 성동구', lat: 37.5636, lng: 127.0369, rating: 4.7, pledge: true, hours: '평일 11:00~20:00', completed: 73, reviews: 16, availability: 'scheduled' }
   ];
   var AVAIL = { now: '지금 상담 가능', today: '오늘 상담 가능', scheduled: '예약 상담', unavailable: '상담 준비 중' };
+  // 전문분야 코드→한글 (consultation-ui.js와 동일)
+  var SPECIALTY = { death: '사망보험금', illness: '암·질병', medical: '실손보험', claim: '보험금 청구', accident: '자동차·상해', life: '생명보험', nonlife: '손해보험', corporate: '법인보험', remodel: '보험 리모델링', management: '기존 보험 관리', coverage: '보장 점검', new: '신규 가입', other: '기타 문의' };
   // 지도 방식 → 기존 요청 흐름의 method 값 매핑(전화 통화 / 바로 만나기 / 시간 예약)
   var WAY_METHOD = { visit_office: 'scheduled', request_visit: 'nearby', call: 'phone', message: 'phone' };
 
@@ -203,7 +205,7 @@
         return {
           id: p.id, name: p.name || p.organization || '보험소',
           job: p.organization || '보험 전문가',
-          specialty: (Array.isArray(p.specialties) && p.specialties.length ? p.specialties.join('·') : '상담'),
+          specialty: (Array.isArray(p.specialties) && p.specialties.length ? p.specialties.map(function (x) { return SPECIALTY[x] || x; }).join('·') : '상담'),
           region: p.region || '',
           lat: Number.isFinite(p.latitude) ? p.latitude : null, lng: Number.isFinite(p.longitude) ? p.longitude : null,
           rating: p.rating || 0, pledge: !!p.verified,
