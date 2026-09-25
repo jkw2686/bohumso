@@ -244,6 +244,10 @@
     // 카드 시트 그립: 위로=상세, 아래로=닫기
     bindGrip('cardGrip', function (toggle) { if (toggle) { $('cardSheet').classList.toggle('detail'); return; } $('cardSheet').classList.add('detail'); }, function () { closeCard(); });
     $('cardScrim').addEventListener('click', closeCard);
+    // 키보드 접근성: 카드가 열려 있으면 Esc로 닫기
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { var cs = $('cardSheet'); if (cs && !cs.hidden && cs.classList.contains('show')) closeCard(); }
+    });
 
     // 현재 위치
     $('locateFab').addEventListener('click', locate);
