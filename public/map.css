@@ -90,6 +90,7 @@
 .sort-tabs button[aria-selected="true"]{background:var(--brand-soft);color:var(--brand);border-color:var(--brand-soft);font-weight:700}
 .list-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 12px 16px}
 .list-empty{margin:24px 12px;color:var(--muted);font-size:14px;line-height:1.6;text-align:center}
+.sample-note{margin:0 0 10px;padding:8px 10px;background:var(--brand-soft);color:var(--muted);font-size:12px;border-radius:10px;text-align:center}
 
 /* 목록 아이템 */
 .spot{
