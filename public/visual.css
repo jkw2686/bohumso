@@ -14,3 +14,6 @@ html{scroll-behavior:smooth;scroll-padding-top:90px}body{padding-bottom:20px}but
 
 .coverage-marker span{background:#285eea;color:white;border:2px solid white;box-shadow:0 3px 9px #23498435}.coverage-legend{color:#476da8;background:#edf3ff;padding:10px 12px;border-radius:10px}.coverage-legend span:before{background:#285eea}
 
+
+/* Primary service promise, moved out of the decorative graphic. */
+.hero-premium .hero-promise{margin:18px 0 0;color:var(--card,#fff);font-size:28px;font-weight:800;line-height:1.45;letter-spacing:-.02em;word-break:keep-all}.hero-promise span{display:inline-block}@media(max-width:600px){.hero-premium .hero-promise{font-size:24px}}

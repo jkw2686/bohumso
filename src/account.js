@@ -1,3 +1,4 @@
+import {renderExpertAdmin} from './expert-admin.js';
 import {bindMembershipConsent} from "./membership-consent.js";
 import {socialProviders,configureSocialAuth} from "./social-auth.js";
 import {renderPartnerApplication} from "./partner-onboarding.js";
@@ -26,21 +27,8 @@ async function renderAccount(){
  onForm("membershipForm",async d=>{const {error}=await client.rpc("complete_membership",{terms_accepted:checked(d,"terms"),privacy_accepted:checked(d,"privacy"),age_accepted:checked(d,"age"),marketing_accepted:checked(d,"marketing")});fail(error);location.reload();});
  $("logout").onclick=async()=>{const {error}=await client.auth.signOut();if(error){message("로그아웃하지 못했습니다. 다시 시도해 주세요.");return}location.replace("/login.html");};
 }
-async function renderPartner(){await renderPartnerApplication({client,user,membership,message,action});}
-async function renderAdmin(){
- const host=$("applications");host.replaceChildren();
- if(!membership.admin){$("accountContent").hidden=true;throw {message:"admin_required"};}
- const {data,error}=await client.from("partner_applications").select("*").order("created_at",{ascending:false}).limit(100);fail(error);
- if(!data.length)line(host,"심사 신청이 없습니다.");
- for(const row of data){const card=document.createElement("section");card.className="card";host.append(card);
- line(card,row.full_name+" · "+jobs[row.profession],"h2");line(card,row.organization+" / "+row.region);line(card,"확인 정보: "+row.credential_reference);line(card,"발급·확인 기관: "+(row.credential_issuer||"미입력"));line(card,"심사 연락처: "+(row.business_contact||"미입력"));line(card,"경력: "+(row.career_years||0)+"년");line(card,"상태: "+status[row.status]);if(row.review_note)line(card,row.review_note);
- const options=row.status==="pending"?[["approved","승인"],["rejected","반려"]]:row.status==="approved"?[["suspended","활동 정지"]]:row.status==="suspended"?[["approved","승인 복구"]]:[];
- if(!options.length)continue;
- const label=line(card,"검토 근거·안내 사유 (3자 이상)","label");const reason=document.createElement("textarea");reason.minLength=3;reason.maxLength=1000;reason.setAttribute("aria-label",row.full_name+" 검토 사유");label.append(reason);
- const actions=document.createElement("div");actions.className="review-actions";card.append(actions);
- for(const [decision,title]of options){const btn=document.createElement("button");btn.type="button";btn.textContent=title;actions.append(btn);btn.onclick=()=>action(card,async()=>{if(reason.value.trim().length<3){message("검토 사유를 3자 이상 입력해 주세요.");return}const {error}=await client.rpc("review_partner_application",{target_user:row.user_id,decision,reason:reason.value.trim(),expected_revision:row.revision});fail(error);await renderAdmin();message("심사 결과를 저장했습니다.");});}
- }
-}
+async function renderPartner(){return renderPartnerApplication({client,user,membership,message,action});}
+async function renderAdmin(){if(!membership.admin)throw {message:'admin_required'};await renderExpertAdmin({client,host:$('applications'),message});}
 async function start(){
  // 백엔드(Functions) 미배포·미설정 시 에러 대신 '준비 중'으로 degrade. 정적 공유 배포에서도 화면이 깨지지 않는다.
  const response=await fetch("/api/config",{cache:"no-store"}).catch(()=>null);config=response&&response.ok?await response.json():{enabled:false};
@@ -56,7 +44,8 @@ async function start(){
  if(mode==="directory"){await renderDirectory(client);return;}
  if(mode==="signup"||mode==="login")void configureSocialAuth(config,mode);
  if(mode==="signup"){
-  const consent=()=>{if(!$("signupPrivacy").checked){message("개인정보 안내에 동의해 주세요.");return false;}try{sessionStorage.setItem("bohumso-signup-intent",document.querySelector("[name=signup_role]:checked")?.value||"customer");}catch{}return true;};
+  $("signupPrivacy").addEventListener("change",()=>{if($("signupPrivacy").checked){$("signupPrivacy").removeAttribute("aria-invalid");$("signupConsentHint").hidden=true;message("");}});
+  const consent=()=>{if(!$("signupPrivacy").checked){message("개인정보 안내에 동의해 주세요.");const field=$("signupPrivacy");field.setAttribute("aria-invalid","true");field.setAttribute("aria-describedby","signupConsentHint");$("signupConsentHint").hidden=false;field.scrollIntoView({block:"center",behavior:"auto"});field.focus({preventScroll:true});return false;}try{sessionStorage.setItem("bohumso-signup-intent",document.querySelector("[name=signup_role]:checked")?.value||"customer");}catch{}return true;};
   const oauth=provider=>action($("accountContent"),async()=>{if(!consent())return;const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+"/account.html"}});fail(error);});
   for(const p of socialProviders)$(p.id+"Signup")?.addEventListener("click",()=>oauth(p.provider));
   onForm("signupForm",async d=>{if(!consent())return;const {error}=await client.auth.signUp({email:String(d.get("email")).trim(),password:String(d.get("password")),options:{emailRedirectTo:location.origin+"/account.html",data:{signup_notice_version:"2026-09-14-v1"}}});fail(error);message("등록 가능한 이메일이면 인증 메일이 전송됩니다. 메일 확인 후 로그인하여 가입을 마무리해 주세요.");});return;}
@@ -72,7 +61,7 @@ async function start(){
  if(mode==="requests")await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action});
  if(mode==="payment")await renderPaymentResult(client,message);
  if(mode==="account")await renderAccount();
- if(mode==="partner"){await renderPartner();if(membership.profession==="planner")await renderProfileEditor(client,$("accountContent"));}
+ if(mode==="partner"){const applicationStatus=await renderPartner();if(membership.profession==="planner"&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));}
  if(mode==="admin"){await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
 }
 start().catch(e=>{message(safeError(e));$("accountContent").hidden=true;$("accountNotice").textContent="회원 서비스 연결 상태를 확인할 수 없습니다.";});

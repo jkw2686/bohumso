@@ -31,11 +31,13 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
   await expect(page.locator('#kakaoSignup')).toHaveText('카카오 로그인 준비 중');
   await expect(page.locator('#kakaoSignup')).toBeDisabled();
   await expect(page.locator('#googleSignup')).toBeDisabled();
-  for(const id of ['naver','apple','facebook'])await expect(page.locator('#'+id+'Signup')).toBeDisabled();
+  for(const id of ['naver','apple','facebook'])await expect(page.locator('#'+id+'Signup')).toHaveCount(0);
   await page.locator('[name=email]').fill('test@example.com');
   await page.locator('[name=password]').fill('test-password-1234');
   await page.getByRole('button',{name:'인증 메일 받고 가입 시작'}).click();
   await expect(page.locator('#accountMessage')).toContainText('동의');
+  await expect(page.locator('#signupPrivacy')).toBeFocused();
+  await expect(page.locator('#signupConsentHint')).toBeVisible();
   expect(requests.filter(r=>r.url.pathname.endsWith('/signup'))).toHaveLength(0);
   await page.locator('#signupPrivacy').check();
   await page.getByRole('button',{name:'인증 메일 받고 가입 시작'}).click();
@@ -58,9 +60,11 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
   await expect(page.locator('#googleLogin')).toBeDisabled();
   await expect(page.locator('#loginForm')).toBeVisible();
   settingsFailure=false;providers=true;
-  for(const mode of ['signup','login'])for(const provider of ['kakao','google','naver','apple','facebook']){
+  for(const mode of ['signup','login'])for(const provider of ['kakao','google']){
    await page.goto(base+'/'+mode+'.html');
    const button=page.locator('#'+provider+(mode==='signup'?'Signup':'Login'));
+   if(mode==='login'){for(const id of ['naver','apple','facebook'])await expect(page.locator('#'+id+'Login')).toHaveCount(0);await expect(page.locator('.social-auth button').first()).toHaveAttribute('id','googleLogin');}
+   if(mode==='login'&&provider==='kakao'){await expect(button).toBeDisabled();await expect(button).toHaveText('카카오 로그인 준비 중');continue;}
    await expect(button).toBeEnabled();
    if(mode==='signup'){
     const before=requests.length;await button.click();

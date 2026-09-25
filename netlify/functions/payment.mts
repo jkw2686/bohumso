@@ -16,18 +16,24 @@ export default async (request:Request)=>{
   const server=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
   async function rpc(c:any,name:string,args:any){const result=await c.rpc(name,args);if(result.error)throw Error(result.error.message);return result.data;}
   const gateway=createTossGateway(settings.secretKey);
+  const testOrder=typeof body.orderId==='string'&&/^testadmin_[a-f0-9]{32}$/.test(body.orderId);
+  if(body.action==='admin_test_checkout'){
+   if(env('ADMIN_TEST_PAYMENTS_ENABLED')!=='true')return reply({error:'admin_test_disabled'},503);
+   const order=await rpc(client,'admin_test_checkout',{request_key:body.requestKey});
+   return reply({order,clientKey:settings.clientKey,successUrl:settings.origin+'/payment-result.html',failUrl:settings.origin+'/payment-result.html?failed=1',testOnly:true});
+  }
   if(body.action==='checkout'){
    const order=await rpc(client,'ad_checkout',{plan_id:body.planId,slot_id:body.slotId,request_key:body.requestKey,consent:body.consent});
    return reply({order,clientKey:settings.clientKey,successUrl:settings.origin+'/payment-result.html',failUrl:settings.origin+'/payment-result.html?failed=1',testOnly:true});
   }
   if(body.action==='confirm'){
    if(!Number.isSafeInteger(body.amount))return reply({error:'invalid_amount'},400);
-   const order=await rpc(client,'ad_begin_confirm',{order_id:body.orderId,provided_key:body.paymentKey,provided_amount:body.amount});
-   const result=await confirmAndReconcile(order,gateway,args=>rpc(server,'ad_reconcile',args));return reply(result);
+   const order=await rpc(client,testOrder?'admin_test_begin_confirm':'ad_begin_confirm',{order_id:body.orderId,provided_key:body.paymentKey,provided_amount:body.amount});
+   const result=await confirmAndReconcile(order,gateway,args=>rpc(server,testOrder?'admin_test_reconcile':'ad_reconcile',args));return reply(result);
   }
   if(body.action==='status'){
-   const order=await rpc(client,'ad_user_order',{order_id:body.orderId});if(!order.payment_key)return reply({status:order.state});
-   const payment=await gateway.lookup(order.id);await rpc(server,'ad_reconcile',verifiedPayment(payment,order));return reply({status:payment.status});
+   const order=await rpc(client,testOrder?'admin_test_user_order':'ad_user_order',{order_id:body.orderId});if(!order.payment_key)return reply({status:order.state});
+   const payment=await gateway.lookup(order.id);await rpc(server,testOrder?'admin_test_reconcile':'ad_reconcile',verifiedPayment(payment,order));return reply({status:payment.status});
   }
   if(body.action==='refund'){
    const order=await rpc(client,'ad_refund_request',{order_id:body.orderId,reason:body.reason,platform_fault:body.platformFault});if(order.already_refunded)return reply({status:'CANCELED'});

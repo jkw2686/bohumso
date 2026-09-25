@@ -19,9 +19,9 @@ export async function renderAds({client,workspace,host,message,action}){
   await sdk();
   const previous=document.activeElement,overlay=el('div',undefined,document.body);overlay.className='sheet-overlay show pay-overlay';
   const sheet=el('div',undefined,overlay);sheet.className='sheet';sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');sheet.setAttribute('aria-labelledby','adPaymentTitle');sheet.tabIndex=-1;
-  el('h2',data.order.plan_name+' 광고 구독',sheet).id='adPaymentTitle';
-  el('h3',won(data.order.amount)+' · '+data.order.period_days+'일',sheet);
-  el('p','테스트 결제 · 약정 노출 '+data.order.guaranteed_impressions+'회 · 자동 갱신 없음',sheet);
+  el('h2',data.order.test_admin?'관리자 전용 테스트 결제':data.order.plan_name+' 광고 구독',sheet).id='adPaymentTitle';
+  el('h3',won(data.order.amount)+(data.order.test_admin?' (테스트 금액)':' · '+data.order.period_days+'일'),sheet);
+  el('p',data.order.test_admin?'실제 청구 없음 · 전문가 승인·광고 노출·상담 권한에 영향 없음':'테스트 결제 · 약정 노출 '+data.order.guaranteed_impressions+'회 · 자동 갱신 없음',sheet);
   el('p','카드·간편결제의 실제 지원 범위는 테스트 상점 설정에 따라 달라집니다.',sheet);
   const methods=el('div',undefined,sheet);methods.id='ad-payment-methods';
   const agreement=el('div',undefined,sheet);agreement.id='ad-payment-agreement';
@@ -48,6 +48,19 @@ export async function renderAds({client,workspace,host,message,action}){
   const data=await rpc('ad_workspace');host.replaceChildren();host.id='adSubscriptions';
   el('h2','광고 노출 구독',host);el('p','상담 요청·완료 횟수와 무관한 기간제 선불 상품입니다. 기간이 끝나면 직접 다시 결제하며 자동 청구하지 않습니다.',host);
   if(workspace==='admin'){
+   const testCard=el('section',undefined,host);testCard.className='card';
+   el('h3','관리자 카드결제 점검',testCard);
+   el('p','1,000원 테스트 주문입니다. 실제 청구·전문가 승인·광고 노출은 발생하지 않습니다.',testCard);
+   try{
+    const orders=await rpc('admin_test_orders');
+    const key=crypto.randomUUID();
+    button(testCard,'관리자 테스트 결제 시작',async()=>openPayment(await pay({action:'admin_test_checkout',requestKey:key})));
+    for(const o of orders){const row=el('section',undefined,testCard);el('p',o.id+' · '+({unpaid:'결제 전',confirming:'승인 확인 중',paid:'테스트 승인 완료',failed:'실패',refunded:'테스트 취소 완료'}[o.state]||o.state),row);
+     if(o.state==='unpaid'&&Date.now()-new Date(o.created_at).getTime()<1800000)button(row,'테스트 주문 이어하기',async()=>openPayment(await pay({action:'admin_test_checkout',requestKey:o.request_key})));
+     button(row,'테스트 결제 상태 확인',()=>pay({action:'status',orderId:o.id}));
+    }
+   }catch{el('p','관리자 테스트 결제 연결 준비 중입니다. 운영 승인은 변경하지 않습니다.',testCard);}
+
    const details=el('details',undefined,host);el('summary','구독 조건·노출 슬롯 설정',details);
    const form=el('form',undefined,details);form.id='adPlanForm';
    select(form,'요금제','code',{basic:'베이직',premium:'프리미엄',regional_exclusive:'지역독점'});
