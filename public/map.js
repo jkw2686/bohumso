@@ -49,7 +49,8 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
   function thumbHtml(s, cls) { return s.photo ? '<img class="' + cls + ' thumb-img" src="' + esc(s.photo) + '" alt="" loading="lazy">' : '<span class="' + cls + '" aria-hidden="true">' + esc(s.name.charAt(0)) + '</span>'; }
   function availHtml(s) { return (s.availability && AVAIL[s.availability]) ? '<span class="avail avail-' + s.availability + '">' + AVAIL[s.availability] + '</span>' : ''; }
-  function spotDist(s) { var ref = userLoc || SEOUL; return haversine(ref, [s.lat, s.lng]); }
+  function spotDist(s) { if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) return Infinity; var ref = userLoc || SEOUL; return haversine(ref, [s.lat, s.lng]); }
+  function distLabel(s) { var d = spotDist(s); return isFinite(d) ? distText(d) : '위치 미등록'; }
 
   function pinIcon(me) {
     // 색은 토큰으로. presentation attribute(fill=)는 var()를 못 받으므로 style로 지정한다.
@@ -65,6 +66,7 @@
     // ── 지도 타일: 이 한 곳만 바꾸면 카카오맵 등으로 교체 가능 ──
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
     SPOTS.forEach(function (s) {
+      if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) return; // 좌표 없으면 목록에만 표시
       s._marker = L.marker([s.lat, s.lng], { icon: pinIcon(false), title: s.name }).addTo(map);
       s._marker.on('click', function () { openCard(s); });
     });
@@ -111,11 +113,11 @@
         '<span class="info">' +
           '<span class="name">' + esc(s.name) + '</span>' +
           '<span class="sub">' + esc(s.job) + ' · ' + esc(s.specialty) + '</span>' +
-          '<span class="meta">★ ' + s.rating.toFixed(1) + ' · ' + distText(spotDist(s)) + '</span>' +
+          '<span class="meta">★ ' + s.rating.toFixed(1) + ' · ' + distLabel(s) + '</span>' +
           availHtml(s) +
           (s.pledge ? '<span class="badge-pledge">소비자보호 서약</span>' : '') +
         '</span>';
-      b.addEventListener('click', function () { if (map) map.setView([s.lat, s.lng], 15); openCard(s); });
+      b.addEventListener('click', function () { if (map && Number.isFinite(s.lat) && Number.isFinite(s.lng)) map.setView([s.lat, s.lng], 15); openCard(s); });
       body.appendChild(b);
     });
   }
@@ -128,7 +130,7 @@
         thumbHtml(s, 'thumb') +
         '<span><span class="name">' + esc(s.name) + '</span><br><span class="job">' + esc(s.job) + '</span></span>' +
       '</div>' +
-      '<div class="card-stats"><span>★ <b>' + s.rating.toFixed(1) + '</b></span><span><b>' + distText(spotDist(s)) + '</b> 거리</span><span>' + esc(s.specialty) + '</span></div>' +
+      '<div class="card-stats"><span>★ <b>' + s.rating.toFixed(1) + '</b></span>' + (isFinite(spotDist(s)) ? '<span><b>' + distText(spotDist(s)) + '</b> 거리</span>' : '<span>위치 미등록</span>') + '<span>' + esc(s.specialty) + '</span></div>' +
       '<div class="card-badges">' + availHtml(s) + (s.pledge ? '<span class="badge-pledge">소비자보호 서약</span>' : '') + '</div>' +
       '<div class="card-actions">' +
         '<button class="btn" type="button" data-way="visit_office">제가 방문할게요</button>' +
@@ -197,17 +199,19 @@
       if (!rr.ok) return null;
       var data = await rr.json();
       var list = (data && data.planners) || [];
-      var spots = list.filter(function (p) { return p.latitude && p.longitude; }).map(function (p) {
+      var spots = list.map(function (p) {
         return {
           id: p.id, name: p.name || p.organization || '보험소',
           job: p.organization || '보험 전문가',
           specialty: (Array.isArray(p.specialties) && p.specialties.length ? p.specialties.join('·') : '상담'),
-          region: p.region || '', lat: p.latitude, lng: p.longitude, rating: p.rating || 0, pledge: !!p.verified,
+          region: p.region || '',
+          lat: Number.isFinite(p.latitude) ? p.latitude : null, lng: Number.isFinite(p.longitude) ? p.longitude : null,
+          rating: p.rating || 0, pledge: !!p.verified,
           hours: p.hours || '', completed: p.completed_count || 0, reviews: Array.isArray(p.reviews) ? p.reviews.length : 0,
           photo: p.photo_url || '', availability: p.availability_status || ''
         };
       });
-      return spots.length ? spots : null;
+      return spots.length ? spots : null; // 실전문가가 하나라도 있으면 샘플 폴백 안 함(좌표 없어도 목록엔 표시)
     } catch (e) { return null; }
   }
 
