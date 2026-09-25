@@ -43,6 +43,8 @@
     return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
   }
   function distText(km) { return km < 1 ? Math.round(km * 1000) + 'm' : km.toFixed(1) + 'km'; }
+  // 받침 유무로 은/는 선택 (받침 있으면 '은', 없으면 '는')
+  function eun(word) { var c = word ? word.charCodeAt(word.length - 1) : 0; return (c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0) ? '은' : '는'; }
   function spotDist(s) { var ref = userLoc || SEOUL; return haversine(ref, [s.lat, s.lng]); }
 
   function pinIcon(me) {
@@ -126,7 +128,7 @@
       '<div class="card-detail" id="cardDetail" hidden>' +
         (s.hours ? '<p>🕑 상담 가능 시간 · ' + s.hours + '</p>' : '') +
         '<p>✅ 완료 상담 ' + (s.completed || 0) + '건 · 공개 후기 ' + (s.reviews || 0) + '건</p>' +
-        '<p>' + s.name + '은(는) ' + s.specialty + ' 상담을 도와드립니다. 방문 상담에서 약관·서류를 함께 확인합니다.</p>' +
+        '<p>' + s.name + eun(s.name) + ' ' + s.specialty + ' 상담을 도와드립니다. 방문 상담에서 약관·서류를 함께 확인합니다.</p>' +
         '<p class="card-note">연결은 소비자가 직접 개시합니다. 신청 전까지 어떤 전문가에게도 정보가 전달되지 않습니다.</p>' +
       '</div>' +
       '<p class="card-note">상담 방식을 고르면 신청 단계로 이동합니다. 보험 가입을 권하지 않으며, 소비자는 무료입니다.</p>';
