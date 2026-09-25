@@ -19,6 +19,15 @@
 .map-nav .brand{font-size:19px;font-weight:800;color:var(--brand)}
 .map-slogan{font-size:12px;color:var(--muted)}
 
+/* 홈 상황선택에서 넘어온 안내 칩 */
+.purpose-chip{
+  position:relative; z-index:20;
+  margin:0; padding:8px 16px;
+  background:var(--brand-soft); color:var(--brand);
+  font-size:13px; font-weight:700; text-align:center;
+  border-bottom:1px solid var(--border);
+}
+
 /* 지역 직접 선택 (위치 거부 시) */
 .region-picker{position:relative;z-index:20;background:var(--brand-soft);padding:12px 16px}
 .region-title{margin:0 0 8px;font-size:13px;color:var(--text)}

@@ -29,6 +29,8 @@
     '경기': ['성남시', '고양시', '수원시', '부천시'],
     '인천': ['부평구', '연수구', '남동구']
   };
+  var REGION_CENTER = { '서울': [37.5665, 126.9780], '경기': [37.4138, 127.5183], '인천': [37.4563, 126.7052] };
+  var PURPOSE_LABELS = { claim: '보험금 청구', management: '가입한 보험 확인', coverage: '받을 보험금 확인', other: '필요한 도움' };
 
   var map, meMarker, userLoc = null, sortBy = 'distance', current = null;
   var $ = function (id) { return document.getElementById(id); };
@@ -180,6 +182,15 @@
   }
 
   async function boot() {
+    // 홈 상황선택에서 넘어왔으면 안내 칩 표시
+    if (PURPOSE && PURPOSE_LABELS[PURPOSE]) {
+      var chip = document.createElement('div');
+      chip.className = 'purpose-chip';
+      chip.setAttribute('role', 'note');
+      chip.textContent = PURPOSE_LABELS[PURPOSE] + ' 도와드릴게요 · 가까운 전문가부터';
+      var nav = document.querySelector('.map-nav');
+      if (nav) nav.after(chip);
+    }
     var real = await loadReal();
     if (real) SPOTS = real; // 실데이터 있으면 교체, 없으면 샘플 유지
     initMap(SEOUL, 12);
@@ -213,7 +224,8 @@
       (GU[city.value] || []).forEach(function (g) { var o = document.createElement('option'); o.value = g; o.textContent = g; gu.appendChild(o); });
     });
     $('regionApply').addEventListener('click', function () {
-      if (map) map.setView(SEOUL, 12); // 최소착수: 지역 지오코딩은 후속. 우선 수도권 중심.
+      var center = REGION_CENTER[city.value] || SEOUL; // 구/군 지오코딩은 후속, 우선 시/도 중심
+      if (map) map.setView(center, city.value ? 12 : 11);
       $('regionPicker').hidden = true;
       renderList();
     });
