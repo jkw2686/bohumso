@@ -38,6 +38,7 @@
   var PURPOSE_LABELS = { claim: '보험금 청구', management: '가입한 보험 확인', coverage: '받을 보험금 확인', other: '필요한 도움' };
 
   var map, meMarker, userLoc = null, sortBy = 'distance', current = null, usingSamples = true;
+  var SAMPLES = [], spotMarkers = [], selectedArea = '';
   var $ = function (id) { return document.getElementById(id); };
 
   function haversine(a, b) {
@@ -67,16 +68,34 @@
     map = L.map('map', { zoomControl: false, attributionControl: false }).setView(center, zoom || 13);
     // ── 지도 타일: 이 한 곳만 바꾸면 카카오맵 등으로 교체 가능 ──
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    drawMarkers();
+  }
+
+  // 현재 SPOTS로 마커를 다시 그리고 지도 범위를 맞춘다(지역 재조회 시 재사용).
+  function drawMarkers() {
+    spotMarkers.forEach(function (m) { map.removeLayer(m); });
+    spotMarkers = [];
     var coords = [];
     SPOTS.forEach(function (s) {
       if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) return; // 좌표 없으면 목록에만 표시
       coords.push([s.lat, s.lng]);
       s._marker = L.marker([s.lat, s.lng], { icon: pinIcon(false), title: s.name }).addTo(map);
       s._marker.on('click', function () { openCard(s); });
+      spotMarkers.push(s._marker);
     });
-    // 전문가 위치에 맞춰 지도 범위 자동 조정(위치 권한 허용 시 locate가 다시 내 위치로 이동)
+    // 전문가 위치에 맞춰 범위 자동 조정(위치 권한 허용 시 locate가 다시 내 위치로 이동)
     if (coords.length > 1) map.fitBounds(L.latLngBounds(coords).pad(0.25));
     else if (coords.length === 1) map.setView(coords[0], 14);
+  }
+
+  // 지역 선택 등으로 SPOTS를 다시 불러온다(실데이터 area 필터, 없으면 샘플을 지역으로 필터).
+  async function reloadSpots(area) {
+    selectedArea = area || '';
+    var real = await loadReal(selectedArea);
+    if (real) { SPOTS = real; usingSamples = false; }
+    else { SPOTS = SAMPLES.filter(function (s) { return !selectedArea || (s.region || '').indexOf(selectedArea) === 0; }); usingSamples = true; }
+    if (map) drawMarkers();
+    renderList();
   }
 
   function setMe(loc) {
@@ -194,14 +213,14 @@
   }
 
   // 실제 등록 전문가 로드(planner_catalog, anon). 위경도 있는 것만. 실패·없음이면 null → 샘플 유지.
-  async function loadReal() {
+  async function loadReal(area) {
     try {
       var r = await fetch('/api/config', { cache: 'no-store' });
       if (!r.ok) return null;
       var cfg = await r.json();
       if (!cfg.enabled || !cfg.url || !cfg.key) return null;
       var rr = await fetch(cfg.url.replace(/\/$/, '') + '/rest/v1/rpc/planner_catalog', {
-        method: 'POST', headers: { apikey: cfg.key, 'Content-Type': 'application/json' }, body: JSON.stringify({ area: '', wanted: PURPOSE || '' })
+        method: 'POST', headers: { apikey: cfg.key, 'Content-Type': 'application/json' }, body: JSON.stringify({ area: area || '', wanted: PURPOSE || '' })
       });
       if (!rr.ok) return null;
       var data = await rr.json();
@@ -233,7 +252,8 @@
       if (nav) nav.after(chip);
     }
     if (PURPOSE) { var ll = $('listLink'); if (ll) ll.href = '/find.html?purpose=' + encodeURIComponent(PURPOSE); }
-    var real = await loadReal();
+    SAMPLES = SPOTS.slice(); // 지역 재필터용 원본 샘플 보관
+    var real = await loadReal(selectedArea);
     if (real) { SPOTS = real; usingSamples = false; } // 실데이터 있으면 교체, 없으면 샘플 유지
     initMap(SEOUL, 12);
     renderList();
@@ -273,7 +293,7 @@
       var center = REGION_CENTER[city.value] || SEOUL; // 구/군 지오코딩은 후속, 우선 시/도 중심
       if (map) map.setView(center, city.value ? 12 : 11);
       $('regionPicker').hidden = true;
-      renderList();
+      reloadSpots(city.value); // 선택 지역으로 전문가 재조회(실데이터 area 필터 / 샘플 지역 필터)
     });
 
     locate();
