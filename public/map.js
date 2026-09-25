@@ -67,11 +67,16 @@
     map = L.map('map', { zoomControl: false, attributionControl: false }).setView(center, zoom || 13);
     // ── 지도 타일: 이 한 곳만 바꾸면 카카오맵 등으로 교체 가능 ──
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    var coords = [];
     SPOTS.forEach(function (s) {
       if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) return; // 좌표 없으면 목록에만 표시
+      coords.push([s.lat, s.lng]);
       s._marker = L.marker([s.lat, s.lng], { icon: pinIcon(false), title: s.name }).addTo(map);
       s._marker.on('click', function () { openCard(s); });
     });
+    // 전문가 위치에 맞춰 지도 범위 자동 조정(위치 권한 허용 시 locate가 다시 내 위치로 이동)
+    if (coords.length > 1) map.fitBounds(L.latLngBounds(coords).pad(0.25));
+    else if (coords.length === 1) map.setView(coords[0], 14);
   }
 
   function setMe(loc) {
