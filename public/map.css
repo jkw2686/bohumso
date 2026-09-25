@@ -104,6 +104,12 @@
 .spot .sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .spot .meta{font-size:12px;color:var(--muted);margin-top:2px}
 .badge-pledge{display:inline-block;font-size:11px;color:var(--ok);background:rgba(26,156,109,.1);border-radius:6px;padding:1px 6px;margin-top:4px}
+.thumb-img{object-fit:cover;overflow:hidden;padding:0}
+.avail{display:inline-block;font-size:11px;border-radius:6px;padding:1px 6px;margin-top:4px;white-space:nowrap}
+.avail-now{color:var(--ok);background:rgba(26,156,109,.12);font-weight:700}
+.avail-today{color:var(--brand);background:var(--brand-soft);font-weight:700}
+.avail-scheduled{color:var(--muted);background:var(--bg)}
+.card-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 
 /* ── 마커 탭 카드 바텀시트 (전체화면 아님, 요약→상세) ── */
 .card-scrim{position:fixed;inset:0;background:rgba(16,24,40,.28);z-index:25;opacity:0;transition:opacity .2s}

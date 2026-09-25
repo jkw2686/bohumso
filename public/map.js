@@ -17,12 +17,13 @@
 
   // 지인 테스트용 샘플 거점(실데이터 아님, 삭제 가능). 실제 목록은 추후 planner_catalog 연동.
   var SPOTS = [
-    { id: 's1', name: '마포 보험소', job: '보험설계사', specialty: '보험금 청구', region: '서울 마포구', lat: 37.5563, lng: 126.9236, rating: 4.8, pledge: true, hours: '평일 10:00~18:00', completed: 128, reviews: 34 },
-    { id: 's2', name: '여의도 보험소', job: '손해사정사', specialty: '분쟁·과소지급', region: '서울 영등포구', lat: 37.5219, lng: 126.9245, rating: 4.6, pledge: true, hours: '평일 09:30~19:00', completed: 96, reviews: 21 },
-    { id: 's3', name: '강남 보험소', job: '보험설계사', specialty: '보장 점검', region: '서울 강남구', lat: 37.4979, lng: 127.0276, rating: 4.9, pledge: false, hours: '평일·토 10:00~17:00', completed: 210, reviews: 58 },
-    { id: 's4', name: '용산 보험소', job: '기업보험 컨설턴트', specialty: '기업·단체보험', region: '서울 용산구', lat: 37.5326, lng: 126.9905, rating: 4.4, pledge: true, hours: '평일 10:00~18:00', completed: 45, reviews: 9 },
-    { id: 's5', name: '성동 보험소', job: '보험설계사', specialty: '신규 가입 상담', region: '서울 성동구', lat: 37.5636, lng: 127.0369, rating: 4.7, pledge: true, hours: '평일 11:00~20:00', completed: 73, reviews: 16 }
+    { id: 's1', name: '마포 보험소', job: '보험설계사', specialty: '보험금 청구', region: '서울 마포구', lat: 37.5563, lng: 126.9236, rating: 4.8, pledge: true, hours: '평일 10:00~18:00', completed: 128, reviews: 34, availability: 'now' },
+    { id: 's2', name: '여의도 보험소', job: '손해사정사', specialty: '분쟁·과소지급', region: '서울 영등포구', lat: 37.5219, lng: 126.9245, rating: 4.6, pledge: true, hours: '평일 09:30~19:00', completed: 96, reviews: 21, availability: 'today' },
+    { id: 's3', name: '강남 보험소', job: '보험설계사', specialty: '보장 점검', region: '서울 강남구', lat: 37.4979, lng: 127.0276, rating: 4.9, pledge: false, hours: '평일·토 10:00~17:00', completed: 210, reviews: 58, availability: 'scheduled' },
+    { id: 's4', name: '용산 보험소', job: '기업보험 컨설턴트', specialty: '기업·단체보험', region: '서울 용산구', lat: 37.5326, lng: 126.9905, rating: 4.4, pledge: true, hours: '평일 10:00~18:00', completed: 45, reviews: 9, availability: 'now' },
+    { id: 's5', name: '성동 보험소', job: '보험설계사', specialty: '신규 가입 상담', region: '서울 성동구', lat: 37.5636, lng: 127.0369, rating: 4.7, pledge: true, hours: '평일 11:00~20:00', completed: 73, reviews: 16, availability: 'scheduled' }
   ];
+  var AVAIL = { now: '지금 상담 가능', today: '오늘 상담 가능', scheduled: '예약 상담', unavailable: '상담 준비 중' };
   // 지도 방식 → 기존 요청 흐름의 method 값 매핑(전화 통화 / 바로 만나기 / 시간 예약)
   var WAY_METHOD = { visit_office: 'scheduled', request_visit: 'nearby', call: 'phone', message: 'phone' };
 
@@ -45,6 +46,9 @@
   function distText(km) { return km < 1 ? Math.round(km * 1000) + 'm' : km.toFixed(1) + 'km'; }
   // 받침 유무로 은/는 선택 (받침 있으면 '은', 없으면 '는')
   function eun(word) { var c = word ? word.charCodeAt(word.length - 1) : 0; return (c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0) ? '은' : '는'; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function thumbHtml(s, cls) { return s.photo ? '<img class="' + cls + ' thumb-img" src="' + esc(s.photo) + '" alt="" loading="lazy">' : '<span class="' + cls + '" aria-hidden="true">' + esc(s.name.charAt(0)) + '</span>'; }
+  function availHtml(s) { return (s.availability && AVAIL[s.availability]) ? '<span class="avail avail-' + s.availability + '">' + AVAIL[s.availability] + '</span>' : ''; }
   function spotDist(s) { var ref = userLoc || SEOUL; return haversine(ref, [s.lat, s.lng]); }
 
   function pinIcon(me) {
@@ -97,11 +101,12 @@
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'spot';
       b.innerHTML =
-        '<span class="thumb" aria-hidden="true">' + s.name.charAt(0) + '</span>' +
+        thumbHtml(s, 'thumb') +
         '<span class="info">' +
-          '<span class="name">' + s.name + '</span>' +
-          '<span class="sub">' + s.job + ' · ' + s.specialty + '</span>' +
+          '<span class="name">' + esc(s.name) + '</span>' +
+          '<span class="sub">' + esc(s.job) + ' · ' + esc(s.specialty) + '</span>' +
           '<span class="meta">★ ' + s.rating.toFixed(1) + ' · ' + distText(spotDist(s)) + '</span>' +
+          availHtml(s) +
           (s.pledge ? '<span class="badge-pledge">소비자보호 서약</span>' : '') +
         '</span>';
       b.addEventListener('click', function () { if (map) map.setView([s.lat, s.lng], 15); openCard(s); });
@@ -114,11 +119,11 @@
     current = s;
     $('cardBody').innerHTML =
       '<div class="card-top">' +
-        '<span class="thumb" aria-hidden="true">' + s.name.charAt(0) + '</span>' +
-        '<span><span class="name">' + s.name + '</span><br><span class="job">' + s.job + '</span></span>' +
+        thumbHtml(s, 'thumb') +
+        '<span><span class="name">' + esc(s.name) + '</span><br><span class="job">' + esc(s.job) + '</span></span>' +
       '</div>' +
-      '<div class="card-stats"><span>★ <b>' + s.rating.toFixed(1) + '</b></span><span><b>' + distText(spotDist(s)) + '</b> 거리</span><span>' + s.specialty + '</span></div>' +
-      (s.pledge ? '<span class="badge-pledge">소비자보호 서약</span>' : '') +
+      '<div class="card-stats"><span>★ <b>' + s.rating.toFixed(1) + '</b></span><span><b>' + distText(spotDist(s)) + '</b> 거리</span><span>' + esc(s.specialty) + '</span></div>' +
+      '<div class="card-badges">' + availHtml(s) + (s.pledge ? '<span class="badge-pledge">소비자보호 서약</span>' : '') + '</div>' +
       '<div class="card-actions">' +
         '<button class="btn" type="button" data-way="visit_office">제가 방문할게요</button>' +
         '<button class="btn secondary" type="button" data-way="request_visit">와주실 수 있나요?</button>' +
@@ -192,7 +197,8 @@
           job: p.organization || '보험 전문가',
           specialty: (Array.isArray(p.specialties) && p.specialties.length ? p.specialties.join('·') : '상담'),
           region: p.region || '', lat: p.latitude, lng: p.longitude, rating: p.rating || 0, pledge: !!p.verified,
-          hours: p.hours || '', completed: p.completed_count || 0, reviews: Array.isArray(p.reviews) ? p.reviews.length : 0
+          hours: p.hours || '', completed: p.completed_count || 0, reviews: Array.isArray(p.reviews) ? p.reviews.length : 0,
+          photo: p.photo_url || '', availability: p.availability_status || ''
         };
       });
       return spots.length ? spots : null;
