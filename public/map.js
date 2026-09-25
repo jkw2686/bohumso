@@ -144,7 +144,34 @@
     });
   }
 
-  function boot() {
+  // 실제 등록 전문가 로드(planner_catalog, anon). 위경도 있는 것만. 실패·없음이면 null → 샘플 유지.
+  async function loadReal() {
+    try {
+      var r = await fetch('/api/config', { cache: 'no-store' });
+      if (!r.ok) return null;
+      var cfg = await r.json();
+      if (!cfg.enabled || !cfg.url || !cfg.key) return null;
+      var rr = await fetch(cfg.url.replace(/\/$/, '') + '/rest/v1/rpc/planner_catalog', {
+        method: 'POST', headers: { apikey: cfg.key, 'Content-Type': 'application/json' }, body: JSON.stringify({ area: '', wanted: '' })
+      });
+      if (!rr.ok) return null;
+      var data = await rr.json();
+      var list = (data && data.planners) || [];
+      var spots = list.filter(function (p) { return p.latitude && p.longitude; }).map(function (p) {
+        return {
+          id: p.id, name: p.name || p.organization || '보험소',
+          job: p.organization || '보험 전문가',
+          specialty: (Array.isArray(p.specialties) && p.specialties.length ? p.specialties.join('·') : '상담'),
+          lat: p.latitude, lng: p.longitude, rating: p.rating || 0, pledge: !!p.verified
+        };
+      });
+      return spots.length ? spots : null;
+    } catch (e) { return null; }
+  }
+
+  async function boot() {
+    var real = await loadReal();
+    if (real) SPOTS = real; // 실데이터 있으면 교체, 없으면 샘플 유지
     initMap(SEOUL, 12);
     renderList();
 
