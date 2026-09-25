@@ -17,11 +17,11 @@
 
   // 지인 테스트용 샘플 거점(실데이터 아님, 삭제 가능). 실제 목록은 추후 planner_catalog 연동.
   var SPOTS = [
-    { id: 's1', name: '마포 보험소', job: '보험설계사', specialty: '보험금 청구', region: '서울 마포구', lat: 37.5563, lng: 126.9236, rating: 4.8, pledge: true },
-    { id: 's2', name: '여의도 보험소', job: '손해사정사', specialty: '분쟁·과소지급', region: '서울 영등포구', lat: 37.5219, lng: 126.9245, rating: 4.6, pledge: true },
-    { id: 's3', name: '강남 보험소', job: '보험설계사', specialty: '보장 점검', region: '서울 강남구', lat: 37.4979, lng: 127.0276, rating: 4.9, pledge: false },
-    { id: 's4', name: '용산 보험소', job: '기업보험 컨설턴트', specialty: '기업·단체보험', region: '서울 용산구', lat: 37.5326, lng: 126.9905, rating: 4.4, pledge: true },
-    { id: 's5', name: '성동 보험소', job: '보험설계사', specialty: '신규 가입 상담', region: '서울 성동구', lat: 37.5636, lng: 127.0369, rating: 4.7, pledge: true }
+    { id: 's1', name: '마포 보험소', job: '보험설계사', specialty: '보험금 청구', region: '서울 마포구', lat: 37.5563, lng: 126.9236, rating: 4.8, pledge: true, hours: '평일 10:00~18:00', completed: 128, reviews: 34 },
+    { id: 's2', name: '여의도 보험소', job: '손해사정사', specialty: '분쟁·과소지급', region: '서울 영등포구', lat: 37.5219, lng: 126.9245, rating: 4.6, pledge: true, hours: '평일 09:30~19:00', completed: 96, reviews: 21 },
+    { id: 's3', name: '강남 보험소', job: '보험설계사', specialty: '보장 점검', region: '서울 강남구', lat: 37.4979, lng: 127.0276, rating: 4.9, pledge: false, hours: '평일·토 10:00~17:00', completed: 210, reviews: 58 },
+    { id: 's4', name: '용산 보험소', job: '기업보험 컨설턴트', specialty: '기업·단체보험', region: '서울 용산구', lat: 37.5326, lng: 126.9905, rating: 4.4, pledge: true, hours: '평일 10:00~18:00', completed: 45, reviews: 9 },
+    { id: 's5', name: '성동 보험소', job: '보험설계사', specialty: '신규 가입 상담', region: '서울 성동구', lat: 37.5636, lng: 127.0369, rating: 4.7, pledge: true, hours: '평일 11:00~20:00', completed: 73, reviews: 16 }
   ];
   // 지도 방식 → 기존 요청 흐름의 method 값 매핑(전화 통화 / 바로 만나기 / 시간 예약)
   var WAY_METHOD = { visit_office: 'scheduled', request_visit: 'nearby', call: 'phone', message: 'phone' };
@@ -82,6 +82,14 @@
   function renderList() {
     var body = $('listBody'); body.innerHTML = '';
     var arr = sortedSpots();
+    if (!arr.length) {
+      $('listCount').textContent = '주변 보험소 없음';
+      var empty = document.createElement('p');
+      empty.className = 'list-empty';
+      empty.textContent = '이 지역에 표시할 보험소가 아직 없어요. 다른 지역을 선택하거나 위치를 사용해 보세요.';
+      body.appendChild(empty);
+      return;
+    }
     $('listCount').textContent = '주변 보험소 ' + arr.length + '곳';
     arr.forEach(function (s) {
       var b = document.createElement('button');
@@ -116,6 +124,8 @@
       '</div>' +
       '<button class="card-more" type="button" id="cardMore">전문가 소개 더보기</button>' +
       '<div class="card-detail" id="cardDetail" hidden>' +
+        (s.hours ? '<p>🕑 상담 가능 시간 · ' + s.hours + '</p>' : '') +
+        '<p>✅ 완료 상담 ' + (s.completed || 0) + '건 · 공개 후기 ' + (s.reviews || 0) + '건</p>' +
         '<p>' + s.name + '은(는) ' + s.specialty + ' 상담을 도와드립니다. 방문 상담에서 약관·서류를 함께 확인합니다.</p>' +
         '<p class="card-note">연결은 소비자가 직접 개시합니다. 신청 전까지 어떤 전문가에게도 정보가 전달되지 않습니다.</p>' +
       '</div>' +
@@ -179,7 +189,8 @@
           id: p.id, name: p.name || p.organization || '보험소',
           job: p.organization || '보험 전문가',
           specialty: (Array.isArray(p.specialties) && p.specialties.length ? p.specialties.join('·') : '상담'),
-          region: p.region || '', lat: p.latitude, lng: p.longitude, rating: p.rating || 0, pledge: !!p.verified
+          region: p.region || '', lat: p.latitude, lng: p.longitude, rating: p.rating || 0, pledge: !!p.verified,
+          hours: p.hours || '', completed: p.completed_count || 0, reviews: Array.isArray(p.reviews) ? p.reviews.length : 0
         };
       });
       return spots.length ? spots : null;
