@@ -5,6 +5,16 @@
   'use strict';
   var SEOUL = [37.5665, 126.9780];
 
+  /* ── 카카오맵 키 자리 (나중에 콘솔에서 발급 후 여기에 꽂기) ──
+     KAKAO_MAP_KEY가 비어 있으면 현행 Leaflet/OSM으로 동작(임시).
+     키를 넣고 카카오맵으로 전환하려면 initMap의 '지도 타일' 부분만 카카오맵 초기화로 교체하면 된다.
+     (카카오 개발자콘솔 → 앱 → 플랫폼 Web에 도메인 등록 + 지도 API 활성화 필요) */
+  var KAKAO_MAP_KEY = ''; // TODO: 카카오맵 JavaScript 키
+
+  // 홈 상황선택에서 넘어온 목적(claim/management/coverage/other) — 실데이터 필터에 사용
+  var PURPOSE = '';
+  try { PURPOSE = new URLSearchParams(location.search).get('purpose') || ''; } catch (e) {}
+
   // 지인 테스트용 샘플 거점(실데이터 아님, 삭제 가능). 실제 목록은 추후 planner_catalog 연동.
   var SPOTS = [
     { id: 's1', name: '마포 보험소', job: '보험설계사', specialty: '보험금 청구', lat: 37.5563, lng: 126.9236, rating: 4.8, pledge: true },
@@ -152,7 +162,7 @@
       var cfg = await r.json();
       if (!cfg.enabled || !cfg.url || !cfg.key) return null;
       var rr = await fetch(cfg.url.replace(/\/$/, '') + '/rest/v1/rpc/planner_catalog', {
-        method: 'POST', headers: { apikey: cfg.key, 'Content-Type': 'application/json' }, body: JSON.stringify({ area: '', wanted: '' })
+        method: 'POST', headers: { apikey: cfg.key, 'Content-Type': 'application/json' }, body: JSON.stringify({ area: '', wanted: PURPOSE || '' })
       });
       if (!rr.ok) return null;
       var data = await rr.json();
