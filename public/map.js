@@ -209,6 +209,7 @@
       var nav = document.querySelector('.map-nav');
       if (nav) nav.after(chip);
     }
+    if (PURPOSE) { var ll = $('listLink'); if (ll) ll.href = '/find.html?purpose=' + encodeURIComponent(PURPOSE); }
     var real = await loadReal();
     if (real) SPOTS = real; // 실데이터 있으면 교체, 없으면 샘플 유지
     initMap(SEOUL, 12);

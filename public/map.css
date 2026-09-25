@@ -18,6 +18,8 @@
 .map-nav .local{font-size:14px;color:var(--muted)}
 .map-nav .brand{font-size:19px;font-weight:800;color:var(--brand)}
 .map-slogan{font-size:12px;color:var(--muted)}
+.map-list-link{font-size:13px;font-weight:700;color:var(--brand);text-decoration:none;white-space:nowrap}
+.map-list-link:active{opacity:.7}
 
 /* 홈 상황선택에서 넘어온 안내 칩 */
 .purpose-chip{
