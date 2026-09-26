@@ -1,0 +1,37 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {mkdtemp} from 'node:fs/promises';import {openTestDatabase,ACTORS as A} from '../src/test-flow/database.mjs';
+const profile={profession:'adjuster',name:'가상 연결테스트',organization:'가상 사무소',region:'마포구',registration:'TEST-ADJ-99',specialties:['denial'],agreements:[true,true,true],agreement_version:'consumer-protection-2026-09-26-v2'};
+test('connected DB: optional documents, pledge, review, directory, requests, sanctions, role isolation',async()=>{const db=await openTestDatabase({memory:true,env:{}});const c=(actor,op,p)=>db.command(actor,op,p);try{
+ const actor=(await c(A.admin,'new_expert')).id;
+ await assert.rejects(c(A.customer,'register',profile),/expert_required/);
+ await assert.rejects(c(actor,'register',{...profile,profession:'lawyer'}),/invalid_profile/);
+ await assert.rejects(c(actor,'register',{...profile,agreements:[true,false,true]}),/pledge_required/);
+ let e=await c(actor,'register',profile);assert.equal(e.status,'unverified');assert.ok(e.agreed_at);assert.equal((await c(A.customer,'catalog')).some(p=>p.id===actor),false);
+ await assert.rejects(c(actor,'submit_review',{revision:e.revision}),/documents_required/);
+ const doc={filename:'fake.png',mime:'image/png',data:'c2FtcGxlZmlsZQ==',consent:true,masked:true};
+ await assert.rejects(c(actor,'upload',{...doc,kind:'identity',consent:false}),/document_consent_required/);
+ const identity=await c(actor,'upload',{...doc,kind:'identity'});await c(actor,'upload',{...doc,kind:'qualification'});
+ await assert.rejects(c(actor,'document',{id:identity.id}),/admin_required/);await assert.rejects(c(A.customer,'document',{id:identity.id}),/admin_required/);
+ assert.ok((await c(A.admin,'document',{id:identity.id})).data);assert.equal((await c(actor,'workspace')).documents[0].data,undefined);
+ e=(await c(actor,'workspace')).expert;e=await c(actor,'submit_review',{revision:e.revision});assert.equal(e.status,'pending');
+ await assert.rejects(c(A.customer,'review',{id:actor,revision:e.revision,decision:'verified',reason:'테스트 서류 확인',checked:true}),/admin_required/);
+ await assert.rejects(c(A.admin,'review',{id:actor,revision:e.revision,decision:'verified',reason:'테스트 서류 확인',checked:false}),/verification_required/);
+ e=await c(A.admin,'review',{id:actor,revision:e.revision,decision:'needs_changes',reason:'가상 서류 보완 필요'});assert.equal(e.status,'needs_changes');
+ e=await c(actor,'submit_review',{revision:e.revision});e=await c(A.admin,'review',{id:actor,revision:e.revision,decision:'rejected',reason:'가상 등록정보 재확인'});assert.equal(e.status,'rejected');
+ e=await c(actor,'submit_review',{revision:e.revision});const pendingRevision=e.revision;e=await c(A.admin,'review',{id:actor,revision:e.revision,decision:'verified',reason:'가상 서류 확인 완료',checked:true});assert.equal(e.status,'verified');
+ await assert.rejects(c(A.admin,'review',{id:actor,revision:pendingRevision,decision:'rejected',reason:'동시 요청 방지 확인'}),/stale_revision/);
+ let listed=(await c(A.customer,'catalog')).find(p=>p.id===actor);assert.equal(listed.pledge,true);assert.equal(listed.registration,undefined);assert.equal(listed.documents,undefined);
+ const payload={expert:actor,situation:'denial',method:'visit',consent:true,request_key:randomUUID()};const [r,r2]=await Promise.all([c(A.customer,'request',payload),c(A.customer,'request',payload)]);assert.equal(r.id,r2.id);
+ await assert.rejects(c(A.customer,'request',{...payload,method:'remote'}),/request_key_conflict/);
+ assert.equal((await c(A.admin,'admin_list')).requests.length,1);await assert.rejects(c(actor,'admin_list'),/admin_required/);
+ assert.equal((await c(actor,'workspace')).requests.length,0);await assert.rejects(c(actor,'intake',{id:r.id,revision:r.revision,state:'delivered'}),/admin_required/);
+ const delivered=await c(A.admin,'intake',{id:r.id,revision:r.revision,state:'delivered'});await assert.rejects(c(A.admin,'intake',{id:r.id,revision:r.revision,state:'completed'}),/stale_revision/);
+ await c(A.admin,'intake',{id:r.id,revision:delivered.revision,state:'completed'});assert.equal((await c(A.customer,'workspace')).requests[0].state,'completed');
+ e=await c(A.admin,'sanction',{id:actor,revision:e.revision,decision:'warning',reason:'가상 경고 시나리오'});listed=(await c(A.customer,'catalog')).find(p=>p.id===actor);assert.equal(listed.pledge,false);
+ e=await c(A.admin,'sanction',{id:actor,revision:e.revision,decision:'suspended',reason:'가상 노출정지 시나리오',until:new Date(Date.now()+86400000).toISOString()});assert.equal((await c(A.customer,'catalog')).some(p=>p.id===actor),false);
+ await assert.rejects(c(A.customer,'request',{...payload,request_key:randomUUID()}),/expert_unavailable/);
+ e=await c(A.admin,'sanction',{id:actor,revision:e.revision,decision:'banned',reason:'가상 제명 시나리오'});await assert.rejects(c(actor,'profile',{...profile,revision:e.revision}),/application_locked/);
+ const history=(await c(actor,'workspace')).history;assert.ok(history.some(x=>x.action==='sanction:banned'&&x.actor===A.admin&&x.at));
+ }finally{await db.close();}});
+test('database survives restart and blocks production Supabase',async()=>{const dir=await mkdtemp('artifacts/connected-persistence-');let db=await openTestDatabase({dataDir:dir,env:{}});const actor=(await db.command(A.admin,'new_expert')).id;await db.command(actor,'register',profile);await db.close();db=await openTestDatabase({dataDir:dir,env:{}});try{assert.equal((await db.command(actor,'workspace')).expert.name,profile.name);}finally{await db.close();}
+ await assert.rejects(openTestDatabase({env:{TEST_SUPABASE_URL:'https://xyexphhspykwwlhfokfl.supabase.co',TEST_SUPABASE_PROJECT_REF:'xyexphhspykwwlhfokfl',TEST_SUPABASE_ALLOW_REMOTE:'true',TEST_SUPABASE_SERVICE_ROLE_KEY:'invalid-test-placeholder'}}),/production project is blocked/);
+});
