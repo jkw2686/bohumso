@@ -45,3 +45,4 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"
 .flow-main .social-auth{display:grid;gap:8px;margin-block:var(--flow-small)}
 .flow-main .auth-divider{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;margin-block:var(--flow-pad)}
 .flow-main .auth-divider:before,.flow-main .auth-divider:after{content:"";flex:1;height:1px;background:var(--border)}
+.contact-panel{margin-top:var(--flow-gap);padding-top:var(--flow-pad);border-top:1px solid var(--border)}.contact-panel .btn{margin-right:var(--flow-small)}.contact-panel textarea,.flow-dialog input{width:100%;font:inherit;border:1px solid var(--border);border-radius:var(--flow-input-radius);padding:var(--flow-small);background:var(--card);color:var(--text)}.contact-panel textarea{min-height:100px}.contact-panel small{overflow-wrap:anywhere}
