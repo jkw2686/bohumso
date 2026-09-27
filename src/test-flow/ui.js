@@ -51,7 +51,7 @@ async function claim(ticket){if(workspace.actor.role!=='customer'){title('소비
 let locationAttempted=false;
 let locating=false,locationMessage='',locationController;
 function locationFeedback(text){locationMessage=text;document.querySelectorAll('.location-status').forEach(n=>n.textContent=text);document.querySelectorAll('[data-locate]').forEach(b=>{b.disabled=locating;b.textContent=locating?'위치 확인 중…':'내 위치 사용';});}
-async function maybeAutoLocate(){if(!navigator.geolocation||!window.isSecureContext)return;let s;try{s=(await navigator.permissions?.query({name:'geolocation'}))?.state;}catch{}if(s==='granted')locate();else if(s==='denied')locationFeedback('활동 지역을 선택하면 가까운 보험소·전문가를 볼 수 있어요. ‘내 위치 사용’으로 현재 위치를 쓸 수도 있어요.');}
+async function maybeAutoLocate(){if(!navigator.geolocation||!window.isSecureContext){locationFeedback('이 브라우저에서는 위치 확인을 사용할 수 없어요. 활동 지역을 직접 선택해 주세요.');return;}let s;try{s=(await navigator.permissions?.query({name:'geolocation'}))?.state;}catch{}if(s==='denied'){locationFeedback('위치 접근이 차단돼 있어요. 활동 지역을 선택하거나, 브라우저 주소창의 위치 권한을 허용한 뒤 ‘내 위치 사용’을 눌러 주세요.');return;}locate();}
 async function locate(){if(locating)return;if(!navigator.geolocation||!window.isSecureContext){locationFeedback('이 브라우저에서는 위치 확인을 사용할 수 없습니다. 지역을 직접 선택해 주세요.');return;}locating=true;locationFeedback('현재 위치를 확인하고 있어요. 위치 접근 요청이 뜨면 허용해 주세요.');
  locationController=new AbortController();
  const applyEarly=p=>{position={lat:p.coords.latitude,lng:p.coords.longitude};locationMessage='대략적인 위치를 표시했어요. 정확도를 확인 중입니다.';render();};
