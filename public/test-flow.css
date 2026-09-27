@@ -39,3 +39,9 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"
 .support-transcript:empty,.support-saved:empty{display:none}
 .support-transcript{margin-top:8px}
 .support-panel .support-bubble button{margin-top:8px;min-height:32px;padding:5px 12px;font-size:12px;border-radius:999px;background:var(--card);border:1px solid var(--brand);color:var(--brand-dark);width:auto}
+/* 회원가입 라디오/동의행 정상화 (test-flow input 규칙이 라디오를 키우는 것 교정) */
+.flow-main input[type=radio]{width:20px;height:20px;min-height:0;flex:none;accent-color:var(--brand)}
+.flow-main .consent-row{display:flex;align-items:baseline;gap:8px;width:auto;margin-block:10px;font-weight:400}
+.flow-main .social-auth{display:grid;gap:8px;margin-block:var(--flow-small)}
+.flow-main .auth-divider{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;margin-block:var(--flow-pad)}
+.flow-main .auth-divider:before,.flow-main .auth-divider:after{content:"";flex:1;height:1px;background:var(--border)}
