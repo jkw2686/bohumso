@@ -47,7 +47,7 @@ begin
   return coalesce((select jsonb_agg(jsonb_build_object('id',b.id,'name',b.name,'district',b.district,'address',b.address,'contact',b.contact,'latitude',b.latitude,'longitude',b.longitude,'pledge',true,'no_cold_calls',true,'expert_count',(select count(*) from bohumso_test.experts x where x.branch=b.id and x.status='verified' and x.sanction is distinct from 'banned' and not coalesce(x.sanction='suspended' and x.suspended_until>now(),false)),'is_test',true) order by b.district,b.name) from bohumso_test.branches b where (coalesce(payload->>'district','')='' or b.district=payload->>'district')),'[]');
  end if;
  if operation='workspace' then
-  return jsonb_build_object('actor',to_jsonb(who),'expert',(select to_jsonb(x) from bohumso_test.experts x where id=actor),'documents',(select coalesce(jsonb_agg(to_jsonb(x)-'data'),'[]') from bohumso_test.documents x where owner=actor),'requests',(select coalesce(jsonb_agg(to_jsonb(x) order by created_at desc),'[]') from bohumso_test.requests x where customer=actor),'history',(select coalesce(jsonb_agg(to_jsonb(x) order by id desc),'[]') from bohumso_test.audit x where x.target=actor));
+  return jsonb_build_object('actor',to_jsonb(who),'expert',(select to_jsonb(x) from bohumso_test.experts x where id=actor),'documents',(select coalesce(jsonb_agg(to_jsonb(x)-'data'),'[]') from bohumso_test.documents x where owner=actor),'requests',(select coalesce(jsonb_agg(to_jsonb(x) order by created_at desc),'[]') from bohumso_test.requests x where customer=actor),'incoming',(select coalesce(jsonb_agg(to_jsonb(x) order by created_at desc),'[]') from bohumso_test.requests x where x.expert=actor),'history',(select coalesce(jsonb_agg(to_jsonb(x) order by id desc),'[]') from bohumso_test.audit x where x.target=actor));
  end if;
  if operation='register' or operation='profile' then
   if who.role<>'expert' then raise exception 'expert_required';end if;
@@ -101,6 +101,15 @@ begin
   if coalesce(payload->>'situation','') not in ('death','cancer','denial','disability','other') or coalesce(payload->>'method','') not in ('office','visit','remote') then raise exception 'invalid_request';end if;
   insert into bohumso_test.requests(customer,expert,situation,method,region,expert_name,request_key) values(actor,e.id,payload->>'situation',payload->>'method',e.region,e.name,(payload->>'request_key')::uuid) returning * into r;
   insert into bohumso_test.audit(actor,target,action) values(actor,r.id,'request_created');return to_jsonb(r);
+ end if;
+ if operation='request_state' then
+  if who.role<>'expert' then raise exception 'expert_required';end if;
+  select * into r from bohumso_test.requests where id=(payload->>'id')::uuid for update;
+  if r.id is null or r.expert is distinct from actor then raise exception 'request_forbidden';end if;
+  if r.revision is distinct from (payload->>'revision')::integer then raise exception 'stale_revision';end if;
+  if coalesce(payload->>'state','') not in ('new','delivered','completed') then raise exception 'invalid_state';end if;
+  update bohumso_test.requests set state=payload->>'state',revision=revision+1 where id=r.id returning * into r;
+  insert into bohumso_test.audit(actor,target,action,reason) values(actor,r.id,'expert_intake:'||r.state,'전문가 본인 상태 기록 · 자동 발송 없음');return to_jsonb(r);
  end if;
  if operation='branch_detail' then
   select * into br from bohumso_test.branches where id=(payload->>'id')::uuid;
