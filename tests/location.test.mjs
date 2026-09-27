@@ -1,0 +1,4 @@
+import assert from 'node:assert/strict';import {locateDevice} from '../src/test-flow/location.mjs';
+let cleared=false;const fix=(accuracy,latitude)=>({coords:{latitude,longitude:127.11,accuracy}});const geo={watchPosition(ok,err,options){assert.equal(options.enableHighAccuracy,true);setTimeout(()=>ok(fix(20000,37.55)),0);setTimeout(()=>ok(fix(30,37.38)),10);return 7;},clearWatch(id){assert.equal(id,7);cleared=true;}};const result=await locateDevice(geo);assert.equal(result.coords.latitude,37.38);assert(cleared);
+const approximate=await locateDevice({watchPosition(ok){setTimeout(()=>ok(fix(9000,37.5)),0);return 1;},clearWatch(){}},{timeout:20});assert.equal(approximate.coords.accuracy,9000);
+const abort=new AbortController();const pending=locateDevice({watchPosition(){return 1;},clearWatch(){}},{signal:abort.signal});abort.abort();await assert.rejects(pending,e=>e.cancelled);console.log('PASS high accuracy, improving coarse fix, bounded wait, cancellation');
