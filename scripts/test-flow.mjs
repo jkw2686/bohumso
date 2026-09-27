@@ -19,7 +19,8 @@ export async function startTestFlow({port=3195,memory=false,dataDir,env=process.
    const routes=['/','/index.html','/claim','/find.html','/consult.html','/expert','/partner','/partner.html','/signup.html','/login.html','/account.html','/partner-work.html','/admin','/admin.html','/admin-requests.html','/requests.html','/dashboard.html'];
    if(routes.includes(url.pathname)){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(await readFile('public/test-flow.html'));return;}
    if(url.pathname==='/assets/test-flow.js'){res.setHeader('Content-Type','text/javascript');res.end(await readFile('artifacts/test-flow.js'));return;}
-   const permitted=['/styles.css','/visual.css','/account.css','/test-flow.css'];if(permitted.includes(url.pathname)){res.setHeader('Content-Type','text/css');const css=await readFile(path.join('public',url.pathname),'utf8');res.end(css.replace(/^@import[^;]+;/gm,''));return;}
+   if(url.pathname==='/vendor/leaflet.js'){res.setHeader('Content-Type','text/javascript');res.end(await readFile('public/vendor/leaflet.js'));return;}
+   const permitted=['/vendor/leaflet.css','/styles.css','/visual.css','/account.css','/test-flow.css'];if(permitted.includes(url.pathname)){res.setHeader('Content-Type','text/css');const css=await readFile(path.join('public',url.pathname),'utf8');res.end(css.replace(/^@import[^;]+;/gm,''));return;}
    json(res,{error:'이 테스트 화면은 메뉴에서 이동해 주세요.'},404);
   }catch(e){json(res,{error:errors[e.message]||'처리하지 못했습니다. 입력값과 최신 상태를 확인해 주세요.',code:errors[e.message]?e.message:'invalid_request'},400);}
  });await new Promise(resolve=>server.listen(port,'127.0.0.1',resolve));return {server,db,close:async()=>{server.closeAllConnections();await new Promise(r=>server.close(r));await db.close();}};
