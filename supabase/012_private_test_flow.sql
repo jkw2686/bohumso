@@ -12,6 +12,23 @@ insert into bohumso_test.actors(id,role,name) values('10000000-1111-4000-8000-00
 insert into bohumso_test.experts(id,profession,name,organization,region,registration,specialties,bio,status,pledge_version,latitude,longitude,rating) values
 ('20000000-1111-4000-8000-000000000001','adjuster','가상 김도움','샘플 손해사정 사무소','마포구','TEST-ADJ-01',array['denial','disability'],'가상 전문가 프로필입니다. 실제 자격 확인·상담 대상이 아닙니다.','verified','consumer-protection-2026-09-26-v2',37.555,126.923,4.8),
 ('20000000-1111-4000-8000-000000000002','planner','가상 이안심','샘플 보험대리점','마포구','TEST-PLAN-02',array['death','cancer'],'가상 전문가 프로필입니다. 실제 자격 확인·상담 대상이 아닙니다.','verified','consumer-protection-2026-09-26-v2',37.561,126.939,4.7) on conflict do nothing;
+-- 거점(보험소) 모델 — additive(기존 expert/request 흐름 유지). 소비자는 거점을 골라 예약, 거점이 전문가 배정.
+alter table bohumso_test.actors drop constraint if exists actors_role_check;
+alter table bohumso_test.actors add constraint actors_role_check check(role in ('customer','expert','admin','branch'));
+create table if not exists bohumso_test.branches(id uuid primary key default gen_random_uuid(),operator uuid references bohumso_test.actors(id),name text not null,district text not null,address text not null default '',contact text not null default '',pledge_version text not null default 'consumer-protection-2026-09-26-v2',latitude double precision not null,longitude double precision not null,created_at timestamptz not null default now(),check(length(name) between 2 and 80));
+alter table bohumso_test.experts add column if not exists branch uuid references bohumso_test.branches(id);
+create table if not exists bohumso_test.bookings(id uuid primary key default gen_random_uuid(),customer uuid not null references bohumso_test.actors(id),branch uuid not null references bohumso_test.branches(id),situation text not null check(situation in ('death','cancer','denial','disability','other')),method text not null check(method in ('office','visit','remote')),preferred_date text not null default '',preferred_slot text not null default '',name text not null default '',phone text not null default '',assigned_expert uuid references bohumso_test.experts(id),state text not null default 'new' check(state in ('new','assigned','completed')),request_key uuid not null,revision integer not null default 1,created_at timestamptz not null default now(),unique(customer,request_key));
+insert into bohumso_test.actors(id,role,name) values
+ ('40000000-1111-4000-8000-000000000001','branch','마포 보험소 운영자'),
+ ('40000000-1111-4000-8000-000000000002','branch','송파 보험소 운영자'),
+ ('40000000-1111-4000-8000-000000000003','branch','분당 보험소 운영자'),
+ ('40000000-1111-4000-8000-000000000004','branch','수정구 보험소 운영자') on conflict do nothing;
+insert into bohumso_test.branches(id,operator,name,district,address,contact,latitude,longitude) values
+ ('50000000-1111-4000-8000-000000000001','40000000-1111-4000-8000-000000000001','마포 보험소','마포구','서울 마포구 월드컵로 (가상)','02-000-0001',37.556,126.923),
+ ('50000000-1111-4000-8000-000000000002','40000000-1111-4000-8000-000000000002','송파 보험소','송파구','서울 송파구 올림픽로 (가상)','02-000-0002',37.514,127.106),
+ ('50000000-1111-4000-8000-000000000003','40000000-1111-4000-8000-000000000003','분당 보험소','분당구','경기 성남시 분당구 (가상)','031-000-0003',37.382,127.119),
+ ('50000000-1111-4000-8000-000000000004','40000000-1111-4000-8000-000000000004','수정구 보험소','수정구','경기 성남시 수정구 (가상)','031-000-0004',37.450,127.145) on conflict do nothing;
+update bohumso_test.experts set branch='50000000-1111-4000-8000-000000000001' where id in ('20000000-1111-4000-8000-000000000001','20000000-1111-4000-8000-000000000002') and branch is null;
 create or replace function public.bohumso_test_command(actor uuid,operation text,payload jsonb default '{}') returns jsonb language plpgsql security definer set search_path='' as $$
 #variable_conflict use_variable
 declare who bohumso_test.actors; e bohumso_test.experts; r bohumso_test.requests; d bohumso_test.documents; target uuid; decision text; region_value text; result jsonb; revision_value integer;
@@ -25,6 +42,9 @@ begin
  end if;
  if operation='catalog' then
   return coalesce((select jsonb_agg(jsonb_build_object('id',x.id,'profession',x.profession,'name',x.name,'organization',x.organization,'region',x.region,'specialties',x.specialties,'bio',x.bio,'latitude',x.latitude,'longitude',x.longitude,'rating',x.rating,'pledge',x.sanction is null,'is_test',true) order by x.name) from bohumso_test.experts x where x.status='verified' and x.profession in ('planner','adjuster') and x.sanction is distinct from 'banned' and not coalesce(x.sanction='suspended' and x.suspended_until>now(),false) and (coalesce(payload->>'region','')='' or x.region=payload->>'region')),'[]');
+ end if;
+ if operation='branch_catalog' then
+  return coalesce((select jsonb_agg(jsonb_build_object('id',b.id,'name',b.name,'district',b.district,'address',b.address,'contact',b.contact,'latitude',b.latitude,'longitude',b.longitude,'pledge',true,'no_cold_calls',true,'expert_count',(select count(*) from bohumso_test.experts x where x.branch=b.id and x.status='verified' and x.sanction is distinct from 'banned' and not coalesce(x.sanction='suspended' and x.suspended_until>now(),false)),'is_test',true) order by b.district,b.name) from bohumso_test.branches b where (coalesce(payload->>'district','')='' or b.district=payload->>'district')),'[]');
  end if;
  if operation='workspace' then
   return jsonb_build_object('actor',to_jsonb(who),'expert',(select to_jsonb(x) from bohumso_test.experts x where id=actor),'documents',(select coalesce(jsonb_agg(to_jsonb(x)-'data'),'[]') from bohumso_test.documents x where owner=actor),'requests',(select coalesce(jsonb_agg(to_jsonb(x) order by created_at desc),'[]') from bohumso_test.requests x where customer=actor),'history',(select coalesce(jsonb_agg(to_jsonb(x) order by id desc),'[]') from bohumso_test.audit x where x.target=actor));
