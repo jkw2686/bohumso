@@ -1,5 +1,5 @@
 import {readFile,mkdir} from 'node:fs/promises';import {PGlite} from '@electric-sql/pglite';import {createClient} from '@supabase/supabase-js';
-export const ACTORS={customer:'10000000-1111-4000-8000-000000000001',admin:'30000000-1111-4000-8000-000000000001',expert:'20000000-1111-4000-8000-000000000001'};
+export const ACTORS={customer:'10000000-1111-4000-8000-000000000001',admin:'30000000-1111-4000-8000-000000000001',expert:'20000000-1111-4000-8000-000000000001',branch:'40000000-1111-4000-8000-000000000001'};
 export async function openTestDatabase({memory=false,dataDir='artifacts/test-flow-db',env=process.env}={}){
  let backend,invoke,close;
  if(env.TEST_SUPABASE_URL||env.TEST_SUPABASE_SERVICE_ROLE_KEY){

@@ -31,7 +31,7 @@ insert into bohumso_test.branches(id,operator,name,district,address,contact,lati
 update bohumso_test.experts set branch='50000000-1111-4000-8000-000000000001' where id in ('20000000-1111-4000-8000-000000000001','20000000-1111-4000-8000-000000000002') and branch is null;
 create or replace function public.bohumso_test_command(actor uuid,operation text,payload jsonb default '{}') returns jsonb language plpgsql security definer set search_path='' as $$
 #variable_conflict use_variable
-declare who bohumso_test.actors; e bohumso_test.experts; r bohumso_test.requests; d bohumso_test.documents; target uuid; decision text; region_value text; result jsonb; revision_value integer;
+declare who bohumso_test.actors; e bohumso_test.experts; r bohumso_test.requests; d bohumso_test.documents; br bohumso_test.branches; bk bohumso_test.bookings; target uuid; decision text; region_value text; result jsonb; revision_value integer;
 begin
  select * into who from bohumso_test.actors where id=actor for update;
  if who.id is null then raise exception 'test_login_required';end if;
@@ -102,9 +102,50 @@ begin
   insert into bohumso_test.requests(customer,expert,situation,method,region,expert_name,request_key) values(actor,e.id,payload->>'situation',payload->>'method',e.region,e.name,(payload->>'request_key')::uuid) returning * into r;
   insert into bohumso_test.audit(actor,target,action) values(actor,r.id,'request_created');return to_jsonb(r);
  end if;
+ if operation='branch_detail' then
+  select * into br from bohumso_test.branches where id=(payload->>'id')::uuid;
+  if br.id is null then raise exception 'branch_unavailable';end if;
+  return to_jsonb(br)||jsonb_build_object('pledge',true,'no_cold_calls',true,'experts',(select coalesce(jsonb_agg(jsonb_build_object('id',x.id,'name',x.name,'profession',x.profession) order by x.name),'[]') from bohumso_test.experts x where x.branch=br.id and x.status='verified' and x.sanction is distinct from 'banned' and not coalesce(x.sanction='suspended' and x.suspended_until>now(),false)),'expert_count',(select count(*) from bohumso_test.experts x where x.branch=br.id and x.status='verified' and x.sanction is distinct from 'banned' and not coalesce(x.sanction='suspended' and x.suspended_until>now(),false)));
+ end if;
+ if operation='book' then
+  if who.role<>'customer' then raise exception 'customer_required';end if;
+  if payload->'consent' is distinct from 'true'::jsonb then raise exception 'request_consent_required';end if;
+  select * into bk from bohumso_test.bookings where customer=actor and request_key=(payload->>'request_key')::uuid;
+  if found then
+   if bk.branch is distinct from (payload->>'branch')::uuid or bk.method is distinct from payload->>'method' or bk.situation is distinct from payload->>'situation' then raise exception 'request_key_conflict';end if;return to_jsonb(bk);
+  end if;
+  select * into br from bohumso_test.branches where id=(payload->>'branch')::uuid;
+  if br.id is null then raise exception 'branch_unavailable';end if;
+  if coalesce(payload->>'situation','') not in ('death','cancer','denial','disability','other') or coalesce(payload->>'method','') not in ('office','visit','remote') then raise exception 'invalid_request';end if;
+  insert into bohumso_test.bookings(customer,branch,situation,method,preferred_date,preferred_slot,name,phone,request_key) values(actor,br.id,payload->>'situation',payload->>'method',coalesce(payload->>'preferred_date',''),coalesce(payload->>'preferred_slot',''),coalesce(payload->>'name',''),coalesce(payload->>'phone',''),(payload->>'request_key')::uuid) returning * into bk;
+  insert into bohumso_test.audit(actor,target,action) values(actor,bk.id,'booking_created');return to_jsonb(bk);
+ end if;
+ if operation in ('branch_workspace','branch_bookings','assign_expert','booking_state') then
+  if who.role<>'branch' then raise exception 'branch_required';end if;
+  select * into br from bohumso_test.branches where operator=actor;
+  if br.id is null then raise exception 'branch_required';end if;
+  if operation in ('branch_workspace','branch_bookings') then
+   result=jsonb_build_object('branch',to_jsonb(br),'bookings',(select coalesce(jsonb_agg(to_jsonb(x)||jsonb_build_object('assigned_expert_name',(select y.name from bohumso_test.experts y where y.id=x.assigned_expert)) order by x.created_at desc),'[]') from bohumso_test.bookings x where x.branch=br.id),'experts',(select coalesce(jsonb_agg(jsonb_build_object('id',x.id,'name',x.name,'profession',x.profession,'status',x.status) order by x.name),'[]') from bohumso_test.experts x where x.branch=br.id));
+   return result;
+  end if;
+  select * into bk from bohumso_test.bookings where id=(payload->>'id')::uuid for update;
+  if bk.id is null or bk.branch is distinct from br.id then raise exception 'booking_forbidden';end if;
+  if bk.revision is distinct from (payload->>'revision')::integer then raise exception 'stale_revision';end if;
+  if operation='assign_expert' then
+   select * into e from bohumso_test.experts where id=(payload->>'expert')::uuid;
+   if e.id is null or e.branch is distinct from br.id or e.status<>'verified' then raise exception 'expert_forbidden';end if;
+   update bohumso_test.bookings set assigned_expert=e.id,state='assigned',revision=revision+1 where id=bk.id returning * into bk;
+   insert into bohumso_test.audit(actor,target,action,reason) values(actor,bk.id,'assigned',e.name);
+  else
+   if coalesce(payload->>'state','') not in ('new','assigned','completed') then raise exception 'invalid_state';end if;
+   update bohumso_test.bookings set state=payload->>'state',revision=revision+1 where id=bk.id returning * into bk;
+   insert into bohumso_test.audit(actor,target,action,reason) values(actor,bk.id,'booking:'||bk.state,'거점 수기 상태 기록 · 자동 발송 없음');
+  end if;
+  return to_jsonb(bk)||jsonb_build_object('assigned_expert_name',(select y.name from bohumso_test.experts y where y.id=bk.assigned_expert));
+ end if;
  if operation in ('admin_list','review','sanction','intake','document') then
   if who.role<>'admin' then raise exception 'admin_required';end if;
-  if operation='admin_list' then return jsonb_build_object('experts',(select coalesce(jsonb_agg(to_jsonb(x)||jsonb_build_object('documents',(select coalesce(jsonb_agg(to_jsonb(docrow)-'data'),'[]') from bohumso_test.documents docrow where docrow.owner=x.id),'history',(select coalesce(jsonb_agg(to_jsonb(a) order by a.id desc),'[]') from bohumso_test.audit a where a.target=x.id)) order by x.created_at desc),'[]') from bohumso_test.experts x),'requests',(select coalesce(jsonb_agg(to_jsonb(x) order by created_at desc),'[]') from bohumso_test.requests x));end if;
+  if operation='admin_list' then return jsonb_build_object('experts',(select coalesce(jsonb_agg(to_jsonb(x)||jsonb_build_object('documents',(select coalesce(jsonb_agg(to_jsonb(docrow)-'data'),'[]') from bohumso_test.documents docrow where docrow.owner=x.id),'history',(select coalesce(jsonb_agg(to_jsonb(a) order by a.id desc),'[]') from bohumso_test.audit a where a.target=x.id)) order by x.created_at desc),'[]') from bohumso_test.experts x),'requests',(select coalesce(jsonb_agg(to_jsonb(x) order by created_at desc),'[]') from bohumso_test.requests x),'branches',(select coalesce(jsonb_agg(jsonb_build_object('id',b.id,'name',b.name,'district',b.district,'address',b.address,'expert_count',(select count(*) from bohumso_test.experts x where x.branch=b.id)) order by b.district,b.name),'[]') from bohumso_test.branches b),'bookings',(select coalesce(jsonb_agg(to_jsonb(x)||jsonb_build_object('branch_name',(select b.name from bohumso_test.branches b where b.id=x.branch),'assigned_expert_name',(select y.name from bohumso_test.experts y where y.id=x.assigned_expert)) order by x.created_at desc),'[]') from bohumso_test.bookings x));end if;
   if operation='document' then select * into d from bohumso_test.documents where id=(payload->>'id')::uuid;if not found then raise exception 'document_missing';end if;insert into bohumso_test.audit(actor,target,action) values(actor,d.owner,'document_viewed');return to_jsonb(d);end if;
   if operation='intake' then
    select * into r from bohumso_test.requests where id=(payload->>'id')::uuid for update;
