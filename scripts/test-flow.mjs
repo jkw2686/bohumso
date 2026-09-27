@@ -1,5 +1,5 @@
 import http from 'node:http';import path from 'node:path';import {randomBytes} from 'node:crypto';import {readFile,mkdir} from 'node:fs/promises';import {build} from 'esbuild';import {openTestDatabase,ACTORS} from '../src/test-flow/database.mjs';import {documentType,safeFilename} from '../netlify/functions/_shared/expert-documents.mjs';
-export async function startTestFlow({port=3194,memory=false,dataDir,env=process.env}={}){
+export async function startTestFlow({port=3195,memory=false,dataDir,env=process.env}={}){
  await mkdir('artifacts',{recursive:true});await build({entryPoints:['src/test-flow/ui.js'],bundle:true,format:'esm',outfile:'artifacts/test-flow.js'});const db=await openTestDatabase({memory,dataDir,env});const sessions=new Map();const lastExperts=new Map();
  const errors={test_login_required:'테스트 계정을 선택해 주세요.',admin_required:'관리자 테스트 계정에서만 가능합니다.',expert_required:'전문가 테스트 계정을 선택해 주세요.',customer_required:'소비자 테스트 계정에서 신청해 주세요.',invalid_profile:'이름·소속·활동지역을 확인해 주세요.',invalid_registration:'등록번호 형식을 확인해 주세요. 주민번호를 입력하지 마세요.',pledge_required:'소비자보호 서약 3개에 모두 동의해 주세요.',document_consent_required:'서류 수집·이용 및 마스킹 확인이 필요합니다.',documents_required:'신분증·자격 서류와 등록번호를 준비한 뒤 심사를 요청해 주세요.',expert_unavailable:'해당 전문가는 현재 상담 접수가 불가합니다. 지도를 다시 확인해 주세요.',reason_required:'심사·제재 사유를 5자 이상 입력해 주세요.',verification_required:'서류와 등록정보 확인이 필요합니다.',stale_revision:'다른 화면에서 변경됐습니다. 새로고침 후 다시 처리해 주세요.',request_consent_required:'상담 접수 동의를 확인해 주세요.',invalid_transition:'현재 상태에서는 처리할 수 없습니다.',invalid_period:'경고 후 유효한 노출정지 기간을 입력해 주세요.',application_locked:'제명된 계정은 변경할 수 없습니다.'};
  const json=(res,data,status=200)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'});res.end(JSON.stringify(data));};
@@ -19,9 +19,9 @@ export async function startTestFlow({port=3194,memory=false,dataDir,env=process.
    const routes=['/','/index.html','/claim','/find.html','/consult.html','/expert','/partner','/partner.html','/signup.html','/login.html','/account.html','/partner-work.html','/admin','/admin.html','/admin-requests.html','/requests.html','/dashboard.html'];
    if(routes.includes(url.pathname)){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(await readFile('public/test-flow.html'));return;}
    if(url.pathname==='/assets/test-flow.js'){res.setHeader('Content-Type','text/javascript');res.end(await readFile('artifacts/test-flow.js'));return;}
-   const permitted=['/styles.css','/visual.css','/account.css','/test-flow.css'];if(permitted.includes(url.pathname)){res.setHeader('Content-Type','text/css');res.end(await readFile(path.join('public',url.pathname)));return;}
+   const permitted=['/styles.css','/visual.css','/account.css','/test-flow.css'];if(permitted.includes(url.pathname)){res.setHeader('Content-Type','text/css');const css=await readFile(path.join('public',url.pathname),'utf8');res.end(css.replace(/^@import[^;]+;/gm,''));return;}
    json(res,{error:'이 테스트 화면은 메뉴에서 이동해 주세요.'},404);
   }catch(e){json(res,{error:errors[e.message]||'처리하지 못했습니다. 입력값과 최신 상태를 확인해 주세요.',code:errors[e.message]?e.message:'invalid_request'},400);}
  });await new Promise(resolve=>server.listen(port,'127.0.0.1',resolve));return {server,db,close:async()=>{server.closeAllConnections();await new Promise(r=>server.close(r));await db.close();}};
 }
-if(process.argv[1]?.endsWith('test-flow.mjs')){const app=await startTestFlow();console.log('Private connected test: http://127.0.0.1:3194/ · '+app.db.backend);}
+if(process.argv[1]?.endsWith('test-flow.mjs')){const app=await startTestFlow();console.log('Private connected test: http://127.0.0.1:3195/ · '+app.db.backend);}

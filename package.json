@@ -10,7 +10,9 @@
     "verify": "node scripts/verify.mjs",
     "preflight": "node scripts/preflight.mjs",
     "smoke": "node scripts/smoke.mjs",
-    "concurrency": "node scripts/concurrency-test.mjs"
+    "concurrency": "node scripts/concurrency-test.mjs",
+    "dev:test-flow": "node scripts/test-flow.mjs",
+    "test:connected": "node --test tests/connected-flow.test.mjs && node tests/connected-flow-browser.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0"

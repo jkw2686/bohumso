@@ -50,7 +50,7 @@ begin
  if operation in ('upload','delete_document','submit_review') then
   if who.role<>'expert' then raise exception 'expert_required';end if;
   select * into e from bohumso_test.experts where id=actor for update;
-  if e.sanction='banned' then raise exception 'application_locked';end if;
+  if e.sanction='banned' and operation<>'delete_document' then raise exception 'application_locked';end if;
   if operation='upload' then
    if payload->'consent' is distinct from 'true'::jsonb or payload->'masked' is distinct from 'true'::jsonb then raise exception 'document_consent_required';end if;
    if coalesce(payload->>'kind','') not in ('identity','qualification') or coalesce(payload->>'mime','') not in ('image/png','image/jpeg','application/pdf') or length(coalesce(payload->>'data','')) not between 8 and 5592408 or length(coalesce(payload->>'filename','')) not between 1 and 120 then raise exception 'invalid_document';end if;
@@ -84,7 +84,7 @@ begin
  end if;
  if operation in ('admin_list','review','sanction','intake','document') then
   if who.role<>'admin' then raise exception 'admin_required';end if;
-  if operation='admin_list' then return jsonb_build_object('experts',(select coalesce(jsonb_agg(to_jsonb(x)||jsonb_build_object('documents',(select coalesce(jsonb_agg(to_jsonb(d)-'data'),'[]') from bohumso_test.documents d where d.owner=x.id),'history',(select coalesce(jsonb_agg(to_jsonb(a) order by a.id desc),'[]') from bohumso_test.audit a where a.target=x.id)) order by x.created_at desc),'[]') from bohumso_test.experts x),'requests',(select coalesce(jsonb_agg(to_jsonb(x) order by created_at desc),'[]') from bohumso_test.requests x));end if;
+  if operation='admin_list' then return jsonb_build_object('experts',(select coalesce(jsonb_agg(to_jsonb(x)||jsonb_build_object('documents',(select coalesce(jsonb_agg(to_jsonb(docrow)-'data'),'[]') from bohumso_test.documents docrow where docrow.owner=x.id),'history',(select coalesce(jsonb_agg(to_jsonb(a) order by a.id desc),'[]') from bohumso_test.audit a where a.target=x.id)) order by x.created_at desc),'[]') from bohumso_test.experts x),'requests',(select coalesce(jsonb_agg(to_jsonb(x) order by created_at desc),'[]') from bohumso_test.requests x));end if;
   if operation='document' then select * into d from bohumso_test.documents where id=(payload->>'id')::uuid;if not found then raise exception 'document_missing';end if;insert into bohumso_test.audit(actor,target,action) values(actor,d.owner,'document_viewed');return to_jsonb(d);end if;
   if operation='intake' then
    select * into r from bohumso_test.requests where id=(payload->>'id')::uuid for update;
@@ -112,5 +112,16 @@ begin
  raise exception 'unknown_operation';
 end $$;
 revoke all on function public.bohumso_test_command(uuid,text,jsonb) from public;
-do $$ begin if exists(select 1 from pg_roles where rolname='service_role') then grant execute on function public.bohumso_test_command(uuid,text,jsonb) to service_role;end if;end $$;
+-- Supabase default privileges may grant API roles directly; PUBLIC revocation alone is insufficient.
+do $$ declare api_role text;begin
+ foreach api_role in array array['anon','authenticated'] loop
+  if exists(select 1 from pg_roles where rolname=api_role) then
+   execute format('revoke all on function public.bohumso_test_command(uuid,text,jsonb) from %I',api_role);
+   execute format('revoke all on schema bohumso_test from %I',api_role);
+   execute format('revoke all on all tables in schema bohumso_test from %I',api_role);
+   execute format('revoke all on all sequences in schema bohumso_test from %I',api_role);
+  end if;
+ end loop;
+ if exists(select 1 from pg_roles where rolname='service_role') then grant execute on function public.bohumso_test_command(uuid,text,jsonb) to service_role;end if;
+end $$;
 commit;

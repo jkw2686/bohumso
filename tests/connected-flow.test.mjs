@@ -11,7 +11,7 @@ test('connected DB: optional documents, pledge, review, directory, requests, san
  await assert.rejects(c(actor,'upload',{...doc,kind:'identity',consent:false}),/document_consent_required/);
  const identity=await c(actor,'upload',{...doc,kind:'identity'});await c(actor,'upload',{...doc,kind:'qualification'});
  await assert.rejects(c(actor,'document',{id:identity.id}),/admin_required/);await assert.rejects(c(A.customer,'document',{id:identity.id}),/admin_required/);
- assert.ok((await c(A.admin,'document',{id:identity.id})).data);assert.equal((await c(actor,'workspace')).documents[0].data,undefined);
+ assert.equal((await c(A.admin,'admin_list')).experts.find(x=>x.id===actor).documents.length,2);assert.ok((await c(A.admin,'document',{id:identity.id})).data);assert.equal((await c(actor,'workspace')).documents[0].data,undefined);
  e=(await c(actor,'workspace')).expert;e=await c(actor,'submit_review',{revision:e.revision});assert.equal(e.status,'pending');
  await assert.rejects(c(A.customer,'review',{id:actor,revision:e.revision,decision:'verified',reason:'테스트 서류 확인',checked:true}),/admin_required/);
  await assert.rejects(c(A.admin,'review',{id:actor,revision:e.revision,decision:'verified',reason:'테스트 서류 확인',checked:false}),/verification_required/);
@@ -30,8 +30,10 @@ test('connected DB: optional documents, pledge, review, directory, requests, san
  e=await c(A.admin,'sanction',{id:actor,revision:e.revision,decision:'suspended',reason:'가상 노출정지 시나리오',until:new Date(Date.now()+86400000).toISOString()});assert.equal((await c(A.customer,'catalog')).some(p=>p.id===actor),false);
  await assert.rejects(c(A.customer,'request',{...payload,request_key:randomUUID()}),/expert_unavailable/);
  e=await c(A.admin,'sanction',{id:actor,revision:e.revision,decision:'banned',reason:'가상 제명 시나리오'});await assert.rejects(c(actor,'profile',{...profile,revision:e.revision}),/application_locked/);
- const history=(await c(actor,'workspace')).history;assert.ok(history.some(x=>x.action==='sanction:banned'&&x.actor===A.admin&&x.at));
+ await c(actor,'delete_document',{id:identity.id});assert.equal((await c(actor,'workspace')).documents.length,1);const history=(await c(actor,'workspace')).history;assert.ok(history.some(x=>x.action==='sanction:banned'&&x.actor===A.admin&&x.at));
  }finally{await db.close();}});
 test('database survives restart and blocks production Supabase',async()=>{const dir=await mkdtemp('artifacts/connected-persistence-');let db=await openTestDatabase({dataDir:dir,env:{}});const actor=(await db.command(A.admin,'new_expert')).id;await db.command(actor,'register',profile);await db.close();db=await openTestDatabase({dataDir:dir,env:{}});try{assert.equal((await db.command(actor,'workspace')).expert.name,profile.name);}finally{await db.close();}
  await assert.rejects(openTestDatabase({env:{TEST_SUPABASE_URL:'https://xyexphhspykwwlhfokfl.supabase.co',TEST_SUPABASE_PROJECT_REF:'xyexphhspykwwlhfokfl',TEST_SUPABASE_ALLOW_REMOTE:'true',TEST_SUPABASE_SERVICE_ROLE_KEY:'invalid-test-placeholder'}}),/production project is blocked/);
 });
+
+test('Supabase API roles cannot call privileged dummy-account RPC',async()=>{const {PGlite}=await import('@electric-sql/pglite');const {readFile}=await import('node:fs/promises');const db=new PGlite();try{await db.exec('create role anon;create role authenticated;create role service_role;alter default privileges in schema public grant execute on functions to anon,authenticated;');await db.exec(await readFile('supabase/012_private_test_flow.sql','utf8'));const {rows}=await db.query("select has_function_privilege('anon','public.bohumso_test_command(uuid,text,jsonb)','execute') anon,has_function_privilege('authenticated','public.bohumso_test_command(uuid,text,jsonb)','execute') authenticated,has_function_privilege('service_role','public.bohumso_test_command(uuid,text,jsonb)','execute') service");assert.deepEqual(rows[0],{anon:false,authenticated:false,service:true});}finally{await db.close();}});
