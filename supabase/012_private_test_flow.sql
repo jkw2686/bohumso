@@ -17,6 +17,8 @@ alter table bohumso_test.actors drop constraint if exists actors_role_check;
 alter table bohumso_test.actors add constraint actors_role_check check(role in ('customer','expert','admin','branch'));
 create table if not exists bohumso_test.branches(id uuid primary key default gen_random_uuid(),operator uuid references bohumso_test.actors(id),name text not null,district text not null,address text not null default '',contact text not null default '',pledge_version text not null default 'consumer-protection-2026-09-26-v2',latitude double precision not null,longitude double precision not null,created_at timestamptz not null default now(),check(length(name) between 2 and 80));
 alter table bohumso_test.experts add column if not exists branch uuid references bohumso_test.branches(id);
+alter table bohumso_test.experts drop constraint if exists experts_region_check;
+alter table bohumso_test.experts add constraint experts_region_check check(region in ('마포구','송파구','분당구','수정구'));
 create table if not exists bohumso_test.bookings(id uuid primary key default gen_random_uuid(),customer uuid not null references bohumso_test.actors(id),branch uuid not null references bohumso_test.branches(id),situation text not null check(situation in ('death','cancer','denial','disability','other')),method text not null check(method in ('office','visit','remote')),preferred_date text not null default '',preferred_slot text not null default '',name text not null default '',phone text not null default '',assigned_expert uuid references bohumso_test.experts(id),state text not null default 'new' check(state in ('new','assigned','completed')),request_key uuid not null,revision integer not null default 1,created_at timestamptz not null default now(),unique(customer,request_key));
 insert into bohumso_test.actors(id,role,name) values
  ('40000000-1111-4000-8000-000000000001','branch','마포 보험소 운영자'),
@@ -128,6 +130,17 @@ begin
   if coalesce(payload->>'situation','') not in ('death','cancer','denial','disability','other') or coalesce(payload->>'method','') not in ('office','visit','remote') then raise exception 'invalid_request';end if;
   insert into bohumso_test.bookings(customer,branch,situation,method,preferred_date,preferred_slot,name,phone,request_key) values(actor,br.id,payload->>'situation',payload->>'method',coalesce(payload->>'preferred_date',''),coalesce(payload->>'preferred_slot',''),coalesce(payload->>'name',''),coalesce(payload->>'phone',''),(payload->>'request_key')::uuid) returning * into bk;
   insert into bohumso_test.audit(actor,target,action) values(actor,bk.id,'booking_created');return to_jsonb(bk);
+ end if;
+ if operation='branch_register_expert' then
+  if who.role<>'branch' then raise exception 'branch_required';end if;
+  select * into br from bohumso_test.branches where operator=actor;
+  if br.id is null then raise exception 'branch_required';end if;
+  if coalesce(payload->>'profession','') not in ('planner','adjuster') or length(trim(coalesce(payload->>'name',''))) not between 2 and 60 or length(coalesce(payload->>'bio',''))>600 then raise exception 'invalid_profile';end if;
+  if coalesce(payload->>'registration','')<>'' and (payload->>'registration' !~ '^[A-Za-z0-9][A-Za-z0-9 -]{2,39}$' or payload->>'registration' ~ '[0-9]{6}[ -]?[1-8][0-9]{6}') then raise exception 'invalid_registration';end if;
+  if jsonb_typeof(payload->'specialties') is distinct from 'array' or exists(select 1 from jsonb_array_elements_text(payload->'specialties') s where s not in ('death','cancer','denial','disability','other')) then raise exception 'invalid_specialty';end if;
+  insert into bohumso_test.actors(role,name) values('expert',trim(payload->>'name')) returning id into target;
+  insert into bohumso_test.experts(id,profession,name,organization,region,registration,specialties,bio,status,pledge_version,branch,latitude,longitude) values(target,payload->>'profession',trim(payload->>'name'),coalesce(nullif(trim(payload->>'organization'),''),br.name),br.district,coalesce(payload->>'registration',''),array(select jsonb_array_elements_text(payload->'specialties')),coalesce(payload->>'bio',''),'verified',br.pledge_version,br.id,br.latitude+(random()-0.5)*0.008,br.longitude+(random()-0.5)*0.008) returning * into e;
+  insert into bohumso_test.audit(actor,target,action,reason) values(actor,target,'branch_register_expert',e.name);return to_jsonb(e);
  end if;
  if operation in ('branch_workspace','branch_bookings','assign_expert','booking_state') then
   if who.role<>'branch' then raise exception 'branch_required';end if;
