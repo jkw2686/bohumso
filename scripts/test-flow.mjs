@@ -16,7 +16,7 @@ export async function startTestFlow({port=3195,memory=false,dataDir,env=process.
     json(res,result);return;
    }
    if(url.pathname.startsWith('/api/')||/payment/.test(url.pathname)){json(res,{error:'공개 가입·결제·외부 전송 OFF'},403);return;}
-   const routes=['/','/index.html','/claim','/find.html','/consult.html','/expert','/partner','/partner.html','/signup.html','/login.html','/account.html','/partner-work.html','/admin','/admin.html','/admin-requests.html','/requests.html','/dashboard.html'];
+   const routes=['/','/index.html','/claim','/find.html','/consult.html','/expert','/partner','/partner.html','/signup.html','/login.html','/account.html','/partner-work.html','/branch.html','/admin','/admin.html','/admin-requests.html','/requests.html','/dashboard.html'];
    if(routes.includes(url.pathname)){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(await readFile('public/test-flow.html'));return;}
    if(url.pathname==='/assets/test-flow.js'){res.setHeader('Content-Type','text/javascript');res.end(await readFile('artifacts/test-flow.js'));return;}
    if(url.pathname==='/vendor/leaflet.js'){res.setHeader('Content-Type','text/javascript');res.end(await readFile('public/vendor/leaflet.js'));return;}
