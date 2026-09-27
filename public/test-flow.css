@@ -23,3 +23,4 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"
 .branch-badges{display:flex;gap:var(--flow-small);flex-wrap:wrap;margin-block:var(--flow-small)}
 .branch-badges .chip{background:var(--brand-soft);color:var(--brand-dark);border-radius:var(--flow-input-radius);padding:4px var(--flow-small);font-size:12px;font-weight:700}
 .expert-sheet.branch-sheet{border-top:3px solid var(--accent)}
+.planned-marker{background:var(--card)!important;color:var(--brand-dark)!important;border:1px dashed var(--brand)!important;font-weight:500!important}.flow-header nav a[href="/signup.html"]{padding:8px 12px;background:var(--brand);color:var(--card);border-radius:var(--flow-input-radius)}.flow-header nav{align-items:center}
