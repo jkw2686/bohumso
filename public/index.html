@@ -10,7 +10,7 @@
 <meta property="og:type" content="website">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="visual.css"><link rel="stylesheet" href="/account.css">
+<link rel="stylesheet" href="visual.css"><link rel="stylesheet" href="/home.css"><link rel="stylesheet" href="/account.css">
 </head>
 <body class="home-page">
 
@@ -20,21 +20,14 @@
 </div>
 
 <div class="container">
-  <section class="hero hero-premium">
-    <div class="hero-copy"><span class="eyebrow">우리곁에 보험소</span>
-    <p class="hero-promise"><span>정보보다 사람이</span> <span>필요한 순간</span></p>
-    <h1>예방은 보건소,<br><em>보험금 청구는 보험소.</em></h1>
-    <p>보험이 급한 순간,<br>가까운 보험 전문가가 바로 곁으로.</p>
-    <div class="hero-actions"><a href="#help-situations" class="btn">지금 도움받기 <span aria-hidden="true">↗</span></a><a href="consult.html#consultForm" class="hero-link">보험금 청구 상담하기 →</a></div>
-    <div class="hero-footnote">상황 선택 <span>·</span> 가까운 전문가 확인 <span>·</span> 직접 도움 요청</div></div>
-    <div class="connection-art" role="img" aria-label="지도 위의 보험소와 상담을 연결하는 브랜드 그래픽">
-    <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
-    <div class="map-platform"><svg viewBox="0 0 400 300" aria-hidden="true"><path fill="#e4edff" d="M0 0h400v300H0z"/><path fill="#ceddfa" d="M25 25h80v60H25zM150 20h90v70h-90zM290 30h85v60h-85zM35 130h100v50H35zM250 140h120v120H250zM30 220h100v60H30z"/><path fill="none" stroke="#fff" stroke-width="18" d="M0 108h400M160 0v300M0 204h250M272 0v300"/><path fill="none" stroke="#8db9ff" stroke-width="24" d="M-10 280Q70 140 195 173T420 10"/><path fill="none" stroke="#3169ee" stroke-width="5" stroke-dasharray="8 7" d="M72 190h87V110h133"/></svg></div>
-    <div class="hero-pin"><svg viewBox="0 0 80 100" aria-hidden="true"><path fill="currentColor" d="M40 0A40 40 0 0 0 0 40c0 25 40 60 40 60s40-35 40-60A40 40 0 0 0 40 0"/><circle cx="40" cy="39" r="17" fill="white"/></svg></div>
-    <div class="art-card art-card-top"><span class="art-symbol">⌖</span><div><small>멀리 찾지 마세요</small><strong>가까운 전문가 찾기</strong></div></div>
-    <div class="art-card art-card-bottom"><span class="art-symbol blue">↗</span><div><small>보험금 청구부터 보장 점검까지</small><strong>질문부터, 편하게.</strong></div></div>
-    </div>
-  </section>
+  <section class="home-intro"><div class="intro-copy"><h1><span>보험금 청구가 막막할 때,</span><span>가까운 전문가를 만나세요.</span></h1><p class="intro-description">청구 준비부터 보장 점검까지, 함께.</p><a class="btn" href="#help-situations">보험금 청구 도움받기</a><p class="intro-footnote">소비자 이용 무료 · 보험 가입 의무 없음</p></div><div class="connection-art" role="img" aria-label="지도 위 위치 핀 일러스트"><div class="map-platform"><svg viewBox="0 0 400 300" aria-hidden="true"><path fill="#e4edff" d="M0 0h400v300H0z"/><path fill="#ceddfa" d="M25 25h80v60H25zM150 20h90v70h-90zM290 30h85v60h-85zM35 130h100v50H35zM250 140h120v120H250zM30 220h100v60H30z"/><path fill="none" stroke="#fff" stroke-width="18" d="M0 108h400M160 0v300M0 204h250M272 0v300"/><path fill="none" stroke="#8db9ff" stroke-width="24" d="M-10 280Q70 140 195 173T420 10"/><path fill="none" stroke="#3169ee" stroke-width="5" stroke-dasharray="8 7" d="M72 190h87V110h133"/></svg></div><div class="hero-pin"><svg viewBox="0 0 80 100" aria-hidden="true"><path fill="currentColor" d="M40 0A40 40 0 0 0 0 40c0 25 40 60 40 60s40-35 40-60A40 40 0 0 0 40 0"/><circle cx="40" cy="39" r="17" fill="white"/></svg></div></div></section>
+  <div class="section-heading" id="find-office"><div><span class="eyebrow">CLOSE TO YOU</span><h2>우리 동네 전문가 지도</h2></div><span>가까운 보험소 찾기</span></div>
+  <div class="card">
+    <p class="desc">아래 지도는 개설 구상입니다. 실제 도움 가능한 전문가는 지도에서 확인해 주세요.</p>
+    <a class="btn" href="/map.html" style="margin-bottom:10px">🗺️ 지도에서 전문가 찾기</a>
+    <button class="more-btn" style="margin-bottom:12px;" onclick="locateAndApply(true)">📍 가까운 보험소 찾기</button>
+    <div class="coverage-controls" aria-label="지도 지역 선택"><button type="button" data-coverage-region="전체" aria-pressed="true">수도권</button><button type="button" data-coverage-region="서울" aria-pressed="false">서울</button><button type="button" data-coverage-region="경기" aria-pressed="false">경기</button><button type="button" data-coverage-region="인천" aria-pressed="false">인천</button></div><p class="coverage-count" id="coverageCount">서울·경기·인천 지역별 보험소 확장 구상</p><div class="coverage-legend"><span>서울·경기·인천 전 지역 개설 예정</span></div><div id="map" aria-label="보험소 거점 지도"></div><p class="map-credit">지도 © OpenStreetMap 기여자</p>
+  </div>
   <div class="trust-strip" role="note" aria-label="이용 안내">
     <div class="trust-item"><span class="trust-ico" aria-hidden="true">🙅</span><div><strong>보험 가입, 권하지 않아요</strong><small>가입 강요 없이 안내부터</small></div></div>
     <div class="trust-item"><span class="trust-ico" aria-hidden="true">🆓</span><div><strong>소비자는 무료</strong><small>보험 가입 의무 없음</small></div></div>
@@ -51,13 +44,7 @@
     <span class="nc-go">방문·상담 ›</span>
   </a>
 
-  <div class="section-heading" id="find-office"><div><span class="eyebrow">CLOSE TO YOU</span><h2>가까이에서, 함께.</h2></div><span>가까운 보험소 찾기</span></div>
-  <div class="card">
-    <p class="desc">아래 지도는 개설 구상입니다. 실제 도움 가능한 전문가는 지도에서 확인해 주세요.</p>
-    <a class="btn" href="/map.html" style="margin-bottom:10px">🗺️ 지도에서 전문가 찾기</a>
-    <button class="more-btn" style="margin-bottom:12px;" onclick="locateAndApply(true)">📍 가까운 보험소 찾기</button>
-    <div class="coverage-controls" aria-label="지도 지역 선택"><button type="button" data-coverage-region="전체" aria-pressed="true">수도권</button><button type="button" data-coverage-region="서울" aria-pressed="false">서울</button><button type="button" data-coverage-region="경기" aria-pressed="false">경기</button><button type="button" data-coverage-region="인천" aria-pressed="false">인천</button></div><p class="coverage-count" id="coverageCount">서울·경기·인천 지역별 보험소 확장 구상</p><div class="coverage-legend"><span>서울·경기·인천 전 지역 개설 예정</span></div><div id="map" aria-label="보험소 거점 지도"></div><p class="map-credit">지도 © OpenStreetMap 기여자</p>
-  </div>
+
 
   <div class="section-heading"><div><span class="eyebrow">HOW CAN WE HELP?</span><h2>어떤 도움이 필요하세요?</h2></div></div><div class="services-grid">
 
