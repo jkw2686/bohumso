@@ -34,3 +34,14 @@ body[data-account-page="signup"] .btn-social:hover{background-color:#f8fafc}
 @media(max-width:600px){.trust-strip{grid-template-columns:1fr;gap:12px;padding:16px 18px}}
 
 #help-situations{scroll-margin-top:90px}.availability-status{font-weight:700;color:var(--text)}.hero-copy{min-width:0}.hero-copy h1{word-break:keep-all;overflow-wrap:anywhere}
+/* 가입 페이지 폼 다듬기 (A) — design-system 토큰만 */
+body[data-account-page="signup"] input:not([type=checkbox]):not([type=radio]),body[data-account-page="signup"] select{border:1px solid var(--border);border-radius:13px;padding:13px 14px;min-height:50px;font-size:16px}
+body[data-account-page="signup"] input:not([type=checkbox]):not([type=radio]):focus,body[data-account-page="signup"] select:focus{border-color:var(--blue);outline:2px solid var(--brand-soft);outline-offset:0}
+body[data-account-page="signup"] form label:not(.consent-row){display:block;margin:16px 0 6px;font-weight:600;font-size:14px;color:var(--text)}
+body[data-account-page="signup"] .btn{min-height:50px;border-radius:13px}
+body[data-account-page="signup"] .card{padding:22px}
+body[data-account-page="signup"] .card>p{color:var(--muted);font-size:14px}
+/* 필수 동의 미체크 강조 (B) */
+.consent-row.invalid{color:var(--danger)}
+.consent-row.invalid input{outline:2px solid var(--danger);outline-offset:2px;border-radius:4px}
+#signupConsentHint{color:var(--danger);font-size:13px;margin:6px 0 0;font-weight:600}
