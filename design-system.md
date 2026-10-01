@@ -1,4 +1,4 @@
-# design-system.md — 우리동네 보험소 (풀앱 · 네이비 프리미엄)
+# design-system.md — 우리곁에 보험소 (풀앱 · 네이비 프리미엄)
 
 > 모든 UI는 이 토큰·컴포넌트 규칙을 지킨다. 값 하드코딩 금지, 컴포넌트 재사용.
 > 이 문서는 현재 앱(`public/styles.css`·`visual.css`·`account.css`)의 실제 시스템을 정리한 것이며,
@@ -8,7 +8,8 @@
 ## 1. 컬러 토큰 (styles.css `:root` 기준)
 ```css
 :root{
-  --brand:#1a56db;        /* 주요 파랑 — 기본 버튼·강조·링크 */
+  --blue:#1E4FD6;
+  --brand:var(--blue);        /* 주요 파랑 — 기본 버튼·강조·링크 */
   --brand-dark:#123a99;   /* brand hover */
   --brand-soft:#eef2ff;   /* 옅은 파랑 배경 — 태그·아이콘칩 */
   --navy:#101e36;         /* 히어로/딥 배경 (프리미엄 네이비) */
@@ -27,7 +28,7 @@
 ## 2. 타이포그래피
 - 폰트: 시스템 산세리프 스택(별도 웹폰트 미로드) — `-apple-system, "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif`.
 - 히어로 h1 ~46px(모바일 35px, letter-spacing -2.2px), 섹션 h2 ~28px, 카드 h3 17~18px, 본문 16px, 보조 12~13px.
-- 로고: `우리동네`(작게) + `보험소`(굵게). line-height 본문 1.6~1.7.
+- 로고: `우리곁에`(작게) + `보험소`(굵게). line-height 본문 1.6~1.7.
 
 ## 3. 간격·레이아웃
 - 컨테이너 최대폭 760px(홈 등 넓은 화면 1120~1168px), 좌우 여백 24px(모바일 16px).

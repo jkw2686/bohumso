@@ -11,11 +11,11 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="visual.css"><link rel="stylesheet" href="/home.css"><link rel="stylesheet" href="/account.css">
-</head>
+<link rel="stylesheet" href="/brand.css"><link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png"><link rel="apple-touch-icon" href="/brand/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#1E4FD6"></head>
 <body class="home-page">
 
 <div class="nav">
-  <a href="index.html" class="logo"><span class="local">우리곁에</span><span class="brand">보험소</span></a>
+  <a href="index.html" class="logo"><img class="brand-logo" src="/brand/logo-horizontal.svg" alt="우리곁에 보험소" width="224" height="60"></a>
   <span class="nav-auth"><a href="/login.html" class="nav-login">로그인</a><a href="/signup.html" class="btn nav-join">회원가입</a></span>
 </div>
 
@@ -81,6 +81,7 @@
   </div>
 </div>
 
+<footer class="container">예방은 보건소에서, 보험금 청구는 보험소에서</footer>
 <!-- 방문 예약 시트 -->
 <div class="sheet-overlay" id="bookOverlay" onclick="closeBooking()">
   <div class="sheet" onclick="event.stopPropagation()">

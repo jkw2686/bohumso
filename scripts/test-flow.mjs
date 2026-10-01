@@ -29,6 +29,9 @@ export async function startTestFlow({port=3195,memory=false,dataDir,env=process.
    if(routes.includes(url.pathname)){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(await readFile('public/test-flow.html'));return;}
    if(url.pathname==='/assets/test-flow.js'){res.setHeader('Content-Type','text/javascript');res.end(await readFile('artifacts/test-flow.js'));return;}
    if(url.pathname==='/vendor/leaflet.js'){res.setHeader('Content-Type','text/javascript');res.end(await readFile('public/vendor/leaflet.js'));return;}
+   if(url.pathname==='/brand.css'){res.setHeader('Content-Type','text/css');res.end(await readFile('public/brand.css'));return;}
+   if(url.pathname==='/manifest.webmanifest'){res.setHeader('Content-Type','application/manifest+json');res.end(await readFile('public/manifest.webmanifest'));return;}
+   if(/^\/brand\/[a-z0-9-]+\.(svg|png)$/.test(url.pathname)){res.setHeader('Content-Type',url.pathname.endsWith('.svg')?'image/svg+xml':'image/png');res.end(await readFile('public'+url.pathname));return;}
    const permitted=['/vendor/leaflet.css','/styles.css','/visual.css','/account.css','/test-flow.css'];if(permitted.includes(url.pathname)){res.setHeader('Content-Type','text/css');const css=await readFile(path.join('public',url.pathname),'utf8');res.end(css.replace(/^@import[^;]+;/gm,''));return;}
    json(res,{error:'이 테스트 화면은 메뉴에서 이동해 주세요.'},404);
   }catch(e){json(res,{error:errors[e.message]||'처리하지 못했습니다. 입력값과 최신 상태를 확인해 주세요.',code:errors[e.message]?e.message:'invalid_request'},400);}
