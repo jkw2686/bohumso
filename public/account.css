@@ -47,3 +47,4 @@ body[data-account-page="signup"] .card>p{color:var(--muted);font-size:14px}
 #signupConsentHint{color:var(--danger);font-size:13px;margin:6px 0 0;font-weight:600}
 /* 비활성 버튼 흐리게 (A5) */
 body[data-account-page="signup"] .btn:disabled{opacity:.5;filter:saturate(.55);cursor:not-allowed}
+body[data-account-page="signup"] input.invalid{border-color:var(--danger)!important;outline:2px solid var(--danger);outline-offset:0}
