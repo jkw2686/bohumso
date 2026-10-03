@@ -50,7 +50,7 @@ async function start(){
  if(mode==="directory"){$("accountContent").hidden=false;await renderDirectory(client);return;}
  if(mode==="signup"||mode==="login"){
  const next=pendingAction();const state=await memberState(client);if(state.state!==MEMBER.anonymous){location.replace(accountReturn(next));return;}
- $("accountContent").hidden=false;document.querySelectorAll('a[href="/signup.html"],a[href="/login.html"]').forEach(a=>{a.href=authURL(next,a.getAttribute('href').includes('login')?'login':'signup');});
+ $("accountContent").hidden=false;document.querySelectorAll('a[href]').forEach(a=>{const path=new URL(a.href,location.href).pathname;if(/^\/(signup|login)(\.html)?$/.test(path))a.href=authURL(next,path.includes('login')?'login':'signup');});
  void configureSocialAuth(config,mode);
  }
  if(mode==="signup"){
