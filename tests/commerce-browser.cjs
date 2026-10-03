@@ -32,7 +32,7 @@ const {chromium,expect}=require(process.argv[2]||'@playwright/test');const http=
   await p.goto(base+'/partner-work.html');await expect(p.getByText('요금·기간·약정 노출수 확정 전')).toHaveCount(3);
   const free=await request(0);await accept(free);await confirmBooking(free);await expect(c.locator('[data-booking-id="'+free+'"] .request-status')).toHaveText('미팅 예정');await complete(free);
   await expect(c.locator('.payment-status')).toHaveCount(0);
-  await a.goto(base+'/admin-requests.html');await a.getByText('구독 조건·노출 슬롯 설정',{exact:true}).click();
+  await a.goto(base+'/admin-requests.html#adSubscriptions');await a.getByText('구독 조건·노출 슬롯 설정',{exact:true}).click();
   await a.locator('#adPlanForm [name=amount]').fill('12000');await a.locator('#adPlanForm [name=period_days]').fill('30');await a.locator('#adPlanForm [name=guaranteed_impressions]').fill('100');await a.locator('#adPlanForm [name=reason]').fill('TEST ONLY browser fixture');await a.locator('#adPlanForm [name=enabled]').check();await a.getByRole('button',{name:'새 구독 조건 저장'}).click();await expect(a.locator('#accountMessage')).toHaveText('저장했습니다.');
   await a.getByText('구독 조건·노출 슬롯 설정',{exact:true}).click();await a.locator('#adSlotForm [name=region]').fill('서울 마포구');await a.locator('#adSlotForm [name=reason]').fill('TEST ONLY browser slot');await a.locator('#adSlotForm [name=enabled]').check();await a.getByRole('button',{name:'슬롯 저장',exact:true}).click();await expect(a.locator('#accountMessage')).toHaveText('저장했습니다.');
   await p.setViewportSize({width:360,height:900});await p.goto(base+'/partner-work.html');await p.locator('[data-plan-code=basic] [name=consent]').check();await p.getByRole('button',{name:'광고 구독 테스트 결제',exact:true}).click();await expect(p.getByRole('dialog')).toBeVisible();
@@ -43,7 +43,7 @@ const {chromium,expect}=require(process.argv[2]||'@playwright/test');const http=
   const second=await request(1);await accept(second);await confirmBooking(second);await complete(second);
   await p.goto(base+'/partner-work.html');await expect(p.locator('.ad-status')).toHaveCount(1);await expect(p.locator('.ad-status')).toHaveText('이용 중');
   await serial(async()=>{await f.db.exec('reset role');await f.db.exec("update private.ad_subscriptions set starts_at=now()-interval '31 days',ends_at=now()-interval '1 day'");});
-  await a.goto(base+'/admin-requests.html');await a.locator('[name=platform_fault]').check();await a.locator('#adSubscriptions [name=reason]').last().fill('TEST verified exposure shortfall');await a.getByRole('button',{name:'광고 구독 테스트 전액 환불'}).click();await expect(a.locator('.ad-status')).toHaveText('환불 완료');
+  await a.goto(base+'/admin-requests.html#adSubscriptions');await a.locator('[name=platform_fault]').check();await a.locator('#adSubscriptions [name=reason]').last().fill('TEST verified exposure shortfall');await a.getByRole('button',{name:'광고 구독 테스트 전액 환불'}).click();await expect(a.locator('.ad-status')).toHaveText('환불 완료');
   const declined=await request(2);await p.goto(base+'/partner-work.html');await p.locator('[data-booking-id="'+declined+'"]').getByRole('button',{name:'이번 상담 패스'}).click();await c.reload();
   const after=await serial(async()=>{await f.login(ids.customer);return await f.row(declined);});if(after.planner_id!==null||after.state!=='unmatched')throw Error('Declined request was reassigned');
   await expect(c.getByRole('button',{name:'다음 후보 찾기'})).toHaveCount(0);

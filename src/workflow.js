@@ -1,3 +1,4 @@
+import {renderAdminBookingMap} from './admin-booking-map.js';
 import {renderOfficeRequest,renderTimeline} from './office-request.js';
 import {renderAds} from './ad-subscription.js';
 import {purposes,states,kst,won,el,input,select,link} from './consultation-ui.js';
@@ -36,7 +37,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
    if(row.needs_admin_review)el('p','고객 완료 확인 미응답 · 관리자 확인 대상',card);
    if(workspace==='admin'&&row.allocation_mode==='office'&&['requested','coordinating'].includes(row.state)){
     const assign=el('form',undefined,card),catalog=await rpc('planner_catalog',{area:'',wanted:row.purpose});
-    select(assign,'보험소 담당 전문가 배정','target',{'':'담당자를 선택하세요',...Object.fromEntries(catalog.planners.filter(p=>p.available&&!p.is_sample).map(p=>[p.id,p.name+' · '+p.region]))}).required=true;
+    select(assign,'담당자','target',{'':'담당자를 선택하세요',...Object.fromEntries(catalog.planners.filter(p=>p.available&&!p.is_sample).map(p=>[p.id,p.name+' · '+p.region]))}).required=true;
     el('button','담당자 배정',assign).type='submit';submit(assign,d=>command('office_assign',{id:row.id,revision:row.revision,planner_id:d.get('target')}));
    }
    if(row.journey_state&&row.state==='scheduled'&&row.method!=='phone'){const journey=el('p',row.journey_state==='arrived'?'전문가가 도착했어요.':'전문가가 이동을 시작했어요.',card);journey.className='journey-status';const icon=el('span',undefined,journey);icon.innerHTML=window.uiIcon?.(row.journey_state==='arrived'?'pin':'car')||'';el('small','전문가가 직접 알린 상태예요.',card);}
@@ -68,6 +69,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
    if(workspace==='admin'&&['dispute','no_show'].includes(row.state)){const form=el('form',undefined,card);select(form,'확인 결과','outcome',{cancelled:'미완료 취소',scheduled:'미팅 재개 (고객 완료 확인 필요)'});const reason=input(form,'확인 근거·사유','reason');reason.required=true;reason.minLength=5;el('button','예외 처리 기록',form).type='submit';submit(form,d=>command('resolve_issue',{id:row.id,...Object.fromEntries(d)}));}
    if(workspace==='admin'){const audit=el('details',undefined,card);el('summary','처리 이력·확인 근거',audit);for(const e of row.events||[])el('p',kst(e.created_at)+' KST · '+e.event+' · 담당자 '+(e.actor||'시스템')+(e.reason?' · '+e.reason:''),audit);}
   }
+  if(workspace==='admin')renderAdminBookingMap(rows);
  }
  document.getElementById('refreshRequests').onclick=()=>action(content,refresh);
  const form=document.getElementById('requestForm');
