@@ -58,7 +58,7 @@
   }
 
   function initMap(center, zoom) {
-    map = L.map('map', { zoomControl: true, attributionControl: false }).setView(center, zoom || 13);
+    map = L.map('map', { zoomControl: true, attributionControl: false, zoomSnap:0.25, zoomDelta:0.5, wheelPxPerZoomLevel:120, wheelDebounceTime:40, touchZoom:true }).setView(center, zoom || 13);
     // ── 지도 타일: 이 한 곳만 바꾸면 카카오맵 등으로 교체 가능 ──
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
     drawMarkers();
@@ -96,11 +96,11 @@
     renderList();
   }
 
-  function setMe(loc,accuracy) {
-    userLoc = loc;const nearest=PLANNED.slice().sort((a,b)=>haversine(loc,[a.lat,a.lng])-haversine(loc,[b.lat,b.lng]))[0];if(nearest)selectedArea=nearest.region;
-    if (meMarker) meMarker.setLatLng(loc); else meMarker = L.marker(loc, { icon: pinIcon(true), title: '내 위치', zIndexOffset: 1000 }).addTo(map);
+  function setMe(loc,accuracy,approximate) {
+    userLoc = loc;const nearest=PLANNED.slice().sort((a,b)=>haversine(loc,[a.lat,a.lng])-haversine(loc,[b.lat,b.lng]))[0];if(nearest&&!approximate)selectedArea=nearest.region;
+    if (meMarker) meMarker.setLatLng(loc); else meMarker = L.marker(loc, { icon: pinIcon(true), title: approximate?'접속 지역 · 대략':'내 위치', zIndexOffset: 1000 }).addTo(map);
     if(accuracyCircle)map.removeLayer(accuracyCircle);if(accuracy)accuracyCircle=L.circle(loc,{radius:accuracy,interactive:false,color:'var(--brand)'}).addTo(map);
-    if (map) map.setView(loc, accuracy>5000?10:13);
+    if (map) map.setView(loc, approximate||accuracy>5000?10:13);
     renderList();
   }
 
@@ -173,6 +173,7 @@
     grip.addEventListener('pointermove',function(e){if(!start)return;var dy=start.y-e.clientY;if(Math.abs(dy)<8&&!dragged)return;dragged=true;var limit=$('mapStage').clientHeight-16;sheet.style.height=Math.max(100,Math.min(limit,start.height+dy))+'px';sheet.style.maxHeight='calc(100% - 16px)';});
     grip.addEventListener('pointerup',function(e){if(start&&dragged&&e.clientY-start.y>start.height-85)collapse();start=null;});
     grip.addEventListener('pointercancel',function(){start=null;});
+    grip.addEventListener('wheel',function(e){e.preventDefault();var limit=$('mapStage').clientHeight-16;sheet.style.height=Math.max(100,Math.min(limit,sheet.getBoundingClientRect().height-e.deltaY*.4))+'px';sheet.style.maxHeight='calc(100% - 16px)';},{passive:false});
   }
   function showList(){var sheet=$('listSheet');sheet.hidden=false;$('listReopen').hidden=true;}
   function hideList(){closeCard();$('listSheet').hidden=true;$('listReopen').hidden=false;$('listReopen').focus();}
@@ -273,8 +274,8 @@
         if(revision!==regionRevision)return;
         await reloadSpots('');if(revision!==regionRevision)return;
         $('regionCity').value='';$('regionGu').innerHTML='<option value="">구/군</option>';
-        setMe([pos.coords.latitude,pos.coords.longitude],pos.coords.accuracy);showList();
-        notice.textContent=pos.coords.accuracy>5000?'대략적인 위치예요. 지역을 선택해 범위를 좁힐 수 있어요.':'내 위치를 찾았어요. 위치 오차 약 '+Math.round(pos.coords.accuracy)+'m';
+        setMe([pos.coords.latitude,pos.coords.longitude],pos.coords.accuracy,pos.source==='network');showList();
+        notice.textContent=pos.source==='network'?'접속 지역 기준의 대략적인 지도예요. 정확한 위치는 브라우저·기기 위치 권한을 켜 주세요.':pos.coords.accuracy>5000?'대략적인 위치예요. 지역을 선택해 범위를 좁힐 수 있어요.':'내 위치를 찾았어요. 위치 오차 약 '+Math.round(pos.coords.accuracy)+'m';
         $('locateFab').disabled=false;
       },
       error:function(message){if(revision!==regionRevision)return;notice.textContent=message;$('locateFab').disabled=false;}

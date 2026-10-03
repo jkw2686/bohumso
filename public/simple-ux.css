@@ -13,3 +13,5 @@
 
 .home-office-pin{background:var(--brand);border-color:var(--brand-dark);color:var(--card)}
 .office-slot h2{font-size:20px;margin:4px 0 8px}.office-slot p{font-size:13px;line-height:1.5;margin:8px 0;color:var(--muted)}.office-slot label{display:block;font-size:13px;font-weight:700;margin:12px 0 4px}.office-slot input,.office-slot select{width:100%;min-width:0;box-sizing:border-box;min-height:44px;font:inherit;font-size:16px;border:1px solid var(--border);border-radius:10px;padding:8px;background:var(--card);color:var(--text)}.office-slot .btn{width:100%;box-sizing:border-box;font-size:14px;min-height:46px}.office-slot .btn:disabled{opacity:.5}.home-map-section .leaflet-popup-content{max-width:calc(100vw - 90px)}
+
+.home-map-section .home-location-status{min-height:20px}.map-gesture-help{font-size:12px;color:var(--muted);margin:8px 16px}

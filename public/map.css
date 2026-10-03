@@ -185,3 +185,5 @@
 .map-page .card-sheet,.map-page .card-sheet.show{left:50%;right:auto;width:min(380px,calc(100% - 24px));transform:translateX(-50%)}
 .map-page .card-sheet h2{font-size:21px;margin:6px 0}.map-page .card-sheet-body{padding:12px 18px 18px}.map-page .card-sheet .btn{margin:12px 0 0}
 .map-page .list-sheet{transition:none}
+
+.sheet-toolbar .sheet-resize{flex:1;min-height:48px;text-align:center}.map-page .sheet-toolbar{padding:4px 8px}.map-page .list-body{overscroll-behavior-y:contain;scroll-behavior:smooth}
