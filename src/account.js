@@ -21,6 +21,7 @@ function fail(error){if(error)throw error;}
 function line(parent,text,tag="p"){const el=document.createElement(tag);el.textContent=text;parent.append(el);return el;}
 async function refreshMembership(){const {data,error}=await client.rpc("my_membership");fail(error);membership=data;}
 async function renderAccount(){
+ try{const next=sessionStorage.getItem("bohumso-booking-return");if(membership.member&&next&&/^\/requests\.html(?:\?|$)/.test(next)){sessionStorage.removeItem("bohumso-booking-return");location.replace(next);return;}}catch{}
  try{if(membership.member&&sessionStorage.getItem("bohumso-signup-intent")==="expert"){sessionStorage.removeItem("bohumso-signup-intent");location.replace("/partner.html");return;}}catch{}
  $("identity").textContent=user.email;$("operator").textContent=config.operator;$("privacyContact").textContent=config.contact;
  $("membershipState").textContent=membership.member?"회원 가입 완료":"이메일 확인 완료 · 가입 동의가 필요합니다.";
@@ -58,7 +59,7 @@ async function start(){
  onForm("loginForm",async d=>{const {error}=await client.auth.signInWithPassword({email:String(d.get("email")).trim(),password:String(d.get("password"))});if(error){message("이메일·비밀번호 또는 이메일 인증 상태를 확인해 주세요.");return}location.assign("/account.html");});
  $("resetPassword").onclick=()=>action($("loginForm"),async()=>{const email=$("loginForm").elements.email;if(!email.reportValidity())return;const {error}=await client.auth.resetPasswordForEmail(email.value,{redirectTo:location.origin+"/reset-password.html"});fail(error);message("등록된 이메일이면 비밀번호 재설정 안내가 발송됩니다.");});return;
  }
- const result=await client.auth.getUser();if(result.error||!result.data.user){$("accountContent").hidden=true;$("accountNotice").textContent="로그인이 필요합니다.";const a=document.createElement("a");a.href="/login.html";a.textContent="로그인하기";$("accountNotice").append(a);return;}user=result.data.user;
+ const result=await client.auth.getUser();if(result.error||!result.data.user){$("accountContent").hidden=true;$("accountNotice").textContent="로그인이 필요합니다.";try{if(mode==="requests"&&document.body.dataset.workspace==="customer")sessionStorage.setItem("bohumso-booking-return",location.pathname+location.search);}catch{}const a=document.createElement("a");a.href="/login.html";a.textContent="로그인하기";$("accountNotice").append(a);return;}user=result.data.user;
  if(mode==="reset"){onForm("passwordForm",async d=>{const {error}=await client.auth.updateUser({password:String(d.get("password"))});fail(error);message("비밀번호를 변경했습니다. 내 계정에서 계속 이용할 수 있습니다.");});return;}
  await refreshMembership();
  if(mode==="requests")await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action});

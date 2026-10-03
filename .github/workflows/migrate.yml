@@ -30,7 +30,19 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Check database connection configuration
+        id: database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -n "$DATABASE_URL" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::DATABASE_URL is not configured. Apply reviewed SQL through the Supabase SQL Editor; see HANDOFF.md."
+          fi
       - name: Apply pending migrations
+        if: steps.database.outputs.ready == 'true'
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           # 라이브 DB는 이미 001~006이 수동 적용됨 → 그 지점까지 기준선으로 잡고 007+만 적용.

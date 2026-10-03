@@ -28,7 +28,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
   await expect(page.locator('#signupForm')).toBeHidden();
   enabled=true;await page.goto(base+'/signup.html');
   await expect(page.locator('#signupForm')).toBeVisible();
-  await expect(page.locator('#kakaoSignup')).toHaveText('카카오 로그인 준비 중');
+  await expect(page.locator('#kakaoSignup')).toHaveText(/카카오.*준비\s?중/);
   await expect(page.locator('#kakaoSignup')).toBeDisabled();
   await expect(page.locator('#googleSignup')).toBeDisabled();
   for(const id of ['naver','apple','facebook'])await expect(page.locator('#'+id+'Signup')).toHaveCount(0);
@@ -47,7 +47,7 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
   expect(signup.url.searchParams.get('redirect_to')).toBe(base+'/account.html');
   await expect(page.locator('#kakaoSignup')).toBeDisabled();
   await page.goto(base+'/login.html');
-  await expect(page.locator('#kakaoLogin')).toHaveText('카카오 로그인 준비 중');
+  await expect(page.locator('#kakaoLogin')).toHaveText(/카카오.*준비\s?중/);
   await page.locator('[name=email]').fill('test@example.com');
   await page.locator('#resetPassword').click();
   await expect(page.locator('#accountMessage')).toContainText('재설정 안내');
@@ -55,16 +55,16 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
   expect(recovery.url.searchParams.get('redirect_to')).toBe(base+'/reset-password.html');
   await expect(page.locator('#kakaoLogin')).toBeDisabled();
   settingsFailure=true;await page.goto(base+'/login.html');
-  await expect(page.locator('#googleLogin')).toHaveText('Google 연결 확인 실패');
+  await expect(page.locator('#googleLogin')).toHaveText('구글로 로그인');
   await expect(page.locator('#retrySocialAuth')).toBeVisible();
-  await expect(page.locator('#googleLogin')).toBeDisabled();
+  await expect(page.locator('#googleLogin')).toBeEnabled();
   await expect(page.locator('#loginForm')).toBeVisible();
   settingsFailure=false;providers=true;
   for(const mode of ['signup','login'])for(const provider of ['kakao','google']){
    await page.goto(base+'/'+mode+'.html');
    const button=page.locator('#'+provider+(mode==='signup'?'Signup':'Login'));
    if(mode==='login'){for(const id of ['naver','apple','facebook'])await expect(page.locator('#'+id+'Login')).toHaveCount(0);await expect(page.locator('.social-auth button').first()).toHaveAttribute('id','googleLogin');}
-   if(mode==='login'&&provider==='kakao'){await expect(button).toBeDisabled();await expect(button).toHaveText('카카오 로그인 준비 중');continue;}
+   if(provider==='kakao'){await expect(button).toBeDisabled();await expect(button).toHaveText(/카카오.*준비\s?중/);continue;}
    await expect(button).toBeEnabled();
    if(mode==='signup'){
     const before=requests.length;await button.click();

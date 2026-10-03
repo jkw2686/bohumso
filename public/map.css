@@ -145,3 +145,10 @@
 @media(prefers-reduced-motion:reduce){
   .list-sheet,.card-sheet,.card-scrim{transition:none}
 }
+
+.planned-pin{display:grid;place-items:center;width:32px;height:32px;background:var(--card);border:2px solid var(--muted);color:var(--muted);border-radius:10px;box-shadow:var(--shadow)}.planned-pin .ui-icon{width:20px;height:20px}.map-page .list-sheet{bottom:92px}.map-page .locate-fab{bottom:calc(36dvh + 92px)}.map-page .card-sheet{bottom:88px}.map-page .card-sheet h2{font-size:22px;letter-spacing:-.5px;margin:12px 0}.map-page .card-sheet details{margin-top:16px}.map-page .card-sheet .btn{margin:16px 0 0}.map-page #map{height:calc(100dvh - 240px);min-height:320px}.map-page .list-body{padding-bottom:16px}.map-page .card-scrim{z-index:510}.map-page .card-sheet{z-index:520}.map-page .map-credit{position:relative;bottom:auto;margin:0;font-size:10px}.map-page .list-empty{margin-bottom:20px}
+@media(min-width:900px){.map-page #map{margin-left:380px;width:calc(100% - 380px);height:calc(100dvh - 220px)}.map-page .list-sheet{left:16px;right:auto;top:230px;bottom:100px;width:348px;max-height:none;transform:none;border-radius:var(--radius)}.map-page .list-body{max-height:calc(100% - 70px)}.map-page .locate-fab{right:24px;bottom:120px}.map-page .card-sheet{left:auto;right:24px;width:400px;bottom:110px}.map-page .map-credit{margin-left:390px}.map-page .region-picker{padding-left:24px;padding-right:24px}}
+.map-page .card-sheet.show{transform:none;height:auto;max-height:65dvh}.map-page .card-sheet-body{padding:4px 20px 24px}
+@media(max-width:899px){.map-page .list-sheet{height:32dvh;transform:none}.map-page .list-sheet.open{height:62dvh;transform:none}.map-page .locate-fab{bottom:calc(32dvh + 106px)}}
+.map-page .map-credit{left:0}.spot .info>span{display:block}.spot .meta{margin-top:4px}
+.area-request{display:block;margin:8px 12px;padding:10px 12px;text-align:center;text-decoration:none;background:var(--brand);color:var(--card);border-radius:12px;font-weight:700;font-size:14px}.map-page .list-head{flex-shrink:0}.map-page .list-body{min-height:0}.map-page .area-request{flex-shrink:0}

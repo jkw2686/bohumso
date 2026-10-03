@@ -6,10 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>내 주변 보험소 - 우리곁에 보험소</title>
 <meta name="description" content="현재 위치 기준으로 가까운 우리곁에 보험소(전문가·거점)를 지도에서 찾아보세요.">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="/vendor/leaflet.css">
 <link rel="stylesheet" href="/styles.css">
 <link rel="stylesheet" href="/map.css">
-<link rel="stylesheet" href="/brand.css"><link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png"><link rel="apple-touch-icon" href="/brand/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#1E4FD6"></head>
+<link rel="stylesheet" href="/brand.css"><link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png"><link rel="apple-touch-icon" href="/brand/apple-touch-icon.png"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#1E4FD6"><link rel="stylesheet" href="/simple-ux.css"></head>
 <body class="map-page">
 
 <header class="map-nav">
@@ -18,8 +18,8 @@
 </header>
 
 <!-- 위치 거부 시: 지역 직접 선택 -->
-<div class="region-picker" id="regionPicker" hidden>
-  <p class="region-title">위치를 사용할 수 없어요. 지역을 선택하세요.</p>
+<div class="region-picker" id="regionPicker">
+  <p class="region-title">내 위치를 누르거나 지역을 선택하세요.</p>
   <div class="region-row">
     <label class="sr-only" for="regionCity">시/도</label>
     <select id="regionCity" aria-label="시/도 선택">
@@ -40,7 +40,7 @@
 <div id="map" role="application" aria-label="내 주변 보험소 지도"></div>
 <p class="map-credit">지도 © OpenStreetMap 기여자</p>
 
-<button class="locate-fab" id="locateFab" type="button" aria-label="현재 위치로 이동">
+<button class="locate-fab" id="locateFab" type="button" aria-label="내 위치에서 찾기">
   <svg viewBox="0 0 24 24" aria-hidden="true" width="22" height="22"><path fill="currentColor" d="M12 8a4 4 0 100 8 4 4 0 000-8zm0-6a1 1 0 011 1v1.06A8.01 8.01 0 0119.94 11H21a1 1 0 110 2h-1.06A8.01 8.01 0 0113 19.94V21a1 1 0 11-2 0v-1.06A8.01 8.01 0 014.06 13H3a1 1 0 110-2h1.06A8.01 8.01 0 0111 4.06V3a1 1 0 011-1zm0 4a6 6 0 100 12 6 6 0 000-12z"/></svg>
 </button>
 
@@ -51,11 +51,10 @@
     <strong id="listCount">주변 보험소</strong>
     <div class="sort-tabs" role="tablist" aria-label="정렬 기준">
       <button role="tab" data-sort="distance" aria-selected="true">거리순</button>
-      <button role="tab" data-sort="rating" aria-selected="false">평점순</button>
-      <button role="tab" data-sort="specialty" aria-selected="false">분야순</button>
+      <button role="tab" data-sort="rating" aria-selected="false">전문가</button>
     </div>
   </div>
-  <div class="list-body" id="listBody"></div>
+  <a id="areaRequest" class="area-request" hidden>이 지역에서 시간 정하기</a><div class="list-body" id="listBody"></div>
 </section>
 
 <!-- 마커/카드 탭 → 하단에서 올라오는 작은 카드 (요약→상세, 전체화면 아님) -->
@@ -65,7 +64,7 @@
 </div>
 <div class="card-scrim" id="cardScrim" hidden></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="/map.js"></script>
-</body>
+<script src="/vendor/leaflet.js"></script>
+<script src="/ui-icons.js"></script><script src="/coverage-data.js"></script><script src="/map.js"></script>
+<nav class="customer-nav" data-customer-nav="pin" aria-label="주 메뉴"></nav></body>
 </html>
