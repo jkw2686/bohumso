@@ -147,13 +147,21 @@
     window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned,purpose:PURPOSE,situation:SITUATION});
     showCard();
   }
-  function showCard(){var sheet=$('cardSheet'),scrim=$('cardScrim');cardOpener=document.activeElement;sheet.style.height='';sheet.hidden=false;sheet.classList.remove('detail');scrim.hidden=false;void sheet.offsetHeight;sheet.classList.add('show');scrim.classList.add('show');$('cardClose').focus();}
-
+  function showCard(){
+    var sheet=$('cardSheet');cardOpener=document.activeElement;
+    $('listSheet').hidden=true;$('listReopen').hidden=true;
+    $('cardScrim').hidden=true;sheet.style.height='';sheet.hidden=false;
+    sheet.classList.remove('detail');sheet.classList.add('show');$('cardClose').focus();
+    if(map&&current&&Number.isFinite(current.lat)&&Number.isFinite(current.lng)){
+      var point=map.project([current.lat,current.lng],map.getZoom());
+      point.y+=sheet.getBoundingClientRect().height/2;
+      map.panTo(map.unproject(point,map.getZoom()),{animate:false});
+    }
+  }
   function closeCard() {
-    var sheet = $('cardSheet'), scrim = $('cardScrim');
-    sheet.classList.remove('show', 'detail'); scrim.classList.remove('show');
-    var wasOpen=!sheet.hidden;sheet.hidden=true;scrim.hidden=true;
-    if(wasOpen&&cardOpener&&cardOpener.isConnected)cardOpener.focus();
+    var sheet=$('cardSheet'),wasOpen=!sheet.hidden;
+    sheet.classList.remove('show','detail');sheet.hidden=true;$('cardScrim').hidden=true;
+    if(wasOpen){$('listReopen').hidden=false;$('listReopen').focus();}
   }
 
   function chooseWay(s, way) {
@@ -175,7 +183,7 @@
     grip.addEventListener('pointercancel',function(){start=null;});
     grip.addEventListener('wheel',function(e){e.preventDefault();var limit=$('mapStage').clientHeight-16;sheet.style.height=Math.max(100,Math.min(limit,sheet.getBoundingClientRect().height-e.deltaY*.4))+'px';sheet.style.maxHeight='calc(100% - 16px)';},{passive:false});
   }
-  function showList(){var sheet=$('listSheet');sheet.hidden=false;$('listReopen').hidden=true;}
+  function showList(){closeCard();var sheet=$('listSheet');sheet.hidden=false;$('listReopen').hidden=true;}
   function hideList(){closeCard();$('listSheet').hidden=true;$('listReopen').hidden=false;$('listReopen').focus();}
   function toggleList(){var sheet=$('listSheet');sheet.style.height='';sheet.style.maxHeight='';var open=sheet.classList.toggle('open');$('listGrip').textContent=open?'↕ 목록 작게':'↕ 목록 크게';$('listGrip').setAttribute('aria-expanded',String(open));}
 
@@ -237,7 +245,7 @@
     bindGrip('listGrip','listSheet',toggleList,hideList);
     $('listClose').addEventListener('click',hideList);
     $('listReopen').addEventListener('click',function(){showList();$('listGrip').focus();});
-    bindGrip('cardGrip','cardSheet',function(){$('cardSheet').classList.toggle('detail');},closeCard);
+    $('cardGrip').addEventListener('click',function(){showList();$('listGrip').focus();});
     $('cardClose').addEventListener('click',closeCard);
     $('cardScrim').addEventListener('click',closeCard);
     document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(!$('cardSheet').hidden)closeCard();else hideList();}});

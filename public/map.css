@@ -187,3 +187,6 @@
 .map-page .list-sheet{transition:none}
 
 .sheet-toolbar .sheet-resize{flex:1;min-height:48px;text-align:center}.map-page .sheet-toolbar{padding:4px 8px}.map-page .list-body{overscroll-behavior-y:contain;scroll-behavior:smooth}
+
+/* One compact, nonmodal selection card leaves the map usable. */
+.map-page .card-sheet,.map-page .card-sheet.show{bottom:12px;width:min(340px,calc(100% - 24px));max-height:45%;height:auto;box-shadow:0 4px 20px #172b4d26}.map-page .card-sheet .sheet-toolbar{min-height:40px}.map-page .card-sheet .sheet-toolbar button{min-height:44px;padding:6px 12px}.map-page .card-sheet-body{padding:0 14px 12px;overflow-y:auto;overscroll-behavior:contain}.map-page .card-sheet h2{font-size:18px;margin:0 0 6px}.map-page .card-sheet p{font-size:13px;margin:4px 0;line-height:1.4}.map-page .card-sheet .btn{margin-top:8px;padding:10px 12px;font-size:14px}.map-page .card-scrim{display:none!important}
