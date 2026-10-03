@@ -77,8 +77,8 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
    expect(auth.searchParams.get('redirect_to')).toBe(base+'/account.html');
    expect(auth.searchParams.get('code_challenge')).toBeTruthy();
   }
-  await page.goto(base+'/admin.html');await expect(page.locator('#accountContent')).toBeHidden();
-  await expect(page.locator('#accountNotice')).toContainText('로그인이 필요');
+  await page.goto(base+'/admin.html');await expect(page).toHaveURL(/login\.html\?next=/);
+  expect(new URL(page.url()).searchParams.get('next')).toBe('/admin.html');
   expect(errors).toEqual([]);
   console.log('PASS: signup consent, email/recovery redirects, disabled/unavailable providers, Kakao/Google PKCE redirects, 360px layout, anonymous admin blocked. Auth mocked; no email or external login.');
  }finally{if(browser)await browser.close();server.close();}

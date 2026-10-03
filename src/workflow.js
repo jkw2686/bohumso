@@ -4,7 +4,7 @@ import {renderAds} from './ad-subscription.js';
 import {purposes,states,kst,won,el,input,select,link} from './consultation-ui.js';
 export async function renderWorkflow({client,membership,workspace,message,action}){
  const host=document.getElementById('requestList'),content=document.getElementById('accountContent');let snapshot;
- if(!membership.member||(workspace==='admin'&&!membership.admin)){content.hidden=true;message('가입 완료 또는 관리자 권한이 필요합니다.');return;}
+ if(!membership.member||(workspace==='admin'&&!membership.admin)||(workspace==='partner'&&membership.partner_status!=='approved')){content.hidden=true;message('가입 완료 또는 관리자 권한이 필요합니다.');return;}
  const rpc=async(name,args)=>{const {data,error}=await client.rpc(name,args);if(error)throw error;return data;};
  const command=async(operation,payload)=>rpc('consultation_command',{operation,payload});
  function submit(form,fn){form.onsubmit=e=>{e.preventDefault();action(form,async()=>{await fn(new FormData(form));await refresh();message('저장했습니다.');});};}
@@ -73,7 +73,12 @@ export async function renderWorkflow({client,membership,workspace,message,action
  }
  document.getElementById('refreshRequests').onclick=()=>action(content,refresh);
  const form=document.getElementById('requestForm');
- if(form)renderOfficeRequest({form,command,refresh,message});
+ if(form){
+  const params=new URLSearchParams(location.search),officeId=params.get('office'),plannerId=params.get('planner');let selectedOffice=null,selectedPlanner=null;
+  if(officeId){const offices=await rpc('office_catalog',{});selectedOffice=offices.find(o=>o.id===officeId&&o.status==='active');if(!selectedOffice){form.hidden=false;el('h2','개설 예정 보험소는 아직 예약할 수 없어요.',form);link(form,'지도 둘러보기','/map.html');}else renderOfficeRequest({form,command,refresh,message,selectedOffice});}
+  else if(plannerId){const catalog=await rpc('planner_catalog',{area:'',wanted:params.get('purpose')||'claim'});selectedPlanner=catalog.planners.find(p=>p.id===plannerId&&p.available&&!p.is_sample);if(!selectedPlanner){form.hidden=false;el('h2','현재 요청할 수 없는 전문가예요.',form);link(form,'다른 전문가 보기','/map.html?view=experts');}else if(params.get('method')==='nearby'&&!(selectedPlanner.visitEnabled&&selectedPlanner.available_slots?.length)){form.hidden=false;el('h2','방문 요청을 준비하고 있어요.',form);link(form,'상담 예약하기','/requests.html?planner='+encodeURIComponent(plannerId)+'&region='+encodeURIComponent(selectedPlanner.region)+'&method=scheduled');}else renderOfficeRequest({form,command,refresh,message,selectedPlanner});}
+  else renderOfficeRequest({form,command,refresh,message});
+ }
  document.getElementById('workflowFilters')?.addEventListener('submit',e=>{e.preventDefault();action(content,refresh);});
  await refresh();
  const poll=setInterval(()=>{if(!document.hidden&&!document.activeElement?.closest('form'))refresh().catch(()=>{});},30000);window.addEventListener('pagehide',()=>clearInterval(poll),{once:true});

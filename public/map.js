@@ -30,7 +30,7 @@
 
   var cancelLocate = null, regionRevision = 0, spotsRevision = 0, cardOpener = null;
   var map, meMarker, accuracyCircle, userLoc = null, sortBy = 'distance', current = null, usingSamples = false;
-  var showExperts=false;var SAMPLES = [], spotMarkers = [], selectedArea = '';
+  var showExperts=new URLSearchParams(location.search).get('view')==='experts';var SAMPLES = [], spotMarkers = [], selectedArea = '';
   var $ = function (id) { return document.getElementById(id); };
 
   function haversine(a, b) {
@@ -144,7 +144,7 @@
   /* 마커/목록 탭 → 하단 카드(요약). 다른 마커 탭하면 내용만 교체. */
   function openCard(s) {
     current = s;
-    window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,purpose:PURPOSE,situation:SITUATION});
+    window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned,purpose:PURPOSE,situation:SITUATION});
     showCard();
   }
   function showCard(){var sheet=$('cardSheet'),scrim=$('cardScrim');cardOpener=document.activeElement;sheet.style.height='';sheet.hidden=false;sheet.classList.remove('detail');scrim.hidden=false;void sheet.offsetHeight;sheet.classList.add('show');scrim.classList.add('show');$('cardClose').focus();}

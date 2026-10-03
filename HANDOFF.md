@@ -73,3 +73,22 @@
 - admin-requests.html/admin-console.css/js: 아이콘 메뉴, 간략 현황, 지도 우선, 상세 검색/광고/재배포 도구 접기. 기존 hash 링크로 도구 펼치기 지원.
 - 모바일/PC 그룹 필터·핀·목록 2건 모의 데이터 검증 통과. 기존 광고/심사/권한 거절 브라우저 검증 통과. 실제 고객 예약은 만들지 않음.
 - 관리자 변경 공개 배포 후 실제 로그인된 빈 예약 지도 확인, 최신 링크 전달이 남음.
+
+## 검증 완료 — 2026-10-04 01:36 KST
+- 관리자 지도/모바일 개선 c16686f 공개 배포 ready: 6ac12ef8c882a50008db2907.
+- GitHub verify 37137452676 성공. 실제 로그인된 관리자 지도에서 보험소별/담당자별, 상태필터 및 예약 0건 화면 확인.
+- 현재 공개 코드는 c16686f이며 위 과거 크레딧 차단 기록은 해소됨.
+- 후속 사용자 긴급 지침: 메인카피, 공통 회원 인증 Gate, PLANNED 방문예약 차단, 안전한 원래 행동 복귀, 모든 단계 검증. 기존 Google/이메일 인증 유지.
+
+## 긴급 회원 인증 Gate 수정 — 2026-10-04
+- 새 지침 파일: .codex/attachments/96612506-9af9-46d7-a5c4-83541f0d1deb/붙여넣은 텍스트.txt (29항). 기존 문서보다 최신 사용자 지시 우선.
+- 메인카피 확정, 첫 화면 로그인/무료 회원가입, 짧은 카드 보조문구. 메인 하단 지도/모바일 제스처 유지.
+- src/member-access.js/member-entry.js: Supabase 기존 PKCE 보존, ANONYMOUS/INCOMPLETE/ACTIVE_MEMBER 공통 확인, safeNext + 2시간 session pending, Google/이메일 callback에 next 유지, 로딩 중 계정 UI 숨김.
+- account.js: 미완료 회원은 가입 마무리, 약관 인라인 검증, 계정 메뉴는 완료 후 표시, 완료 즉시 원래 상황·예약으로 복귀. 기존 카카오 준비중 유지.
+- PLANNED 카드: 시간 입력/예약 버튼 제거, 주변 전문가 탐색. 83개 모두 계획 거점. ACTIVE 운영 보험소는 private.office_locations에 실제로 등록된 곳만 예약 가능(현재 운영 거점 0).
+- 직접 전문가 링크의 planner/method/date/time 보존. 일반 예약은 보험소 배정 유지. 실제 방문 가능/시간 등록 기능이 없으므로 전문가 방문은 요청 불가; 즉시 방문 보장 없음.
+- 023_active_member_gate.sql 실제 Supabase 적용+schema_migrations 기록 완료. 사용자 인증/프로필/필수약관을 서버 확인, 익명 실행과 옛 함수 우회 차단. 실제 사전 점검 누락약관 프로필 0건. private.is_active_member installed, anonymous_can_book=false, bypass_allowed=false.
+- Supabase 기존 URL 설정 3개 보존 + 같은 도메인 account.html?next=** 추가, 저장 확인. 다른 도메인 허용하지 않음.
+- npm test 56개 통과; 가입/카카오 준비중/Google PKCE, 회원 Gate/복귀/모의 예약, 관리자 배정/심사/결제 회귀, 지도 320/390/844/1440 검사 성공. 별도 lint/typecheck 스크립트는 없음; esbuild 빌드 성공.
+- 실제 신규 Google 인증 완료/이메일 인증메일 클릭은 아직 실행하지 않음. 로컬 공급자 응답은 모의이며 실제 성공으로 보고 금지. 현재 실제 활성 전문가 0, 운영 보험소 0으로 해당 실운영 예약은 생성하지 않음.
+- 다음: 코드 배포 후 실제 홈/로그인된 회원 복귀/개설 예정 차단 확인, Production URL과 남은 실계정 검증 범위 보고.
