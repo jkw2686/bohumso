@@ -28,6 +28,7 @@
   var REGION_CENTER = { '서울': [37.5665, 126.9780], '경기': [37.4138, 127.5183], '인천': [37.4563, 126.7052] };
   var PURPOSE_LABELS = { claim: '보험금 청구', management: '가입한 보험 확인', coverage: '받을 보험금 확인', other: '필요한 도움' };
 
+  var cancelLocate = null, regionRevision = 0, spotsRevision = 0, cardOpener = null;
   var map, meMarker, accuracyCircle, userLoc = null, sortBy = 'distance', current = null, usingSamples = false;
   var showExperts=false;var SAMPLES = [], spotMarkers = [], selectedArea = '';
   var $ = function (id) { return document.getElementById(id); };
@@ -57,10 +58,12 @@
   }
 
   function initMap(center, zoom) {
-    map = L.map('map', { zoomControl: false, attributionControl: false }).setView(center, zoom || 13);
+    map = L.map('map', { zoomControl: true, attributionControl: false }).setView(center, zoom || 13);
     // ── 지도 타일: 이 한 곳만 바꾸면 카카오맵 등으로 교체 가능 ──
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
     drawMarkers();
+    map.zoomControl.setPosition("topright");
+    new ResizeObserver(function(){map.invalidateSize();}).observe($("mapStage"));
   }
 
   // 현재 SPOTS로 마커를 다시 그리고 지도 범위를 맞춘다(지역 재조회 시 재사용).
@@ -82,8 +85,10 @@
 
   // 지역 선택 등으로 SPOTS를 다시 불러온다(실데이터 area 필터, 없으면 샘플을 지역으로 필터).
   async function reloadSpots(area) {
+    var revision=++spotsRevision;
     selectedArea = area || '';
     var real = await loadReal(selectedArea);
+    if(revision!==spotsRevision)return;
     if (real) { SPOTS = real; usingSamples = false; }
     else { SPOTS = []; usingSamples = false; }
     SPOTS = SPOTS.concat(PLANNED.filter(function(s){return !selectedArea || s.region.indexOf(selectedArea)===0;}));
@@ -139,16 +144,17 @@
   /* 마커/목록 탭 → 하단 카드(요약). 다른 마커 탭하면 내용만 교체. */
   function openCard(s) {
     current = s;
-    if(s.planned){$('cardBody').innerHTML='<span class="booking-kind">오픈 예정</span><h2>'+esc(s.name)+'</h2><p>곧 만나요.</p><p>이 지역의 방문상담 서비스를 준비하고 있어요.</p><button class="btn" type="button" id="nearbyExperts">주변 전문가 보기</button>';$('nearbyExperts').onclick=function(){closeCard();selectedArea=s.region;showExperts=true;renderList();};showCard();return;}
+    if(s.planned){$('cardBody').innerHTML='<span class="booking-kind">오픈 예정</span><h2>'+esc(s.name)+'</h2><p>곧 만나요.</p><p>이 지역의 방문상담 서비스를 준비하고 있어요.</p><button class="btn" type="button" id="nearbyExperts">주변 전문가 보기</button>';$('nearbyExperts').onclick=function(){closeCard();showList();selectedArea=s.region;showExperts=true;renderList();};showCard();return;}
     $('cardBody').innerHTML='<div class="card-top">'+thumbHtml(s,'thumb')+'<div><h2>'+esc(s.name)+'</h2><p>'+esc(s.specialty)+'</p></div></div><p>'+esc(s.region)+(userLoc?' · '+distLabel(s):'')+'</p><button class="btn" id="requestTime" type="button">상담 시간 정하기</button><details><summary>소개 더보기</summary><p>'+esc(s.hours||'가능 일정은 신청 후 확인해요.')+'</p><p>보험소에서 담당 전문가를 배정합니다.</p></details>';
     $('requestTime').onclick=function(){chooseWay(s,'visit_office');};showCard();
   }
-  function showCard(){var sheet=$('cardSheet'),scrim=$('cardScrim');sheet.hidden=false;sheet.classList.remove('detail');scrim.hidden=false;void sheet.offsetHeight;sheet.classList.add('show');scrim.classList.add('show');}
+  function showCard(){var sheet=$('cardSheet'),scrim=$('cardScrim');cardOpener=document.activeElement;sheet.style.height='';sheet.hidden=false;sheet.classList.remove('detail');scrim.hidden=false;void sheet.offsetHeight;sheet.classList.add('show');scrim.classList.add('show');$('cardClose').focus();}
 
   function closeCard() {
     var sheet = $('cardSheet'), scrim = $('cardScrim');
     sheet.classList.remove('show', 'detail'); scrim.classList.remove('show');
-    setTimeout(function () { sheet.hidden = true; scrim.hidden = true; }, 260);
+    var wasOpen=!sheet.hidden;sheet.hidden=true;scrim.hidden=true;
+    if(wasOpen&&cardOpener&&cardOpener.isConnected)cardOpener.focus();
   }
 
   function chooseWay(s, way) {
@@ -160,26 +166,28 @@
     location.href = '/requests.html?' + params;
   }
 
-  /* 시트 드래그(그립) — 간단한 열기/닫기 */
-  function bindGrip(gripId, onUp, onDown) {
-    var grip = $(gripId), startY = null;
-    grip.addEventListener('click', function () { onUp(true); });
-    grip.addEventListener('pointerdown', function (e) { startY = e.clientY; grip.setPointerCapture(e.pointerId); });
-    grip.addEventListener('pointerup', function (e) {
-      if (startY == null) return; var dy = e.clientY - startY; startY = null;
-      if (dy < -24) onUp(false); else if (dy > 24) onDown();
-    });
+  // Keyboard buttons and drag share the same sheet; suppress the post-drag click.
+  function bindGrip(gripId, sheetId, toggle, collapse) {
+    var grip=$(gripId), sheet=$(sheetId), start=null, dragged=false;
+    grip.addEventListener('click',function(){if(dragged){dragged=false;return;}toggle();});
+    grip.addEventListener('pointerdown',function(e){start={y:e.clientY,height:sheet.getBoundingClientRect().height};dragged=false;grip.setPointerCapture(e.pointerId);});
+    grip.addEventListener('pointermove',function(e){if(!start)return;var dy=start.y-e.clientY;if(Math.abs(dy)<8&&!dragged)return;dragged=true;var limit=$('mapStage').clientHeight-16;sheet.style.height=Math.max(100,Math.min(limit,start.height+dy))+'px';sheet.style.maxHeight='calc(100% - 16px)';});
+    grip.addEventListener('pointerup',function(e){if(start&&dragged&&e.clientY-start.y>start.height-85)collapse();start=null;});
+    grip.addEventListener('pointercancel',function(){start=null;});
   }
+  function showList(){var sheet=$('listSheet');sheet.hidden=false;$('listReopen').hidden=true;}
+  function hideList(){closeCard();$('listSheet').hidden=true;$('listReopen').hidden=false;$('listReopen').focus();}
+  function toggleList(){var sheet=$('listSheet');sheet.style.height='';sheet.style.maxHeight='';var open=sheet.classList.toggle('open');$('listGrip').textContent=open?'↕ 목록 작게':'↕ 목록 크게';$('listGrip').setAttribute('aria-expanded',String(open));}
 
   // 실제 등록 전문가 로드(planner_catalog, anon). 위경도 있는 것만. 실패·없음이면 null → 샘플 유지.
   async function loadReal(area) {
     try {
-      var r = await fetch('/api/config', { cache: 'no-store' });
+      var r = await fetch('/api/config', { cache: 'no-store', signal:AbortSignal.timeout(8000) });
       if (!r.ok) return null;
       var cfg = await r.json();
       if (!cfg.enabled || !cfg.url || !cfg.key) return null;
       var rr = await fetch(cfg.url.replace(/\/$/, '') + '/rest/v1/rpc/planner_catalog', {
-        method: 'POST', headers: { apikey: cfg.key, 'Content-Type': 'application/json' }, body: JSON.stringify({ area: area || '', wanted: PURPOSE || '' })
+        method: 'POST', signal:AbortSignal.timeout(8000), headers: { apikey: cfg.key, 'Content-Type': 'application/json' }, body: JSON.stringify({ area: area || '', wanted: PURPOSE || '' })
       });
       if (!rr.ok) return null;
       var data = await rr.json();
@@ -212,10 +220,10 @@
     }
     if (PURPOSE) { var ll = $('listLink'); if (ll) ll.href = '/find.html?purpose=' + encodeURIComponent(PURPOSE); }
     SAMPLES = SPOTS.slice(); // 지역 재필터용 원본 샘플 보관
-    var real = await loadReal(selectedArea);
-    SPOTS = (real || []).concat(PLANNED); usingSamples = false;
+    SPOTS = PLANNED.slice();
     initMap(SEOUL, 12);
     renderList();
+    reloadSpots(new URLSearchParams(location.search).get('region')||'');
 
     // 정렬 탭
     document.querySelectorAll('.sort-tabs button').forEach(function (t) {
@@ -226,18 +234,13 @@
       });
     });
 
-    // 목록 시트 그립: 위로=열기, 아래로=닫기, 클릭=토글
-    var listSheet = $('listSheet');
-    $('listGrip').addEventListener('click', function () { listSheet.classList.toggle('open'); });
-    bindGrip('listGrip', function (toggle) { if (toggle) return; listSheet.classList.add('open'); }, function () { listSheet.classList.remove('open'); });
-
-    // 카드 시트 그립: 위로=상세, 아래로=닫기
-    bindGrip('cardGrip', function (toggle) { if (toggle) { $('cardSheet').classList.toggle('detail'); return; } $('cardSheet').classList.add('detail'); }, function () { closeCard(); });
-    $('cardScrim').addEventListener('click', closeCard);
-    // 키보드 접근성: 카드가 열려 있으면 Esc로 닫기
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') { var cs = $('cardSheet'); if (cs && !cs.hidden && cs.classList.contains('show')) closeCard(); }
-    });
+    bindGrip('listGrip','listSheet',toggleList,hideList);
+    $('listClose').addEventListener('click',hideList);
+    $('listReopen').addEventListener('click',function(){showList();$('listGrip').focus();});
+    bindGrip('cardGrip','cardSheet',function(){$('cardSheet').classList.toggle('detail');},closeCard);
+    $('cardClose').addEventListener('click',closeCard);
+    $('cardScrim').addEventListener('click',closeCard);
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(!$('cardSheet').hidden)closeCard();else hideList();}});
 
     // 현재 위치
     $('locateFab').addEventListener('click', locate);
@@ -249,6 +252,7 @@
       (GU[city.value] || []).forEach(function (g) { var o = document.createElement('option'); o.value = g; o.textContent = g; gu.appendChild(o); });
     });
     function applyRegion(){
+      regionRevision++;if(cancelLocate)cancelLocate();$('locateFab').disabled=false;userLoc=null;if(meMarker){map.removeLayer(meMarker);meMarker=null;}if(accuracyCircle){map.removeLayer(accuracyCircle);accuracyCircle=null;}showList();document.querySelector('.region-title').textContent='선택한 지역의 보험소를 보여드려요.';
       var chosen=(window.COVERAGE_AREAS||[]).find(function(o){return o.region===city.value&&o.name===gu.value;}); var center = chosen?[chosen.lat,chosen.lng]:(REGION_CENTER[city.value] || SEOUL); // 구/군 지오코딩은 후속, 우선 시/도 중심
       if (map) map.setView(center, city.value ? 12 : 11);
       $('regionPicker').hidden = false;
@@ -259,12 +263,21 @@
   }
 
   function locate() {
-    $('regionPicker').hidden=false; var notice=document.querySelector('.region-title'); if(!navigator.geolocation){notice.textContent='위치 확인을 지원하지 않는 브라우저입니다. 지역을 선택하세요.';return;} notice.textContent='내 위치 확인 중…'; $('locateFab').disabled=true;
-    navigator.geolocation.getCurrentPosition(
-      function (pos) { $('locateFab').disabled=false; selectedArea=''; $('regionCity').value=''; $('regionGu').innerHTML='<option value="">구/군</option>'; reloadSpots('').then(function(){setMe([pos.coords.latitude,pos.coords.longitude],pos.coords.accuracy);notice.textContent=(pos.coords.accuracy>5000?'대략적인 위치예요. 지역을 직접 선택하면 더 정확해요.':'가까운 보험소를 찾았어요. 위치 오차 약 '+Math.round(pos.coords.accuracy)+'m');}); },
-      function (error) { $('locateFab').disabled=false; notice.textContent=error.code===1?'위치 권한이 꺼져 있습니다. 주소창의 사이트 권한에서 위치를 허용하거나 지역을 선택하세요.':error.code===3?'위치 확인 시간이 초과됐습니다. 다시 시도하거나 지역을 선택하세요.':'기기에서 위치를 확인하지 못했습니다. 지역을 선택하세요.'; }, // 거부 → 지역 직접 선택
-      { enableHighAccuracy: false, timeout: 15000, maximumAge: 30000 }
-    );
+    if(cancelLocate)cancelLocate();
+    var revision=++regionRevision,notice=document.querySelector('.region-title');
+    $('locateFab').disabled=true;
+    cancelLocate=window.findBohumsoLocation({
+      progress:function(message){notice.textContent=message;},
+      success:async function(pos){
+        if(revision!==regionRevision)return;
+        await reloadSpots('');if(revision!==regionRevision)return;
+        $('regionCity').value='';$('regionGu').innerHTML='<option value="">구/군</option>';
+        setMe([pos.coords.latitude,pos.coords.longitude],pos.coords.accuracy);showList();
+        notice.textContent=pos.coords.accuracy>5000?'대략적인 위치예요. 지역을 선택해 범위를 좁힐 수 있어요.':'내 위치를 찾았어요. 위치 오차 약 '+Math.round(pos.coords.accuracy)+'m';
+        $('locateFab').disabled=false;
+      },
+      error:function(message){if(revision!==regionRevision)return;notice.textContent=message;$('locateFab').disabled=false;}
+    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();

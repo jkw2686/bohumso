@@ -1,0 +1,33 @@
+const {chromium,expect}=require('@playwright/test');
+const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
+(async()=>{
+ const root=path.resolve('public');const server=http.createServer((req,res)=>{let name=new URL(req.url,'http://localhost').pathname;if(name==='/')name='/index.html';const file=path.resolve(root,'.'+name);if(!file.startsWith(root+path.sep)){res.writeHead(404).end();return;}try{res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(file));}catch{res.writeHead(404).end();}});
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;let browser;
+ try{
+  browser=await chromium.launch({channel:'msedge',headless:true});const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.route('**/api/**',r=>r.fulfill({json:{enabled:false}}));
+  await page.addInitScript(()=>{window.geoCalls=[];Object.defineProperty(navigator,'geolocation',{configurable:true,value:{getCurrentPosition:(ok,fail,options)=>{window.geoCalls.push(options);if(!options.enableHighAccuracy)fail({code:3});else ok({coords:{latitude:37.8315,longitude:127.5095,accuracy:30}});}}});});
+  for(const [width,height] of [[320,640],[390,844],[844,390],[1440,900]]){
+   await page.setViewportSize({width,height});await page.goto(base+'/');await expect(page.locator('#homeMap .leaflet-marker-icon')).toHaveCount(83);
+   const small=(await page.locator('#homeMap').boundingBox()).height;await page.locator('#homeMapResize').click();expect((await page.locator('#homeMap').boundingBox()).height).toBeGreaterThanOrEqual(small);await page.locator('#homeMapResize').click();
+   await page.locator('#homeLocate').click();await expect(page.locator('#homeLocationStatus')).toHaveText('내 위치를 찾았어요.');expect(await page.evaluate(()=>geoCalls.map(c=>c.enableHighAccuracy))).toEqual([false,true]);
+   if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))throw Error('home overflow '+width);
+   if(width===390||width===1440){await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:'artifacts/ux-home-map-'+width+'.png',fullPage:true});}
+   await page.goto(base+'/map.html');await expect(page.locator('.spot')).toHaveCount(83);
+   await page.locator('#listClose').click();await expect(page.locator('#listSheet')).toBeHidden();await expect(page.locator('#listReopen')).toBeVisible();
+   await page.locator('#listReopen').click();await expect(page.locator('#listSheet')).toBeVisible();await page.locator('#listGrip').click();await expect(page.locator('#listGrip')).toHaveAttribute('aria-expanded','true');await page.locator('#listGrip').click();
+   if(width===390){const grip=await page.locator('#listGrip').boundingBox(),before=(await page.locator('#listSheet').boundingBox()).height;await page.mouse.move(grip.x+30,grip.y+22);await page.mouse.down();await page.mouse.move(grip.x+30,grip.y-58,{steps:6});await page.mouse.up();expect((await page.locator('#listSheet').boundingBox()).height).toBeGreaterThan(before+30);await page.locator('#listGrip').click();await page.locator('#listGrip').click();}
+   await page.locator('.spot').first().click();await expect(page.locator('#cardClose')).toBeVisible();await page.locator('#cardClose').click();await expect(page.locator('#cardSheet')).toBeHidden();
+   await page.locator('#locateFab').click();await expect(page.locator('.region-title')).toContainText('내 위치를 찾았어요');expect(await page.evaluate(()=>geoCalls.map(c=>c.enableHighAccuracy))).toEqual([false,true]);
+   await expect(page.locator('#areaRequest')).toHaveAttribute('href',/region=/);
+   await page.locator('#regionCity').selectOption('경기');await page.locator('#regionGu').selectOption('가평군');await expect(page.locator('.spot')).toHaveCount(1);await expect(page.locator('.region-title')).toContainText('선택한 지역');
+   const nav=await page.locator('.customer-nav').boundingBox(),sheet=await page.locator('#listSheet').boundingBox();expect(sheet.y+sheet.height).toBeLessThanOrEqual(nav.y+1);
+   if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))throw Error('map overflow '+width);
+   if(width===390||width===1440)await page.screenshot({path:'artifacts/ux-map-controls-'+width+'.png'});
+  }
+  // A cancelled, late geolocation result must not override a manual region selection.
+  await page.addInitScript(()=>{Object.defineProperty(navigator,'geolocation',{configurable:true,value:{getCurrentPosition:ok=>{window.lateLocation=ok;}}});});
+  await page.goto(base+'/map.html');await expect(page.locator('.spot')).toHaveCount(83);await page.locator('#locateFab').click();await page.locator('#regionCity').selectOption('경기');await page.locator('#regionGu').selectOption('가평군');await page.evaluate(()=>window.lateLocation({coords:{latitude:37.56,longitude:126.97,accuracy:10}}));await expect(page.locator('.spot')).toHaveCount(1);await expect(page.locator('.region-title')).toContainText('선택한 지역');
+  expect(errors).toEqual([]);console.log('PASS: 320/390/844 landscape/1440, home map, resize, list close/reopen, card close, coarse timeout→precise success, manual region cancels stale location, no horizontal overflow.');
+ }finally{await browser?.close();server.close();}
+})().catch(e=>{console.error(e);process.exit(1);});

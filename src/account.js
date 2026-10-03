@@ -21,7 +21,7 @@ function fail(error){if(error)throw error;}
 function line(parent,text,tag="p"){const el=document.createElement(tag);el.textContent=text;parent.append(el);return el;}
 async function refreshMembership(){const {data,error}=await client.rpc("my_membership");fail(error);membership=data;}
 async function renderAccount(){
- try{const next=sessionStorage.getItem("bohumso-booking-return");if(membership.member&&next&&/^\/requests\.html(?:\?|$)/.test(next)){sessionStorage.removeItem("bohumso-booking-return");location.replace(next);return;}}catch{}
+ try{const next=sessionStorage.getItem("bohumso-booking-return");if(membership.member&&next&&/^\/requests(?:\.html)?(?:\?|$)/.test(next)){sessionStorage.removeItem("bohumso-booking-return");location.replace(next);return;}}catch{}
  try{if(membership.member&&sessionStorage.getItem("bohumso-signup-intent")==="expert"){sessionStorage.removeItem("bohumso-signup-intent");location.replace("/partner.html");return;}}catch{}
  $("identity").textContent=user.email;$("operator").textContent=config.operator;$("privacyContact").textContent=config.contact;
  $("membershipState").textContent=membership.member?"회원 가입 완료":"이메일 확인 완료 · 가입 동의가 필요합니다.";
