@@ -4,6 +4,8 @@ const shortDate=value=>new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',mo
 const purposeLabels={claim:'보험금 청구',coverage:'보장 확인',management:'내 보험 확인',new:'가입 상담',other:'기타 상담'};
 export function renderOfficeRequest({form,command,refresh,message}){
  const params=new URLSearchParams(location.search);let region=params.get('region')||'',purpose=Object.hasOwn(purposeLabels,params.get('purpose'))?params.get('purpose'):'claim',date='',time='',step=region?1:0,busy=false;let requestKey=crypto.randomUUID();
+ const chosenDate=params.get('date')||'',chosenTime=params.get('time')||'',chosenStamp=new Date(chosenDate+'T'+chosenTime+':00+09:00').getTime();
+ if(region&&/^\d{4}-\d{2}-\d{2}$/.test(chosenDate)&&/^(09|1[0-7]):(00|30)$|^18:00$/.test(chosenTime)&&chosenStamp>=Date.now()+1800000&&chosenStamp<=Date.now()+90*86400000){date=chosenDate;time=chosenTime;step=2;}
  const method=['phone','nearby','scheduled'].includes(params.get('method'))?params.get('method'):'scheduled';
  form.classList.add('request-wizard');form.hidden=false;form.onsubmit=e=>e.preventDefault();
  function button(parent,label,fn,cls=''){const b=el('button',label,parent);b.type='button';b.className=cls;b.onclick=fn;return b;}

@@ -48,7 +48,7 @@
   function distLabel(s) { var d = spotDist(s); return isFinite(d) ? distText(d) : '위치 미등록'; }
 
   function pinIcon(me,planned) {
-    if(planned)return L.divIcon({html:'<span class="planned-pin">'+(window.uiIcon?.('clock')||'')+'</span>',className:'',iconSize:[32,32],iconAnchor:[16,16]});
+    if(planned)return L.divIcon({html:'<span class="planned-pin">'+(window.uiIcon?.('home')||'')+'</span>',className:'',iconSize:[32,32],iconAnchor:[16,16]});
     // 색은 토큰으로. presentation attribute(fill=)는 var()를 못 받으므로 style로 지정한다.
     var color = me ? 'var(--accent)' : 'var(--brand)';
     var html = '<svg class="' + (me ? 'pin-me' : 'pin-marker') + '" width="34" height="42" viewBox="0 0 34 42" xmlns="http://www.w3.org/2000/svg">' +
@@ -144,9 +144,8 @@
   /* 마커/목록 탭 → 하단 카드(요약). 다른 마커 탭하면 내용만 교체. */
   function openCard(s) {
     current = s;
-    if(s.planned){$('cardBody').innerHTML='<span class="booking-kind">오픈 예정</span><h2>'+esc(s.name)+'</h2><p>곧 만나요.</p><p>이 지역의 방문상담 서비스를 준비하고 있어요.</p><button class="btn" type="button" id="nearbyExperts">주변 전문가 보기</button>';$('nearbyExperts').onclick=function(){closeCard();showList();selectedArea=s.region;showExperts=true;renderList();};showCard();return;}
-    $('cardBody').innerHTML='<div class="card-top">'+thumbHtml(s,'thumb')+'<div><h2>'+esc(s.name)+'</h2><p>'+esc(s.specialty)+'</p></div></div><p>'+esc(s.region)+(userLoc?' · '+distLabel(s):'')+'</p><button class="btn" id="requestTime" type="button">상담 시간 정하기</button><details><summary>소개 더보기</summary><p>'+esc(s.hours||'가능 일정은 신청 후 확인해요.')+'</p><p>보험소에서 담당 전문가를 배정합니다.</p></details>';
-    $('requestTime').onclick=function(){chooseWay(s,'visit_office');};showCard();
+    window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,purpose:PURPOSE,situation:SITUATION});
+    showCard();
   }
   function showCard(){var sheet=$('cardSheet'),scrim=$('cardScrim');cardOpener=document.activeElement;sheet.style.height='';sheet.hidden=false;sheet.classList.remove('detail');scrim.hidden=false;void sheet.offsetHeight;sheet.classList.add('show');scrim.classList.add('show');$('cardClose').focus();}
 
@@ -259,6 +258,8 @@
       reloadSpots(city.value+(gu.value?' '+gu.value:''));
     }
     $('regionApply').addEventListener('click',applyRegion);gu.addEventListener('change',applyRegion);
+    if(!new URLSearchParams(location.search).has('region'))window.startBohumsoLocation(locate);
+    var initialOffice=new URLSearchParams(location.search).get('office');if(initialOffice){var office=PLANNED.find(function(s){return s.region===initialOffice;});if(office)openCard(office);}
 
   }
 

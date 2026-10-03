@@ -1,6 +1,11 @@
-/* Coordinates stay in this page; requesting location always needs a user click. */
+/* Coordinates stay in this page; the first visit requests permission; later visits respect the saved browser choice. */
 (function () {
   'use strict';
+  window.startBohumsoLocation = async function (locate) {
+    var asked=false;try{asked=sessionStorage.getItem('bohumso-location-asked')==='1';}catch{}
+    var state='prompt';try{state=(await navigator.permissions.query({name:'geolocation'})).state;}catch{}
+    if(state==='granted'||!asked){try{sessionStorage.setItem('bohumso-location-asked','1');}catch{}locate();}
+  };
   window.findBohumsoLocation = function (handlers) {
     var stopped = false, timer;
     function cancel() { stopped = true; clearTimeout(timer); }
