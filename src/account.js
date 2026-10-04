@@ -1,3 +1,4 @@
+import {renderServiceArea,renderInstant,renderUrgentWorkspace} from './urgent.js';
 import './member-entry.js';
 import {renderExpertAdmin} from './expert-admin.js';
 import {bindMembershipConsent} from "./membership-consent.js";
@@ -72,10 +73,10 @@ async function start(){
  if(document.body.dataset.workspace==='partner'&&membership.partner_status!=='approved'){message('승인된 전문가만 이용할 수 있습니다.');return;}
  if(mode==="reset"){$("accountContent").hidden=false;onForm("passwordForm",async d=>{const {error}=await client.auth.updateUser({password:String(d.get("password"))});fail(error);message("비밀번호를 변경했습니다. 내 계정에서 계속 이용할 수 있습니다.");});return;}
  await refreshMembership();
- if(mode==="requests")await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action});
+ if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action});if(document.body.dataset.workspace==='partner'){const tools=document.createElement('div');$("accountContent").prepend(tools);await renderServiceArea(client,tools);await renderInstant(client,tools);await renderUrgentWorkspace(client,tools);}}
  if(mode==="payment")await renderPaymentResult(client,message);
  if(mode==="account")await renderAccount();
- if(mode==="partner"){const applicationStatus=await renderPartner();if(membership.profession==="planner"&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));}
+ if(mode==="partner"){const applicationStatus=await renderPartner();if(membership.partner_status)await renderServiceArea(client,$("accountContent"));if(membership.profession==="planner"&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));}
  if(mode==="admin"){await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
  $("accountContent").hidden=false;
 }

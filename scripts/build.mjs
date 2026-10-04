@@ -1,6 +1,6 @@
 import {build} from 'esbuild';import {mkdir,readdir,readFile,writeFile} from 'node:fs/promises';
 await mkdir('public/assets',{recursive:true});
-await build({entryPoints:{account:'src/account.js',visit:'src/visit.js',member:'src/member-entry.js'},bundle:true,format:'esm',platform:'browser',target:['es2020'],outdir:'public/assets',minify:true});
+await build({entryPoints:{account:'src/account.js',visit:'src/visit.js',member:'src/member-entry.js',urgent:'src/urgent.js'},bundle:true,format:'esm',platform:'browser',target:['es2020'],outdir:'public/assets',minify:true});
 await build({entryPoints:['src/test-flow/ui.js'],bundle:true,format:'esm',platform:'browser',target:['es2022'],outfile:'artifacts/test-flow.js',minify:true});
 await mkdir('artifacts/functions',{recursive:true});
 const functions=(await readdir('netlify/functions')).filter(f=>/\.(mts|mjs)$/.test(f)).map(f=>'netlify/functions/'+f);

@@ -145,6 +145,7 @@
   function openCard(s) {
     current = s;
     window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned,purpose:PURPOSE,situation:SITUATION});
+    if(s.availability==='now'){var urgent=document.createElement('a');urgent.className='btn';urgent.textContent='지금 도움 요청';urgent.href='/urgent.html?region='+encodeURIComponent(s.region);$('cardBody').prepend(urgent);}
     showCard();
   }
   function showCard(){
@@ -206,7 +207,7 @@
           job: p.organization || '보험 전문가',
           specialty: (Array.isArray(p.specialties) && p.specialties.length ? p.specialties.map(function (x) { return SPECIALTY[x] || x; }).join('·') : '상담'),
           region: p.region || '',
-          lat: Number.isFinite(p.latitude) ? p.latitude : null, lng: Number.isFinite(p.longitude) ? p.longitude : null,
+          lat: Number.isFinite(p.area_latitude) ? p.area_latitude : null, lng: Number.isFinite(p.area_longitude) ? p.area_longitude : null,
           rating: p.rating || 0, pledge: !!p.verified,
           hours: p.hours || '', completed: p.completed_count || 0, reviews: Array.isArray(p.reviews) ? p.reviews.length : 0,
           photo: p.photo_url || '', availability: p.availability_status || ''

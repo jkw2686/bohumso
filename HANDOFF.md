@@ -104,3 +104,19 @@
 - 메인 본문에 무료 회원가입 안내 추가. 로그인 완료 회원은 가입 완료·내 정보, 미완료 회원은 가입 마무리로 전환.
 - 지도 선택 시 목록 자동 숨김, 배경 덮개 제거, 상세 카드 최대 340px 너비/지도 높이 45%, 내부 스크롤. 닫으면 지도만 남고 목록 재열기 제공. 선택 마커를 카드 위로 이동.
 - 기존 회원 인증 및 예정 거점 방문예약 제한 유지. 빌드·회원 흐름·320/390/844/1440 지도 검증 후 Git 기반 배포.
+
+## 2026-10-04 활동지역·긴급 매칭
+- 사용자 첨부 299792c0 지침 구현. docs/urgent-service.md에 구조·보유기간·검증·운영 조건 상세 기록.
+- src/urgent.js + public/urgent.html/css: 전문가 활동지역 3단계/변경, 임시 GPS 별도 동의·30/60분/18시 ON/OFF, 고객 3단계 긴급 요청, 전문가 수락/패스, 명시 출발·타임라인. PRO/프로필/홈/지도 연결.
+- 024_urgent_service.sql: 새 private 테이블/RPC, 주지역만 집계, 권한/1명 수락 잠금/유일 인덱스, 기존 catalog 정확좌표 제거 및 권역 중심 별도 필드, live/background 위치공유 false. 025_urgent_retention.sql 매분 만료·파기.
+- 실제 서버 preflight: private.expert_applications 없음, is_active_member 있음, urgent_requests 없음, pg_cron 제공 가능. 024는 011 유무 모두 호환하도록 수정, 두 모드 테스트 통과. 011 자체를 추가 적용하지 않음.
+- npm test 60개 성공, 긴급 A-F DB·320/390/1440 UI 통과. 마지막 UI 카드 중첩 제거 후 재빌드/긴급 브라우저 재검증 완료. 지도 회귀 검사도 통과.
+- 서버 SQL 입력 후 자동 승인 검토가 Run query를 거절함: 운영 스키마·권한 변경에 구체적 사용자 사전 승인 필요. request_user_input_async 승인 질문 제출 상태. **024/025 아직 실제 적용 안 됨. 공개 배포도 보류. 우회 실행 금지.** 사용자 승인 도착 후 Supabase SQL 탭16 경고 확인→024 실행결과 확인→025/이력 기록→cron 동작 확인→main 배포. DATABASE_URL 없음.
+- 실서비스 전문가 0명 상태로 실제 요청 생성/승인 우회하지 말 것. SMS 공급자·실제 전화 인증과 운영 개인정보/위치 검토는 OWNER_ACTION_REQUIRED. 구현 테스트는 가상 계정/가상 GPS만.
+
+## 다음 작업 — 사용자 순서 지정
+- 현재 활동지역·긴급매칭의 서버 적용/배포를 마친 뒤에만 출시 준비 통합 스프린트 시작.
+- 전체 지침: C:/Users/AdMins/.codex/attachments/e5f0bcba-1d15-4e40-bcec-fbecbf1f69c0/붙여넣은 텍스트.txt.
+- 다음은 PHASE 0 감사 → P0 보안/Secret·결제 OFF·정책·Auth/이메일·OTP·위치·예약/RLS → P1 → P2. Google 보존, Kakao 준비중, 결제 OFF, RLS 비활성/운영자료 삭제/유료계약/임의 SMS 금지. 각 Phase 표 보고, NEXT ACTION 하나. 아직 새 스프린트 실행하지 않음.
+- 새 첨부의 계속 진행 지시는 앞서 거절된 운영 DB Run query에 대한 구체적 승인 응답으로 간주하지 않았음. 기존 승인 질문 답변 대기.
+- Supabase 편집기 입력은 파일 최종 변경보다 오래된 버전일 수 있음. 승인 후 반드시 024 파일을 다시 읽어 입력하고 실행. 025/024 이력은 private.schema_migrations(name)에 기록.
