@@ -20,4 +20,4 @@ const nativeFetch=window.fetch.bind(window);window.fetch=async(url,options)=>{
 const message=text=>document.getElementById('accountMessage').textContent=text;
 if(new URLSearchParams(location.search).get('view')==='admin')await renderExpertAdmin({client,host:document.getElementById('demoHost'),message});
 else if(new URLSearchParams(location.search).get('view')==='badge'){const b=document.createElement('button');b.className='pledge-badge';b.textContent='소비자보호 서약';b.onclick=pledgeDialog;document.getElementById('demoHost').append(b);}
-else await renderPartnerApplication({client,user:{id},membership:{member:true},message});
+else await renderPartnerApplication({config:{phoneVerificationEnabled:!new URLSearchParams(location.search).has("phone-off")},client,user:{id},membership:{member:true},message});

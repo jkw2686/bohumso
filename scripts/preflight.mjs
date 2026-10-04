@@ -8,6 +8,8 @@ const env = (k) => process.env[k] ?? '';
 const results = [];
 const add = (ok, label, detail = '') => results.push({ ok, label, detail });
 const present = (k) => env(k).trim().length > 0;
+const flag = (k) => env(k) === 'true';
+const serverKeyNeeded=flag('PAYMENTS_ENABLED')||flag('EXPERT_DOCUMENTS_ENABLED');
 
 // --- 계정/Supabase ---
 add(present('SUPABASE_URL') && /^https:\/\//.test(env('SUPABASE_URL')), 'SUPABASE_URL', 'https URL 필요');
@@ -16,7 +18,10 @@ const pubOk = pub.startsWith('sb_publishable_') || (pub.split('.').length === 3 
   try { return JSON.parse(Buffer.from(pub.split('.')[1], 'base64url').toString()).role === 'anon'; } catch { return false; }
 })());
 add(pubOk, 'SUPABASE_PUBLISHABLE_KEY', 'sb_publishable_ 또는 anon JWT (공개키)');
-add(present('SUPABASE_SERVICE_ROLE_KEY'), 'SUPABASE_SERVICE_ROLE_KEY', '서버 전용, 값 미검사(존재만)');
+const serverKey=env('SUPABASE_SERVICE_ROLE_KEY');
+let serverKeyValid=serverKey.startsWith('sb_secret_');
+try{serverKeyValid ||= JSON.parse(Buffer.from(serverKey.split('.')[1],'base64url').toString()).role==='service_role';}catch{}
+add((!serverKeyNeeded&&!serverKey)||serverKeyValid, 'SUPABASE_SERVICE_ROLE_KEY', '결제/서류 기능 ON 시 올바른 서버키 필수; OFF면 생략 가능');
 add(!pub.includes(env('SUPABASE_SERVICE_ROLE_KEY') || '\0nope') , '공개키≠서비스롤키', '공개키에 서비스롤키가 섞이지 않았는지');
 
 // --- 운영 정보 ---
@@ -24,9 +29,9 @@ add(present('OPERATOR_NAME'), 'OPERATOR_NAME', '실제 운영 주체');
 add(present('PRIVACY_CONTACT'), 'PRIVACY_CONTACT', '개인정보 문의처');
 
 // --- 결제(토스, 테스트 전용) ---
-add(env('TOSS_MODE') === 'test', 'TOSS_MODE=test', '라이브는 이 코드에서 차단');
-add(env('TOSS_CLIENT_KEY').startsWith('test_gck_'), 'TOSS_CLIENT_KEY', 'test_gck_ 접두사');
-add(env('TOSS_SECRET_KEY').startsWith('test_gsk_'), 'TOSS_SECRET_KEY', 'test_gsk_ 접두사 (서버 전용)');
+add(!flag('PAYMENTS_ENABLED') || env('TOSS_MODE') === 'test', 'TOSS_MODE=test', '라이브는 이 코드에서 차단');
+add(!flag('PAYMENTS_ENABLED') || env('TOSS_CLIENT_KEY').startsWith('test_gck_'), 'TOSS_CLIENT_KEY', 'test_gck_ 접두사');
+add(!flag('PAYMENTS_ENABLED') || env('TOSS_SECRET_KEY').startsWith('test_gsk_'), 'TOSS_SECRET_KEY', 'test_gsk_ 접두사 (서버 전용)');
 
 // --- origin ---
 let originOk = false;
@@ -37,7 +42,6 @@ try {
 add(originOk, 'APP_ORIGIN', 'https 또는 localhost origin');
 
 // --- 활성화 플래그 (배포 게이트) ---
-const flag = (k) => env(k) === 'true';
 add(true, `ACCOUNTS_ENABLED=${flag('ACCOUNTS_ENABLED')}`, flag('ACCOUNTS_ENABLED') ? '회원 기능 ON' : 'OFF (가입 비활성)');
 add(true, `POLICIES_APPROVED=${flag('POLICIES_APPROVED')}`, flag('POLICIES_APPROVED') ? '약관 확정됨' : 'OFF (약관 미확정)');
 add(true, `PAYMENTS_ENABLED=${flag('PAYMENTS_ENABLED')}`, flag('PAYMENTS_ENABLED') ? '테스트 결제 ON' : 'OFF');
@@ -48,7 +52,7 @@ add(!flag('AD_EXPOSURE_ENABLED')||env('AD_IMPRESSION_SECRET').length>=32,'AD_IMP
 // 상호 일관성 경고 (실패 아님)
 const warns = [];
 if (flag('PAYMENTS_ENABLED') && !flag('ACCOUNTS_ENABLED')) warns.push('PAYMENTS_ENABLED=true 인데 ACCOUNTS_ENABLED=false — 로그인 없이는 결제 불가');
-if (flag('ACCOUNTS_ENABLED') && !flag('POLICIES_APPROVED')) warns.push('ACCOUNTS_ENABLED=true 인데 POLICIES_APPROVED=false — 약관 확정 전 가입 활성');
+if (flag('ACCOUNTS_ENABLED') && !flag('POLICIES_APPROVED')) warns.push('기존 로그인 ON / 신규 가입 OFF — 약관 검토 중인 정상 베타 상태');
 
 // --- 출력 ---
 let failed = 0;

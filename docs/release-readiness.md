@@ -24,4 +24,7 @@
 
 권한 점검 시 원문 개인정보·비밀키·OTP를 로그에 쓰지 않는다. 테스트계정으로 실제 전문가 승인 우회 금지. 과거 public 샘플 dashboard/analysis 직접URL은 예제 표기가 남아 있고 일반 홈·계정 링크는 제거했다.
 
-NEXT ACTION: 최종 운영자·약관·개인정보 항목을 확정해 신규 가입/예약 개방 조건을 검토한다.
+사용자 최신 지침: 위 미확정 항목은 OWNER_INPUTS.md에 누적하고 독립 개발·검증은 계속한다. docs/data-audit.md 및 docs/closed-beta-runbook.md 참고.
+
+
+2026-10-04 추가: 정책 상세 초안, 미완료 계정 로그아웃, 전문가 SMS 공통 Provider 차단, 조건부 preflight 및 베타20건 준비 완료. npm run verify 전체 성공 + preflight 추가1 및 지도/예약/긴급/미완료회원/전화OFF 브라우저 검증 통과. 실제 PC 위치는 NETWORK 추정, 실기기 GPS 성공 아님.

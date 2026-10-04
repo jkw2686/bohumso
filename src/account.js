@@ -35,7 +35,7 @@ async function renderAccount(){
  onForm("membershipForm",async d=>{for(const name of ['age','terms','privacy'])if(!checked(d,name))return flagInvalid($("membershipForm").elements[name],'필수약관에 동의해 주세요.');const {error}=await client.rpc("complete_membership",{terms_accepted:checked(d,"terms"),privacy_accepted:checked(d,"privacy"),age_accepted:checked(d,"age"),marketing_accepted:checked(d,"marketing")});fail(error);message("가입이 완료됐어요. 선택하신 도움을 이어서 확인할게요.");await refreshMembership();await renderAccount();});
  $("logout").onclick=async()=>{const {error}=await client.auth.signOut();if(error){message("로그아웃하지 못했습니다. 다시 시도해 주세요.");return}location.replace("/login.html");};
 }
-async function renderPartner(){return renderPartnerApplication({client,user,membership,message,action});}
+async function renderPartner(){return renderPartnerApplication({client,user,membership,message,action,config});}
 async function renderAdmin(){if(!membership.admin)throw {message:'admin_required'};await renderExpertAdmin({client,host:$('applications'),message});}
 async function start(){
  // 백엔드(Functions) 미배포·미설정 시 에러 대신 '준비 중'으로 degrade. 정적 공유 배포에서도 화면이 깨지지 않는다.

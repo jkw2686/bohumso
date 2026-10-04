@@ -1,6 +1,7 @@
 import {chromium,expect} from '@playwright/test';import {startExpertPreview} from '../scripts/expert-preview.mjs';
 const server=await startExpertPreview(0);let browser;const errors=[];
 try{browser=await chromium.launch({channel:'msedge',headless:true});const page=await browser.newPage({viewport:{width:360,height:800}});page.on('pageerror',e=>errors.push(e.message));const base='http://127.0.0.1:'+server.address().port;
+ await page.goto(base+'/?phone-off=1');await page.getByRole('button',{name:'설계사',exact:false}).click();await page.locator('#expertNext').click();await page.getByLabel('이름',{exact:true}).fill('가상 신청자');await page.getByLabel('휴대폰',{exact:true}).fill('01000000000');await expect(page.getByRole('button',{name:'인증번호 받기'})).toBeDisabled();await expect(page.getByRole('button',{name:'인증번호 확인'})).toBeDisabled();await expect(page.locator('#expertNext')).toBeDisabled();
  for(const profession of ['설계사','손해사정사','변호사']){
   await page.goto(base,{waitUntil:'domcontentloaded'});await expect(page.locator('#expertNext')).toBeDisabled();await page.getByRole('button',{name:profession,exact:false}).click();if(profession==='설계사')await page.screenshot({path:'artifacts/expert-step1-mobile.png',fullPage:true});await page.locator('#expertNext').click();
   await page.getByLabel('이름',{exact:true}).fill('가상 신청자');await page.getByLabel('휴대폰',{exact:true}).fill('01000000000');await expect(page.locator('#expertNext')).toBeDisabled();

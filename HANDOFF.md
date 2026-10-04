@@ -1,5 +1,16 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 최신 자율진행 상태 — 2026-10-04 (이전 NEXT ACTION 중단 지침 폐기)
+- 사용자 최신 지침: 질문/다음 행동 제시 후 중단하지 않음. 독립 작업 계속, 미확정 사실은 OWNER_INPUTS.md에 누적. 비용·운영 Secret 입력·파괴적 migration·법적 최종결정·일반 공개 전환만 별도 승인. 개인정보 수집 확대 및 실결제/SMS 활성화 안 함.
+- 사용자 추가 우선순위: 카카오 공유 문구를 메인 카피로 통일. public/index.html 제목/description/OG/Twitter 정리, 36f6379를 먼저 origin/main 반영. 공식 캐시 도구는 카카오 로그인 필요: https://developers.kakao.com/tool/debugger/sharing . 비밀번호/OTP 입력·메시지 발송 안 함.
+- OWNER_INPUTS.md 및 docs/data-audit.md: 실제 config 서비스명/문의 jkw2686@gmail.com/통계OFF 확인. 법적 주체 임의 확정 안 함. docs/closed-beta-runbook.md 20개 실기기 시나리오 준비, 실행완료로 표시 안 함.
+- public/privacy.html/terms.html/policy.css: 실제 처리·저장·제공·삭제 한계에 맞춘 검토 초안과 모바일 레이아웃. 정책 승인 플래그 유지 false.
+- account.html: 가입 미완료 계정도 로그아웃 가능. partner-onboarding.js: 예전 직접 SMS 경로를 PhoneVerificationProvider로 통합, OFF 버튼 비활성+핸들러 fail closed. 테스트 fixture만 명시적 SMS모의ON. scripts/preflight.mjs: 비활성 결제/서류에 불필요한 키 요구 제거, 잘못된 서버키 역할 검사.
+- 검증: npm run verify 전체63+모든 기본 browser suite PASS. 추가 preflight1 PASS, member-gate/map-controls/office-ux/urgent/expert-disabled browser 모두 PASS. 인증/결제/위치는 모의. 현재 PC 실제 내 위치는 접속지역 추정으로 복귀, GPS 성공 미확인. 로컬 PostgreSQL4593 없음으로 독립 세션 경쟁 검증 미실행.
+- Preview: 6ac1c277b346f91ebe8e48ff--bohumso.netlify.app (이전 6ac1c1057c384c03dfdc2f87). 실제 Preview 정책390px 가로넘침 없음, 로그인/Google 버튼 및 공개config 확인. 공유 OG 새 문구 HTTP 확인.
+- 011 전문가 migration은 현행024 카탈로그를 재교체하고 구형 승인 권한을 바꾸므로 순서 밖에 그대로 적용 금지. 신규 서류 수집 확대/서버키 설정은 승인 필요. 공개 파일 업로드 OFF 유지. 전체 계정 삭제 자동화·일반보유기간 확정·NotificationProvider 외부 공급자 운영연결은 미완료.
+- 최종 배포/추가 회귀 결과는 outputs/보험소-자율진행-결과.md에 정리. user-facing 결과는 outputs만 링크.
+
 ## 최신 상태 — 2026-10-04 출시 준비 (아래 과거 기록보다 우선)
 - 사용자 “적용해” 승인 후 024/025 실제 Supabase 적용, migration 이력 기록. retention cron 매분 실행 succeeded. 기존 행 삭제/권한 우회 없이 최종 함수·유일 인덱스 확인.
 - 32b05a3 원격 main 및 Netlify 6ac1a19cd477120008e9146a ready, 10/4 09:45 KST 공개. 활동지역84/운영 전문가0. 실제 고객 요청 생성하지 않음.
