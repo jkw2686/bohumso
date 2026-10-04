@@ -264,11 +264,17 @@
       regionRevision++;if(cancelLocate)cancelLocate();$('locateFab').disabled=false;userLoc=null;if(meMarker){map.removeLayer(meMarker);meMarker=null;}if(accuracyCircle){map.removeLayer(accuracyCircle);accuracyCircle=null;}showList();document.querySelector('.region-title').textContent='선택한 지역의 보험소를 보여드려요.';
       var chosen=(window.COVERAGE_AREAS||[]).find(function(o){return o.region===city.value&&o.name===gu.value;}); var center = chosen?[chosen.lat,chosen.lng]:(REGION_CENTER[city.value] || SEOUL); // 구/군 지오코딩은 후속, 우선 시/도 중심
       if (map) map.setView(center, city.value ? 12 : 11);
+      window.BohumsoLocationStore.set({source:'MANUAL',latitude:center[0],longitude:center[1],label:city.value+(gu.value?' '+gu.value:'')});
       $('regionPicker').hidden = false;
       reloadSpots(city.value+(gu.value?' '+gu.value:''));
     }
     $('regionApply').addEventListener('click',applyRegion);gu.addEventListener('change',applyRegion);
-    if(!new URLSearchParams(location.search).has('region'))window.startBohumsoLocation(locate);
+    if(!new URLSearchParams(location.search).has('region'))window.startBohumsoLocation(locate,function(saved){
+      map.setView([saved.latitude,saved.longitude],saved.source==='DEVICE'?13:11);
+      if(saved.source==='DEVICE')setMe([saved.latitude,saved.longitude],saved.accuracy,false);
+      document.querySelector('.region-title').textContent=saved.source==='MANUAL'?'선택한 지역 · '+(saved.label||'지도에서 확인'):saved.source==='NETWORK'?'최근 접속 지역 · 대략적인 위치예요.':'최근 확인한 내 위치예요. 위치 버튼으로 갱신할 수 있어요.';
+      if(saved.source==='MANUAL'&&saved.label)reloadSpots(saved.label);
+    });
     var initialOffice=new URLSearchParams(location.search).get('office');if(initialOffice){var office=PLANNED.find(function(s){return s.region===initialOffice;});if(office)openCard(office);}
 
   }

@@ -5,6 +5,6 @@ test("Missing setup and private keys never enable signup",async()=>{
  Object.assign(process.env,{SUPABASE_URL:"https://example.supabase.co",SUPABASE_PUBLISHABLE_KEY:"sb_secret_test",ACCOUNTS_ENABLED:"true",POLICIES_APPROVED:"true",OPERATOR_NAME:"테스트",PRIVACY_CONTACT:"test@example.com"});
  assert.equal((await(await handler()).json()).enabled,false);
  process.env.SUPABASE_PUBLISHABLE_KEY="sb_publishable_test";assert.equal((await(await handler()).json()).enabled,true);
- process.env.POLICIES_APPROVED="false";assert.equal((await(await handler()).json()).enabled,false);
+ process.env.POLICIES_APPROVED="false";const draft=await(await handler()).json();assert.equal(draft.enabled,true);assert.equal(draft.signupEnabled,false);
  }finally{names.forEach(k=>before[k]===undefined?delete process.env[k]:process.env[k]=before[k]);}
 });

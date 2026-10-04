@@ -1,7 +1,14 @@
-/* Coordinates stay in this page; the first visit requests permission; later visits respect the saved browser choice. */
+/* Tab-local location, expires after 15 minutes. Never sent to profile storage. */
 (function () {
   'use strict';
-  window.startBohumsoLocation = async function (locate) {
+  var key='bohumso-location-v1',ttl=15*60*1000;
+  window.BohumsoLocationStore={
+    set:function(value){if(!value||!Number.isFinite(value.latitude)||!Number.isFinite(value.longitude)||Math.abs(value.latitude)>90||Math.abs(value.longitude)>180)return;try{sessionStorage.setItem(key,JSON.stringify(Object.assign({},value,{at:Date.now()})));}catch{}},
+    get:function(){try{var value=JSON.parse(sessionStorage.getItem(key));if(value&&Date.now()-value.at>=0&&Date.now()-value.at<ttl&&['DEVICE','MANUAL','NETWORK'].includes(value.source)&&Number.isFinite(value.latitude)&&Number.isFinite(value.longitude))return Object.assign({},value,{state:'SAVED'});sessionStorage.removeItem(key);}catch{}return null;},
+    clear:function(){try{sessionStorage.removeItem(key);}catch{}}
+  };
+  window.startBohumsoLocation = async function (locate,restore) {
+    var saved=window.BohumsoLocationStore.get();if(saved&&restore){restore(saved);return;}
     var asked=false;try{asked=sessionStorage.getItem('bohumso-location-asked')==='1';}catch{}
     var state='prompt';try{state=(await navigator.permissions.query({name:'geolocation'})).state;}catch{}
     if(state==='granted'||!asked){try{sessionStorage.setItem('bohumso-location-asked','1');}catch{}locate();}
@@ -16,7 +23,7 @@
       try{
         var response=await fetch('/api/approximate-location',{cache:'no-store',signal:AbortSignal.timeout(5000)}),data=await response.json();
         if(stopped)return;
-        if(data.available&&Number.isFinite(data.latitude)&&Number.isFinite(data.longitude)){cancel();handlers.success({source:'network',coords:{latitude:data.latitude,longitude:data.longitude,accuracy:null}});return;}
+        if(data.available&&Number.isFinite(data.latitude)&&Number.isFinite(data.longitude)){cancel();window.BohumsoLocationStore.set({source:'NETWORK',latitude:data.latitude,longitude:data.longitude,accuracy:null});handlers.success({source:'network',coords:{latitude:data.latitude,longitude:data.longitude,accuracy:null}});return;}
       }catch{}
       if(stopped)return;cancel();
       handlers.error(code === 1
@@ -39,7 +46,7 @@
       navigator.geolocation.getCurrentPosition(function (position) {
         if (settled || stopped) return;
         if (!Number.isFinite(position.coords.latitude) || !Number.isFinite(position.coords.longitude)) { error({code:2}); return; }
-        settled = true; cancel(); handlers.success(position);
+        settled = true; cancel(); window.BohumsoLocationStore.set({source:'DEVICE',latitude:position.coords.latitude,longitude:position.coords.longitude,accuracy:position.coords.accuracy});handlers.success(position);
       }, error, {enableHighAccuracy: precise, timeout: precise ? 8000 : 4000, maximumAge: precise ? 0 : 300000});
     }
     attempt(false);

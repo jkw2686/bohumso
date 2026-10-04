@@ -1,5 +1,18 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 최신 상태 — 2026-10-04 출시 준비 (아래 과거 기록보다 우선)
+- 사용자 “적용해” 승인 후 024/025 실제 Supabase 적용, migration 이력 기록. retention cron 매분 실행 succeeded. 기존 행 삭제/권한 우회 없이 최종 함수·유일 인덱스 확인.
+- 32b05a3 원격 main 및 Netlify 6ac1a19cd477120008e9146a ready, 10/4 09:45 KST 공개. 활동지역84/운영 전문가0. 실제 고객 요청 생성하지 않음.
+- 이어서 출시 스프린트 P0: 공개 config에서 기존 로그인과 신규 가입 분리, 약관 승인 전 가입/예약 차단, 결제 UI 숨김, 공개 디렉터리 더미 제거, 위치 탭 공통 저장15분+출처 유지, 휴대전화 provider와 준비중 화면, 개인정보·약관 기능 초안 작성.
+- SQL026/027 운영 적용 완료: policies_approved=false,closed_beta=true,phone_enabled=false. 기존 로그인·조회 유지, 신규 가입/예약/지금가능 시작은 약관+초대+전화 인증 조건. 우회 wrapper execute revoke. 기본 초대목록 빈 상태.
+- Netlify 실제 설정 완료: OPERATOR_NAME=우리곁에 보험소, PAYMENTS_ENABLED/BOOKING_PAYMENTS_ENABLED/SAVED_CARDS_ENABLED=false, PAYMENT_MODE/TOSS_MODE=test, PHONE_VERIFICATION_ENABLED=false/MODE=test, EXPERT_DOCUMENTS_ENABLED=false. 잘못된 공개키가 들어있던 SUPABASE_SERVICE_ROLE_KEY 제거. TOSS_SECRET_KEY secret 표시 및 dev빈값; scopes builds/functions/runtime. **functions-only scopes는 현 플랜에서 Forbidden: 추가 업그레이드 결제하지 않았음.**
+- CLI API snake_case account_id/site_id + body가 작동. accountId/siteId는 이 설치본에서 금지 응답. 비밀값 출력 금지. fine scopes 호출은 요금제 제한. 공개키는 별도 SUPABASE_PUBLISHABLE_KEY 그대로.
+- 검증: 전체 단위/DB 회귀63통과, 모바일지도320/390/844/1440 및 회원가입/Google PKCE/이메일 복귀 모의 브라우저검증 통과. 027 private 전체 RLS 추가, 기존 RPC 정상 테스트 통과. PGlite는 실제 운영 다중계정·동시 PostgreSQL 연결 검증 대체 아님. 위치 실제기기 검증 미완료; 자동테스트 모의 GPS. 실제 SMS 미설정/실제활동 전문가0/최종 약관 미승인으로 공개 출시 준비 완료 아님.
+- 작업 파일: supabase/026_release_controls.sql, src/account.js/workflow.js/urgent.js/directory.js/phone-verification*.js, public/location.js/home-map.js/map.js/phone-verification.html/privacy.html/terms.html, tests/release-controls/location-store/phone-provider.
+- 다음 순서: 현재 변경 브라우저 테스트→Netlify POLICIES_APPROVED=false/CLOSED_BETA=true와 코드 배포→공개 config/login/signup/지도 검증. 이후 첨부 통합스프린트 나머지 P0/P1 점검. 이메일 템플릿 적용/OTP 실제 공급자 연동/NotificationProvider 운영연결/실제 베타20건은 미완료.
+- Supabase SQL 편집기 Monaco는 fill 전에 반드시 ControlOrMeta+A. fill만 하면 기존 코드 뒤에 붙음. production user row를 테스트 목적으로 수정하지 말 것.
+- 무관한 deno.lock 커밋 금지. node_modules는 외부 저장소 junction이라 변경 금지.
+
 # 인수인계 — 2026-10-03 초간편 UX
 
 ## 사용자 최신 결정

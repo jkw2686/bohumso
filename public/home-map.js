@@ -24,7 +24,11 @@
     }});
   }
   button.addEventListener('click',locate);
-  window.startBohumsoLocation(locate);
+  window.startBohumsoLocation(locate,function(saved){
+    var point=[saved.latitude,saved.longitude];map.setView(point,saved.source==='DEVICE'?13:11);
+    notice.textContent=saved.source==='MANUAL'?'선택한 지역 · '+(saved.label||'지도에서 확인'):saved.source==='NETWORK'?'최근 접속 지역 · 대략적인 위치예요.':'최근 확인한 내 위치예요. 위치 버튼으로 갱신할 수 있어요.';
+    if(saved.source==='DEVICE')me=L.circleMarker(point,{radius:8}).addTo(map).bindTooltip('최근 확인한 위치');
+  });
   document.getElementById('homeMapResize').addEventListener('click',function(){var large=host.classList.toggle('large');this.textContent=large?'지도 작게':'지도 크게';this.setAttribute('aria-expanded',String(large));map.invalidateSize();});
   new ResizeObserver(function(){map.invalidateSize();}).observe(host);
 })();
