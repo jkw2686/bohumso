@@ -9,7 +9,10 @@
 - CLI API snake_case account_id/site_id + body가 작동. accountId/siteId는 이 설치본에서 금지 응답. 비밀값 출력 금지. fine scopes 호출은 요금제 제한. 공개키는 별도 SUPABASE_PUBLISHABLE_KEY 그대로.
 - 검증: 전체 단위/DB 회귀63통과, 모바일지도320/390/844/1440 및 회원가입/Google PKCE/이메일 복귀 모의 브라우저검증 통과. 027 private 전체 RLS 추가, 기존 RPC 정상 테스트 통과. PGlite는 실제 운영 다중계정·동시 PostgreSQL 연결 검증 대체 아님. 위치 실제기기 검증 미완료; 자동테스트 모의 GPS. 실제 SMS 미설정/실제활동 전문가0/최종 약관 미승인으로 공개 출시 준비 완료 아님.
 - 작업 파일: supabase/026_release_controls.sql, src/account.js/workflow.js/urgent.js/directory.js/phone-verification*.js, public/location.js/home-map.js/map.js/phone-verification.html/privacy.html/terms.html, tests/release-controls/location-store/phone-provider.
-- 다음 순서: 현재 변경 브라우저 테스트→Netlify POLICIES_APPROVED=false/CLOSED_BETA=true와 코드 배포→공개 config/login/signup/지도 검증. 이후 첨부 통합스프린트 나머지 P0/P1 점검. 이메일 템플릿 적용/OTP 실제 공급자 연동/NotificationProvider 운영연결/실제 베타20건은 미완료.
+- 현재 공개 코드 18f5d78, Netlify 6ac1af011a76d50008085490 ready, 2026-10-04 10:42:41 KST. 공개 config/signup 차단/release_status/84지역/페이지200 및 기존 로그인 표시 확인. Supabase Confirm signup 메일 제목과 깨진 HTML/인증 링크 수정 저장, docs/email-confirmation.html 및 outputs 가입메일 이미지. 실제 메일 수신은 미검증.
+- 구형 브라우저 테스트를 현행 5단계 전문가 가입/연락처 동의/공개 지역좌표 계약에 맞춰 갱신. 모의 테스트와 실제 운영 성공을 구분할 것. npm verify 최초 실패 후 별도 줄 push가 실행된 실수는 사용자에게 보고함. 이후 관련 테스트 수정 및 재검증.
+- 추가 검증: connected-flow/expert/browser-smoke/brand/commerce 브라우저 검사 모두 개별 통과. commerce 지도 로딩 실패는 구형 find.html 외부 CDN 의존으로 확인, 기존 public/vendor Leaflet으로 교체 후 전체 commerce 통과. artifacts/verification-report.json은 최초 통합 실행 실패 기록이므로 성공 보고서로 사용하지 말 것. 실제 SMS/메일/PG 호출 없음.
+- 남은 순서: 첨부 통합스프린트 나머지 P0/P1 점검. OTP 실제 공급자 연동/NotificationProvider 운영연결/실제 베타20건/실기기 GPS/최종 정책 승인은 미완료. 신규 가입 및 신규 예약은 현재 서버에서 제한. 027 운영 private 36/36 RLS 및 직접 SELECT 0 확인.
 - Supabase SQL 편집기 Monaco는 fill 전에 반드시 ControlOrMeta+A. fill만 하면 기존 코드 뒤에 붙음. production user row를 테스트 목적으로 수정하지 말 것.
 - 무관한 deno.lock 커밋 금지. node_modules는 외부 저장소 junction이라 변경 금지.
 
