@@ -62,7 +62,7 @@
     // ── 지도 타일: 이 한 곳만 바꾸면 카카오맵 등으로 교체 가능 ──
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
     drawMarkers();
-    map.zoomControl.setPosition("topright");
+    map.zoomControl.setPosition("topleft");
     new ResizeObserver(function(){map.invalidateSize();}).observe($("mapStage"));
   }
 
