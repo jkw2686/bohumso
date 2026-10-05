@@ -1,8 +1,12 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
-import {fixture,ids} from './commerce-fixture.mjs';import {safeNext} from '../src/member-access.js';
+import {fixture,ids} from './commerce-fixture.mjs';import {safeNext,loginCallback} from '../src/member-access.js';
 test('return path rejects external, encoded, normalized and auth-loop destinations',()=>{
  for(const value of ['https://evil.test','//evil.test','/\\evil.test','/%2f%2fevil.test','/x/..//evil.test','/login.html?next=/','/signup','/\n/evil'])assert.equal(safeNext(value),'/account.html');
  assert.equal(safeNext('/map.html?purpose=claim&situation=death'),'/map.html?purpose=claim&situation=death');
+ for(const value of ['/api/push/dispatch','/unlisted.html','/%252f%252fevil.test','javascript:alert(1)','/login.html?next=https://evil.test'])assert.equal(safeNext(value),'/account.html');
+ assert.equal(safeNext('/requests.html?next=https://evil.test&code=secret&office=one'),'/requests.html?office=one');
+ for(const origin of ['https://bohumso.netlify.app','https://preview-fixture--bohumso.netlify.app']){const callback=new URL(loginCallback(origin,'/notifications.html?reservation=one'));assert.equal(callback.origin,origin);assert.equal(callback.pathname,'/account.html');assert.equal(callback.searchParams.get('next'),'/notifications.html?reservation=one');assert.equal(new URL(loginCallback(origin,'https://evil.test')).searchParams.get('next'),'/account.html');}
+
 });
 test('active membership enforced at RPC, planned office rejected, private bookings isolated',async()=>{
  const f=await fixture();try{await f.db.exec('reset role');for(const file of ['020_office_allocation.sql','023_active_member_gate.sql'])await f.db.exec(await readFile('supabase/'+file,'utf8'));

@@ -1,5 +1,15 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 최신 상태 — 2026-10-05 로그인 복귀 한 호스트 추가 완료
+- 사용자가 기존 Production Site URL/4 Redirect URLs 유지·중복금지·한 Preview호스트/콜백만 추가·실제 양쪽로그인 검증 승인.
+- 구 Preview6ac38c...의 로그인 코드가 Production 강제이동함을 발견. account.js loginCallback()으로 현재origin 콜백, member-access.js safeNext 내부화면 allowlist/민감인증 및 중첩redirect 제거. Production 코드 미배포. public-signup의 기존 가입 canonical/reset-password 정책은 이 기존회원 로그인 변경에서 유지.
+- 수정 Preview https://6ac3902b819dc1d15d0461d2--bohumso.netlify.app 배포. Supabase에는 이 호스트/account.html?next=** 하나만 추가 완료. 기존 4주소와 Site URL 동일, 총5. 구주소6ac38c...는 추가안함. outputs/로그인주소-추가완료.png/변경전후txt.
+- 지정된 테스트계정 실제 Production logout→Google login→Production account PASS, Preview Google→동일Preview callback→phone-verification PASS. Production/Preview 각각 외부next→동일호스트account PASS. before/after 자동비교도 SiteURL동일/기존4유지/정확히1추가/중복0 PASS. 실제SMS발송/OTP입력아직없음, Firebase키미등록 상태 유지.
+- 로컬 로그인origin 4브라우저케이스/회원gate2/earlysignup10 PASS. docs/login-return-verification.md. 현재 Preview 기존계정 로그인되어 SMS허용번호 입력단계까지 접근 가능. 사용자 새이메일 요구 금지.
+- CUA noticesPreview tab17 수정Preview, redirectTab19 주소5개, prodLoginTest21 운영account, firebaseTab18 프로젝트생성 미동의, otpSqlTab11 readonly확인. 후속때rewriteDocumentation.
+- 다음: 실제SMS_ALLOWLIST 번호 테스트는 전체과제에서 이어갈 작업. 이번주소추가작업은 회원/예약/정책 변경금지 조건 준수. Firebase OWNER 키입력 여전히대기. 실제수신검증 전 Production완료주장금지.
+
+
 ## 최신 인수인계 — 2026-10-05 037~038 운영 적용 완료, 실제 FCM 연결 준비
 - 이 항목이 아래 '037 승인 대기' 등 과거 상태보다 우선. 사용자 attachments/62dc315d-fbe6-4253-96a6-4d23841431ea/붙여넣은 텍스트.txt에서 037~038 실행 및 실제 SMS/Push 검증 승인. 이전 fedb0add 파일과 동일.
 - 037~038 한 transaction 운영 적용 완료. outputs/OTP-알림-운영검증.txt, OTP-알림-DB-적용완료.png 증거. Auth3/회원1/예약0 유지, 5개 private table RLS 및 클라이언트 직접조회 차단, RPC/trigger 확인. phone_enabled=false 유지.

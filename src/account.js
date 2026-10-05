@@ -14,7 +14,7 @@ import {renderPartnerApplication} from "./partner-onboarding.js";
 import {renderWorkflow as renderRequests,renderPaymentResult} from "./workflow.js";
 import {renderDirectory} from "./directory.js";
 import {renderProfileEditor} from "./profile-editor.js";
-import {memberService,memberState,MEMBER,pendingAction,rememberAction,clearAction,authURL,accountReturn} from "./member-access.js";
+import {memberService,memberState,MEMBER,pendingAction,rememberAction,clearAction,authURL,accountReturn,loginCallback} from "./member-access.js";
 const $=id=>document.getElementById(id);const mode=document.body.dataset.accountPage;
 let client,config,user,membership;
 const status={pending:"심사 대기",approved:"승인 완료",rejected:"반려",suspended:"활동 정지",withdrawn:"신청 철회"};
@@ -65,10 +65,10 @@ async function start(){
  }
  if(mode==="signup"){if(config.earlyAccess)await renderPublicSignup({client,config,root:$("accountContent"),message});else await renderBetaSignup({client,root:$("accountContent"),message});return;}
  if(mode==="login"){
- const oauth=provider=>action($("accountContent"),async()=>{if(location.origin!==PRODUCTION_ORIGIN){location.assign(PRODUCTION_ORIGIN+authURL(pendingAction(),"login"));return;}const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:PRODUCTION_ORIGIN+accountReturn()}});fail(error);});
+ const oauth=provider=>action($("accountContent"),async()=>{const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:loginCallback()}});fail(error);});
  for(const p of socialProviders)$(p.id+"Login")?.addEventListener("click",()=>oauth(p.provider));
  $("loginForm").noValidate=true;onForm("loginForm",async d=>{const email=$("loginForm").elements.email,pw=$("loginForm").elements.password;if(!email.value.trim()||!email.checkValidity())return flagInvalid(email,'이메일을 확인해 주세요.');if(!pw.value)return flagInvalid(pw,'비밀번호를 입력해 주세요.');const {error}=await client.auth.signInWithPassword({email:String(d.get("email")).trim(),password:String(d.get("password"))});if(error){message("이메일·비밀번호 또는 이메일 인증 상태를 확인해 주세요.");return}location.assign(accountReturn());});
- $("resendConfirmation")?.addEventListener("click",()=>action($("loginForm"),async()=>{const email=$("loginForm").elements.email;if(!email.reportValidity())return;const {error}=await client.auth.resend({type:"signup",email:email.value.trim(),options:{emailRedirectTo:PRODUCTION_ORIGIN+accountReturn()}});fail(error);message("인증 대기 중인 이메일이면 안내 메일이 발송됩니다.");}));
+ $("resendConfirmation")?.addEventListener("click",()=>action($("loginForm"),async()=>{const email=$("loginForm").elements.email;if(!email.reportValidity())return;const {error}=await client.auth.resend({type:"signup",email:email.value.trim(),options:{emailRedirectTo:loginCallback()}});fail(error);message("인증 대기 중인 이메일이면 안내 메일이 발송됩니다.");}));
  $("resetPassword").onclick=()=>action($("loginForm"),async()=>{const email=$("loginForm").elements.email;if(!email.reportValidity())return;const {error}=await client.auth.resetPasswordForEmail(email.value,{redirectTo:PRODUCTION_ORIGIN+"/reset-password.html"});fail(error);message("등록된 이메일이면 비밀번호 재설정 안내가 발송됩니다.");});return;
  }
  const auth=await memberState(client);if(auth.state===MEMBER.anonymous){const next=rememberAction(location.pathname+location.search+location.hash);location.replace(authURL(next,'login'));return;}user=auth.user;membership=auth.membership;
