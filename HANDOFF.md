@@ -1,5 +1,9 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 최신 — 모바일 홈 줄바꿈 보완 운영 반영
+- 사용자 모바일 스크린샷의 확인하세요/청구/알려드려요 단어 중간 줄바꿈 해결. public/simple-ux.css에서 홈 상황 제목·보조문구·카드 텍스트에 keep-all/normal 및 balance/pretty만 적용. 메인h1/문구/아이콘/라우팅 유지.
+- 320/360/390/412/430/768/1440px 단어 분리0/가로넘침0 PASS. artifacts/home-wrap-report.json, home-wrap-390.png. main0c85822 운영반영 및 공개CSS해시일치 PASS(home-wrap-production.json).
+
 ## 최신 — 홈 상황 카드 문구 운영 배포 완료
 - 사용자 2026-10-05 명시적 “배포해” 승인 후 main에1452022 반영. https://bohumso.netlify.app/ HTTP200, 메인 h1 유지/상황 영역 안내/6개카드 문구 실제 공개반영 PASS (artifacts/home-copy-production.json).
 - 운영기준86f1d24에서 홈 한 파일 public/index.html만 cherry-pick. 이번 배포는 CSS/아이콘/라우팅/다른페이지 변경 없음. 이전 지도줌이동 fb4e4c4는 이번 운영배포에서 제외, 작업브랜치에 보존.
