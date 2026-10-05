@@ -56,7 +56,7 @@ async function start(){
  $("accountNotice").textContent="운영: "+config.operator+" · 문의: "+config.contact;
  if(mode==="directory"){$("accountContent").hidden=false;await renderDirectory(client);return;}
  if(mode==="signup"||mode==="login"){
- betaCode();const next=pendingAction();const state=await memberState(client);if(state.state!==MEMBER.anonymous&&(mode==='login'||state.membership?.member||betaCode())){location.replace(betaCode()?betaReturn():accountReturn(next));return;}
+ if(config.closedBeta)betaCode();const next=pendingAction();const state=await memberState(client);if(state.state!==MEMBER.anonymous&&(mode==='login'||state.membership?.member||(config.closedBeta&&betaCode()))){location.replace(config.closedBeta&&betaCode()?betaReturn():accountReturn(next));return;}
  $("accountContent").hidden=false;document.querySelectorAll('a[href]').forEach(a=>{const path=new URL(a.href,location.href).pathname;if(/^\/(signup|login)(\.html)?$/.test(path))a.href=authURL(next,path.includes('login')?'login':'signup');});
  void configureSocialAuth(config,mode);
  }

@@ -1,5 +1,5 @@
 import pg from 'pg';import {readFile} from 'node:fs/promises';
-const names=['030_public_early_access.sql','031_expert_early_access.sql','032_expert_verification.sql','033_reservation_integrity.sql','034_organization_roster.sql','035_operational_metrics.sql'];
+const names=['030_public_early_access.sql','031_expert_early_access.sql','032_expert_verification.sql','033_reservation_integrity.sql','034_organization_roster.sql','035_operational_metrics.sql','036_member_rights_admin.sql'];
 if(!process.env.DATABASE_URL){console.error('DATABASE_URL is not configured. No migration executed.');process.exit(1);}
 const client=new pg.Client({connectionString:process.env.DATABASE_URL,ssl:{rejectUnauthorized:true},connectionTimeoutMillis:15000});
 try{await client.connect();await client.query('begin');await client.query("select pg_advisory_xact_lock(hashtextextended('bohumso-early-migration',1))");

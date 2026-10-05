@@ -29,6 +29,24 @@ begin
  return new;
 end$$;
 create trigger expert_roster_match before insert or update on private.expert_profiles for each row execute function private.match_expert_roster();
+alter function public.early_expert_review(text,jsonb) rename to early_expert_review_before_roster;
+revoke all on function public.early_expert_review_before_roster(text,jsonb) from public,anon,authenticated;
+create function public.early_expert_review(operation text,payload jsonb default '{}') returns jsonb language plpgsql security definer set search_path='' as $$
+declare p private.expert_profiles;r private.organization_roster;
+begin
+ if not private.is_admin() then raise exception 'admin_required';end if;
+ if operation='approve' then
+ select * into p from private.expert_profiles where user_id=(payload->>'user_id')::uuid for update;
+ if p.organization_status='VERIFIED' and p.roster_id is not null then
+ select * into r from private.organization_roster where id=p.roster_id;
+ if r.expires_at<=now() and p.registration_status<>'VERIFIED' then raise exception 'verification_expired';end if;
+ if r.expires_at>now() then payload:=payload||jsonb_build_object('organization',r.organization,'registration_reference','roster:'||r.id::text);end if;
+ end if;
+ end if;
+ return public.early_expert_review_before_roster(operation,payload);
+end$$;
+revoke all on function public.early_expert_review(text,jsonb) from public,anon,authenticated;
+grant execute on function public.early_expert_review(text,jsonb) to authenticated;
 alter function private.planner_eligible(uuid) rename to planner_eligible_before_roster;
 revoke all on function private.planner_eligible_before_roster(uuid) from public,anon,authenticated;
 create function private.planner_eligible(subject uuid) returns boolean language sql stable security definer set search_path='' as $$select private.planner_eligible_before_roster(subject) and exists(select 1 from private.expert_profiles p where p.user_id=subject and (p.registration_status='VERIFIED' or p.roster_id is null or exists(select 1 from private.organization_roster r where r.id=p.roster_id and r.expires_at>now())))$$;

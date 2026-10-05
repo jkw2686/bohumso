@@ -1,5 +1,19 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 최신 검토본 — 2026-10-05 운영 SQL 실행 직전
+- 사용자 44절 통합 지침 구현·검토 배포 완료. 최신 Preview `6ac35c0205839c68e1f2eb0b`(개발 검증 전용), Production `1e7f989 / 6ac1c36080854700096ea90c` 유지. 아래 이전 030~035 표기는 **030~036**으로 대체.
+- 74/74 전체 DB/gateway + 기존 브라우저5묶음 PASS. 이후 SQL/설정7/7, 공개가입 브라우저10시나리오(이메일 새 탭 포함), 지도320/390/844/1440 PASS, 서버 엄격 타입 PASS. 실제 가입/Android GPS/운영 예약10+10/실제 2연결 동시예약 미검증.
+- 036 문의·권리 요청 관리자 답변/감사 추가. 초기 관리자 쿼리 별칭 충돌 수정 후 PASS. 회사 명단만으로 소속 확인한 사람은 별도 가짜 등록번호 없이 심사 가능, 만료된 명단 승인/노출 차단 검증.
+- 이메일 가입 동의 intent를 24시간 localStorage로 보존하여 인증메일 새 탭에서도 자동 회원완료. 등록 이메일과 인증된 이메일이 일치할 때만 사용하고 완료/만료 시 삭제. 실제 메일 전송/수신 성공으로 주장 금지.
+- Preview 502 원인: Windows node_modules junction이 Netlify nft 패키지에 포함되고 의존성이 누락됨. `scripts/build.mjs`에서 자체 포함 ESM 번들+import검사, `netlify.toml` functions=`artifacts/deploy-functions`. 수정 배포 API 401/503 정상. 새 최종 Preview는 마지막 외부 점검 중/보고서 참조.
+- 실제 Supabase Storage 읽기감사: buckets0/policies0, early_applied=false. 문서 서버키 없으므로 EXPERT_DOCUMENTS_ENABLED=false 유지. SMTP custom ON/smtp.gmail.com:465/발신명 우리곁에 보험소/최소60초. 가입메일 일반 제목·본문 저장완료, 실제수신 미검증. 비밀값은 읽지 않음.
+- `outputs/공개가입-운영적용-검토.sql`: 030~036 + 비공개 bucket 보호 + migration history를 단일 transaction으로 준비. CUA tab6 Supabase SQL Editor에 전체 입력해두었지만 **Run 미실행**. 브라우저 도구의 보안 접근 확장 작업은 실행시점 확인이 필요하여, 구체적 변경 검토자료를 준비한 뒤 사용자에게 최종 1회 확인 필요. 공개가입·동의/전문가/예약·권리RPC 적용, 결제/SMS/문서/위치 및 정책 승인은 OFF 그대로. SQL 수행 전 현재 에디터 내용을 검토본과 확인할 것.
+- 스크린샷: outputs/운영DB-적용전-검토.png, 공개가입-메일-저장확인.png, 공개가입-검토배포-화면.png. 최종 답변에서 실제 변경/승인 화면 proof를 embed해야 함.
+- DB 적용 확인을 받으면 실행→schema/RLS/API실검증→Production flags만 대상별 설정→검증 branch main병합/한번배포→읽기전용운영회귀. 코드가 새로운 SQL을 요구하므로 DB 미적용 상태에서 Production플래그를 켜지 말 것. 일반가입 자체는 POLICIES_APPROVED와 분리; 예약은 정책/실전화 게이트 유지.
+- actual Google/메일 인증과 신규 자격증명 입력은 사용자가 직접; 타인 기존계정 테스트용 재사용 금지. 운영자 사실·보유정책·실SMS·서버비밀·실운영거점/테스트참여자는 OWNER_INPUTS.md에 일괄 정리.
+- 문서: docs/early-access-audit.md에 요청한 19행 보고 표(기존/수정/횟수/성공/실패/재검증/Production), PATENT_REVIEW_REQUIRED.md. 신규 프리뷰가 고객안내 링크가 되지 않게 구분.
+- 무관한 deno.lock 미추적 보존. node_modules junction 변경 금지. 작업 branch codex/bohumso-oct03. 강제 push 금지.
+
 ## 최신 상태 — 2026-10-05 실운영 준비 통합지침 (진행 중)
 - 최신 사용자 요청: attachments/77653b20-a4b7-46e2-b743-8fa6454cc599/붙여넣은 텍스트.txt (44절). 일반 고객 공개 가입, Production 단일 인증 URL, 전문가 간편 프로필/확인, 예약/보안/법적 초안/모니터링. 이전 초대제·Preview OAuth 추가 요청 폐기. 작업을 계속하며 가능한 모든 구현/테스트/배포 준비 후 필요한 입력만 일괄 요청.
 - Production 기준 1e7f989/6ac1c36080854700096ea90c 유지. 새 030~035 운영 SQL 아직 미실행. Netlify SERVICE_STAGE=EARLY_ACCESS, PUBLIC_SIGNUP_ENABLED=true, CUSTOMER_SIGNUP_ENABLED=true, EXPERT_APPLICATIONS_ENABLED=true, INVITE_ONLY=false, EXPERT_AUTO_PUBLISH=false는 **deploy-preview만** 저장 완료. Production 값 미설정. Supabase 서비스키/DB 연결 비밀 없음. 문서/실SMS/실결제/실시간위치 OFF, POLICIES_APPROVED=false.

@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import {setupUrgent} from './urgent-fixture.mjs';import {ids} from './commerce-fixture.mjs';
-async function setup(){const f=await setupUrgent(false);await f.db.exec('reset role');for(const name of ['026_release_controls.sql','027_private_rls.sql','030_public_early_access.sql','031_expert_early_access.sql','032_expert_verification.sql','033_reservation_integrity.sql','034_organization_roster.sql','035_operational_metrics.sql'])await f.db.exec(await readFile('supabase/'+name,'utf8'));return f;}
+async function setup(){const f=await setupUrgent(false);await f.db.exec('reset role');for(const name of ['026_release_controls.sql','027_private_rls.sql','030_public_early_access.sql','031_expert_early_access.sql','032_expert_verification.sql','033_reservation_integrity.sql','034_organization_roster.sql','035_operational_metrics.sql','036_member_rights_admin.sql'])await f.db.exec(await readFile('supabase/'+name,'utf8'));return f;}
 test('public signup works independently of policy/phone/invite; no consent overwrite or resurrection',async()=>{const f=await setup();try{
  const fresh='40000000-0000-4000-8000-000000000001';await f.db.query('insert into auth.users(id,email_confirmed_at) values($1,now())',[fresh]);await f.login(fresh);
  await assert.rejects(f.rpc('complete_membership',[false,true,true,false]),/consent_required/);
@@ -56,9 +56,20 @@ test('ten isolated expert and office reservation round trips; duplicate/cross-cu
 
 test('verified roster matches only authenticated contact; expiry blocks publication; metrics reject arbitrary payload',async()=>{const f=await setup();try{
  await f.db.exec("alter table auth.users add column email text;update auth.users set email='fixture@company.example' where id='"+ids.customer+"'");await f.login(ids.admin);
- await f.rpc('expert_roster_command',['add',{organization:'가상 회사',email:'fixture@company.example',expires_at:new Date(Date.now()+86400000).toISOString(),reason:'가상 소속 명단 테스트'}]);await f.login(ids.customer);
+ const roster=await f.rpc('expert_roster_command',['add',{organization:'가상 회사',email:'fixture@company.example',expires_at:new Date(Date.now()+86400000).toISOString(),reason:'가상 소속 명단 테스트'}]);await f.login(ids.customer);
  const profile=(await f.rpc('expert_profile_command',['save',{display_name:'가상 설계사',primary_area:'경기 분당',secondary_areas:[],specialties:['claim'],weekdays:[1,2,3,4,5],start_hour:9,end_hour:18,consent:true}])).profile;
  assert.equal(profile.organization_status,'VERIFIED');assert.equal(profile.status,'VERIFICATION_PENDING');assert.equal(profile.map_visible,false);
+ await f.db.exec('reset role');await f.db.query('update auth.users set phone=$1 where id=$2',['+821000000002',ids.customer]);await f.login(ids.admin);
+ await f.rpc('early_expert_review',['approve',{user_id:ids.customer,reason:'회사 명단 원본 확인 테스트'}]);assert.equal((await f.rpc('planner_catalog',['',''])).planners.length,1);
+ await f.rpc('expert_roster_command',['revoke',{id:roster.id}]);assert.equal((await f.rpc('planner_catalog',['',''])).planners.length,0);await assert.rejects(f.rpc('early_expert_review',['approve',{user_id:ids.customer,reason:'만료 명단으로 승인 불가'}]),/verification_expired/);await f.login(ids.customer);
  await assert.rejects(f.rpc('expert_roster_command',['list']),/admin_required/);await assert.rejects(f.rpc('record_operational_event',['phone:01012345678']),/invalid_event/);await f.rpc('record_operational_event',['signup_started']);await assert.rejects(f.rpc('operational_metrics'),/admin_required/);
  await f.login(ids.admin);const counters=await f.rpc('operational_metrics');assert.equal(counters[0].total,1);assert.deepEqual(Object.keys(counters[0]).sort(),['event','hour','total']);
+ }finally{await f.db.close();}});
+
+test('rights inbox isolates members and admin responses preserve audit and original records',async()=>{const f=await setup();try{
+ await f.login(ids.customer);await f.rpc('member_rights',['DELETE',{detail:'테스트 자료 삭제 요청'}]);const mine=(await f.rpc('member_rights',['list'])).requests;assert.equal(mine.length,1);
+ await assert.rejects(f.rpc('admin_member_rights',['list']),/admin_required/);await f.login(ids.other);assert.equal((await f.rpc('member_rights',['list'])).requests.length,0);
+ await f.login(ids.admin);const inbox=await f.rpc('admin_member_rights',['list']);assert.equal(inbox.length,1);await assert.rejects(f.rpc('admin_member_rights',['respond',{id:mine[0].id,status:'COMPLETED',response:'완료'}]),/invalid_response/);
+ await f.rpc('admin_member_rights',['respond',{id:mine[0].id,status:'IN_PROGRESS',response:'보관 근거와 처리 범위를 확인 중입니다.'}]);await f.login(ids.customer);assert.equal((await f.rpc('member_rights',['list'])).requests[0].status,'IN_PROGRESS');assert.equal((await f.rpc('my_membership')).member,true);
+ await f.db.exec('reset role');assert.equal((await f.db.query('select count(*)::integer n from private.member_rights_events')).rows[0].n,1);
  }finally{await f.db.close();}});

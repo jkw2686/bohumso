@@ -35,7 +35,7 @@ begin
 end$$;
 create function public.early_expert_documents() returns jsonb language sql stable security definer set search_path='' as $$select coalesce(jsonb_agg(to_jsonb(d)-'object_path'),'[]') from private.verification_documents d where user_id=auth.uid()$$;
 create function public.early_expert_review(operation text,payload jsonb default '{}') returns jsonb language plpgsql security definer set search_path='' as $$
-declare subject uuid; p private.expert_profiles;decision text;doc_kind text;reason text;area private.service_areas; phone text;
+declare subject uuid; p private.expert_profiles;decision text;doc_kind text;reason text;area private.service_areas; phone text;reference text;
 begin
  if not private.is_admin() then raise exception 'admin_required';end if;
  if operation='list' then return (select coalesce(jsonb_agg(to_jsonb(e)||jsonb_build_object('documents',(select coalesce(jsonb_agg(to_jsonb(d)-'object_path'),'[]') from private.verification_documents d where d.user_id=e.user_id),'phoneVerified',exists(select 1 from auth.users where id=e.user_id and phone_confirmed_at is not null)) order by e.updated_at desc),'[]') from private.expert_profiles e);end if;
@@ -54,8 +54,10 @@ begin
  if phone is null then raise exception 'phone_verification_required';end if;
  if exists(select 1 from private.account_lifecycle where user_id=subject and status<>'ACTIVE') then raise exception 'account_inactive';end if;
  select * into area from private.service_areas where id=p.primary_area;
- if length(trim(coalesce(payload->>'organization','')))<2 or length(trim(coalesce(payload->>'registration_reference','')))<2 then raise exception 'evidence_required';end if;
- insert into public.partner_applications(user_id,full_name,profession,organization,region,credential_reference,status,reviewed_by,reviewed_at) values(subject,p.display_name,'planner',payload->>'organization',p.primary_area,payload->>'registration_reference','approved',auth.uid(),now()) on conflict(user_id) do update set full_name=excluded.full_name,profession='planner',organization=excluded.organization,region=excluded.region,credential_reference=excluded.credential_reference,status='approved',reviewed_by=auth.uid(),reviewed_at=now();
+ reference:=nullif(trim(payload->>'registration_reference'),'');
+ if reference is null and p.organization_status='VERIFIED' then select 'appointment:'||id::text into reference from private.verification_documents where user_id=subject and kind='appointment' and not deleting;end if;
+ if length(trim(coalesce(payload->>'organization','')))<2 or length(coalesce(reference,''))<2 then raise exception 'evidence_required';end if;
+ insert into public.partner_applications(user_id,full_name,profession,organization,region,credential_reference,status,reviewed_by,reviewed_at) values(subject,p.display_name,'planner',payload->>'organization',p.primary_area,reference,'approved',auth.uid(),now()) on conflict(user_id) do update set full_name=excluded.full_name,profession='planner',organization=excluded.organization,region=excluded.region,credential_reference=excluded.credential_reference,status='approved',reviewed_by=auth.uid(),reviewed_at=now();
  insert into private.planner_directory(user_id,specialties,hours,latitude,longitude,phone,verified_by,verified_at,evidence,is_sample,available) values(subject,p.specialties,p.start_hour||':00–'||p.end_hour||':00',area.latitude,area.longitude,case when phone like '+82%' then '0'||substr(phone,4) when phone like '82%' then '0'||substr(phone,3) else phone end,auth.uid(),now(),reason,false,true) on conflict(user_id) do update set specialties=excluded.specialties,hours=excluded.hours,latitude=excluded.latitude,longitude=excluded.longitude,phone=excluded.phone,verified_by=auth.uid(),verified_at=now(),evidence=reason,is_sample=false,available=true;
  update private.expert_profiles set status='APPROVED',map_visible=true,updated_at=now() where user_id=subject;
  elsif operation='suspend' then update private.expert_profiles set status='SUSPENDED',map_visible=false,updated_at=now() where user_id=subject;
