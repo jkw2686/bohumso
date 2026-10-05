@@ -1,3 +1,10 @@
+## 최신 완료 — 2026-10-05 대표자 관리자 권한 운영 적용·공개 배포
+- 사용자 실행직전 답변 “적용하고 배포” 수신 후 040+041 단일 트랜잭션 운영 적용 완료. 대표자 jkw2686@gmail.com, 관리자1개, owner_review_installed=true.
+- Production commit d851d02, Netlify deploy 6ac3a7596c1c1d0008116c0e ready, 22:34 KST. 관리자 https://bohumso.netlify.app/admin 실제 대표자 로그인/관리자 계정 관리 펼침 확인.
+- 운영 검증 PASS: 대표자 접근, 비관리자 심사·예약·계정관리 거절, 익명·직접권한쓰기 차단. 기존 다른 Auth 계정은 가입미완료라 예약은 membership_required로 차단(첫 검사 예상admin_required를 이 유효 차단까지 반영해 재검사). 실제 다른 회원 로그인 E2E로 보고 금지.
+- 실제 전문가 상태는 PROFILE_COMPLETE_VERIFICATION_REQUIRED/전화확인 필요. 이 작업에서 임의 승인·자료/전화 확인 생략 안함. 대표자만 본인 심사 예외, 다른관리자는 차단. 관리자 추가/해제는 대표자만 가능, 원본계정/예약보존.
+- outputs/admin-access-live.png 및 admin-access-verified.png, admin-access-before.json, admin-access-verification.sql 증거. 롤백 파일 supabase/rollback_owner_self_review.sql.
+- 이전 “승인 대기” 기록은 아래 과거 상태이며 해소됨. SMS/FCM 통합변경 배포 안함.
 ## 최신 작업 — 2026-10-05 대표자 관리자 권한 (운영 실행 확인 대기)
 - 현재 운영 관리자 실제 조회: jkw2686@gmail.com 1개, 이메일 확인 완료. /admin의 자기심사 금지는 관리자 접근 거절과 별개.
 - 사용자 지시: 대표자 본인 처리 가능하게, 현재 지정 이메일만 관리자 접근, 나중에 추가 가능.
@@ -228,4 +235,5 @@
 - 다음은 PHASE 0 감사 → P0 보안/Secret·결제 OFF·정책·Auth/이메일·OTP·위치·예약/RLS → P1 → P2. Google 보존, Kakao 준비중, 결제 OFF, RLS 비활성/운영자료 삭제/유료계약/임의 SMS 금지. 각 Phase 표 보고, NEXT ACTION 하나. 아직 새 스프린트 실행하지 않음.
 - 새 첨부의 계속 진행 지시는 앞서 거절된 운영 DB Run query에 대한 구체적 승인 응답으로 간주하지 않았음. 기존 승인 질문 답변 대기.
 - Supabase 편집기 입력은 파일 최종 변경보다 오래된 버전일 수 있음. 승인 후 반드시 024 파일을 다시 읽어 입력하고 실행. 025/024 이력은 private.schema_migrations(name)에 기록.
+
 
