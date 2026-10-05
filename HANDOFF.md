@@ -1,3 +1,11 @@
+## 최신 SMS 조사 — 2026-10-05 23:12 KST
+- SOLAPI 로그인 완료. 실제 등록 발신번호와 Netlify SOLAPI_SENDER_NUMBER 일치, 발신번호 활성/인증됨. 발신=수신 때문이라는 근거 없음.
+- SOLAPI API 키 최근사용처에서 22:49 요청 IP와 기존 허용 /32 불일치 확인. 사용자 명시 승인 후 해당 실제 서버 IP /32 한 개만 추가. 기존 /32 보존 확인. outputs/sms-ip-added.png 증거(저장소 밖).
+- 사용자 승인에 따라 Preview tab29에서 기존 입력 번호로 SMS 한 번 재요청. 23:12:05 요청도 sms_unavailable. 최신 SOLAPI 요청 IP가 방금 추가한 IP와 다시 달라짐 확인. SMS 수신/OTP 인증 성공 아님.
+- Netlify 기본 Functions outbound IP는 변동됨(공식 Private Connectivity 문서). 관측 IP 하나씩 추가로는 안정적 해결 불가. 고정 IP는 별도 구조/Enterprise add-on 등 검토 필요.
+- 현재 SOLAPI 허용 목록은 기존+추가 2개 /32만. 모든 IP 허용은 적용하지 않음. 별도 async 질문: 모든 IP 허용(키/Secret 인증 유지, 유출 시 외부 IP 사용위험) 후 허용번호 1회 재요청 vs IP제한 유지/고정IP 검토. 응답 기다리는 중. 기존 좁은 승인으로 광범위 허용하지 말 것.
+- 전화 인증은 승인된 Preview 6ac3902b819dc1d15d0461d2 /phone-verification.html. OTP 사용자가 직접 입력. Production phone=false, 자격/프로필/회원 데이터 미변경. 실패 후 추가 재발송 안함.
+- CUA browser2: solapiCheckTab31 IP관리 dialog, phoneVerifyTab29, smsSqlTab30. 세 탭 handoff 유지. 키/전화/OTP 출력 금지. work/diagnose-solapi-readonly.mjs masked 검사 보완 완료; 마스킹된 키로 API 인증 진단 금지.
 ## 현재 작업 — 2026-10-05 실제 휴대전화 OTP 발송 실패 조사
 - 사용자 자격확인간주·전화인증 요청. 자격은 근거 없이 VERIFIED 조작 안함. 기존 owner 예외는 적용됨, phone 필요.
 - CUA browser2 tab29 승인된 Preview 6ac3902b819dc1d15d0461d2 /phone-verification.html 열림. 사용자가 허용번호 입력·발송 시도했고 sms_unavailable 표시. 에이전트 추가발송 안함, OTP 미수신/미검증.
