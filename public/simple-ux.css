@@ -26,3 +26,8 @@ body.has-bottom-nav .simple-home{padding-bottom:24px}body.has-bottom-nav.custome
 
 .member-header .expert-header-entry{border:1px solid var(--brand);color:var(--brand);background:var(--card)}.expert-mobile-entry{display:none}
 @media(max-width:767px){.member-header .expert-header-entry{display:none}.expert-mobile-entry{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 16px;height:52px;background:var(--brand-soft);font-size:12px}.expert-mobile-entry a{display:flex;align-items:center;min-height:44px;color:var(--brand);font-weight:700;white-space:nowrap}}
+
+/* Keep Korean words intact in the home situation section. */
+.home-page #situations,.home-page #situations + .intro-caption,.home-page .situation-copy strong,.home-page .situation-copy small{word-break:keep-all;overflow-wrap:normal}
+.home-page #situations{text-wrap:balance}
+.home-page #situations + .intro-caption,.home-page .situation-copy small{text-wrap:pretty}
