@@ -1,3 +1,6 @@
+import {startNotifications} from './notifications.js';
+import {PushProvider} from './push-provider.js';
+void startNotifications().catch(()=>{});
 import {renderEarlyExpertAdmin} from './early-expert-admin.js';
 import {renderPublicSignup,finishPublicSignup,PRODUCTION_ORIGIN} from './public-signup.js';
 import {betaCode,betaReturn,renderBetaSignup,renderBetaFinish,renderBetaAdmin,renderBetaExpert} from './beta.js';
@@ -28,7 +31,7 @@ function line(parent,text,tag="p"){const el=document.createElement(tag);el.textC
 async function refreshMembership(){const {data,error}=await client.rpc("my_membership");fail(error);membership=data;}
 async function renderAccount(){
  if(config.earlyAccess&&!membership.member&&await finishPublicSignup(client))await refreshMembership();
- if(config.closedBeta&&betaCode()&&!membership.beta){const done=await renderBetaFinish({client,root:$("accountContent"),onDone:async()=>{await refreshMembership();if(membership.beta_role==='EXPERT'){location.assign('/partner.html?next='+encodeURIComponent(pendingAction()));return;}await renderAccount();}});if(done){$("identity").textContent=user.email;document.querySelector(".account-links").hidden=true;$("membershipForm").hidden=true;$("logout").onclick=async()=>{await client.auth.signOut();location.assign('/login.html');};return;}}
+ if(config.closedBeta&&betaCode()&&!membership.beta){const done=await renderBetaFinish({client,root:$("accountContent"),onDone:async()=>{await refreshMembership();if(membership.beta_role==='EXPERT'){location.assign('/partner.html?next='+encodeURIComponent(pendingAction()));return;}await renderAccount();}});if(done){$("identity").textContent=user.email;document.querySelector(".account-links").hidden=true;$("membershipForm").hidden=true;$("logout").onclick=async()=>{await new PushProvider(client,config).unregisterDevice();await client.auth.signOut();location.assign('/login.html');};return;}}
  const next=pendingAction();if(membership.member&&next!='/account.html'){clearAction();location.replace(next);return;}
  try{if(membership.member&&sessionStorage.getItem("bohumso-signup-intent")==="expert"){sessionStorage.removeItem("bohumso-signup-intent");location.replace("/partner.html");return;}}catch{}
  document.querySelector('h1').textContent=membership.state==='EXPERT_APPROVED'?'보험소 PRO':['EXPERT_PENDING','EXPERT_VERIFICATION_PENDING'].includes(membership.state)?'전문가 심사 중':membership.state==='EXPERT_DRAFT'?'보험소 PRO · 프로필':membership.member?'내 계정':'가입 마무리';
@@ -38,7 +41,7 @@ async function renderAccount(){
  $("membershipForm").hidden=membership.member||config.signupEnabled===false;if(!membership.member&&config.signupEnabled===false){$("membershipState").textContent="초대코드를 확인하면 베타 가입을 마칠 수 있어요.";if(!document.getElementById("accountInviteLink")){const a=document.createElement("a");a.id="accountInviteLink";a.className="btn";a.href="/signup.html?next="+encodeURIComponent(pendingAction());a.textContent="초대코드 입력";$("membershipState").after(a);}}$("adminLink").hidden=!membership.admin;
  bindMembershipConsent($("membershipForm"));$("membershipForm").noValidate=true;
  onForm("membershipForm",async d=>{for(const name of ['age','terms','privacy'])if(!checked(d,name))return flagInvalid($("membershipForm").elements[name],'필수약관에 동의해 주세요.');const {error}=await client.rpc("complete_membership",{terms_accepted:checked(d,"terms"),privacy_accepted:checked(d,"privacy"),age_accepted:checked(d,"age"),marketing_accepted:checked(d,"marketing")});fail(error);message("가입이 완료됐어요. 선택하신 도움을 이어서 확인할게요.");await refreshMembership();await renderAccount();});
- $("logout").onclick=async()=>{const {error}=await client.auth.signOut();if(error){message("로그아웃하지 못했습니다. 다시 시도해 주세요.");return}location.replace("/login.html");};
+ $("logout").onclick=async()=>{await new PushProvider(client,config).unregisterDevice();const {error}=await client.auth.signOut();if(error){message("로그아웃하지 못했습니다. 다시 시도해 주세요.");return}location.replace("/login.html");};
 }
 async function renderPartner(){return renderPartnerApplication({client,user,membership,message,action,config});}
 async function renderAdmin(){if(!membership.admin)throw {message:'admin_required'};await (config.earlyAccess?renderEarlyExpertAdmin:renderExpertAdmin)({client,host:$('applications'),message});}

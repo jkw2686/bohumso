@@ -1,3 +1,5 @@
+import {startNotifications} from './notifications.js';
+void startNotifications().catch(()=>{});
 // Recover canonical email callbacks that arrive at the site root. Never log the code.
 if(location.pathname==='/'&&new URLSearchParams(location.search).has('code'))location.replace('/account.html'+location.search+location.hash);
 import {trackEvent,memberService,memberState,requireActiveMember,MEMBER,authURL} from './member-access.js';

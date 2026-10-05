@@ -29,7 +29,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
   const rows=snapshot.bookings.filter(b=>(!filterData?.get('state')||b.state===filterData.get('state'))&&(!filterData?.get('purpose')||b.purpose===filterData.get('purpose'))&&(!filterData?.get('region')||b.region.includes(filterData.get('region')))&&(!filterData?.get('planner')||(b.planner_name||'').includes(filterData.get('planner')))&&(!filterData?.get('date')||new Date(b.preferred_at).toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'})===filterData.get('date')));
   if(!rows.length){const empty=el('section',undefined,host);empty.className='card';el('h2','아직 예약이 없어요.',empty);el('p','편한 시간을 선택하면 보험소가 도와드릴게요.',empty);}
   for(const row of rows){
-   const card=el('article',undefined,host);card.className='card booking-card';card.dataset.bookingId=row.id;
+   const card=el('article',undefined,host);card.className='card booking-card';card.dataset.bookingId=row.id;card.id='reservation-'+row.id;
    if(row.is_beta)el('small','비공개 베타 예약',card);
    el('h2',purposes[row.purpose]+' · '+row.region,card);el('p',workspace==='customer'&&row.allocation_mode==='office'?({requested:row.planner_id?'전문가가 확인하고 있어요.':'보험소에서 담당자를 배정하고 있어요.',scheduled:'예약이 확정됐어요.',completed:'상담이 잘 마무리됐어요.'}[row.state]||states[row.state]):states[row.state],card).className='request-status';if(workspace==='customer')renderTimeline(card,row);
    el('p',kst(row.preferred_at)+' KST · '+({phone:'통화 요청',nearby:'바로 만나기 (장소·일정 협의)',scheduled:'시간 예약'}[row.method]),card);
@@ -79,7 +79,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
  const form=document.getElementById('requestForm');
  if(form){
   let blocked=false;
-  if(config?.closedBeta!==undefined){const release=await rpc('release_status',{});const copy=!(release.policiesApproved||(release.closedBeta&&release.betaMember))?'약관 검토 후 예약을 열 예정이에요.':!release.betaAllowed?'초대된 베타 참여자만 예약할 수 있어요.':!release.phoneVerified?'예약을 이어가려면 휴대전화 번호를 확인해 주세요.':'';if(copy){blocked=true;form.hidden=false;el('h2',copy,form);if((release.policiesApproved||(release.closedBeta&&release.betaMember))&&release.betaAllowed&&!release.phoneVerified)link(form,release.betaMember?'운영자 전화 확인 안내':'휴대전화 확인',release.betaMember?'/account.html':'/phone-verification.html?next='+encodeURIComponent(location.pathname+location.search));else link(form,'지도 둘러보기','/map.html');}}
+  if(config?.closedBeta!==undefined){const release=await rpc('release_status',{});const copy=!(release.policiesApproved||(release.closedBeta&&release.betaMember))?'약관 검토 후 예약을 열 예정이에요.':!release.betaAllowed?'초대된 베타 참여자만 예약할 수 있어요.':'';if(copy){blocked=true;form.hidden=false;el('h2',copy,form);if((release.policiesApproved||(release.closedBeta&&release.betaMember))&&release.betaAllowed&&!release.phoneVerified)link(form,release.betaMember?'운영자 전화 확인 안내':'휴대전화 확인',release.betaMember?'/account.html':'/phone-verification.html?next='+encodeURIComponent(location.pathname+location.search));else link(form,'지도 둘러보기','/map.html');}}
   if(!blocked){
   const params=new URLSearchParams(location.search),officeId=params.get('office'),plannerId=params.get('planner');let selectedOffice=null,selectedPlanner=null;
   if(officeId){const offices=await rpc('office_catalog',{});selectedOffice=offices.find(o=>o.id===officeId&&o.status==='active');if(!selectedOffice){form.hidden=false;el('h2','개설 예정 보험소는 아직 예약할 수 없어요.',form);link(form,'지도 둘러보기','/map.html');}else renderOfficeRequest({form,command,refresh,message,availability:config.earlyAccess?((office_id,planner_id,day,consultation_method)=>rpc('reservation_slots',{office_id,planner_id,day,consultation_method})):null,selectedOffice});}
@@ -89,6 +89,8 @@ export async function renderWorkflow({client,membership,workspace,message,action
  }
  document.getElementById('workflowFilters')?.addEventListener('submit',e=>{e.preventDefault();action(content,refresh);});
  await refresh();
+ const selectedReservation=new URLSearchParams(location.search).get('reservation');if(selectedReservation&&/^[a-f0-9-]{36}$/.test(selectedReservation))document.getElementById('reservation-'+selectedReservation)?.scrollIntoView({block:'center'});
+ window.addEventListener('bohumso-reservation-updated',()=>refresh().catch(()=>{}));
  const poll=setInterval(()=>{if(!document.hidden&&!document.activeElement?.closest('form'))refresh().catch(()=>{});},30000);window.addEventListener('pagehide',()=>clearInterval(poll),{once:true});
  // Read-only access to requests created before the new workflow. No old completion or payment actions.
  const legacy=document.getElementById('legacyRequests');if(legacy){try{const rows=await rpc('list_service_requests',{workspace});for(const r of rows)el('p','이전 예약 · '+r.region+' · '+kst(r.requested_at)+' KST · '+r.status,legacy);}catch{el('p','이전 예약을 불러오지 못했습니다.',legacy);}}

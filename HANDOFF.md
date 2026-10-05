@@ -1,5 +1,38 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 최신 인수인계 — 2026-10-05 037~038 운영 적용 완료, 실제 FCM 연결 준비
+- 이 항목이 아래 '037 승인 대기' 등 과거 상태보다 우선. 사용자 attachments/62dc315d-fbe6-4253-96a6-4d23841431ea/붙여넣은 텍스트.txt에서 037~038 실행 및 실제 SMS/Push 검증 승인. 이전 fedb0add 파일과 동일.
+- 037~038 한 transaction 운영 적용 완료. outputs/OTP-알림-운영검증.txt, OTP-알림-DB-적용완료.png 증거. Auth3/회원1/예약0 유지, 5개 private table RLS 및 클라이언트 직접조회 차단, RPC/trigger 확인. phone_enabled=false 유지.
+- Production 코드 아직 1d9799b / deploy6ac3759012706d0008f41df7. 최신 Preview6ac383310c316ea4a59e2d95 (FCM 추가 전). 운영 badge 실제 설정 OFF/HTTP 비노출 확인 outputs/Netlify-배지-비활성.png.
+- FCM HTTPv1 실제 전송코드, Firebase12.19 SDK, SW, 서버 사용자 토큰 바인딩, private delivery 큐, 로그아웃 차단 구현 중. 039_fcm_push_delivery.sql 로컬 두 번 실행 PASS; 운영 적용 완료. outputs/FCM-운영검증.txt 및 FCM-DB-적용완료.png 증거. auth3/member1/reservations0, queue RLS/일반회원 권한차단 확인. 039는 기존 회원/예약 삭제 없이 신규 private queue 및 service_role 전용 RPC, 중간 예약상태를 잘못 확정 알림으로 보내는 trigger 수정.
+- Firebase console 현재 로그인된 jkw2686 계정 프로젝트 없음, 생성 화면 약관 동의 필요해 미진행. FIREBASE_WEB_CONFIG/FIREBASE_VAPID_PUBLIC_KEY/FIREBASE_SERVICE_ACCOUNT_JSON 모두 미등록. 키 채팅 요청 금지. 사용자 요구대로 나머지 구현 끝낸 후 OWNER 직접 단계 일괄 안내.
+- SOLAPI 키/Secret/발신번호/allowlist 이미 있음. 재요청 금지. 실제 문자 아직 발송/수신검증 안함; 로그인된 허용번호 기기에서 OTP 직접입력 필요. 실제 Push 수신도 UNTESTED. 모의 PASS를 실수신 PASS로 보고하지 말 것.
+- node_modules 외부 junction 수정 금지. Firebase 별도 work/fcm-runtime/node_modules에 설치, 로컬 build시 BOHUMSO_BUILD_NODE_PATH 지정. package-lock은 npm --package-lock-only로 갱신. remote 정상 npm ci는 Firebase 직접설치.
+- 이 진행분 branch codex/bohumso-oct03 인수인계 커밋 대상. deno.lock 무관 제외. main push는 Production 자동배포: 실제 수신 검증 전 금지.
+- 최신 Preview https://6ac38c607156b5a3fb2a6986--bohumso.netlify.app 완료. inApp=true/push=false/reservationSms=false/phonePreview=true, 알림함·SW·SDK200, 미인증 OTP/device/dispatch 모두401, badge 미노출. artifacts/fcm-preview-http.json.
+- 롤백037~039 로컬 실행 및 예약 행 수 보존 PASS. rollback_solapi_phone_otp.sql은 백업 함수 사이 SQL 세미콜론/줄바꿈 보정 완료.
+- 검증: 최신 build PASS, 회귀브라우저6묶음 모두PASS(artifacts/otp-regression-report.json), OTP/알림/FCM/설정8개 PASS, 모바일20화면+알림함PASS, push-browser(권한시점/거절/전경binding/오프라인로그아웃)PASS. 실제 SMS/Push는 UNTESTED.
+- 관리자만 /api/push/dispatch로 이미 생성된 대기 예약알림 전송 가능(알림함 대기 알림 전송). 임의대상/본문 입력 없음. scheduled push-dispatch 매분, flag false면 아무 전송 없음. 토큰갱신24시간, 이전바인딩차단, UNKNOWN자동재발송 금지.
+- Firebase tab18 프로젝트 생성 미동의 화면: bohumso 이름입력, 개발자프로그램선택해제. 키 미등록. 신규 자격증명입력은 OWNER 직접처리. 문서 docs/notifications-mobile-result.md.
+- Supabase Redirect URLs는 Production4개만. tab19 Add URL에 최신 Preview account.html?next=** 입력했으나 Save 안누름. 사용자에게 해당주소추가 action-time확인 질문 및 Firebase직접설정요청 일괄 발송. 응답 전 Save 금지. outputs/미리보기-로그인-허용주소.png. 승인 후 Save→Google로그인→기존 SMS_ALLOWLIST 번호 실제수신테스트. OTP 입력은 사용자 직접. 기존키 재요청/새이메일 요구금지.
+- 다음: 사용자승인/키등록 후 실제SMS·FCM검증, 실제기기 고객/전문가/거점 수신, 결과표 갱신, 조건충족 후 Production. 실제수신 전에 완료/PASS/Production 새배포 주장금지.
+
+
+## 최신 인수인계 — 2026-10-05 SOLAPI OTP 구현·Preview, 037 승인 대기
+- Production 기존 수정본 1d9799b / 6ac3759012706d0008f41df7 ready (19:01 KST), HTTP17/17 PASS. 사용자 추가 이메일 없음/일단 진행 지시 반영. 신규 실가입 미검증, 문서/SMS/결제 OFF. 아래 “Production 미배포” 과거 기록 대체.
+- 최신 사용자 파일 attachments/6a8f68be-c1d5-47d7-91ef-f11248829a9c/붙여넣은 텍스트.txt: SOLAPI 실제 OTP. “배포 전에 작업하고 배포” 요청은 이미 위 배포 완료 후 도착해 사실대로 안내. 새 OTP Production 배포 아직 없음.
+- SOLAPI 키·Secret Secret 속성/등록 확인(값 미출력). SMS_ALLOWLIST/SENDER/PROVIDER/mode 등록, Production false/test 유지. 키 재요청 금지. Preview의 mode=test만 허용번호 실발송 경로 사용. Production enabled=true는 모든 실제 CASE 검증 후 사용자 별도 승인 필요.
+- 신규 037_solapi_phone_otp.sql: 단일transaction/idempotent 신규 private.phone_contacts/phone_otp_challenges, RLS/서비스키 RPC 전용, 기존 연락처확인 함수8개 전환, legacy예약write2권한회수. Auth phone identity 변경안함. 기존 데이터/컬럼 삭제 없음. 037 미실행.
+- 운영 backup outputs/private-backup-2026-10-05/otp-before.json (함수84/회원1/동의/카운트). Git·배포 금지. rollback_solapi_phone_otp.sql 현재 운영8함수 원본복원+신규RPC회수, 신규데이터보존. 검토 docs/solapi-otp-result.md.
+- CUA otpSqlTab tab11 Supabase SQL Editor에 037 입력/처음부분 확인, Run 안누름. outputs/OTP-DB-실행전.png. 실행시점확인 async 질문 발송(037만 승인/아직실행안함), 응답 전 실행 금지. 브라우저 도구 security-sensitive access 확인 규칙에 따른 030–036과 별개 신규승인. 실제 SMS는 승인된 Allowlist만, 사용자 SMS OTP 입력 필요.
+- Preview 6ac37b4b025d76783184f804 ready, https://6ac37b4b025d76783184f804--bohumso.netlify.app. publicconfig phone=true; 미로그인401/외부Origin403/키노출없음 PASS. 이전6ac37a1457df527372b0b63d는 runtime CONTEXT env 누락으로false; context.deploy.context 사용으로 수정. 이 Preview 이후 legacy전문가UI/mock 정리 변경 추가되어 다음 배포시 포함 필요.
+- 구현 _shared/phone-otp.mjs + phone-otp.mts: HMAC SOLAPI, HMAC OTP hash, CSPRNG6자리, 3분/30초/10분3회/5회오류, IP10회, allowlist. 실패도 quota집계, retry자동발송안함. my_phone_status에는 상태만. 수정 phone UI 30초타이머, OTP 후 URL 날짜시간복귀. 긴급요청draft session2h, 서버 verifiedphone만전달, 제3자동의.
+- 로컬 OTP/설정6 tests PASS, 엄격 서버타입 PASS, 보험소/전문가 예약복귀브라우저2 PASS. 최초DB status default누락 수정; browser nativefetch this 바인딩오류 수정; readonlybackup원본84개 저장.
+- 전체verify DB81중80pass/1실패: release-controls f.slot이야간시간선택, 명시future10KST fixture수정후PASS. Connected browser PASS. expert browser oldAuthOTP mock불일치 수정후PASS. 나머지UI 회귀실행중 session52495; ../continue-otp-verification.mjs, artifacts/otp-regression-report.json 결과확인 필요. 최종 build + preview 재배포 필요(변경분있음).
+- 다음: async037승인응답 확인, 승인시 현재SQL동일확인→Run→17+OTP운영읽기검증/기존profile보존. Preview 실제문자테스트는 회원세션/OTP 사용자협조 필요. 다른이메일요구말것. 미검증SMS성공/수신시간/Google·EmailE2E 허위PASS금지. Production활성화요청은검증뒤.
+- 무관한 deno.lock 미추적 유지. main은1d9799b, 현branch codex/bohumso-oct03. 현재OTP변경을main으로push하면자동운영배포되므로검증·승인전branch에만push.
+
+
 ## 최신 인수인계 — 2026-10-05 운영 DB 승인 적용 완료, 실사용 검증 대기
 - 최종 검토 alias 배포 6ac371610c316e38929e2d96 ready. https://early-access-review--bohumso.netlify.app/signup.html. 실제 문서서버 검사5/5 PASS: DBconfig/docflag true, 무로그인401/위조401/외부Origin403/익명serviceRPC401. outputs/비공개문서-서버연결검증.json. user 새 계정 가입·메일인증 질문 pending; signupReviewTab15 열린 입력 전 화면(markHandoff). 사용자 응답 전에 새 비밀번호/약관 대신 입력·동의 금지. 추가 Production 배포 아직없음.
 - 사용자 10개 조건을 포함해 030–036 운영 DB 및 후속 공개 배포 명시 승인. **모든 실제 테스트 통과 후 Production** 조건 유지. DB는 적용 완료, Production 웹은 기존 6ac1c36080854700096ea90c 유지. 추가 승인 다시 요구하지 말 것.

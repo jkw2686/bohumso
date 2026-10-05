@@ -15,7 +15,8 @@
     "test:connected": "node --test tests/connected-flow.test.mjs && node tests/connected-flow-browser.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.57.0"
+    "@supabase/supabase-js": "^2.57.0",
+    "firebase": "12.19.0"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
