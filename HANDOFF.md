@@ -1,5 +1,15 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 최신 상태 — 2026-10-05 클로즈드 베타 E2E (작업 중)
+- 신규 028_beta_membership.sql/029_beta_experts.sql: 해시 초대·원자적 소진·버전 동의·관리자 베타 전화 확인·역할 분리·전문가 검토/지역중심 지도·베타 예약 구분/슬롯 잠금 구현. 운영 SQL 미적용, private.beta_gateway 및 Netlify BETA_GATEWAY_SECRET 미설정. 011 운영 적용 금지.
+- beta-join.mts 서버가 실제 로그인·Origin·동의 버전 확인 후 Netlify context.ip/UA 기록. private gateway secret은 아직 생성하지 않음. 공개가입·실결제·실SMS·서류·실시간 위치 OFF 유지.
+- src/beta.js 및 account/member/workflow/urgent/map: 초대 가입/PKCE 복귀/기존 로그인·메일 재발송/베타 전문가·관리자 화면. public beta 약관/개인정보 문서 추가. 테스트계정 ADMIN_TESTER는 관리자 권한 없음.
+- 검증: 통합 verify 67개+기본 브라우저 5개 PASS. 추가 gateway 테스트 PASS. UI Google/email PKCE·로그인·가입동의·관리자 초대·전문가 신청 승인·320/390/1440 PASS(인증 모의). 5회 예약은 PGlite 로컬 시계 fixture이며 실제 Supabase 검증 아님. 마지막 슬롯 권한/보험소 배정 테스트 실행 중.
+- 실제 운영 읽기점검: auth 3/확인2, 승인전문가0, allowlist0, private36/36 RLS, 028미적용. 익명 관리자/결제/서류/webhook 차단·config 비밀 미노출 5 PASS. 실제 Desktop GPS 재시도는 접속지역 대략값으로 복귀, Android 미실행.
+- Supabase 가입메일 제목/본문 베타 문구 저장 완료. outputs/베타-가입메일-저장확인.png. 실제 발송·수신은 미검증.
+- 다음: 변경 테스트 확인→Preview 1회→실제 UI 확인. 운영 schema/새 비밀 연결 및 동의한 고객2+전문가1 실계정/Android 검증 필요사항 마지막에 한 번 정리. Production 이번 턴 아직 배포 안 함(기존 6ac1c36080854700096ea90c).
+- 무관 deno.lock 제외, node_modules 외부 junction 수정 금지. 출력 artifacts는 outputs 링크. 브라우저 SQL Monaco 전체선택 후 fill. 변경은 codex/bohumso-oct03 분기에만 저장, main push는 Production 배포이므로 보류.
+
 ## 최신 자율진행 상태 — 2026-10-04 (이전 NEXT ACTION 중단 지침 폐기)
 - 사용자 최신 지침: 질문/다음 행동 제시 후 중단하지 않음. 독립 작업 계속, 미확정 사실은 OWNER_INPUTS.md에 누적. 비용·운영 Secret 입력·파괴적 migration·법적 최종결정·일반 공개 전환만 별도 승인. 개인정보 수집 확대 및 실결제/SMS 활성화 안 함.
 - 사용자 추가 우선순위: 카카오 공유 문구를 메인 카피로 통일. public/index.html 제목/description/OG/Twitter 정리, 36f6379를 먼저 origin/main 반영. 공식 캐시 도구는 카카오 로그인 필요: https://developers.kakao.com/tool/debugger/sharing . 비밀번호/OTP 입력·메시지 발송 안 함.

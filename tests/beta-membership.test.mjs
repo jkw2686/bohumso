@@ -1,0 +1,16 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import {setupUrgent} from './urgent-fixture.mjs';import {ids} from './commerce-fixture.mjs';
+import {betaFixture} from './beta-fixture.mjs';
+test('beta: invite hashing, limits, existing login, consent provenance and no privilege escalation',async()=>{const f=await betaFixture();try{
+ const invite=await f.invite('ADMIN_TESTER');assert.equal(invite.code.length,64);await f.login(ids.other);await assert.rejects(f.admin('create',{}),/admin_required/);await assert.rejects(f.rpc('beta_join',[invite.code,'2026-10-05-beta-v1','2026-10-05-beta-v1',true]),/trusted_gateway_required/);
+ const member=await f.join(ids.customer,invite.code);assert.equal(member.beta,true);assert.equal(member.admin,false);assert.equal(member.state,'BETA_MEMBER');assert.equal((await f.join(ids.customer,invite.code)).beta,true);await assert.rejects(f.join(ids.other,invite.code),/invalid_invite/);
+ await f.login(ids.admin);const d=await f.admin('dashboard');assert.equal(d.used,1);assert.equal(d.joined,1);assert.ok(!JSON.stringify(d).includes(invite.code));await f.db.exec('reset role');const c=(await f.db.query('select * from private.beta_consents')).rows[0];assert.equal(c.ip_address,'192.0.2.1');assert.equal(c.user_agent,'beta-test');assert.ok(c.accepted_at);
+ await f.login(ids.customer);assert.equal((await f.rpc('release_status')).policiesApproved,false);await assert.rejects(f.db.query('select * from private.beta_consents'),/permission denied/);await assert.rejects(f.db.query('select * from private.beta_gateway'),/permission denied/);
+ }finally{await f.db.close();}});
+test('beta: revoked, expired, wrong email, phone restriction and outside-beta access fail closed',async()=>{const f=await betaFixture();try{
+ const denied=await f.invite('CUSTOMER',{email:'other@example.test'});await assert.rejects(f.join(ids.customer,denied.code),/invalid_invite/);
+ const revoked=await f.invite();await f.admin('revoke',{id:revoked.id});await assert.rejects(f.join(ids.customer,revoked.code),/invalid_invite/);
+ const expired=await f.invite();await f.db.exec('reset role');await f.db.query("update private.beta_invites set expires_at=now()-interval '1 minute' where id=$1",[expired.id]);await f.login(null,'anon');assert.equal((await f.rpc('beta_invite_check',[expired.code])).valid,false);
+ const good=await f.invite('CUSTOMER',{email:ids.customer+'@example.test',phone:'01012345678'});await f.db.exec('reset role');await f.db.query('update auth.users set phone_confirmed_at=null where id=$1',[ids.customer]);await f.join(ids.customer,good.code);assert.equal((await f.rpc('release_status')).bookingAllowed,false);
+ await f.login(ids.admin);await assert.rejects(f.admin('verify_phone',{userId:ids.customer,phone:'01099999999',checked:true}),/invalid_phone/);await f.admin('verify_phone',{userId:ids.customer,phone:'01012345678',checked:true});await f.login(ids.customer);assert.equal((await f.rpc('release_status')).bookingAllowed,true);
+ await f.db.exec('reset role;update private.release_controls set closed_beta=false');await f.login(ids.customer);assert.equal((await f.rpc('release_status')).bookingAllowed,false);assert.equal((await f.rpc('release_status')).phoneVerified,false);
+ }finally{await f.db.close();}});

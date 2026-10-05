@@ -15,6 +15,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
   snapshot=await rpc('consultation_workspace',{workspace});host.replaceChildren();const summary=document.getElementById('workflowSummary');summary.replaceChildren();
   if(['partner','admin'].includes(workspace)&&config?.paymentsEnabled!==false){const ads=el('section',undefined,summary);await renderAds({client,workspace,host:ads,message,action});}
   if(workspace==='admin'){
+   if(config?.betaInvitesEnabled)link(summary,'베타 초대·전화 확인·심사','/admin.html#betaInvites');
    const counts={};snapshot.bookings.forEach(b=>counts[b.state]=(counts[b.state]||0)+1);
    const metrics=await rpc('consultation_metrics',{});el('p','오늘 방문 세션 '+metrics.visit_sessions+' · 오늘 요청 '+metrics.today_requests+' · 활성 설계사 '+metrics.active_planners+' · 신규 설계사 '+metrics.new_planners,summary);el('p','방문은 익명 세션 기준이며 사람 수와 다를 수 있습니다. 집계 설정이 꺼져 있으면 수집하지 않습니다. 테스트 승인 합계 '+won(metrics.test_paid_won)+' (실매출 아님)',summary);
    const performance=el('details',undefined,summary);el('summary','설계사별 상담 현황 (참고용)',performance);for(const p of metrics.planner_summary)el('p',(p.sample?'[샘플] ':'')+p.name+' · 완료 '+p.completed+'건',performance);
@@ -28,6 +29,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
   if(!rows.length){const empty=el('section',undefined,host);empty.className='card';el('h2','아직 예약이 없어요.',empty);el('p','편한 시간을 선택하면 보험소가 도와드릴게요.',empty);}
   for(const row of rows){
    const card=el('article',undefined,host);card.className='card booking-card';card.dataset.bookingId=row.id;
+   if(row.is_beta)el('small','비공개 베타 예약',card);
    el('h2',purposes[row.purpose]+' · '+row.region,card);el('p',workspace==='customer'&&row.allocation_mode==='office'?({requested:row.planner_id?'전문가가 확인하고 있어요.':'보험소에서 담당자를 배정하고 있어요.',scheduled:'예약이 확정됐어요.',completed:'상담이 잘 마무리됐어요.'}[row.state]||states[row.state]):states[row.state],card).className='request-status';if(workspace==='customer')renderTimeline(card,row);
    el('p',kst(row.preferred_at)+' KST · '+({phone:'통화 요청',nearby:'바로 만나기 (장소·일정 협의)',scheduled:'시간 예약'}[row.method]),card);
    el('p',row.planner_name?(row.planner_sample?'테스트 설계사: ':'담당 전문가: ')+row.planner_name+' · '+row.organization:(row.allocation_mode==='office'?'보험소 담당자 배정 대기':'전문가 모집 중'),card);
@@ -37,7 +39,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
    if(row.needs_admin_review)el('p','고객 완료 확인 미응답 · 관리자 확인 대상',card);
    if(workspace==='admin'&&row.allocation_mode==='office'&&['requested','coordinating'].includes(row.state)){
     const assign=el('form',undefined,card),catalog=await rpc('planner_catalog',{area:'',wanted:row.purpose});
-    select(assign,'담당자','target',{'':'담당자를 선택하세요',...Object.fromEntries(catalog.planners.filter(p=>p.available&&!p.is_sample).map(p=>[p.id,p.name+' · '+p.region]))}).required=true;
+    select(assign,'담당자','target',{'':'담당자를 선택하세요',...Object.fromEntries(catalog.planners.filter(p=>p.available&&!p.is_sample&&!!p.beta===!!row.is_beta).map(p=>[p.id,p.name+' · '+p.region]))}).required=true;
     el('button','담당자 배정',assign).type='submit';submit(assign,d=>command('office_assign',{id:row.id,revision:row.revision,planner_id:d.get('target')}));
    }
    if(row.journey_state&&row.state==='scheduled'&&row.method!=='phone'){const journey=el('p',row.journey_state==='arrived'?'전문가가 도착했어요.':'전문가가 이동을 시작했어요.',card);journey.className='journey-status';const icon=el('span',undefined,journey);icon.innerHTML=window.uiIcon?.(row.journey_state==='arrived'?'pin':'car')||'';el('small','전문가가 직접 알린 상태예요.',card);}
@@ -75,7 +77,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
  const form=document.getElementById('requestForm');
  if(form){
   let blocked=false;
-  if(config?.closedBeta!==undefined){const release=await rpc('release_status',{});const copy=!release.policiesApproved?'약관 검토 후 예약을 열 예정이에요.':!release.betaAllowed?'초대된 베타 참여자만 예약할 수 있어요.':!release.phoneVerified?'예약을 이어가려면 휴대전화 번호를 확인해 주세요.':'';if(copy){blocked=true;form.hidden=false;el('h2',copy,form);if(release.policiesApproved&&release.betaAllowed&&!release.phoneVerified)link(form,'휴대전화 확인','/phone-verification.html?next='+encodeURIComponent(location.pathname+location.search));else link(form,'지도 둘러보기','/map.html');}}
+  if(config?.closedBeta!==undefined){const release=await rpc('release_status',{});const copy=!(release.policiesApproved||(release.closedBeta&&release.betaMember))?'약관 검토 후 예약을 열 예정이에요.':!release.betaAllowed?'초대된 베타 참여자만 예약할 수 있어요.':!release.phoneVerified?'예약을 이어가려면 휴대전화 번호를 확인해 주세요.':'';if(copy){blocked=true;form.hidden=false;el('h2',copy,form);if((release.policiesApproved||(release.closedBeta&&release.betaMember))&&release.betaAllowed&&!release.phoneVerified)link(form,release.betaMember?'운영자 전화 확인 안내':'휴대전화 확인',release.betaMember?'/account.html':'/phone-verification.html?next='+encodeURIComponent(location.pathname+location.search));else link(form,'지도 둘러보기','/map.html');}}
   if(!blocked){
   const params=new URLSearchParams(location.search),officeId=params.get('office'),plannerId=params.get('planner');let selectedOffice=null,selectedPlanner=null;
   if(officeId){const offices=await rpc('office_catalog',{});selectedOffice=offices.find(o=>o.id===officeId&&o.status==='active');if(!selectedOffice){form.hidden=false;el('h2','개설 예정 보험소는 아직 예약할 수 없어요.',form);link(form,'지도 둘러보기','/map.html');}else renderOfficeRequest({form,command,refresh,message,selectedOffice});}

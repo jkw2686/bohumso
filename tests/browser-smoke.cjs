@@ -1,85 +1,32 @@
-const {chromium,expect}=require(process.argv[2]||'@playwright/test');
-const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
+const {chromium,expect}=require('@playwright/test');
+const fs=require('node:fs'),http=require('node:http'),path=require('node:path');
 (async()=>{
- const root=path.resolve('public');
- const server=http.createServer((req,res)=>{
-  const p=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname);
-  if(!p.startsWith(root+path.sep)){res.writeHead(404).end();return}
-  try{const data=fs.readFileSync(p);res.setHeader('Content-Type',p.endsWith('.js')?'text/javascript':p.endsWith('.css')?'text/css':'text/html');res.end(data)}catch{res.writeHead(404).end()}
- });
- await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
- try{
-  const base='http://127.0.0.1:'+server.address().port;
-  browser=await chromium.launch({channel:'msedge',headless:true});
-  const page=await browser.newPage({viewport:{width:360,height:800}});
-  const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  let enabled=false,providers=false,settingsFailure=false;const requests=[];
-  await page.route('**/api/config',r=>r.fulfill({json:enabled?{enabled:true,naverLogin:providers,url:'https://test.supabase.co',key:'sb_publishable_test',operator:'Test',contact:'test@example.com'}:{enabled:false,message:'회원 서비스를 준비 중입니다.'}}));
-  await page.route('https://test.supabase.co/**',async route=>{
-   const req=route.request(),url=new URL(req.url());
-   if(url.pathname.endsWith('/settings')){await route.fulfill({status:settingsFailure?503:200,json:{external:{kakao:providers,google:providers,apple:providers,facebook:providers}}});return}
-   requests.push({url,body:req.postData()?req.postDataJSON():null});
-   if(url.pathname.endsWith('/signup'))await route.fulfill({json:{user:{id:'11111111-1111-4111-8111-111111111111',email:'test@example.com'},session:null}});
-   else if(url.pathname.endsWith('/recover'))await route.fulfill({json:{}});
-   else if(url.pathname.endsWith('/authorize'))await route.fulfill({contentType:'text/html',body:'<p>Mock OAuth provider</p>'});
-   else await route.fulfill({status:401,json:{message:'not logged in'}});
-  });
-  await page.goto(base+'/signup.html');
-  await expect(page.locator('#signupForm')).toBeHidden();
-  enabled=true;await page.goto(base+'/signup.html');
-  await expect(page.locator('#signupForm')).toBeVisible();
-  await expect(page.locator('#kakaoSignup')).toHaveText(/카카오.*준비\s?중/);
-  await expect(page.locator('#kakaoSignup')).toBeDisabled();
-  await expect(page.locator('#googleSignup')).toBeDisabled();
-  for(const id of ['naver','apple','facebook'])await expect(page.locator('#'+id+'Signup')).toHaveCount(0);
-  await page.locator('[name=email]').fill('test@example.com');
-  await page.locator('[name=password]').fill('test-password-1234');
-  await page.getByRole('button',{name:'인증 메일 받고 가입 시작'}).click();
-  await expect(page.locator('#accountMessage')).toContainText('동의');
-  await expect(page.locator('#signupPrivacy')).toBeFocused();
-  await expect(page.locator('#signupConsentHint')).toBeVisible();
-  expect(requests.filter(r=>r.url.pathname.endsWith('/signup'))).toHaveLength(0);
-  await page.locator('#signupPrivacy').check();
-  await page.getByRole('button',{name:'인증 메일 받고 가입 시작'}).click();
-  await expect(page.locator('#accountMessage')).toContainText('등록 가능한 이메일');
-  const signup=requests.find(r=>r.url.pathname.endsWith('/signup'));
-  expect(signup.body.email).toBe('test@example.com');
-  expect(signup.url.searchParams.get('redirect_to')).toBe(base+'/account.html');
-  await expect(page.locator('#kakaoSignup')).toBeDisabled();
-  await page.goto(base+'/login.html');
-  await expect(page.locator('#kakaoLogin')).toHaveText(/카카오.*준비\s?중/);
-  await page.locator('[name=email]').fill('test@example.com');
-  await page.locator('#resetPassword').click();
-  await expect(page.locator('#accountMessage')).toContainText('재설정 안내');
-  const recovery=requests.find(r=>r.url.pathname.endsWith('/recover'));
-  expect(recovery.url.searchParams.get('redirect_to')).toBe(base+'/reset-password.html');
-  await expect(page.locator('#kakaoLogin')).toBeDisabled();
-  settingsFailure=true;await page.goto(base+'/login.html');
-  await expect(page.locator('#googleLogin')).toHaveText('구글로 로그인');
-  await expect(page.locator('#retrySocialAuth')).toBeVisible();
-  await expect(page.locator('#googleLogin')).toBeEnabled();
-  await expect(page.locator('#loginForm')).toBeVisible();
-  settingsFailure=false;providers=true;
-  for(const mode of ['signup','login'])for(const provider of ['kakao','google']){
-   await page.goto(base+'/'+mode+'.html');
-   const button=page.locator('#'+provider+(mode==='signup'?'Signup':'Login'));
-   if(mode==='login'){for(const id of ['naver','apple','facebook'])await expect(page.locator('#'+id+'Login')).toHaveCount(0);await expect(page.locator('.social-auth button').first()).toHaveAttribute('id','googleLogin');}
-   if(provider==='kakao'){await expect(button).toBeDisabled();await expect(button).toHaveText(/카카오.*준비\s?중/);continue;}
-   await expect(button).toBeEnabled();
-   if(mode==='signup'){
-    const before=requests.length;await button.click();
-    await expect(page.locator('#accountMessage')).toContainText('동의');
-    expect(requests.length).toBe(before);await page.locator('#signupPrivacy').check();
-   }
-   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-   await button.click();await page.waitForURL('https://test.supabase.co/auth/v1/authorize**');
-   const auth=new URL(page.url());expect(auth.searchParams.get('provider')).toBe(provider==='naver'?'custom:naver':provider);
-   expect(auth.searchParams.get('redirect_to')).toBe(base+'/account.html');
-   expect(auth.searchParams.get('code_challenge')).toBeTruthy();
-  }
-  await page.goto(base+'/admin.html');await expect(page).toHaveURL(/login\.html\?next=/);
-  expect(new URL(page.url()).searchParams.get('next')).toBe('/admin.html');
-  expect(errors).toEqual([]);
-  console.log('PASS: signup consent, email/recovery redirects, disabled/unavailable providers, Kakao/Google PKCE redirects, 360px layout, anonymous admin blocked. Auth mocked; no email or external login.');
- }finally{if(browser)await browser.close();server.close();}
-})().catch(e=>{console.error(e);process.exitCode=1});
+ const {betaFixture}=await import('./beta-fixture.mjs');const {ids}=await import('./commerce-fixture.mjs');const f=await betaFixture();await f.db.exec('reset role');await f.db.exec(fs.readFileSync('supabase/029_beta_experts.sql','utf8'));await f.db.query('delete from public.member_consents where user_id=$1',[ids.other]);const invite=await f.invite('CUSTOMER',{maxUses:2});
+ const root=path.resolve('public');const server=http.createServer((req,res)=>{let pathname=new URL(req.url,'http://local').pathname;if(pathname==='/')pathname='/index.html';const file=path.resolve(root,'.'+pathname);if(!file.startsWith(root+path.sep))return res.writeHead(404).end();try{res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(file));}catch{res.writeHead(404).end();}});await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;let browser,queue=Promise.resolve();const serial=fn=>{const p=queue.then(fn);queue=p.catch(()=>{});return p;};const errors=[],calls=[];
+ const session=id=>{const exp=Math.floor(Date.now()/1000)+3600;return {access_token:Buffer.from('{"alg":"HS256"}').toString('base64url')+'.'+Buffer.from(JSON.stringify({sub:id,exp})).toString('base64url')+'.fixture',refresh_token:'fixture',expires_in:3600,expires_at:exp,token_type:'bearer',user:{id,email:(id===ids.other?'other':'customer')+'@example.test',aud:'authenticated'}};};
+ function actor(req){try{return JSON.parse(Buffer.from(req.headers().authorization.split(' ')[1].split('.')[1],'base64url')).sub;}catch{return null;}}
+ async function page(){const p=await browser.newPage({viewport:{width:390,height:844}});p.on('pageerror',e=>errors.push(e.message));await p.route('**/api/config',r=>r.fulfill({json:{enabled:true,signupEnabled:false,closedBeta:true,betaInvitesEnabled:true,phoneVerificationEnabled:false,paymentsEnabled:false,url:'https://test.supabase.co',key:'sb_publishable_fixture',operator:'test',contact:'test@example.test'}}));await p.route('**/api/approximate-location',r=>r.fulfill({json:{available:false}}));await p.route('**/api/beta/join',r=>serial(async()=>{try{const body=r.request().postDataJSON();if(body.ageAccepted!==true||body.termsVersion!=='2026-10-05-beta-v1')throw Error('consent_required');const data=await f.join(actor(r.request()),body.code);await r.fulfill({json:data});}catch(e){await r.fulfill({status:400,json:{error:e.message}});}}));
+ await p.route('https://test.supabase.co/**',r=>serial(async()=>{const req=r.request(),u=new URL(req.url()),body=req.postDataJSON()||{};calls.push({path:u.pathname,body,url:req.url()});try{
+ if(u.pathname.endsWith('/settings'))return r.fulfill({json:{external:{google:true,kakao:false}}});
+ if(u.pathname.endsWith('/authorize'))return r.fulfill({body:'Mock Google authorization'});
+ if(u.pathname.endsWith('/signup'))return r.fulfill({json:{user:{id:ids.other},session:null}});
+ if(u.pathname.endsWith('/resend')||u.pathname.endsWith('/recover')||u.pathname.endsWith('/logout'))return r.fulfill({json:{}});
+ if(u.pathname.endsWith('/token'))return r.fulfill({json:session(u.searchParams.get('grant_type')==='pkce'||body.email?.startsWith('other')?ids.other:body.email?.startsWith('admin')?ids.admin:body.email?.startsWith('planner')?ids.planner:ids.customer)});
+ const id=actor(req);if(u.pathname.endsWith('/user'))return r.fulfill(id?{json:session(id).user}:{status:401,json:{message:'not logged in'}});
+ await f.login(id,id?'authenticated':'anon');await r.fulfill({json:await f.rpc(u.pathname.split('/').pop(),Object.values(body))});
+ }catch(e){await r.fulfill({status:400,json:{message:e.message}});}}));await p.addInitScript(()=>{Object.defineProperty(navigator,'geolocation',{value:{getCurrentPosition:(_,fail)=>fail({code:1})},configurable:true});});return p;}
+ try{browser=await chromium.launch({channel:'msedge',headless:true});const p=await page(),next='/map.html?purpose=claim&situation=death';
+ await p.goto(base+'/signup.html?next='+encodeURIComponent(next));await expect(p.getByRole('button',{name:'Google로 계속하기',exact:true})).toBeVisible();await expect(p.getByRole('link',{name:'이메일로 로그인',exact:true})).toBeVisible();await expect(p.getByRole('button',{name:'카카오 로그인 · 준비중'})).toBeDisabled();
+ for(const width of [320,390,1440]){await p.setViewportSize({width,height:844});expect(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);await p.screenshot({path:'artifacts/beta-signup-'+width+'.png',fullPage:true});}
+ await p.getByLabel('초대코드',{exact:true}).fill('f'.repeat(64));await p.getByRole('button',{name:'초대코드로 베타 가입'}).click();await expect(p.locator('[role=alert]').filter({hasText:'초대 링크를 사용할 수 없습니다.'})).toBeVisible();await expect(p.locator('#inviteSignup')).toBeHidden();
+ await p.getByRole('link',{name:'이메일로 로그인'}).click();await p.locator('[name=email]').fill('customer@example.test');await p.locator('#resendConfirmation').click();await expect(p.locator('#accountMessage')).toContainText('안내 메일');await p.locator('#resetPassword').click();await expect(p.locator('#accountMessage')).toContainText('재설정 안내');await p.locator('[name=password]').fill('fixture-password');await p.getByRole('button',{name:'로그인',exact:true}).click();await expect(p).toHaveURL(/map.html\?purpose=claim&situation=death/);await p.reload();await p.goto(base+'/account.html?next=/account.html');await expect(p.locator('h1')).toHaveText('내 계정');await p.locator('#logout').click();await expect(p).toHaveURL(/login.html/);
+ const q=await page();await q.goto(base+'/signup.html?'+new URLSearchParams({invite:invite.code,next}));await expect(q.getByRole('heading',{name:'고객 베타 가입'})).toBeVisible();await q.getByLabel('이메일',{exact:true}).fill('other@example.test');await q.getByLabel('비밀번호 (8자 이상)').fill('fixture-password');await q.getByRole('button',{name:'인증 메일 받기'}).click();expect(calls.filter(c=>c.path.endsWith('/signup'))).toHaveLength(0);await q.locator('[name=consent]').check();await q.getByRole('button',{name:'인증 메일 받기'}).click();await expect(q.locator('#accountMessage')).toContainText('인증 메일');const signup=calls.find(c=>c.path.endsWith('/signup'));const redirect=new URL(new URL(signup.url).searchParams.get('redirect_to'));expect(redirect.searchParams.get('next')).toBe(next);expect(redirect.searchParams.get('invite')).toBe(invite.code);
+ redirect.searchParams.set('code','mock-email-confirmation');await q.goto(redirect.href);await expect(q.getByRole('heading',{name:'베타 가입 마무리'})).toBeVisible();expect(calls.some(c=>c.path.endsWith('/token')&&new URL(c.url).searchParams.get('grant_type')==='pkce')).toBe(true);for(const n of ['age','terms','privacy'])await q.locator('section.card [name='+n+']').check();await q.getByRole('button',{name:'동의하고 가입 완료',exact:true}).click();await expect(q).toHaveURL(/map.html\?purpose=claim&situation=death/);await q.goto(base+'/account.html?next=/account.html');await expect(q.locator('#membershipState')).toContainText('베타 가입 완료');await expect(q.locator('#membershipForm')).toBeHidden();
+ const google=await page();await google.goto(base+'/signup.html?next='+encodeURIComponent(next));await google.getByRole('button',{name:'Google로 계속하기',exact:true}).click();await expect(google).toHaveURL(/auth\/v1\/authorize/);const oauth=new URL(google.url());expect(oauth.searchParams.get('code_challenge')).toBeTruthy();expect(new URL(oauth.searchParams.get('redirect_to')).searchParams.get('next')).toBe(next);
+ const invited=await page();await invited.goto(base+'/signup.html?'+new URLSearchParams({invite:invite.code,next}));await invited.getByRole('button',{name:'Google로 베타 가입',exact:true}).click();await expect(invited).toHaveURL(/auth\/v1\/authorize/);expect(new URL(new URL(invited.url()).searchParams.get('redirect_to')).searchParams.get('invite')).toBe(invite.code);
+ const anon=await page();await anon.goto(base+'/admin.html');await expect(anon).toHaveURL(/login.html\?next=/);await expect(anon.locator('#logout')).toHaveCount(0);const admin=await page();await admin.goto(base+'/login.html?next=/admin.html');await admin.locator('[name=email]').fill('admin@example.test');await admin.locator('[name=password]').fill('fixture-password');await admin.getByRole('button',{name:'로그인',exact:true}).click();await expect(admin.locator('#betaInvites')).toBeVisible();await admin.getByLabel('초대할 분').selectOption('EXPERT');await admin.getByRole('button',{name:'초대 만들기',exact:true}).click();const invitation=await admin.getByLabel('초대링크 (지금 복사해 주세요)').inputValue();
+ const expert=await page();await expert.goto(invitation);await expert.getByRole('link',{name:'이메일로 로그인',exact:true}).click();await expert.locator('[name=email]').fill('planner@example.test');await expert.locator('[name=password]').fill('fixture-password');await expert.getByRole('button',{name:'로그인',exact:true}).click();await expect(expert.getByRole('heading',{name:'베타 가입 마무리'})).toBeVisible();for(const n of ['age','terms','privacy'])await expert.locator('section.card [name='+n+']').check();await expert.getByRole('button',{name:'동의하고 가입 완료',exact:true}).click();await expect(expert).toHaveURL(/partner.html/);await expert.getByLabel('이름',{exact:true}).fill('베타 전문가 UI');await expert.getByLabel('소속',{exact:true}).fill('비공개 테스트');await expert.getByLabel('보험금 청구',{exact:true}).check();await expert.getByLabel('상담 가능 시간',{exact:true}).fill('평일 09:00~18:00');await expert.locator('[name=pledge]').check();await expert.getByRole('button',{name:'기본정보 저장 · 다음'}).click();await expert.getByRole('button',{name:'변경',exact:true}).click();await expert.getByLabel('지역 검색',{exact:true}).fill('분당');await expert.getByRole('button',{name:'경기 분당',exact:true}).click();await expert.getByRole('button',{name:'이 지역으로 설정'}).click();await expert.getByRole('button',{name:'완료',exact:true}).click();
+ await admin.getByRole('button',{name:'현황 새로고침'}).click();const review=admin.locator('article').filter({has:admin.getByRole('heading',{name:'베타 전문가 UI · 전문가 심사'})});await review.getByLabel('검토 내용').fill('로컬 베타 검토');await review.getByRole('button',{name:'베타 지도 노출 승인'}).click();await expert.reload();await expect(expert.getByRole('heading',{name:'보험소 PRO · 베타'})).toBeVisible();await expect(expert.getByRole('link',{name:'새 예약 확인'})).toBeVisible();
+ expect(errors).toEqual([]);console.log('PASS beta UI: login continuity, resend/reset, invalid invite, email PKCE session/consent/return, Google PKCE intents, logout/reload, 320/390/1440 layout. Auth mocked; no external mail or real account creation.');
+ }finally{await browser?.close();server.close();await f.db.close();}
+})().catch(e=>{console.error(e);process.exit(1);});

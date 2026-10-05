@@ -1,3 +1,4 @@
+import {betaCode,betaReturn,renderBetaSignup,renderBetaFinish,renderBetaAdmin,renderBetaExpert} from './beta.js';
 import {renderPhoneVerification} from './phone-verification-ui.js';
 import {renderServiceArea,renderInstant,renderUrgentWorkspace} from './urgent.js';
 import './member-entry.js';
@@ -24,13 +25,14 @@ function fail(error){if(error)throw error;}
 function line(parent,text,tag="p"){const el=document.createElement(tag);el.textContent=text;parent.append(el);return el;}
 async function refreshMembership(){const {data,error}=await client.rpc("my_membership");fail(error);membership=data;}
 async function renderAccount(){
+ if(betaCode()&&!membership.beta){const done=await renderBetaFinish({client,root:$("accountContent"),onDone:async()=>{await refreshMembership();if(membership.beta_role==='EXPERT'){location.assign('/partner.html?next='+encodeURIComponent(pendingAction()));return;}await renderAccount();}});if(done){$("identity").textContent=user.email;document.querySelector(".account-links").hidden=true;$("membershipForm").hidden=true;$("logout").onclick=async()=>{await client.auth.signOut();location.assign('/login.html');};return;}}
  const next=pendingAction();if(membership.member&&next!='/account.html'){clearAction();location.replace(next);return;}
  try{if(membership.member&&sessionStorage.getItem("bohumso-signup-intent")==="expert"){sessionStorage.removeItem("bohumso-signup-intent");location.replace("/partner.html");return;}}catch{}
- document.querySelector('h1').textContent=membership.member?'내 계정':'가입 마무리';
+ document.querySelector('h1').textContent=membership.state==='EXPERT_APPROVED'?'보험소 PRO':membership.state==='EXPERT_PENDING'?'전문가 심사 중':membership.member?'내 계정':'가입 마무리';
  document.querySelector('.account-links').hidden=!membership.member;
  $("identity").textContent=user.email;$("operator").textContent=config.operator;$("privacyContact").textContent=config.contact;
- $("membershipState").textContent=membership.member?"회원 가입 완료":"이메일 확인 완료 · 가입 동의가 필요합니다.";
- $("membershipForm").hidden=membership.member||config.signupEnabled===false;if(!membership.member&&config.signupEnabled===false)$("membershipState").textContent="가입 완료는 약관 검토 후 가능합니다. 기존 계정 인증은 유지됩니다.";$("adminLink").hidden=!membership.admin;
+ $("membershipState").textContent=membership.member?(membership.beta?"베타 가입 완료 · "+(membership.phoneStatus==='UNVERIFIED'?'운영자 전화 확인 대기':'예약 이용 가능'):"회원 가입 완료"):"이메일 확인 완료 · 가입 동의가 필요합니다.";
+ $("membershipForm").hidden=membership.member||config.signupEnabled===false;if(!membership.member&&config.signupEnabled===false){$("membershipState").textContent="초대코드를 확인하면 베타 가입을 마칠 수 있어요.";if(!document.getElementById("accountInviteLink")){const a=document.createElement("a");a.id="accountInviteLink";a.className="btn";a.href="/signup.html?next="+encodeURIComponent(pendingAction());a.textContent="초대코드 입력";$("membershipState").after(a);}}$("adminLink").hidden=!membership.admin;
  bindMembershipConsent($("membershipForm"));$("membershipForm").noValidate=true;
  onForm("membershipForm",async d=>{for(const name of ['age','terms','privacy'])if(!checked(d,name))return flagInvalid($("membershipForm").elements[name],'필수약관에 동의해 주세요.');const {error}=await client.rpc("complete_membership",{terms_accepted:checked(d,"terms"),privacy_accepted:checked(d,"privacy"),age_accepted:checked(d,"age"),marketing_accepted:checked(d,"marketing")});fail(error);message("가입이 완료됐어요. 선택하신 도움을 이어서 확인할게요.");await refreshMembership();await renderAccount();});
  $("logout").onclick=async()=>{const {error}=await client.auth.signOut();if(error){message("로그아웃하지 못했습니다. 다시 시도해 주세요.");return}location.replace("/login.html");};
@@ -51,21 +53,16 @@ async function start(){
  $("accountNotice").textContent="운영: "+config.operator+" · 문의: "+config.contact;
  if(mode==="directory"){$("accountContent").hidden=false;await renderDirectory(client);return;}
  if(mode==="signup"||mode==="login"){
- const next=pendingAction();const state=await memberState(client);if(state.state!==MEMBER.anonymous){location.replace(accountReturn(next));return;}
+ betaCode();const next=pendingAction();const state=await memberState(client);if(state.state!==MEMBER.anonymous&&(mode==='login'||state.membership?.member||betaCode())){location.replace(betaCode()?betaReturn():accountReturn(next));return;}
  $("accountContent").hidden=false;document.querySelectorAll('a[href]').forEach(a=>{const path=new URL(a.href,location.href).pathname;if(/^\/(signup|login)(\.html)?$/.test(path))a.href=authURL(next,path.includes('login')?'login':'signup');});
  void configureSocialAuth(config,mode);
  }
- if(mode==="signup"){if(config.signupEnabled===false){$("accountContent").hidden=true;$("accountNotice").textContent="약관·개인정보 안내 검토 중입니다. 신규 가입은 검토 완료 후 열립니다. 기존 회원은 로그인할 수 있어요.";return;}
-  $("signupPrivacy").addEventListener("change",()=>{if($("signupPrivacy").checked){$("signupPrivacy").removeAttribute("aria-invalid");$("signupPrivacy").closest(".consent-row")?.classList.remove("invalid");$("signupConsentHint").hidden=true;message("");}});
-  const consent=()=>{if(!$("signupPrivacy").checked){toast("필수 항목에 동의해 주세요.");message("개인정보 안내에 동의해 주세요.");const field=$("signupPrivacy");field.setAttribute("aria-invalid","true");field.setAttribute("aria-describedby","signupConsentHint");field.closest(".consent-row")?.classList.add("invalid");$("signupConsentHint").hidden=false;field.scrollIntoView({block:"center",behavior:"smooth"});field.focus({preventScroll:true});return false;}try{sessionStorage.setItem("bohumso-signup-intent",document.querySelector("[name=signup_role]:checked")?.value||"customer");}catch{}return true;};
-  const oauth=provider=>action($("accountContent"),async()=>{if(!consent())return;const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+accountReturn()}});fail(error);});
-  for(const p of socialProviders)$(p.id+"Signup")?.addEventListener("click",()=>oauth(p.provider));
-  $("signupForm").setAttribute("novalidate","");
-  onForm("signupForm",async d=>{const sf=$("signupForm"),email=sf.elements.email,pw=sf.elements.password;if(!email.value.trim())return flagInvalid(email,"이메일을 입력해 주세요.");if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.value.trim()))return flagInvalid(email,"이메일 형식을 확인해 주세요.");if((pw.value||"").length<8)return flagInvalid(pw,"비밀번호는 8자 이상으로 입력해 주세요.");if(!consent())return;const {error}=await client.auth.signUp({email:email.value.trim(),password:pw.value,options:{emailRedirectTo:location.origin+accountReturn(),data:{signup_notice_version:"2026-09-14-v1"}}});fail(error);message("등록 가능한 이메일이면 인증 메일이 전송됩니다. 메일의 가입 완료하기 버튼을 눌러 인증을 마치면 선택한 화면으로 이어집니다.");});return;}
+ if(mode==="signup"){await renderBetaSignup({client,root:$("accountContent"),message});return;}
  if(mode==="login"){
  const oauth=provider=>action($("accountContent"),async()=>{const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+accountReturn()}});fail(error);});
  for(const p of socialProviders)$(p.id+"Login")?.addEventListener("click",()=>oauth(p.provider));
  $("loginForm").noValidate=true;onForm("loginForm",async d=>{const email=$("loginForm").elements.email,pw=$("loginForm").elements.password;if(!email.value.trim()||!email.checkValidity())return flagInvalid(email,'이메일을 확인해 주세요.');if(!pw.value)return flagInvalid(pw,'비밀번호를 입력해 주세요.');const {error}=await client.auth.signInWithPassword({email:String(d.get("email")).trim(),password:String(d.get("password"))});if(error){message("이메일·비밀번호 또는 이메일 인증 상태를 확인해 주세요.");return}location.assign(accountReturn());});
+ $("resendConfirmation")?.addEventListener("click",()=>action($("loginForm"),async()=>{const email=$("loginForm").elements.email;if(!email.reportValidity())return;const {error}=await client.auth.resend({type:"signup",email:email.value.trim(),options:{emailRedirectTo:location.origin+betaReturn()}});fail(error);message("인증 대기 중인 이메일이면 안내 메일이 발송됩니다.");}));
  $("resetPassword").onclick=()=>action($("loginForm"),async()=>{const email=$("loginForm").elements.email;if(!email.reportValidity())return;const {error}=await client.auth.resetPasswordForEmail(email.value,{redirectTo:location.origin+"/reset-password.html"});fail(error);message("등록된 이메일이면 비밀번호 재설정 안내가 발송됩니다.");});return;
  }
  const auth=await memberState(client);if(auth.state===MEMBER.anonymous){const next=rememberAction(location.pathname+location.search+location.hash);location.replace(authURL(next,'login'));return;}user=auth.user;membership=auth.membership;
@@ -78,8 +75,9 @@ async function start(){
  if(mode==="payment")await renderPaymentResult(client,message);
  if(mode==="phone")await renderPhoneVerification({client,config,root:$("accountContent")});
  if(mode==="account")await renderAccount();
+ if(mode==="partner"&&membership.beta_role==="EXPERT"){await renderBetaExpert(client,$("accountContent"));$("accountContent").hidden=false;return;}
  if(mode==="partner"){const applicationStatus=await renderPartner();if(membership.partner_status)await renderServiceArea(client,$("accountContent"));if(membership.profession==="planner"&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));}
- if(mode==="admin"){await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
+ if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
  $("accountContent").hidden=false;
 }
 start().catch(e=>{message(safeError(e));$("accountContent").hidden=true;$("accountNotice").textContent="회원 서비스 연결 상태를 확인할 수 없습니다.";});

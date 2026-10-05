@@ -195,15 +195,18 @@
       if (!r.ok) return null;
       var cfg = await r.json();
       if (!cfg.enabled || !cfg.url || !cfg.key) return null;
-      var rr = await fetch(cfg.url.replace(/\/$/, '') + '/rest/v1/rpc/planner_catalog', {
+      if (!window.bohumsoCatalog) await new Promise(function(resolve){var timer;function ready(){clearTimeout(timer);window.removeEventListener('bohumso-member-ready',ready);resolve();}window.addEventListener('bohumso-member-ready',ready);timer=setTimeout(ready,3000);});
+      var data;
+      if (window.bohumsoCatalog) data=await window.bohumsoCatalog(area||'',PURPOSE||'');
+      else {var rr = await fetch(cfg.url.replace(/\/$/, '') + '/rest/v1/rpc/planner_catalog', {
         method: 'POST', signal:AbortSignal.timeout(8000), headers: { apikey: cfg.key, 'Content-Type': 'application/json' }, body: JSON.stringify({ area: area || '', wanted: PURPOSE || '' })
       });
       if (!rr.ok) return null;
-      var data = await rr.json();
+      data = await rr.json();}
       var list = ((data && data.planners) || []).filter(function(p){return !p.is_sample;});
       var spots = list.map(function (p) {
         return {
-          id: p.id, name: p.name || p.organization || '보험소',
+          id: p.id, name: (p.beta?'[베타] ':'')+(p.name || p.organization || '보험소'),
           job: p.organization || '보험 전문가',
           specialty: (Array.isArray(p.specialties) && p.specialties.length ? p.specialties.map(function (x) { return SPECIALTY[x] || x; }).join('·') : '상담'),
           region: p.region || '',
