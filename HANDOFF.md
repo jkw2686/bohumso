@@ -1,5 +1,10 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 후속 홈 문구 완료 / 배포 승인 대기
+- 사용자 최신요청은 홈6개카드 영역 텍스트만. public/index.html에 제목/보조안내와 6카드의 지정 문구 반영. CSS/아이콘/링크/2열구조 그대로. 390/1440실측카드크기동일;320은 긴문구자동줄바꿈으로 높이16.5px 증가(스타일변경없음).
+- codex/ui-only-release: 지도줌버튼왼쪽 fb4e4c4(앞선UI요청), 홈문구 5fcff92(한파일별도커밋). main은86f1d24 그대로. 두후속수정 Production 미반영. 줌수정Preview https://6ac39ce504e91f0ce489217d--bohumso.netlify.app/ 는 홈문구반영 전.
+- 자동승인검토가 최신 홈문구요청에는 main/Production 배포승인이 없다고 차단. 이를 우회하지 않고 작업브랜치만push완료. 사용자에게 운영반영 승인 요청 필요. 초기알림관련차단은앞서증거로해결된별개건.
+
 ## 최신 완료 — 2026-10-05 UI 전용 Production 배포
 - Production https://bohumso.netlify.app/ 커밋86f1d24, deploy6ac39b041d3d8c0008bf2207 Published. main은 이 UI전용 커밋까지 반영.
 - 최종 UI Preview https://6ac39a3bac03bd486e059419--bohumso.netlify.app/ . 통합 Preview6ac3980...는 미배포 알림/SMS 코드 포함하므로 운영 후보로 혼동하지 말 것.
