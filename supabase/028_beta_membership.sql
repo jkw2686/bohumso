@@ -37,7 +37,9 @@ create function private.beta_member(subject uuid default auth.uid()) returns boo
  and (nullif(to_jsonb(u)->>'banned_until','')::timestamptz is null or (to_jsonb(u)->>'banned_until')::timestamptz<=now()))
 $$;
 create function private.beta_phone_verified(subject uuid default auth.uid()) returns boolean language sql stable security definer set search_path='' as $$
- select exists(select 1 from auth.users where id=subject and phone_confirmed_at is not null) or
+ select exists(select 1 from auth.users u where id=subject and phone_confirmed_at is not null and not exists(
+ select 1 from private.beta_members b join private.beta_invites i on i.id=b.invite_id where b.user_id=subject and i.allowed_phone is not null
+ and i.allowed_phone is distinct from regexp_replace(regexp_replace(coalesce(u.phone,''),'[^0-9]','','g'),'^82','0'))) or
  (exists(select 1 from private.release_controls where closed_beta) and private.beta_member(subject) and exists(select 1 from private.beta_members where user_id=subject and phone_status='ADMIN_VERIFIED_BETA' and phone_verified_by is not null))
 $$;
 create or replace function private.is_active_member() returns boolean language sql stable security definer set search_path='' as $$

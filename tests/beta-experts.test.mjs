@@ -19,7 +19,8 @@ test('beta: reviewed area-only experts, five isolated booking round trips and se
   await f.db.exec('reset role');await f.db.query("update private.consultations set preferred_at=now()-interval '1 minute' where id=$1",[id]);
   await f.login(ids.planner);await f.cmd('complete_request',{id,revision:3});await f.login(ids.customer);await f.cmd('complete_confirm',{id,revision:4});assert.equal((await f.row(id)).state,'completed');
  }
- await f.login(ids.customer);const office=await f.cmd('request',{office_assignment:true,purpose:'claim',region:'경기 분당',preferred_at:f.slot(8),request_key:crypto.randomUUID()});let officeRow=await f.row(office.id);assert.equal(officeRow.planner_id,null);assert.equal(officeRow.is_beta,true);
+ const officeSlot=new Date(f.slot(48));officeSlot.setUTCHours(5,0,0,0);
+ await f.login(ids.customer);const office=await f.cmd('request',{office_assignment:true,purpose:'claim',region:'경기 분당',preferred_at:officeSlot.toISOString(),request_key:crypto.randomUUID()});let officeRow=await f.row(office.id);assert.equal(officeRow.planner_id,null);assert.equal(officeRow.is_beta,true);
  await assert.rejects(f.cmd('office_assign',{id:office.id,revision:officeRow.revision,planner_id:ids.planner}),/admin_required/);
  await f.login(ids.admin);await assert.rejects(f.cmd('office_assign',{id:office.id,revision:officeRow.revision,planner_id:ids.next}),/beta_scope_mismatch/);await f.cmd('office_assign',{id:office.id,revision:officeRow.revision,planner_id:ids.planner});
  await f.login(ids.planner);officeRow=await f.row(office.id,'partner');await f.cmd('accept',{id:office.id,revision:officeRow.revision});assert.equal((await f.row(office.id,'partner')).state,'scheduled');
