@@ -1,3 +1,7 @@
+## 최신 배포 동기화 — 2026-10-05 대표자 관리자 권한
+- UI release worktree의 d851d02를 Production 배포 완료(6ac3a7596c1c1d0008116c0e ready). 040+041 운영 DB 적용 승인/실행 완료. 이 통합 브랜치에도 관련 파일만 동기화함. SMS/FCM 미완성 변경은 Production 미반영 그대로.
+- 현재 관리자 jkw2686@gmail.com 한 계정. 대표자만 관리자 추가·해제 가능, 대표자만 본인심사 예외. 자격자료/전화확인 조건·감사이력 유지. 실제 프로필 미확인 상태 보존.
+- 로컬 DB2/UI/빌드 PASS, 운영 권한조회/차단검사 PASS, 실제 대표자 로그인 관리자 메뉴 확인. outputs/admin-access-live.png 등, docs/owner-admin-access.md 상세. 별도 일반회원 로그인E2E/실자료승인 안함.
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
 ## 최신 — 모바일 홈 줄바꿈 보완 운영 반영
@@ -269,3 +273,4 @@
 - 다음은 PHASE 0 감사 → P0 보안/Secret·결제 OFF·정책·Auth/이메일·OTP·위치·예약/RLS → P1 → P2. Google 보존, Kakao 준비중, 결제 OFF, RLS 비활성/운영자료 삭제/유료계약/임의 SMS 금지. 각 Phase 표 보고, NEXT ACTION 하나. 아직 새 스프린트 실행하지 않음.
 - 새 첨부의 계속 진행 지시는 앞서 거절된 운영 DB Run query에 대한 구체적 승인 응답으로 간주하지 않았음. 기존 승인 질문 답변 대기.
 - Supabase 편집기 입력은 파일 최종 변경보다 오래된 버전일 수 있음. 승인 후 반드시 024 파일을 다시 읽어 입력하고 실행. 025/024 이력은 private.schema_migrations(name)에 기록.
+
