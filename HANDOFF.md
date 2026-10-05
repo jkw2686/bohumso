@@ -1,3 +1,7 @@
+## 최신 SMS — 2026-10-06 모든 IP 허용 승인 및 발송 접수 성공
+- 사용자가 IP 보호 해제 설명을 확인하고 모든 IP 허용 후 재시도를 명시 승인. SOLAPI 기존 API키 허용 목록에 0.0.0.0/0 추가 완료. 기존 /32 두 항목 보존, key/secret 재생성 없음. outputs/sms-all-ip-saved.png 저장 확인.
+- 기존 Preview 전화 입력으로 에이전트가 인증번호 받기 한 번 클릭. 이번에는 인증번호6자리 입력란/확인 버튼 및 3분 유효 안내가 열려 공급자 발송 접수 성공. 실제 휴대전화 수신 및 OTP 인증 완료는 아직 미확인, 사용자 직접 화면 입력 대기. 추가 재발송 안함.
+- phoneVerifyTab29 markHandoff, 현재 로그인된 승인 Preview 유지. SOLAPI31/SupabaseSQL30 handoff. 인증번호 채팅 요청/읽기 금지. Production phone=false 보존, 코드배포 없음. 후속: 사용자의 OTP 확인 후 실제 private contact 인증 상태 확인. 전문가 자격검증 임의 조작 금지.
 ## 최신 SMS 조사 — 2026-10-05 23:12 KST
 - SOLAPI 로그인 완료. 실제 등록 발신번호와 Netlify SOLAPI_SENDER_NUMBER 일치, 발신번호 활성/인증됨. 발신=수신 때문이라는 근거 없음.
 - SOLAPI API 키 최근사용처에서 22:49 요청 IP와 기존 허용 /32 불일치 확인. 사용자 명시 승인 후 해당 실제 서버 IP /32 한 개만 추가. 기존 /32 보존 확인. outputs/sms-ip-added.png 증거(저장소 밖).
