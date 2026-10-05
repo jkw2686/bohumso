@@ -886,3 +886,5 @@ body {
 }
 .book-info .bi-row { font-size: 13px; color: #374151; padding: 3px 0; }
 .book-info .bi-row a { color: var(--brand); font-weight: 700; text-decoration: none; }
+
+.policy-footer{padding:24px 20px 120px;background:#f8fafc;position:relative;z-index:1}.policy-footer nav{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 20px}.policy-footer a{font-size:14px;line-height:1.8;color:#334155;min-height:44px;display:inline-flex;align-items:center}

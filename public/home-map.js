@@ -10,6 +10,8 @@
     window.renderOfficeSlot(content,{name:window.officeName(area.name),region:area.region+' '+area.name,planned:true});
     L.marker([area.lat,area.lng],{title:window.officeName(area.name),icon:L.divIcon({className:'home-office-pin',html:window.uiIcon('home'),iconSize:[30,30]})}).addTo(map).bindPopup(content,{maxWidth:320,minWidth:230});
   });
+  async function actualOffices(){try{if(!window.bohumsoOffices)return;const offices=await window.bohumsoOffices();offices.filter(o=>o.status==='active'&&Number.isFinite(o.latitude)&&Number.isFinite(o.longitude)).forEach(function(o){const content=document.createElement('div');window.renderOfficeSlot(content,{id:o.id,name:o.name,region:o.region,planned:false});L.marker([o.latitude,o.longitude],{title:o.name+' · 운영 중',icon:L.divIcon({className:'home-office-pin',html:window.uiIcon('home'),iconSize:[30,30]})}).addTo(map).bindPopup(content,{maxWidth:320,minWidth:230});});}catch{}}
+  window.addEventListener('bohumso-member-ready',actualOffices,{once:true});if(window.bohumsoOffices)actualOffices();
   var button=document.getElementById('homeLocate'),notice=document.getElementById('homeLocationStatus'),me,circle;
   function locate(){
     button.disabled=true;

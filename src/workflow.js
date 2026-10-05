@@ -1,3 +1,4 @@
+import {trackEvent} from './member-access.js';
 import {renderAdminBookingMap} from './admin-booking-map.js';
 import {renderOfficeRequest,renderTimeline} from './office-request.js';
 import {renderAds} from './ad-subscription.js';
@@ -6,7 +7,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
  const host=document.getElementById('requestList'),content=document.getElementById('accountContent');let snapshot;
  if(!membership.member||(workspace==='admin'&&!membership.admin)||(workspace==='partner'&&membership.partner_status!=='approved')){content.hidden=true;message('가입 완료 또는 관리자 권한이 필요합니다.');return;}
  const rpc=async(name,args)=>{const {data,error}=await client.rpc(name,args);if(error)throw error;return data;};
- const command=async(operation,payload)=>rpc('consultation_command',{operation,payload});
+ const command=async(operation,payload)=>{if(operation==='request')trackEvent('reservation_started');try{const result=await rpc('consultation_command',{operation,payload});const event={request:'reservation_created',confirm:'reservation_confirmed',office_confirm:'reservation_confirmed',complete_confirm:'consultation_completed'}[operation];if(event)trackEvent(event);return result;}catch(e){trackEvent(e.message==='slot_unavailable'||e.code==='23505'?'duplicate_reservation':e.code==='42501'?'rls_denied':'reservation_failed');throw e;}};
  function submit(form,fn){form.onsubmit=e=>{e.preventDefault();action(form,async()=>{await fn(new FormData(form));await refresh();message('저장했습니다.');});};}
  function check(form,label,name){const node=input(form,label,name,'checkbox');node.value='on';return node;}
  function btn(parent,title,fn){const button=el('button',title,parent);button.type='button';button.onclick=()=>action(parent,async()=>{await fn();await refresh();});return button;}
@@ -49,10 +50,11 @@ export async function renderWorkflow({client,membership,workspace,message,action
     el('button','상담 목적 확인·수락',form).type='submit';submit(form,d=>command('accept',{id:row.id,revision:row.revision,}));
     if(row.state==='requested')btn(controls,'이번 상담 패스',()=>run('pass'));
    }
-   if(workspace==='customer'&&row.allocation_mode==='office'&&row.state==='coordinating'&&row.planner_ok)btn(controls,'변경 시간 확인',()=>run('office_confirm'));
-   if(workspace==='customer'&&row.allocation_mode!=='office'&&row.state==='coordinating'&&row.planner_ok){
+   if(!config.earlyAccess&&workspace==='customer'&&row.allocation_mode==='office'&&row.state==='coordinating'&&row.planner_ok)btn(controls,'변경 시간 확인',()=>run('office_confirm'));
+   if(workspace==='customer'&&(config.earlyAccess||row.allocation_mode!=='office')&&row.state==='coordinating'&&row.planner_ok){
     const form=el('form',undefined,card),name=input(form,'예약자 이름','name'),phone=input(form,'연락처','phone','tel');name.required=phone.required=true;name.minLength=2;name.maxLength=60;phone.pattern='0[0-9 -]{8,13}';
     check(form,'선택한 '+row.planner_name+'에게 이름·연락처를 상담 일정 연락 목적으로 제공하는 데 동의합니다.','share_consent').required=true;link(form,'제공 항목·보유 기간 확인','/privacy.html');
+    if(config.earlyAccess)el('p','제공받는 자: '+row.planner_name+' ('+row.organization+'). 제공 항목: 이름·확인된 휴대전화. 목적: 예약 일정 연락과 요청한 상담. 거부하면 연락처를 전달하지 않으며 상담 확정이 제한됩니다. 보유·이용기간은 공개 개인정보처리방침의 최종 확정 정책을 따릅니다.',form);
     el('p','소비자 이용은 무료이며 보험 가입 의무가 없습니다. 광고 구독은 상담 이용과 별도입니다.',form);el('button','동의하고 일정 확정',form).type='submit';submit(form,d=>command('confirm',{id:row.id,revision:row.revision,...Object.fromEntries(d),share_consent:d.get('share_consent')==='on'}));
    }
    if(['customer','partner'].includes(workspace)&&['requested','coordinating','confirmed','scheduled'].includes(row.state))scheduleForm(card,row);
@@ -80,8 +82,8 @@ export async function renderWorkflow({client,membership,workspace,message,action
   if(config?.closedBeta!==undefined){const release=await rpc('release_status',{});const copy=!(release.policiesApproved||(release.closedBeta&&release.betaMember))?'약관 검토 후 예약을 열 예정이에요.':!release.betaAllowed?'초대된 베타 참여자만 예약할 수 있어요.':!release.phoneVerified?'예약을 이어가려면 휴대전화 번호를 확인해 주세요.':'';if(copy){blocked=true;form.hidden=false;el('h2',copy,form);if((release.policiesApproved||(release.closedBeta&&release.betaMember))&&release.betaAllowed&&!release.phoneVerified)link(form,release.betaMember?'운영자 전화 확인 안내':'휴대전화 확인',release.betaMember?'/account.html':'/phone-verification.html?next='+encodeURIComponent(location.pathname+location.search));else link(form,'지도 둘러보기','/map.html');}}
   if(!blocked){
   const params=new URLSearchParams(location.search),officeId=params.get('office'),plannerId=params.get('planner');let selectedOffice=null,selectedPlanner=null;
-  if(officeId){const offices=await rpc('office_catalog',{});selectedOffice=offices.find(o=>o.id===officeId&&o.status==='active');if(!selectedOffice){form.hidden=false;el('h2','개설 예정 보험소는 아직 예약할 수 없어요.',form);link(form,'지도 둘러보기','/map.html');}else renderOfficeRequest({form,command,refresh,message,selectedOffice});}
-  else if(plannerId){const catalog=await rpc('planner_catalog',{area:'',wanted:params.get('purpose')||'claim'});selectedPlanner=catalog.planners.find(p=>p.id===plannerId&&p.available&&!p.is_sample);if(!selectedPlanner){form.hidden=false;el('h2','현재 요청할 수 없는 전문가예요.',form);link(form,'다른 전문가 보기','/map.html?view=experts');}else if(params.get('method')==='nearby'&&!(selectedPlanner.visitEnabled&&selectedPlanner.available_slots?.length)){form.hidden=false;el('h2','방문 요청을 준비하고 있어요.',form);link(form,'상담 예약하기','/requests.html?planner='+encodeURIComponent(plannerId)+'&region='+encodeURIComponent(selectedPlanner.region)+'&method=scheduled');}else renderOfficeRequest({form,command,refresh,message,selectedPlanner});}
+  if(officeId){const offices=await rpc('office_catalog',{});selectedOffice=offices.find(o=>o.id===officeId&&o.status==='active');if(!selectedOffice){form.hidden=false;el('h2','개설 예정 보험소는 아직 예약할 수 없어요.',form);link(form,'지도 둘러보기','/map.html');}else renderOfficeRequest({form,command,refresh,message,availability:config.earlyAccess?((office_id,planner_id,day)=>rpc('reservation_slots',{office_id,planner_id,day})):null,selectedOffice});}
+  else if(plannerId){const catalog=await rpc('planner_catalog',{area:'',wanted:params.get('purpose')||'claim'});selectedPlanner=catalog.planners.find(p=>p.id===plannerId&&p.available&&!p.is_sample);if(!selectedPlanner){form.hidden=false;el('h2','현재 요청할 수 없는 전문가예요.',form);link(form,'다른 전문가 보기','/map.html?view=experts');}else if(params.get('method')==='nearby'&&!(selectedPlanner.visitEnabled&&selectedPlanner.available_slots?.length)){form.hidden=false;el('h2','방문 요청을 준비하고 있어요.',form);link(form,'상담 예약하기','/requests.html?planner='+encodeURIComponent(plannerId)+'&region='+encodeURIComponent(selectedPlanner.region)+'&method=scheduled');}else renderOfficeRequest({form,command,refresh,message,availability:config.earlyAccess?((office_id,planner_id,day)=>rpc('reservation_slots',{office_id,planner_id,day})):null,selectedPlanner});}
   else renderOfficeRequest({form,command,refresh,message});
   }
  }

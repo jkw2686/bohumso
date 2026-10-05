@@ -17,6 +17,7 @@
     var stopped = false, timer;
     function cancel() { stopped = true; clearTimeout(timer); }
     async function fail(code) {
+      window.bohumsoTrack?.(code===1?'location_denied':'location_failed');
       if (stopped) return;
       clearTimeout(timer);
       if(code!==1)handlers.progress('접속 지역을 확인하고 있어요…');
@@ -46,7 +47,7 @@
       navigator.geolocation.getCurrentPosition(function (position) {
         if (settled || stopped) return;
         if (!Number.isFinite(position.coords.latitude) || !Number.isFinite(position.coords.longitude)) { error({code:2}); return; }
-        settled = true; cancel(); window.BohumsoLocationStore.set({source:'DEVICE',latitude:position.coords.latitude,longitude:position.coords.longitude,accuracy:position.coords.accuracy});handlers.success(position);
+        settled = true; cancel(); window.bohumsoTrack?.('location_success'); window.BohumsoLocationStore.set({source:'DEVICE',latitude:position.coords.latitude,longitude:position.coords.longitude,accuracy:position.coords.accuracy});handlers.success(position);
       }, error, {enableHighAccuracy: precise, timeout: precise ? 8000 : 4000, maximumAge: precise ? 0 : 300000});
     }
     attempt(false);

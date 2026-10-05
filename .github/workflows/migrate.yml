@@ -9,7 +9,7 @@ on:
     branches: [main]
     paths:
       - 'supabase/**'
-      - 'scripts/migrate.mjs'
+      - 'scripts/migrate-early-access.mjs'
       - '.github/workflows/migrate.yml'
   workflow_dispatch: {}
 
@@ -45,7 +45,6 @@ jobs:
         if: steps.database.outputs.ready == 'true'
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          # 라이브 DB는 이미 001~006이 수동 적용됨 → 그 지점까지 기준선으로 잡고 007+만 적용.
-          # 이력 테이블이 채워진 뒤에는 이 값은 무시된다(신규만 적용).
-          MIGRATE_BASELINE: '006_metrics.sql'
-        run: node scripts/migrate.mjs
+        # Apply only the reviewed early-access migration set on the audited 027 baseline.
+        # Optional legacy/test/beta migrations are never auto-applied by this job.
+        run: node scripts/migrate-early-access.mjs

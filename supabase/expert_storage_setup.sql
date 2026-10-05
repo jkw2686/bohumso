@@ -1,7 +1,7 @@
--- Run only on Supabase after migration 011; never a public bucket.
+-- Run only on Supabase after the reviewed expert schema (032 or legacy 011); never a public bucket.
 begin;
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
-values('expert-documents','expert-documents',false,10485760,array['image/jpeg','image/png','application/pdf'])
+values('expert-documents','expert-documents',false,4194304,array['image/jpeg','image/png','application/pdf'])
 on conflict(id) do update set public=false,file_size_limit=excluded.file_size_limit,allowed_mime_types=excluded.allowed_mime_types;
 -- A restrictive policy keeps this bucket private even if a project already has broad permissive policies.
 drop policy if exists expert_documents_endpoint_only on storage.objects;

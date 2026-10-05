@@ -10,16 +10,17 @@ export default async(request:Request)=>{
   const token=request.headers.get('authorization')?.replace(/^Bearer /,'');if(!token)return reply({error:'login_required'},401);
   const server=createClient(env('SUPABASE_URL')!,env('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
   const {data,error}=await server.auth.getUser(token);if(error||!data.user)return reply({error:'login_required'},401);
+  const early=env('SERVICE_STAGE')==='EARLY_ACCESS';
   const subject=data.user.id,store=server.storage.from('expert-documents');
-  const rpc=async(operation:string,payload:any)=>{const r=await server.rpc('expert_document_service',{subject,operation,payload});if(r.error)throw Error(r.error.message);return r.data;};
+  const rpc=async(operation:string,payload:any)=>{const r=await server.rpc(early?'early_document_service':'expert_document_service',{subject,operation,payload});if(r.error)throw Error(r.error.message);return r.data;};
   const contentType=request.headers.get('content-type')||'';
   if(contentType.includes('multipart/form-data')){
    // Account for multipart overhead; stream-limit before parsing.
-   const reader=request.body?.getReader();if(!reader)throw Error('invalid_document');let length=0;const chunks:Uint8Array[]=[];
-   while(true){const r=await reader.read();if(r.done)break;length+=r.value.byteLength;if(length>DOCUMENT_LIMIT+65536){await reader.cancel();return reply({error:'file_too_large'},413);}chunks.push(r.value);}
+   const reader=request.body?.getReader();if(!reader)throw Error('invalid_document');let length=0;const chunks:ArrayBuffer[]=[];
+   while(true){const r=await reader.read();if(r.done)break;length+=r.value.byteLength;if(length>DOCUMENT_LIMIT+65536){await reader.cancel();return reply({error:'file_too_large'},413);}chunks.push(new Uint8Array(r.value).buffer);}
    const form=await new Response(new Blob(chunks),{headers:{'Content-Type':contentType}}).formData();
-   const file=form.get('file'),kind=String(form.get('kind')),profession=String(form.get('profession'));if(!(file instanceof File)||!['identity','qualification'].includes(kind)||!['planner','adjuster','lawyer'].includes(profession)||form.get('consent')!=='true'||form.get('redacted')!=='true')throw Error('invalid_document');
-   const bytes=new Uint8Array(await file.arrayBuffer()),mime=documentType(bytes);if(file.type!==mime)throw Error('invalid_document');
+   const file=form.get('file'),kind=String(form.get('kind')),profession=String(form.get('profession'));if(!(file instanceof File)||!(early?['registration','appointment']:['identity','qualification']).includes(kind)||!['planner','adjuster','lawyer'].includes(profession)||form.get('consent')!=='true'||form.get('redacted')!=='true')throw Error('invalid_document');
+   const bytes=new Uint8Array(await file.arrayBuffer()),mime=documentType(bytes);if(bytes.byteLength>4*1024*1024)return reply({error:'file_too_large'},413);if(file.type!==mime)throw Error('invalid_document');
    const objectPath=subject+'/'+crypto.randomUUID()+({ 'image/jpeg':'.jpg','image/png':'.png','application/pdf':'.pdf'}[mime]);
    const upload=await store.upload(objectPath,bytes,{contentType:mime,upsert:false});if(upload.error)throw Error('storage_unavailable');
    try{const saved=await rpc('save',{kind,profession,path:objectPath,filename:safeFilename(file.name),mime,bytes:bytes.length});if(saved.previous_path){const removed=await store.remove([saved.previous_path]);if(removed.error)throw Error('old_document_cleanup_required');}return reply(saved.document);}
@@ -30,7 +31,9 @@ export default async(request:Request)=>{
   if(!['read','delete'].includes(body.action))throw Error('invalid_operation');
   const doc=await rpc(body.action,{id:body.id});
   if(body.action==='delete'){const result=await store.remove([doc.object_path]);if(result.error)throw Error('storage_unavailable');await rpc('confirm_delete',{id:body.id,path:doc.object_path});return reply({deleted:true});}
-  const result=await store.download(doc.object_path);if(result.error)throw Error('storage_unavailable');
+  const signed=await store.createSignedUrl(doc.object_path,60);if(signed.error)throw Error('storage_unavailable');
+  const downloaded=await fetch(signed.data.signedUrl,{redirect:'error'});if(!downloaded.ok)throw Error('storage_unavailable');
+  const result={data:await downloaded.blob()};
   // Authorized streaming avoids permanent public URLs and stale signed URL access.
   return new Response(result.data,{headers:{'Content-Type':doc.mime,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Disposition':'attachment; filename="document"','Content-Security-Policy':"sandbox; default-src 'none'"}});
  }catch(error){const code=error instanceof Error?error.message:'';const safe=['request_forbidden','membership_required','application_locked','invalid_document','storage_unavailable','old_document_cleanup_required'];return reply({error:safe.includes(code)?code:'document_unavailable'},400);}

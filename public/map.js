@@ -74,7 +74,7 @@
     SPOTS.forEach(function (s) {
       if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) return; // 좌표 없으면 목록에만 표시
       coords.push([s.lat, s.lng]);
-      s._marker = L.marker([s.lat, s.lng], { icon: pinIcon(false,s.planned), title: s.name+(s.planned?' · 오픈 예정':' · 전문가') }).addTo(map);
+      s._marker = L.marker([s.lat, s.lng], { icon: pinIcon(false,s.planned||s.office), title: s.name+(s.planned?' · 오픈 예정':s.office?' · 보험소':' · 전문가') }).addTo(map);
       s._marker.on('click', function () { openCard(s); });
       spotMarkers.push(s._marker);
     });
@@ -105,7 +105,7 @@
   }
 
   function sortedSpots() {
-    var arr = SPOTS.filter(function(s){return !showExperts||!s.planned;});
+    var arr = SPOTS.filter(function(s){return !showExperts||(!s.planned&&!s.office);});
     if (sortBy === 'rating') arr.sort(function (a, b) { return b.rating - a.rating; });
     else if (sortBy === 'specialty') arr.sort(function (a, b) { return a.specialty.localeCompare(b.specialty, 'ko'); });
     else arr.sort(function (a, b) { return spotDist(a) - spotDist(b); });
@@ -143,8 +143,9 @@
 
   /* 마커/목록 탭 → 하단 카드(요약). 다른 마커 탭하면 내용만 교체. */
   function openCard(s) {
+    if(!s.planned&&!s.office)window.bohumsoTrack?.('expert_viewed');
     current = s;
-    window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned,purpose:PURPOSE,situation:SITUATION});
+    window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned&&!s.office,purpose:PURPOSE,situation:SITUATION});
     if(s.availability==='now'){var urgent=document.createElement('a');urgent.className='btn';urgent.textContent='지금 도움 요청';urgent.href='/urgent.html?region='+encodeURIComponent(s.region);$('cardBody').prepend(urgent);}
     showCard();
   }
@@ -216,6 +217,7 @@
           photo: p.photo_url || '', availability: p.availability_status || ''
         };
       });
+      if(window.bohumsoOffices){const offices=await window.bohumsoOffices();const active=offices.filter(o=>o.status==='active'&&Number.isFinite(o.latitude)&&Number.isFinite(o.longitude));PLANNED=PLANNED.filter(p=>!active.some(o=>o.region===p.region));spots=spots.concat(active.filter(o=>!area||o.region.indexOf(area)===0).map(o=>({id:o.id,name:o.name,region:o.region,job:'보험소',specialty:o.address,lat:o.latitude,lng:o.longitude,rating:0,planned:false,office:true})));}
       return spots; // 실전문가가 하나라도 있으면 샘플 폴백 안 함(좌표 없어도 목록엔 표시)
     } catch (e) { return null; }
   }

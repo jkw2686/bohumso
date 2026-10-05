@@ -1,3 +1,5 @@
+import {renderEarlyExpertAdmin} from './early-expert-admin.js';
+import {renderPublicSignup,finishPublicSignup,PRODUCTION_ORIGIN} from './public-signup.js';
 import {betaCode,betaReturn,renderBetaSignup,renderBetaFinish,renderBetaAdmin,renderBetaExpert} from './beta.js';
 import {renderPhoneVerification} from './phone-verification-ui.js';
 import {renderServiceArea,renderInstant,renderUrgentWorkspace} from './urgent.js';
@@ -25,10 +27,11 @@ function fail(error){if(error)throw error;}
 function line(parent,text,tag="p"){const el=document.createElement(tag);el.textContent=text;parent.append(el);return el;}
 async function refreshMembership(){const {data,error}=await client.rpc("my_membership");fail(error);membership=data;}
 async function renderAccount(){
- if(betaCode()&&!membership.beta){const done=await renderBetaFinish({client,root:$("accountContent"),onDone:async()=>{await refreshMembership();if(membership.beta_role==='EXPERT'){location.assign('/partner.html?next='+encodeURIComponent(pendingAction()));return;}await renderAccount();}});if(done){$("identity").textContent=user.email;document.querySelector(".account-links").hidden=true;$("membershipForm").hidden=true;$("logout").onclick=async()=>{await client.auth.signOut();location.assign('/login.html');};return;}}
+ if(config.earlyAccess&&!membership.member&&await finishPublicSignup(client))await refreshMembership();
+ if(config.closedBeta&&betaCode()&&!membership.beta){const done=await renderBetaFinish({client,root:$("accountContent"),onDone:async()=>{await refreshMembership();if(membership.beta_role==='EXPERT'){location.assign('/partner.html?next='+encodeURIComponent(pendingAction()));return;}await renderAccount();}});if(done){$("identity").textContent=user.email;document.querySelector(".account-links").hidden=true;$("membershipForm").hidden=true;$("logout").onclick=async()=>{await client.auth.signOut();location.assign('/login.html');};return;}}
  const next=pendingAction();if(membership.member&&next!='/account.html'){clearAction();location.replace(next);return;}
  try{if(membership.member&&sessionStorage.getItem("bohumso-signup-intent")==="expert"){sessionStorage.removeItem("bohumso-signup-intent");location.replace("/partner.html");return;}}catch{}
- document.querySelector('h1').textContent=membership.state==='EXPERT_APPROVED'?'보험소 PRO':membership.state==='EXPERT_PENDING'?'전문가 심사 중':membership.member?'내 계정':'가입 마무리';
+ document.querySelector('h1').textContent=membership.state==='EXPERT_APPROVED'?'보험소 PRO':['EXPERT_PENDING','EXPERT_VERIFICATION_PENDING'].includes(membership.state)?'전문가 심사 중':membership.state==='EXPERT_DRAFT'?'보험소 PRO · 프로필':membership.member?'내 계정':'가입 마무리';
  document.querySelector('.account-links').hidden=!membership.member;
  $("identity").textContent=user.email;$("operator").textContent=config.operator;$("privacyContact").textContent=config.contact;
  $("membershipState").textContent=membership.member?(membership.beta?"베타 가입 완료 · "+(membership.phoneStatus==='UNVERIFIED'?'운영자 전화 확인 대기':'예약 이용 가능'):"회원 가입 완료"):"이메일 확인 완료 · 가입 동의가 필요합니다.";
@@ -38,7 +41,7 @@ async function renderAccount(){
  $("logout").onclick=async()=>{const {error}=await client.auth.signOut();if(error){message("로그아웃하지 못했습니다. 다시 시도해 주세요.");return}location.replace("/login.html");};
 }
 async function renderPartner(){return renderPartnerApplication({client,user,membership,message,action,config});}
-async function renderAdmin(){if(!membership.admin)throw {message:'admin_required'};await renderExpertAdmin({client,host:$('applications'),message});}
+async function renderAdmin(){if(!membership.admin)throw {message:'admin_required'};await (config.earlyAccess?renderEarlyExpertAdmin:renderExpertAdmin)({client,host:$('applications'),message});}
 async function start(){
  // 백엔드(Functions) 미배포·미설정 시 에러 대신 '준비 중'으로 degrade. 정적 공유 배포에서도 화면이 깨지지 않는다.
  const response=await fetch("/api/config",{cache:"no-store"}).catch(()=>null);config=response&&response.ok?await response.json():{enabled:false};
@@ -57,13 +60,13 @@ async function start(){
  $("accountContent").hidden=false;document.querySelectorAll('a[href]').forEach(a=>{const path=new URL(a.href,location.href).pathname;if(/^\/(signup|login)(\.html)?$/.test(path))a.href=authURL(next,path.includes('login')?'login':'signup');});
  void configureSocialAuth(config,mode);
  }
- if(mode==="signup"){await renderBetaSignup({client,root:$("accountContent"),message});return;}
+ if(mode==="signup"){if(config.earlyAccess)await renderPublicSignup({client,config,root:$("accountContent"),message});else await renderBetaSignup({client,root:$("accountContent"),message});return;}
  if(mode==="login"){
- const oauth=provider=>action($("accountContent"),async()=>{const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+accountReturn()}});fail(error);});
+ const oauth=provider=>action($("accountContent"),async()=>{if(location.origin!==PRODUCTION_ORIGIN){location.assign(PRODUCTION_ORIGIN+authURL(pendingAction(),"login"));return;}const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:PRODUCTION_ORIGIN+accountReturn()}});fail(error);});
  for(const p of socialProviders)$(p.id+"Login")?.addEventListener("click",()=>oauth(p.provider));
  $("loginForm").noValidate=true;onForm("loginForm",async d=>{const email=$("loginForm").elements.email,pw=$("loginForm").elements.password;if(!email.value.trim()||!email.checkValidity())return flagInvalid(email,'이메일을 확인해 주세요.');if(!pw.value)return flagInvalid(pw,'비밀번호를 입력해 주세요.');const {error}=await client.auth.signInWithPassword({email:String(d.get("email")).trim(),password:String(d.get("password"))});if(error){message("이메일·비밀번호 또는 이메일 인증 상태를 확인해 주세요.");return}location.assign(accountReturn());});
- $("resendConfirmation")?.addEventListener("click",()=>action($("loginForm"),async()=>{const email=$("loginForm").elements.email;if(!email.reportValidity())return;const {error}=await client.auth.resend({type:"signup",email:email.value.trim(),options:{emailRedirectTo:location.origin+betaReturn()}});fail(error);message("인증 대기 중인 이메일이면 안내 메일이 발송됩니다.");}));
- $("resetPassword").onclick=()=>action($("loginForm"),async()=>{const email=$("loginForm").elements.email;if(!email.reportValidity())return;const {error}=await client.auth.resetPasswordForEmail(email.value,{redirectTo:location.origin+"/reset-password.html"});fail(error);message("등록된 이메일이면 비밀번호 재설정 안내가 발송됩니다.");});return;
+ $("resendConfirmation")?.addEventListener("click",()=>action($("loginForm"),async()=>{const email=$("loginForm").elements.email;if(!email.reportValidity())return;const {error}=await client.auth.resend({type:"signup",email:email.value.trim(),options:{emailRedirectTo:PRODUCTION_ORIGIN+accountReturn()}});fail(error);message("인증 대기 중인 이메일이면 안내 메일이 발송됩니다.");}));
+ $("resetPassword").onclick=()=>action($("loginForm"),async()=>{const email=$("loginForm").elements.email;if(!email.reportValidity())return;const {error}=await client.auth.resetPasswordForEmail(email.value,{redirectTo:PRODUCTION_ORIGIN+"/reset-password.html"});fail(error);message("등록된 이메일이면 비밀번호 재설정 안내가 발송됩니다.");});return;
  }
  const auth=await memberState(client);if(auth.state===MEMBER.anonymous){const next=rememberAction(location.pathname+location.search+location.hash);location.replace(authURL(next,'login'));return;}user=auth.user;membership=auth.membership;
  if(auth.state===MEMBER.incomplete&&!['account','reset'].includes(mode)){const next=rememberAction(location.pathname+location.search+location.hash);location.replace(accountReturn(next));return;}

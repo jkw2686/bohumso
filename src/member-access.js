@@ -3,7 +3,7 @@ export const MEMBER={anonymous:'ANONYMOUS',incomplete:'AUTHENTICATED_INCOMPLETE'
 const pendingKey='bohumso-pending-action';
 export function safeNext(value,fallback='/account.html'){
  if(typeof value!=='string'||!value.startsWith('/')||value.startsWith('//')||/[\\\u0000-\u0020]/.test(value))return fallback;
- try{const decoded=decodeURIComponent(value);if(decoded.startsWith('//')||/[\\\u0000-\u001f]/.test(decoded))return fallback;const u=new URL(value,'https://internal.invalid');if(u.origin!=='https://internal.invalid'||u.pathname.startsWith('//')||/^\/(login|signup|auth|reset-password)(\.html)?\/?$/i.test(u.pathname))return fallback;return u.pathname+u.search+u.hash;}catch{return fallback;}
+ try{const decoded=decodeURIComponent(value);if(decoded.startsWith('//')||/[\\\u0000-\u001f]/.test(decoded))return fallback;const u=new URL(value,'https://internal.invalid');if(u.origin!=='https://internal.invalid'||u.pathname.startsWith('//')||/^\/(login|signup|auth|reset-password)(\.html)?\/?$/i.test(u.pathname))return fallback;for(const key of ['code','access_token','refresh_token','token','token_hash'])u.searchParams.delete(key);if(/(?:access_token|refresh_token|token_hash)=/.test(u.hash))u.hash='';return u.pathname+u.search+u.hash;}catch{return fallback;}
 }
 export function rememberAction(next){const path=safeNext(next);try{sessionStorage.setItem(pendingKey,JSON.stringify({next:path,at:Date.now()}));}catch{}return path;}
 export function pendingAction(){const query=new URLSearchParams(location.search).get('next')||new URLSearchParams(location.search).get('returnTo');if(query)return rememberAction(query);try{const value=JSON.parse(sessionStorage.getItem(pendingKey)||'null');if(value&&Date.now()-value.at<2*60*60*1000)return safeNext(value.next);const legacy=sessionStorage.getItem('bohumso-booking-return');if(legacy)return rememberAction(legacy);}catch{}return '/account.html';}
@@ -20,3 +20,6 @@ export async function requireActiveMember({next=location.pathname+location.searc
  const result=await memberState(client||(await memberService()).client);if(result.state===MEMBER.active)return result;
  const path=rememberAction(next);location.assign(result.state===MEMBER.anonymous?authURL(path,mode):accountReturn(path));return null;
 }
+
+const funnelEvents=new Set('home_view signup_started signup_completed location_success location_denied expert_viewed reservation_started reservation_created reservation_confirmed consultation_completed google_auth_failed email_auth_failed location_failed reservation_failed duplicate_reservation rls_denied function_error payment_test_error'.split(' '));
+export function trackEvent(name){if(!funnelEvents.has(name))return;void memberService().then(({client,config})=>{if(config.operationalMetrics)return client.rpc('record_operational_event',{event_name:name});}).catch(()=>{});}

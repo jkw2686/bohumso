@@ -52,7 +52,7 @@ add(!flag('AD_EXPOSURE_ENABLED')||env('AD_IMPRESSION_SECRET').length>=32,'AD_IMP
 // 상호 일관성 경고 (실패 아님)
 const warns = [];
 if (flag('PAYMENTS_ENABLED') && !flag('ACCOUNTS_ENABLED')) warns.push('PAYMENTS_ENABLED=true 인데 ACCOUNTS_ENABLED=false — 로그인 없이는 결제 불가');
-if (flag('ACCOUNTS_ENABLED') && !flag('POLICIES_APPROVED')) warns.push('기존 로그인 ON / 신규 가입 OFF — 약관 검토 중인 정상 베타 상태');
+if (flag('ACCOUNTS_ENABLED') && !flag('POLICIES_APPROVED')) warns.push(env('SERVICE_STAGE')==='EARLY_ACCESS'?'가입과 정책승인을 분리합니다. 예약은 정책·휴대전화 확인 후 개방합니다.':'기존 로그인 ON / 신규 가입 OFF — 약관 검토 중인 베타 상태');
 
 // --- 출력 ---
 let failed = 0;

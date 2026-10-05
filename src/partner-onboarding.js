@@ -1,8 +1,10 @@
+import {renderEarlyExpert} from './expert-early-access.js';
 import {PhoneVerificationProvider} from './phone-verification.js';
 import {el,kst} from './consultation-ui.js';
 import {AGREEMENT_VERSION,PLEDGES,PROFESSIONS,validRegistration,koreanPhone,prepareDocument,documentRequest} from './expert-shared.js';
 const STATES={pending:'심사 대기',approved:'승인 완료',needs_changes:'보완 요청',rejected:'거절',withdrawn:'철회'};
 export async function renderPartnerApplication({client,user,membership,message,config={}}){
+ if(config.earlyAccess)return renderEarlyExpert({client,config,message});
  const phoneProvider=new PhoneVerificationProvider(client,config);
  const form=document.getElementById('partnerForm'),state=document.getElementById('partnerState'),details=document.getElementById('partnerDetails');
  if(!membership.member){state.textContent='내 계정에서 필수 가입 동의를 먼저 완료해 주세요.';return;}

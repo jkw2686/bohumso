@@ -2,6 +2,8 @@
 command = "npm run build"
 publish = "public"
 functions = "netlify/functions"
+[functions]
+node_bundler = "esbuild"
 [build.environment]
 NODE_VERSION = "22"
 [[redirects]]
@@ -40,3 +42,33 @@ status = 302
 from = "/pro"
 to = "/partner-work.html"
 status = 302
+
+[[redirects]]
+from = "/terms"
+to = "/terms.html"
+status = 200
+
+[[redirects]]
+from = "/privacy"
+to = "/privacy.html"
+status = 200
+
+[[redirects]]
+from = "/location-terms"
+to = "/location-terms.html"
+status = 200
+
+[[redirects]]
+from = "/expert-terms"
+to = "/expert-terms.html"
+status = 200
+
+[[redirects]]
+from = "/payment-policy"
+to = "/payment-policy.html"
+status = 200
+
+[[redirects]]
+from = "/support"
+to = "/support.html"
+status = 200
