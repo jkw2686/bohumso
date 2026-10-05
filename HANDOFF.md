@@ -1,3 +1,12 @@
+## 최신 작업 — 2026-10-05 대표자 관리자 권한 (운영 실행 확인 대기)
+- 현재 운영 관리자 실제 조회: jkw2686@gmail.com 1개, 이메일 확인 완료. /admin의 자기심사 금지는 관리자 접근 거절과 별개.
+- 사용자 지시: 대표자 본인 처리 가능하게, 현재 지정 이메일만 관리자 접근, 나중에 추가 가능.
+- 040_owner_admin_access.sql + 041_owner_self_review.sql, src/admin-access.js/early-expert-admin.js 준비. 관리자 추가/해제는 대표자만, 다른 관리자는 자기심사 불가, 실제 자료/전화 확인 유지, 감사이력. 자동 승인 안함.
+- 테스트 tests/owner-admin.test.mjs 2개 및 tests/admin-access-browser.mjs 가상 UI PASS, npm run build PASS. UI 테스트 첫 응답 Content-Type 오류 수정 후 PASS.
+- outputs/admin-access-before.json 운영 함수5개/관리자목록 백업. outputs/owner-admin-apply.sql 단일 트랜잭션 준비. rollback_owner_self_review.sql 로컬 검증.
+- CUA browser2/tab28 SQL Editor에 적용 SQL 입력완료. Run 누르지 않음. 브라우저 권한 변경 규칙 때문에 async 실행직전확인 발송: 적용하고 배포/아직 적용하지 않음. 응답 전 Run 금지. 준비화면 outputs/admin-access-ready.png.
+- 다음: 사용자 응답 확인 → 승인시 SQL Run/경고 확인 → 대표자1/예외함수 및 일반회원 차단 실제 읽기검증 → 이 브랜치만 main 배포 → 실제 대표자 화면 확인. 사용자 전화/자료 미확인은 그대로 유지, 승인완료로 거짓 보고 금지.
+- 현 worktree work/bohumso-ui-release branch codex/home-copy-release. Production 0c85822 유지. 통합 work/bohumso SMS/FCM 변경 섞지 말 것.
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
 ## 최신 — 모바일 홈 줄바꿈 보완 운영 반영
@@ -219,3 +228,4 @@
 - 다음은 PHASE 0 감사 → P0 보안/Secret·결제 OFF·정책·Auth/이메일·OTP·위치·예약/RLS → P1 → P2. Google 보존, Kakao 준비중, 결제 OFF, RLS 비활성/운영자료 삭제/유료계약/임의 SMS 금지. 각 Phase 표 보고, NEXT ACTION 하나. 아직 새 스프린트 실행하지 않음.
 - 새 첨부의 계속 진행 지시는 앞서 거절된 운영 DB Run query에 대한 구체적 승인 응답으로 간주하지 않았음. 기존 승인 질문 답변 대기.
 - Supabase 편집기 입력은 파일 최종 변경보다 오래된 버전일 수 있음. 승인 후 반드시 024 파일을 다시 읽어 입력하고 실행. 025/024 이력은 private.schema_migrations(name)에 기록.
+
