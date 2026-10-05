@@ -4,13 +4,13 @@
 
 | 항목 | 기존상태 | 수정내용 | Mobile 결과 | Desktop 결과 | Production 반영 |
 |---|---|---|---|---|---|
-| 지도 결과패널 | 큰 기본 패널 | 접힘/펼침/닫힘, 데스크톱 우측 패널 | 기본140px, 펼침 최대min(52dvh,520px) PASS | 1024px/1440px 노출72.2%/76.6% PASS | 배포 후 확인 |
-| 빈 결과 | 중복 설명·CTA | 결과 문구와 시간 선택 CTA 하나 | 140px PASS |148px PASS|배포 후 확인|
-| 전문가 참여 | 접힌 추가정보에 위치 | 데스크톱 헤더, 모바일 헤더 아래52px |첫화면 표시 PASS|아웃라인 버튼 PASS|배포 후 확인|
-| 가입 구분 | 일반가입만 표시 | 일반/전문가 목적 선택, 동일 Auth 유지 |내부 next 보존 PASS|동일 PASS|배포 후 확인|
-| 가입 입력 | 누적 여백 | 입력54px, 라벨16px/간격8px, 그룹24px |8개 폭 PASS|동일 PASS|배포 후 확인|
-| 동의 | 넓고 불균일 | 행48px, 행간8px, 체크22px, 상세 모달 |필수만 동의해도 활성 PASS|약관 원문 표시 PASS|배포 후 확인|
-| 하단 메뉴 | 지도/본문 겹침 우려 | 지도 별도 메뉴행, safe area 여백 |겹침 없음 PASS|겹침 없음 PASS|배포 후 확인|
+| 지도 결과패널 | 큰 기본 패널 | 접힘/펼침/닫힘, 데스크톱 우측 패널 | 기본140px, 펼침 최대min(52dvh,520px) PASS | 1024px/1440px 노출72.2%/76.6% PASS | 반영·확인 완료 |
+| 빈 결과 | 중복 설명·CTA | 결과 문구와 시간 선택 CTA 하나 | 140px PASS |148px PASS|반영·확인 완료|
+| 전문가 참여 | 접힌 추가정보에 위치 | 데스크톱 헤더, 모바일 헤더 아래52px |첫화면 표시 PASS|아웃라인 버튼 PASS|반영·확인 완료|
+| 가입 구분 | 일반가입만 표시 | 일반/전문가 목적 선택, 동일 Auth 유지 |내부 next 보존 PASS|동일 PASS|반영·확인 완료|
+| 가입 입력 | 누적 여백 | 입력54px, 라벨16px/간격8px, 그룹24px |8개 폭 PASS|동일 PASS|반영·확인 완료|
+| 동의 | 넓고 불균일 | 행48px, 행간8px, 체크22px, 상세 모달 |필수만 동의해도 활성 PASS|약관 원문 표시 PASS|반영·확인 완료|
+| 하단 메뉴 | 지도/본문 겹침 우려 | 지도 별도 메뉴행, safe area 여백 |겹침 없음 PASS|겹침 없음 PASS|반영·확인 완료|
 
 ## 세부
 - 검사 폭: 320/360/390/412/430/768/1024/1440px. 브라우저 에뮬레이션.
@@ -36,5 +36,7 @@ public/account.css, index.html, map.css, map.html, map.js, simple-ux.css, styles
 ## 배포
 - 통합 미리보기: https://6ac3980e594bce5066d47954--bohumso.netlify.app/ (이전 미배포 기능 포함, 운영용 아님)
 - UI 전용 최종 미리보기: https://6ac39a3bac03bd486e059419--bohumso.netlify.app/ (실제 가입화면 확인 PASS, 운영 OTP/알림/결제 상태 유지; documentsEnabled만 미리보기 환경값과 운영값 차이)
-- Production: https://bohumso.netlify.app/ (배포 전)
+- Production: https://bohumso.netlify.app/ — 86f1d24 / deploy6ac39b041d3d8c0008bf2207 Published, 2026-10-05 21:41 KST
 - UI 롤백: 기존 운영 deploy6ac3759012706d0008f41df7 복원 또는 UI커밋 revert. DB 롤백 불필요.
+
+운영 실제 데스크톱 확인: 지도 빈패널148px, 닫기/다시열기 PASS. UI 원본과 공개 파일 해시 비교 결과 artifacts/compact-production-proof.json. 실기기 Android 및 실제 신규가입/OTP/Push 수신은 이번 UI 검사에서 실행하지 않았음.
