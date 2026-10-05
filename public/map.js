@@ -115,13 +115,12 @@
   function renderList() {
     var body = $('listBody'); body.innerHTML = '';
 
-    var arr = sortedSpots();var areaLink=$('areaRequest');if(areaLink){areaLink.hidden=!selectedArea;areaLink.href='/requests.html?purpose='+encodeURIComponent(PURPOSE||'claim')+'&region='+encodeURIComponent(selectedArea);areaLink.textContent='이 지역에서 시간 정하기';}
+    var arr = sortedSpots(),sheet=$('listSheet'),areaLink=$('areaRequest');
+    sheet.classList.toggle('is-empty',!arr.length);
+    areaLink.hidden=false;areaLink.href='/requests.html?purpose='+encodeURIComponent(PURPOSE||'claim')+'&region='+encodeURIComponent(selectedArea||'');areaLink.textContent='이 지역에서 시간 선택하기';
     if (!arr.length) {
       $('listCount').textContent = '지금 바로 가능한 전문가는 없어요.';
-      var empty = document.createElement('p');
-      empty.className = 'list-empty';
-      empty.textContent = '보험소에 상담 시간을 남겨 주시면 담당자를 확인할게요.';
-      body.appendChild(empty);var request=document.createElement('a');request.className='btn';request.href='/requests.html?purpose='+encodeURIComponent(PURPOSE||'claim')+'&region='+encodeURIComponent(selectedArea||'');request.textContent='상담 시간 정하기';body.appendChild(request);var wider=document.createElement('button');wider.type='button';wider.className='card-more';wider.textContent='전체 지역 보기';wider.onclick=function(){showExperts=false;reloadSpots('');};body.appendChild(wider);return;
+      return;
     }
     $('listCount').textContent = showExperts?'주변 전문가 '+arr.length+'명':'전문가·보험소 '+arr.length+'곳';
     arr.forEach(function (s) {
@@ -131,10 +130,10 @@
         thumbHtml(s, 'thumb') +
         '<span class="info">' +
           '<span class="name">' + esc(s.name) + '</span>' +
-          '<span class="sub">' + esc(s.job) + ' · ' + esc(s.specialty) + '</span>' +
-          '<span class="meta">' + (s.planned ? '오픈 예정 · '+esc(s.region) : '★ '+s.rating.toFixed(1)) + (userLoc?' · '+distLabel(s):'') + '</span>' +
+          '<span class="sub">' + esc(String(s.specialty||s.job||'').split(/[·,]/).slice(0,2).join(' · ')) + '</span>' +
+          '<span class="meta">' + (s.planned ? '오픈 예정 · '+esc(s.region) : esc(s.region)) + (userLoc?' · '+distLabel(s):'') + '</span>' +
           availHtml(s) +
-          (s.pledge ? '<span class="badge-pledge">소비자보호 서약</span>' : '') +
+          '<span class="spot-action">예약하기 →</span>' +
         '</span>';
       b.addEventListener('click', function () { if (map && Number.isFinite(s.lat) && Number.isFinite(s.lng)) map.setView([s.lat, s.lng], 15); openCard(s); });
       body.appendChild(b);
@@ -180,14 +179,14 @@
     var grip=$(gripId), sheet=$(sheetId), start=null, dragged=false;
     grip.addEventListener('click',function(){if(dragged){dragged=false;return;}toggle();});
     grip.addEventListener('pointerdown',function(e){start={y:e.clientY,height:sheet.getBoundingClientRect().height};dragged=false;grip.setPointerCapture(e.pointerId);});
-    grip.addEventListener('pointermove',function(e){if(!start)return;var dy=start.y-e.clientY;if(Math.abs(dy)<8&&!dragged)return;dragged=true;var limit=$('mapStage').clientHeight-16;sheet.style.height=Math.max(100,Math.min(limit,start.height+dy))+'px';sheet.style.maxHeight='calc(100% - 16px)';});
+    grip.addEventListener('pointermove',function(e){if(!start)return;var dy=start.y-e.clientY;if(Math.abs(dy)<8&&!dragged)return;dragged=true;var limit=sheetId==='listSheet'?Math.min(innerHeight*.52,520,$('mapStage').clientHeight-16):$('mapStage').clientHeight-16;sheet.style.height=Math.max(140,Math.min(limit,start.height+dy))+'px';sheet.style.maxHeight=limit+'px';if(sheetId==='listSheet'){sheet.classList.toggle('open',parseFloat(sheet.style.height)>150);sheet.dataset.sheetState=sheet.classList.contains('open')?'expanded':'collapsed';grip.setAttribute('aria-expanded',String(sheet.classList.contains('open')));grip.textContent=sheet.classList.contains('open')?'목록 접기 ⌄':'목록 펼치기 ⌃';}});
     grip.addEventListener('pointerup',function(e){if(start&&dragged&&e.clientY-start.y>start.height-85)collapse();start=null;});
     grip.addEventListener('pointercancel',function(){start=null;});
-    grip.addEventListener('wheel',function(e){e.preventDefault();var limit=$('mapStage').clientHeight-16;sheet.style.height=Math.max(100,Math.min(limit,sheet.getBoundingClientRect().height-e.deltaY*.4))+'px';sheet.style.maxHeight='calc(100% - 16px)';},{passive:false});
+    grip.addEventListener('wheel',function(e){e.preventDefault();var limit=sheetId==='listSheet'?Math.min(innerHeight*.52,520,$('mapStage').clientHeight-16):$('mapStage').clientHeight-16;sheet.style.height=Math.max(140,Math.min(limit,sheet.getBoundingClientRect().height-e.deltaY*.4))+'px';sheet.style.maxHeight=limit+'px';if(sheetId==='listSheet'){sheet.classList.toggle('open',parseFloat(sheet.style.height)>150);sheet.dataset.sheetState=sheet.classList.contains('open')?'expanded':'collapsed';grip.setAttribute('aria-expanded',String(sheet.classList.contains('open')));grip.textContent=sheet.classList.contains('open')?'목록 접기 ⌄':'목록 펼치기 ⌃';}},{passive:false});
   }
-  function showList(){closeCard();var sheet=$('listSheet');sheet.hidden=false;$('listReopen').hidden=true;}
-  function hideList(){closeCard();$('listSheet').hidden=true;$('listReopen').hidden=false;$('listReopen').focus();}
-  function toggleList(){var sheet=$('listSheet');sheet.style.height='';sheet.style.maxHeight='';var open=sheet.classList.toggle('open');$('listGrip').textContent=open?'↕ 목록 작게':'↕ 목록 크게';$('listGrip').setAttribute('aria-expanded',String(open));}
+  function showList(){closeCard();var sheet=$('listSheet');sheet.hidden=false;sheet.classList.remove('open');sheet.style.height='';sheet.style.maxHeight='';sheet.dataset.sheetState='collapsed';$('listGrip').textContent='목록 펼치기 ⌃';$('listGrip').setAttribute('aria-expanded','false');$('listReopen').hidden=true;}
+  function hideList(){closeCard();$('listSheet').hidden=true;$('listSheet').dataset.sheetState='closed';$('listReopen').hidden=false;$('listReopen').focus();}
+  function toggleList(){var sheet=$('listSheet');sheet.style.height='';sheet.style.maxHeight='';var open=sheet.classList.toggle('open');sheet.dataset.sheetState=open?'expanded':'collapsed';$('listGrip').textContent=open?'목록 접기 ⌄':'목록 펼치기 ⌃';$('listGrip').setAttribute('aria-expanded',String(open));}
 
   // 실제 등록 전문가 로드(planner_catalog, anon). 위경도 있는 것만. 실패·없음이면 null → 샘플 유지.
   async function loadReal(area) {

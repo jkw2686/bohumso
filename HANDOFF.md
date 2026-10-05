@@ -1,5 +1,11 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-05 UI 전용 운영 배포 후보
+- 사용자 d1c2cdd7 지침: 지도패널/전문가진입/가입폼 UI만 변경, 서버·OTP·알림 정책 유지.
+- 기준 운영1d9799b에서 codex/ui-only-release 분리. docs/compact-ui-result.md 및 artifacts/compact-ui-report.json. UI8폭/가입10 PASS. 실제Android키보드 UNTESTED.
+- 통합 bohumso/codex/bohumso-oct03에는 미배포 SMS/FCM 작업이 있으므로 그대로 main에 올리지 말 것. 운영기준 서버는 그대로 유지.
+- 다음: UI 전용 Preview 확인 후 이 브랜치를 main으로 fast-forward해 사용자 승인된 UI Production 배포.
+
 ## 최신 인수인계 — 2026-10-05 운영 DB 승인 적용 완료, 실사용 검증 대기
 - 최종 검토 alias 배포 6ac371610c316e38929e2d96 ready. https://early-access-review--bohumso.netlify.app/signup.html. 실제 문서서버 검사5/5 PASS: DBconfig/docflag true, 무로그인401/위조401/외부Origin403/익명serviceRPC401. outputs/비공개문서-서버연결검증.json. user 새 계정 가입·메일인증 질문 pending; signupReviewTab15 열린 입력 전 화면(markHandoff). 사용자 응답 전에 새 비밀번호/약관 대신 입력·동의 금지. 추가 Production 배포 아직없음.
 - 사용자 10개 조건을 포함해 030–036 운영 DB 및 후속 공개 배포 명시 승인. **모든 실제 테스트 통과 후 Production** 조건 유지. DB는 적용 완료, Production 웹은 기존 6ac1c36080854700096ea90c 유지. 추가 승인 다시 요구하지 말 것.
