@@ -1,8 +1,8 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
 ## 최신 상태 — 2026-10-05 클로즈드 베타 E2E (운영 적용 전)
-- 2026-10-05 최종 추가: 전체 verify 68개+브라우저5묶음 PASS. 승인 후 로그인 지도 표시 UI 추가 PASS, 모바일 지도4크기 PASS, beta 서버 strict 타입검사 PASS. 첫 Preview 6ac337635162913c131bddda에서 외부 @supabase/supabase-js 누락 502 발견→서버 내장 fetch로 교체(사용자 JWT 확인/IP provenance 유지), gateway 테스트·타입·빌드 재통과. 수정 Preview 배포 중. 초대 전화제한의 다른 OTP 번호 우회 차단 및 보험소 관리자 배정/타인 슬롯조회 차단 추가 검증 완료.
-- 실제 인증 복귀 설정은 Production 4주소만 허용. Preview account.html?next=** 허용과 028/029 실행은 새 베타 접근을 만드는 브라우저 작업으로 실행시점 확인 필요. 새 서버 인증비밀 브라우저 입력은 사용자 직접 진행. 실계정 고객2+전문가1 인증/동의와 Android 입력을 마지막에 일괄 요청할 것. 운영 SQL/검증절차/결과표/OWNER 입력 복사본은 outputs에 준비됨. Production 아직 변경 없음.
+- 2026-10-05 최종 추가: 전체 verify 68개+브라우저5묶음 PASS. 승인 후 로그인 지도 표시 UI 추가 PASS, 모바일 지도4크기 PASS, beta 서버 strict 타입검사 PASS. 첫 Preview 6ac337635162913c131bddda에서 외부 @supabase/supabase-js 누락 502 발견→서버 내장 fetch로 교체(사용자 JWT 확인/IP provenance 유지), gateway 테스트·타입·빌드 재통과. 수정 Preview 6ac338f72726cfc1dca3221b 완료. https://6ac338f72726cfc1dca3221b--bohumso.netlify.app/signup.html 실제 화면 및 API 7/7 통과(미설정 gateway 정상503). 첫 Preview 실패 후 총 Preview2회, Production0회. 초대 전화제한의 다른 OTP 번호 우회 차단 및 보험소 관리자 배정/타인 슬롯조회 차단 추가 검증 완료.
+- 실제 인증 복귀 설정은 Production 4주소만 허용. Preview 6ac338f72726cfc1dca3221b account.html?next=** 허용과 028/029 실행은 새 베타 접근을 만드는 브라우저 작업으로 실행시점 확인 필요. 새 서버 인증비밀 브라우저 입력은 사용자 직접 진행. 실계정 고객2+전문가1 인증/동의와 Android 입력을 마지막에 일괄 요청할 것. 운영 SQL/검증절차/결과표/OWNER 입력 복사본은 outputs에 준비됨. Production 아직 변경 없음.
 
 - 신규 028_beta_membership.sql/029_beta_experts.sql: 해시 초대·원자적 소진·버전 동의·관리자 베타 전화 확인·역할 분리·전문가 검토/지역중심 지도·베타 예약 구분/슬롯 잠금 구현. 운영 SQL 미적용, private.beta_gateway 및 Netlify BETA_GATEWAY_SECRET 미설정. 011 운영 적용 금지.
 - beta-join.mts 서버가 실제 로그인·Origin·동의 버전 확인 후 Netlify context.ip/UA 기록. private gateway secret은 아직 생성하지 않음. 공개가입·실결제·실SMS·서류·실시간 위치 OFF 유지.
