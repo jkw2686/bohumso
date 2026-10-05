@@ -1,3 +1,10 @@
+## 현재 작업 — 2026-10-05 실제 휴대전화 OTP 발송 실패 조사
+- 사용자 자격확인간주·전화인증 요청. 자격은 근거 없이 VERIFIED 조작 안함. 기존 owner 예외는 적용됨, phone 필요.
+- CUA browser2 tab29 승인된 Preview 6ac3902b819dc1d15d0461d2 /phone-verification.html 열림. 사용자가 허용번호 입력·발송 시도했고 sms_unavailable 표시. 에이전트 추가발송 안함, OTP 미수신/미검증.
+- 운영 DB read: 대표자 challenge 1건, 2026-10-05 13:49:29 UTC, CANCELLED, last_sent_at 없음, attempt_count0. 공급자 send 단계 실패/취소이며 단말기 수신 실패라고 확정하지 않음.
+- Netlify env 존재/scopes/context 확인 모두 설정있음. getEnvVars secret 값은 마스킹20자. 읽기 진단스크립트가 마스킹된 값으로 HMAC GET해 ValidationError(apiKey16자)를 받았으나 이것은 실제키오류 근거 아님. 사용자에게 즉시 정정. 이 진단을 실제원인이라고 보고 금지, 재사용금지. work/diagnose-solapi-readonly.mjs의 masked 검사 보완 필요.
+- SOLAPI tab31 console.solapi.com/dashboard 로그아웃. 사용자에게 기존계정 로그인 요청 async 발송(비밀번호/OTP채팅금지), 응답 대기. 로그인 후 발송내역의 실제 실패코드 확인. user질문 발신=수신 동일 때문인지: 공식문서에서 동일번호 제한 근거 없음, 원인단정 안함.
+- tab30 SupabaseSQL sms상태읽기, tab29인증, tab31SOLAPI markHandoff. 새로고침/재발송 반복금지. SMS_ALLOWLIST 외 발송 금지. Production phone=false 보존. 사용자 실제OTP 직접입력.
 ## 최신 배포 동기화 — 2026-10-05 대표자 관리자 권한
 - UI release worktree의 d851d02를 Production 배포 완료(6ac3a7596c1c1d0008116c0e ready). 040+041 운영 DB 적용 승인/실행 완료. 이 통합 브랜치에도 관련 파일만 동기화함. SMS/FCM 미완성 변경은 Production 미반영 그대로.
 - 현재 관리자 jkw2686@gmail.com 한 계정. 대표자만 관리자 추가·해제 가능, 대표자만 본인심사 예외. 자격자료/전화확인 조건·감사이력 유지. 실제 프로필 미확인 상태 보존.
@@ -273,4 +280,5 @@
 - 다음은 PHASE 0 감사 → P0 보안/Secret·결제 OFF·정책·Auth/이메일·OTP·위치·예약/RLS → P1 → P2. Google 보존, Kakao 준비중, 결제 OFF, RLS 비활성/운영자료 삭제/유료계약/임의 SMS 금지. 각 Phase 표 보고, NEXT ACTION 하나. 아직 새 스프린트 실행하지 않음.
 - 새 첨부의 계속 진행 지시는 앞서 거절된 운영 DB Run query에 대한 구체적 승인 응답으로 간주하지 않았음. 기존 승인 질문 답변 대기.
 - Supabase 편집기 입력은 파일 최종 변경보다 오래된 버전일 수 있음. 승인 후 반드시 024 파일을 다시 읽어 입력하고 실행. 025/024 이력은 private.schema_migrations(name)에 기록.
+
 
