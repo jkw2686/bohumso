@@ -1,5 +1,10 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 최신 — 홈 상황 카드 문구 운영 배포 완료
+- 사용자 2026-10-05 명시적 “배포해” 승인 후 main에1452022 반영. https://bohumso.netlify.app/ HTTP200, 메인 h1 유지/상황 영역 안내/6개카드 문구 실제 공개반영 PASS (artifacts/home-copy-production.json).
+- 운영기준86f1d24에서 홈 한 파일 public/index.html만 cherry-pick. 이번 배포는 CSS/아이콘/라우팅/다른페이지 변경 없음. 이전 지도줌이동 fb4e4c4는 이번 운영배포에서 제외, 작업브랜치에 보존.
+- codex/home-copy-release 운영본, 통합 codex/bohumso-oct03의 SMS/FCM 후속 미완료 상태 유지. 아래 오래된 “홈 배포 승인 대기” 기록은 해소됨.
+
 ## 2026-10-05 UI 전용 운영 배포 후보
 - 사용자 d1c2cdd7 지침: 지도패널/전문가진입/가입폼 UI만 변경, 서버·OTP·알림 정책 유지.
 - 기준 운영1d9799b에서 codex/ui-only-release 분리. docs/compact-ui-result.md 및 artifacts/compact-ui-report.json. UI8폭/가입10 PASS. 실제Android키보드 UNTESTED.
