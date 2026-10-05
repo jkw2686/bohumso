@@ -33,7 +33,7 @@ function toLocal(phone: string): string {
 }
 
 async function solapiSend(to: string, text: string): Promise<boolean> {
-  const apiKey = env('SOLAPI_API_KEY'), apiSecret = env('SOLAPI_API_SECRET'), from = env('SOLAPI_SENDER');
+  const apiKey = env('SOLAPI_API_KEY'), apiSecret = env('SOLAPI_API_SECRET'), from = env('SOLAPI_SENDER_NUMBER') || env('SOLAPI_SENDER');
   if (!apiKey || !apiSecret || !from) return false;
   const date = new Date().toISOString();
   const salt = crypto.randomBytes(32).toString('hex');
@@ -57,7 +57,6 @@ async function solapiSend(to: string, text: string): Promise<boolean> {
 
 export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') return new Response('method_not_allowed', { status: 405 });
-  if (env('SEND_SMS_ENABLED') !== 'true') return new Response(JSON.stringify({ error: { message: 'disabled' } }), { status: 503, headers: { 'Content-Type': 'application/json' } });
   const body = await req.text();
   const ok = verifyHook(env('SEND_SMS_HOOK_SECRET'), req.headers.get('webhook-id') || '', req.headers.get('webhook-timestamp') || '', body, req.headers.get('webhook-signature') || '');
   if (!ok) return new Response('unauthorized', { status: 401 });
