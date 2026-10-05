@@ -1,5 +1,13 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 최신 완료 — 2026-10-05 UI 전용 Production 배포
+- Production https://bohumso.netlify.app/ 커밋86f1d24, deploy6ac39b041d3d8c0008bf2207 Published. main은 이 UI전용 커밋까지 반영.
+- 최종 UI Preview https://6ac39a3bac03bd486e059419--bohumso.netlify.app/ . 통합 Preview6ac3980...는 미배포 알림/SMS 코드 포함하므로 운영 후보로 혼동하지 말 것.
+- 모바일 목록140px/expanded52dvh, desktop340~420px 우측, 빈상태148px, 전문가가입entry, 역할 next 안전복귀, 입력54px/그룹24px/약관행48px/간격8px, 약관 text modal. docs/compact-ui-result.md. UI8폭+전문가3fixture/가입10 PASS, actualDesktop PASS, 실제Android/키보드 UNTESTED.
+- public 운영 member/account 번들이 기준1d9799b와 동일한 hash임을 증명 후 운영기준 별도폴더 work/bohumso-ui-release에 UI만 추가. netlify/supabase/package 변경없음, 새 알림/SMS 기능은 이번 Production에 추가하지 않음. 자동리뷰의 알림제거 우려는 이 증거로 재검토 승인됨.
+- 원본통합 work/bohumso codex/bohumso-oct03에는 기존SMS/FCM 기능과UI 모두 보존. 아직 실제SMS수신/FCM키/Push검증 미완료; 아래 선행 인수인계 계속참조. 통합branch를 그대로 main에 push 금지, 향후 origin/main UI커밋을 통합한 뒤 검증.
+- 이번 UI요청 완료. 후속 실제SMS/Push 검증은 사용자 허용번호/테스트계정만, Firebase설정 사용자 단계대기. 새키/새이메일 재요청 금지.
+
 ## 최신 상태 — 2026-10-05 로그인 복귀 한 호스트 추가 완료
 - 사용자가 기존 Production Site URL/4 Redirect URLs 유지·중복금지·한 Preview호스트/콜백만 추가·실제 양쪽로그인 검증 승인.
 - 구 Preview6ac38c...의 로그인 코드가 Production 강제이동함을 발견. account.js loginCallback()으로 현재origin 콜백, member-access.js safeNext 내부화면 allowlist/민감인증 및 중첩redirect 제거. Production 코드 미배포. public-signup의 기존 가입 canonical/reset-password 정책은 이 기존회원 로그인 변경에서 유지.

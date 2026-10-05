@@ -23,3 +23,6 @@
 
 body.has-bottom-nav .simple-home{padding-bottom:24px}body.has-bottom-nav.customer-requests .container:last-of-type{padding-bottom:24px}
 @media(max-width:899px){body.has-bottom-nav .customer-nav{height:calc(var(--bottom-nav-height) + env(safe-area-inset-bottom,0px));bottom:0;left:0;right:0;width:100%;transform:none;padding:4px 8px calc(4px + env(safe-area-inset-bottom,0px));box-sizing:border-box;border-radius:18px 18px 0 0}body.has-bottom-nav .customer-nav a{min-height:44px;padding:4px;position:relative;white-space:nowrap}}
+
+.member-header .expert-header-entry{border:1px solid var(--brand);color:var(--brand);background:var(--card)}.expert-mobile-entry{display:none}
+@media(max-width:767px){.member-header .expert-header-entry{display:none}.expert-mobile-entry{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 16px;height:52px;background:var(--brand-soft);font-size:12px}.expert-mobile-entry a{display:flex;align-items:center;min-height:44px;color:var(--brand);font-weight:700;white-space:nowrap}}

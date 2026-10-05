@@ -194,3 +194,19 @@
 .urgent-map-link{padding:8px 16px;background:var(--brand-soft);color:var(--brand);font-weight:700;text-align:center;flex-shrink:0}
 
 .map-page{height:100vh;height:100dvh;min-height:0}.map-page.has-bottom-nav .customer-nav{height:calc(var(--bottom-nav-height) + env(safe-area-inset-bottom,0px));flex:0 0 calc(var(--bottom-nav-height) + env(safe-area-inset-bottom,0px));padding:4px 8px calc(4px + env(safe-area-inset-bottom,0px));box-sizing:border-box}.map-page .card-sheet-body{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}.map-page .notification-bell{top:auto;bottom:auto}
+
+/* Compact result panel. The map stage already excludes the navigation safe area. */
+.map-page .list-sheet{height:140px;max-height:calc(100% - 16px);bottom:16px;display:flex;flex-direction:column;overflow:hidden}
+.map-page .list-sheet.open{height:min(52dvh,520px);max-height:min(52dvh,520px,calc(100% - 16px))}
+.map-page .list-sheet .sheet-toolbar{height:44px;min-height:44px;padding:0 8px;border:0}
+.map-page .list-sheet .sheet-toolbar button{height:44px;min-height:44px;padding:0 12px;min-width:44px}
+.map-page .list-sheet .sheet-resize{font-size:12px}.map-page .list-sheet .sheet-close{background:transparent;font-size:22px}
+.map-page .list-head{padding:0 16px;min-height:24px;flex-shrink:0}.map-page .list-head strong{font-size:13px;line-height:20px}
+.map-page .list-sheet:not(.open) .sort-tabs,.map-page .list-sheet:not(.open) .list-body,.map-page .list-sheet.is-empty .sort-tabs{display:none}
+.map-page .area-request{display:flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:48px;height:48px;flex-shrink:0;margin:8px 16px 16px;padding:0 16px;font-size:14px;border-radius:14px}
+.map-page .list-body{overflow-y:auto;flex:1;padding:0 12px 12px}.map-page .spot{padding:12px;gap:12px;margin-bottom:8px}.map-page .spot .sub,.map-page .spot .meta{font-size:12px;line-height:18px}.spot-action{color:var(--brand);font-size:13px;font-weight:700}.map-page .spot .thumb{width:48px;height:48px}.map-page .sort-tabs button{min-height:44px}
+.map-page .list-sheet.is-empty,.map-page .list-sheet.is-empty.open{height:140px!important;max-height:calc(100% - 16px)!important}
+@media(min-width:900px){.map-page .list-sheet,.map-page .list-sheet.open{left:auto;right:16px;top:16px;bottom:auto;width:clamp(340px,28vw,420px);max-width:calc(35% - 16px);height:auto;max-height:calc(100% - 32px);border-radius:20px}.map-page .list-sheet:not(.open) .list-body{display:block;max-height:340px;flex:initial}.map-page .list-sheet.open .list-body{max-height:340px}.map-page .list-sheet.is-empty .list-body{display:none}.map-page .list-sheet .sheet-resize{visibility:hidden}.map-page .list-sheet .list-head{min-height:32px}.map-page .list-sheet.is-empty,.map-page .list-sheet.is-empty.open{height:148px!important}.map-page .list-reopen{left:auto;right:16px;transform:none}}
+
+/* Legal links remain on home/account; keep the map viewport dedicated to navigation. */
+.map-page > .policy-footer{display:none}
