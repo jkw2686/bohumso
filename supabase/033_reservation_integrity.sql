@@ -7,8 +7,17 @@ alter table private.consultations add column duration_minutes integer not null d
 create or replace function public.office_catalog() returns jsonb language sql stable security definer set search_path='' as $$
  select coalesce(jsonb_agg(jsonb_build_object('id',id,'name',name,'region',region,'status',case when status='active' and nullif(address,'') is not null and latitude is not null and longitude is not null then 'active' else 'planned' end,'address',case when status='active' then address end,'latitude',latitude,'longitude',longitude,'weekdays',weekdays,'firstStartHour',first_start_hour,'lastStartHour',last_start_hour,'durationMinutes',60)),'[]') from private.office_locations where status<>'closed'
 $$;
-create function private.check_reservation_slot(planner uuid,office text,stamp timestamptz,exclude_id uuid default null) returns void language plpgsql security definer set search_path='' as $$
-declare length_minutes integer:=case when office is null then 30 else 60 end;ep private.expert_profiles;op private.office_locations; local_stamp timestamp:=stamp at time zone 'Asia/Seoul';
+-- Server authority: a physical office always takes 60 minutes; expert face-to-face takes 60.
+-- Phone duration is controlled by service_features, never by a client-supplied duration/targetType.
+create function private.reservation_duration(office text,consultation_method text) returns integer language plpgsql stable security definer set search_path='' as $$
+begin
+ if consultation_method is null or consultation_method not in ('scheduled','nearby','phone') then raise exception 'invalid_method';end if;
+ if office is not null or consultation_method<>'phone' then return 60;end if;
+ return (select phone_duration_minutes from private.service_features where id);
+end$$;
+revoke all on function private.reservation_duration(text,text) from public,anon,authenticated;
+create function private.check_reservation_slot(planner uuid,office text,stamp timestamptz,exclude_id uuid default null,consultation_method text default 'scheduled') returns void language plpgsql security definer set search_path='' as $$
+declare length_minutes integer:=private.reservation_duration(office,consultation_method);ep private.expert_profiles;op private.office_locations; local_stamp timestamp:=stamp at time zone 'Asia/Seoul';
 begin
  if stamp is null or stamp<now()+interval '30 minutes' or stamp>now()+interval '90 days' or mod(extract(epoch from stamp),1800)<>0 then raise exception 'invalid_slot';end if;
  if office is not null then
@@ -39,14 +48,14 @@ begin
  select id into rid from private.consultations where customer_id=auth.uid() and request_key=(payload->>'request_key')::uuid;
  if rid is not null then return jsonb_build_object('id',rid,'replay',true);end if;
  target:=nullif(payload->>'planner_id','')::uuid;office:=nullif(payload->>'office_id','');stamp:=(payload->>'preferred_at')::timestamptz;
- perform private.check_reservation_slot(target,office,stamp);
+ perform private.check_reservation_slot(target,office,stamp,null,payload->>'method');
  else
  select * into c from private.consultations where id=nullif(payload->>'id','')::uuid for update;
  if operation in ('propose','office_assign','confirm','office_confirm','accept') then
  if c.id is null or not (c.customer_id=auth.uid() or c.planner_id=auth.uid() or private.is_admin()) then raise exception 'request_forbidden';end if;
  target:=case when operation='office_assign' then (payload->>'planner_id')::uuid else c.planner_id end;
  stamp:=case when operation='propose' then (payload->>'preferred_at')::timestamptz else c.preferred_at end;
- perform private.check_reservation_slot(target,c.office_id,stamp,c.id);
+ perform private.check_reservation_slot(target,c.office_id,stamp,c.id,c.method);
  end if;
  end if;
  if operation='followup_confirm' then
@@ -63,16 +72,16 @@ begin
  operation:='confirm';
  end if;
  result:=public.consultation_command_before_integrity(operation,payload);
- if operation='request' then update private.consultations set request_key=(payload->>'request_key')::uuid,duration_minutes=case when office is null then 30 else 60 end where id=(result->>'id')::uuid;end if;
+ if operation='request' then update private.consultations set request_key=(payload->>'request_key')::uuid,duration_minutes=private.reservation_duration(office,payload->>'method') where id=(result->>'id')::uuid;end if;
  if operation='accept' and c.allocation_mode='office' then update private.consultations set state='coordinating',customer_ok=false where id=c.id;end if;
  if operation='confirm' then insert into private.consent_records(user_id,type,version,accepted,accepted_at,source) values(auth.uid(),'THIRD_PARTY_PROVISION','2026-10-05-early-access-v1',true,now(),'reservation:'||c.id::text||':recipient:'||c.planner_id::text);end if;
  return result;
 end$$;
-revoke all on function private.check_reservation_slot(uuid,text,timestamptz,uuid),public.consultation_command(text,jsonb) from public,anon,authenticated;
+revoke all on function private.check_reservation_slot(uuid,text,timestamptz,uuid,text),public.consultation_command(text,jsonb) from public,anon,authenticated;
 grant execute on function public.consultation_command(text,jsonb) to authenticated;
 alter table private.consultations drop constraint consultations_purpose_check;
 alter table private.consultations add constraint consultations_purpose_check check(purpose in ('claim','management','coverage','corporate','new','other'));
-create function public.reservation_slots(office_id text default null,planner_id uuid default null,day date default current_date) returns jsonb language plpgsql stable security definer set search_path='' as $$
+create function public.reservation_slots(office_id text default null,planner_id uuid default null,day date default current_date,consultation_method text default 'scheduled') returns jsonb language plpgsql stable security definer set search_path='' as $$
 #variable_conflict use_variable
 declare office private.office_locations;expert private.expert_profiles;stamp timestamptz;slot_length integer;first_hour integer;last_hour integer;results jsonb:='[]';minutes integer;
 begin
@@ -86,9 +95,9 @@ begin
  if not private.planner_eligible(planner_id) then return '[]';end if;
  select * into expert from private.expert_profiles e where e.user_id=planner_id;
  if not extract(dow from day)::integer=any(expert.weekdays) then return '[]';end if;
- slot_length:=30;first_hour:=expert.start_hour;last_hour:=expert.end_hour;
+ slot_length:=private.reservation_duration(null,consultation_method);first_hour:=expert.start_hour;last_hour:=expert.end_hour;
  else return '[]';end if;
- for minutes in select generate_series(first_hour*60,last_hour*60-case when office_id is null then 30 else 0 end,slot_length) loop
+ for minutes in select generate_series(first_hour*60,last_hour*60-case when office_id is null then slot_length else 0 end,slot_length) loop
  stamp:=(day::timestamp+minutes*interval '1 minute') at time zone 'Asia/Seoul';
  if stamp<now()+interval '30 minutes' then continue;end if;
  if exists(select 1 from private.consultations c where ((office_id is not null and c.office_id=office_id) or (planner_id is not null and c.planner_id=planner_id)) and c.state in ('requested','coordinating','confirmed','scheduled','awaiting_completion') and c.preferred_at<stamp+slot_length*interval '1 minute' and c.preferred_at+c.duration_minutes*interval '1 minute'>stamp) then continue;end if;
@@ -96,6 +105,6 @@ begin
  results:=results||jsonb_build_array(to_char(stamp at time zone 'Asia/Seoul','HH24:MI'));
  end loop;return results;
 end$$;
-revoke all on function public.reservation_slots(text,uuid,date) from public;
-grant execute on function public.reservation_slots(text,uuid,date) to anon,authenticated;
+revoke all on function public.reservation_slots(text,uuid,date,text) from public;
+grant execute on function public.reservation_slots(text,uuid,date,text) to anon,authenticated;
 commit;

@@ -20,7 +20,7 @@ begin
  select * into doc from private.verification_documents where id=(payload->>'id')::uuid for update;
  if doc.id is null or (doc.user_id<>subject and not administrator) then raise exception 'request_forbidden';end if;
  if operation='read' then
- if doc.deleting then raise exception 'request_forbidden';end if;
+ if doc.deleting or not administrator then raise exception 'request_forbidden';end if;
  insert into private.expert_verification_events(subject,actor,action) values(doc.user_id,subject,'DOCUMENT_VIEWED');return to_jsonb(doc);
  elsif operation='delete' then
  update private.verification_documents set deleting=true where id=doc.id;

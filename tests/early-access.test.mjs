@@ -28,6 +28,7 @@ test('document service is server-only; approval requires verified evidence and p
  await f.login(ids.admin);await assert.rejects(f.rpc('early_expert_review',['approve',{user_id:ids.planner,reason:'테스트 확인 근거'}]),/verification_required/);
  await f.login(null,'service_role');const doc=(await f.rpc('early_document_service',[ids.planner,'save',{kind:'registration',path:ids.planner+'/fixture.pdf',filename:'fixture.pdf',mime:'application/pdf',bytes:128}])).document;
  await assert.rejects(f.rpc('early_document_service',[ids.other,'read',{id:doc.id}]),/request_forbidden/);
+ await assert.rejects(f.rpc('early_document_service',[ids.planner,'read',{id:doc.id}]),/request_forbidden/);assert.equal((await f.rpc('early_document_service',[ids.admin,'read',{id:doc.id}])).object_path,ids.planner+'/fixture.pdf');
  await f.login(ids.admin);await f.rpc('early_expert_review',['verify',{user_id:ids.planner,kind:'registration',decision:'VERIFIED',reason:'테스트 자료 확인 근거'}]);
  await f.db.exec('reset role');await f.db.query('update auth.users set phone=$1 where id=$2',['+821000000001',ids.planner]);await f.login(ids.admin);
  await f.rpc('early_expert_review',['approve',{user_id:ids.planner,organization:'테스트 소속',registration_reference:'TEST-0001',reason:'테스트 자격 소속 확인'}]);
@@ -72,4 +73,15 @@ test('rights inbox isolates members and admin responses preserve audit and origi
  await f.login(ids.admin);const inbox=await f.rpc('admin_member_rights',['list']);assert.equal(inbox.length,1);await assert.rejects(f.rpc('admin_member_rights',['respond',{id:mine[0].id,status:'COMPLETED',response:'완료'}]),/invalid_response/);
  await f.rpc('admin_member_rights',['respond',{id:mine[0].id,status:'IN_PROGRESS',response:'보관 근거와 처리 범위를 확인 중입니다.'}]);await f.login(ids.customer);assert.equal((await f.rpc('member_rights',['list'])).requests[0].status,'IN_PROGRESS');assert.equal((await f.rpc('my_membership')).member,true);
  await f.db.exec('reset role');assert.equal((await f.db.query('select count(*)::integer n from private.member_rights_events')).rows[0].n,1);
+ }finally{await f.db.close();}});
+
+
+test('duration policy is server-owned and 18:00 is an inclusive office start',async()=>{const f=await setup();try{
+ await f.db.exec("update private.release_controls set policies_approved=true;update auth.users set phone='+821000000001';insert into private.expert_profiles(user_id,display_name,primary_area,specialties,weekdays,start_hour,end_hour,status,registration_status,map_visible) select user_id,'테스트 전문가','경기 분당',array['claim'],array[0,1,2,3,4,5,6],9,20,'APPROVED','VERIFIED',true from private.planner_directory;insert into private.office_locations(id,name,region,status,address,latitude,longitude,weekdays) values('late-office','검증용 보험소','경기 분당','active','가상 테스트 주소',37.38,127.12,array[0,1,2,3,4,5,6]);");
+ const date=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date(Date.now()+3*86400000));
+ await f.login(ids.customer);const slots=await f.rpc('reservation_slots',['late-office',null,date]);assert.equal(slots.at(-1),'18:00');
+ const office=await f.cmd('request',{purpose:'claim',region:'경기 분당',method:'scheduled',preferred_at:date+'T18:00:00+09:00',request_key:crypto.randomUUID(),office_id:'late-office',office_assignment:true,duration_minutes:30});
+ await f.db.exec('reset role');assert.equal((await f.db.query('select duration_minutes from private.consultations where id=$1',[office.id])).rows[0].duration_minutes,60);
+ for(const [method,hour,expected] of [['scheduled',10,60],['phone',12,30]]){await f.login(ids.customer);const r=await f.cmd('request',{purpose:'claim',region:'경기 분당',method,preferred_at:date+'T'+hour+':00:00+09:00',request_key:crypto.randomUUID(),planner_id:ids.planner,duration_minutes:999});await f.db.exec('reset role');assert.equal((await f.db.query('select duration_minutes from private.consultations where id=$1',[r.id])).rows[0].duration_minutes,expected);}
+ await f.db.exec('update private.service_features set phone_duration_minutes=60');assert.equal((await f.db.query("select private.reservation_duration(null,'phone') n")).rows[0].n,60);
  }finally{await f.db.close();}});

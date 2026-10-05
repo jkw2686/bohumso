@@ -4,7 +4,8 @@ create table private.service_features (
  id boolean primary key default true check(id), stage text not null default 'EARLY_ACCESS',
  public_signup boolean not null default true, customer_signup boolean not null default true,
  expert_applications boolean not null default true, invite_only boolean not null default false,
- expert_auto_publish boolean not null default false check(not expert_auto_publish)
+ expert_auto_publish boolean not null default false check(not expert_auto_publish),
+ phone_duration_minutes integer not null default 30 check(phone_duration_minutes in (30,60))
 );
 insert into private.service_features(id) values(true);
 create table private.account_lifecycle(user_id uuid primary key references auth.users(id),status text not null default 'ACTIVE' check(status in ('ACTIVE','WITHDRAWN','SUSPENDED')),changed_at timestamptz not null default now());
@@ -47,7 +48,7 @@ begin
  return public.my_membership();
 end$$;
 create or replace function public.release_status() returns jsonb language sql stable security definer set search_path='' as $$
- select jsonb_build_object('serviceStage',f.stage,'signupEnabled',f.public_signup and f.customer_signup,'expertApplicationsEnabled',f.expert_applications,'policiesApproved',r.policies_approved,'closedBeta',f.invite_only,'betaAllowed',private.beta_allowed(),'phoneEnabled',r.phone_enabled,'phoneVerified',exists(select 1 from auth.users where id=auth.uid() and phone_confirmed_at is not null)) from private.release_controls r cross join private.service_features f
+ select jsonb_build_object('serviceStage',f.stage,'signupEnabled',f.public_signup and f.customer_signup,'expertApplicationsEnabled',f.expert_applications,'phoneDurationMinutes',f.phone_duration_minutes,'policiesApproved',r.policies_approved,'closedBeta',f.invite_only,'betaAllowed',private.beta_allowed(),'phoneEnabled',r.phone_enabled,'phoneVerified',exists(select 1 from auth.users where id=auth.uid() and phone_confirmed_at is not null)) from private.release_controls r cross join private.service_features f
 $$;
 create function public.member_rights(operation text,payload jsonb default '{}') returns jsonb language plpgsql security definer set search_path='' as $$
 declare subject uuid:=auth.uid(); rid uuid;

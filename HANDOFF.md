@@ -1,5 +1,21 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 최신 인수인계 — 2026-10-05 운영 DB 승인 적용 완료, 실사용 검증 대기
+- 최종 검토 alias 배포 6ac371610c316e38929e2d96 ready. https://early-access-review--bohumso.netlify.app/signup.html. 실제 문서서버 검사5/5 PASS: DBconfig/docflag true, 무로그인401/위조401/외부Origin403/익명serviceRPC401. outputs/비공개문서-서버연결검증.json. user 새 계정 가입·메일인증 질문 pending; signupReviewTab15 열린 입력 전 화면(markHandoff). 사용자 응답 전에 새 비밀번호/약관 대신 입력·동의 금지. 추가 Production 배포 아직없음.
+- 사용자 10개 조건을 포함해 030–036 운영 DB 및 후속 공개 배포 명시 승인. **모든 실제 테스트 통과 후 Production** 조건 유지. DB는 적용 완료, Production 웹은 기존 6ac1c36080854700096ea90c 유지. 추가 승인 다시 요구하지 말 것.
+- 030–036 + expert_storage_setup.sql 단일 BEGIN/COMMIT/이력8건. scripts/early-sql.mjs가 SQL Editor/CLI 공통 묶음 생성, ledger idempotence + advisory lock. 로컬 재실행/실패전체취소 PASS. 이미 운영 적용된030–036 수정 금지, 추가는037부터.
+- 적용 직전 schema/member export: outputs/private-backup-2026-10-05/schema-member-before-final.json (18:08:25 KST). 39앱테이블/276컬럼/66함수+ACL/기존회원1+동의1. SHA256 300cbb24ac0c4e6c0b6d21057421cd2069400bd8875364e4a3b70157e6c49526. 저장소 밖 개인정보 파일, Git/배포 금지.
+- 운영 private36→47개 모두RLS, private 신규11테이블. 기존 office6컬럼+consultations.duration_minutes 추가. 기존컬럼삭제/타입변경/기존데이터삭제 없음. expert-documents private4MB + anon/auth restrictive direct-deny. 기존profile/consentJSON비교 PASS.
+- duration 서버기준: office60,expert대면60,phoneDB기본30(60가능); 고객입력duration 무시. 18:00 office start/19:00 end PASS; 배정expert근무종료19이후 필요. public-config DB release_status 최종기준, Netlify는provider gate. verification read는admin only, ownerUI read제거. 동의append-only.
+- 실제 운영DB 17개검사 PASS: 신규회원RPC/동의/expert/자료metadata/admin권한/office60+18/중복/본인RLS/배정expert/탈퇴삭제접수/Storagedeny. **Auth 신규 이메일인증/실제파일업로드/별도연결동시성/실SMS 테스트가 아님**. 합성fixtures 전체ROLLBACK; Auth3/Profile1/consent1/예약0 확인. 기존로그인은 Production account.html 실제유지 확인.
+- 로컬78tests PASS + 화면6묶음완료. commerce-browser checkbox timeout1후 무수정재실행PASS. strict서버types PASS. artifacts/verification-report.json 초기실패와재시도 함께기록. 테스트SQL supabase/validation/early_access_transaction.sql. 운영 결과 docs/production-migration-result.md. rollback_early_access.sql은 데이터삭제 없는신규쓰기중지/기존읽기유지 롤백, 로컬검증PASS(운영미실행); 완전한schema다운그레이드 아님.
+- 기존 Supabase service_role 키를 찾고 NetlifyUI로 직접재연결. **키 다시 달라고 요구하지 말 것.** production/deploy-preview 및 early-access-review 특정분기에 Secret저장. tier UI scopes잠금: Builds/Functions/Runtime, post_processing제외. 로컬평문파일저장은자동검토거절되어미실행(Test-Path false). 다만 CUA 필터실수로 키값이 도구기록1회 노출됨을 사용자에게 알렸으며 교체권고 남김. 키값을 대화/파일/로그에 다시출력하지 말 것. 새키생성/회전아직안함.
+- Preview1 6ac36af9a0fc63143f4c20c7 actualHTTP17 PASS. Alias preview2 6ac36ed70ab88123ad535faa = https://early-access-review--bohumso.netlify.app 는 **branch-deploy/branch early-access-review** 이므로 deploy-preview env로는문서503. 해당분기비밀키UI저장완료; configure-review-branch.mjs로 DOCStrue/APP_ORIGIN동일alias를해당분기에설정중/완료후재배포필요. Production DOCSfalse 유지. 검토분기외범위자동확장하지말것. API probe ../verify-private-preview.mjs는alias검사(로그인없는401/위조401/타사이트403). 이전실패리포트존재, 수정후갱신할것.
+- 실제신규가입/전문가UI/파일업로드 검증은 사용자의 새테스트계정 인증이필요. 비밀번호입력/약관동의는사용자직접. PreviewOAuth/메일callback은의도대로Production만설정; 새메일확인후검토사이트에로그인필요할수있음. 실운영예약 policyfalse/phonefalse 유지, 사용자검증조건을우회해성공표시/Production배포 금지.
+- CUA browser2, migrationTab11(SQL audit), existingAccountTab12(Production기존로그인), existingKeyTab13(키값화면벗어나general), netlifyKeyTab14(서버키variable). 재개시rewriteDocumentation. screenshot outputs/운영DB-적용확인.png, 운영DB-검증17개-통과.png. 결과JSON outputs/운영DB-적용검증.json, 운영DB-검증결과.json. audit new_tables배열은counter필터오타로10개만보이지만실제추가11개; SQL035 operational_counters 포함.
+- 브랜치 codex/bohumso-oct03; mainpush는Production자동배포이므로실테스트완료까지보류. deno.lock 무관제외; node_modules junction수정금지. 다음: 검토분기env적용→alias재배포→401/403실API확인→사용자신규인증handoff→가능한실사용검증→조건통과후Production.
+
+
 ## 최신 검토본 — 2026-10-05 운영 SQL 실행 직전
 - 사용자 44절 통합 지침 구현·검토 배포 완료. 최신 Preview `6ac35c0205839c68e1f2eb0b`(개발 검증 전용), Production `1e7f989 / 6ac1c36080854700096ea90c` 유지. 아래 이전 030~035 표기는 **030~036**으로 대체.
 - 74/74 전체 DB/gateway + 기존 브라우저5묶음 PASS. 이후 SQL/설정7/7, 공개가입 브라우저10시나리오(이메일 새 탭 포함), 지도320/390/844/1440 PASS, 서버 엄격 타입 PASS. 실제 가입/Android GPS/운영 예약10+10/실제 2연결 동시예약 미검증.

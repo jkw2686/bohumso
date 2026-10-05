@@ -17,7 +17,7 @@ window.bohumsoCatalog=async(area,wanted)=>{const {client}=await memberService();
 
 
 window.bohumsoOffices=async()=>{const {client}=await memberService();const {data,error}=await client.rpc('office_catalog');if(error)throw error;return data;};
-window.bohumsoSlots=async(office_id,planner_id,day)=>{const {client}=await memberService();const {data,error}=await client.rpc('reservation_slots',{office_id,planner_id,day});if(error)throw error;return data;};
+window.bohumsoSlots=async(office_id,planner_id,day,consultation_method='scheduled')=>{const {client}=await memberService();const {data,error}=await client.rpc('reservation_slots',{office_id,planner_id,day,consultation_method});if(error)throw error;return data;};
 
 window.dispatchEvent(new Event('bohumso-member-ready'));
 
