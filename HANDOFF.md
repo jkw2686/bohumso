@@ -1,5 +1,15 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 최신 — 2026-10-08 관리자·회원 모바일 디자인 정비 (운영 미배포)
+- 사용자 첨부 관리자 승인/정지 버튼이 붙고 과도하게 강조된 화면 개선 요청. src/early-expert-admin.js: 상태 한글화, 심사 카드/자료/버튼 그룹 클래스 추가. 승인 파랑/정지 빨간 테두리, 모바일 두 버튼 간격 10px, 기존 RPC/검증/권한 그대로.
+- public/account.css: 계정 화면 범위에서 시스템 폰트16px, 버튼15px/최소48px, 입력16px/최소48px, 모바일 제목24/20px, 카드16px, 읽기 좋은 줄바꿈·하단 안전여백. 내 계정 메뉴 한 열, 약관 보기 버튼44px 폭/48px 높이/한 줄. 홈 로고/카피/지도/라우팅 미변경.
+- 테스트: 빌드 PASS, mobile-controls-browser 6폭 PASS(320/360/390/430/768/1440 버튼간격·가로넘침·입력글자·기존승인/정지payload 모의), early-access-browser 10시나리오 PASS, phone-entry-browser PASS, owner-admin DB3 PASS. 실제 기기/SMS/운영 승인 호출 미실행. artifacts/admin-controls-390.png 시각 확인, mobile-controls-report.json.
+- 최종 약관 보기 보완 후 compact-ui-browser 8폭(320~1440) 지도/가입/약관/역할복귀 PASS. artifacts/compact-signup-390.png.
+- 예전 tests/member-gate-browser.cjs는 현재 없는 #signupForm button에서 timeout. 최신 signup은 publicSignupForm이며 early-access-browser에서 검증. 이 구형 스크립트는 통과로 보고하지 않음/별도 정비 필요.
+- 관리자 전용 버튼 account.js membership.admin일 때만 표시. /admin 직접 방문도 차단+early_expert_review 서버 private.is_admin 검사. 마지막 운영 확인 관리자 jkw2686@gmail.com 한 명; 향후 대표자가 추가한 관리자에게도 표시됨. 별도 도메인은 필요 없고 /admin 경로 사용 가능. 이번 작업에서 권한/DB 설정은 바꾸지 않음.
+- 운영 프론트는 여전히 d851d02. 이번 수정 및 이전 전화인증 UX는 작업 브랜치에만 있음. 통합 SMS/FCM 미배포 코드를 통째로 운영 배포 금지; 운영 배포 요청 시 UI release checkout에 필요한 변경만 선별.
+이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
+
 ## 최신 — 2026-10-08 휴대전화 인증 입력 화면 개선 (코드 검증 완료, 운영 미배포)
 - 사용자: 이충경 가입자가 전화인증 화면을 못 찾음. 전문가 프로필 상단에 전화번호/인증번호 받기/6자리 입력/인증 완료하기를 인라인 배치. 신규 src/phone-signup-panel.js, expert-early-access.js 연결. 별도 form으로 프로필 draft 보존, 인증 성공 시 페이지 이동 없이 완료 상태. 이미 인증된 사람은 완료 표시.
 - 내 계정 account.html 첫 메뉴에 큰 휴대전화 인증하기 링크 추가. phone-verification-ui.js는 기존 단독 페이지 복귀 유지, 인라인 callback 지원, Enter 발송, 오류/30초 재발송 대기 유지. account.css 모바일 입력 54px, 버튼 52px, 패널 파란 테두리.
