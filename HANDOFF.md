@@ -1,3 +1,10 @@
+## 2026-10-08 배포 준비 — 전문가 첫 미팅 약속 및 모바일 UI
+- 사용자 배포 승인 후 추가 지시: 전문가 가입 4/5 단계 첫 미팅 보험가입 권유 금지, 청구 도움 이후 권유 가능. 1회 위반 지도노출 정지1개월, 2회3개월, 3회영구제명 명시. 체크 미선택은 다음/저장 차단. 이번 변경은 화면 확인이며 자동 제재/별도 버전 동의이력 DB 변경은 포함하지 않음.
+- 이전 휴대전화 인라인 입력/내 계정 진입점과 관리자/회원 모바일 스타일 함께 포함. 관리자 권한/기존 데이터 미변경.
+- 배포 직전 origin/main에 다른 작업자 SOLAPI Supabase Send SMS Hook 2커밋(d2a6f88/a2d0002) 발견. 그대로 merge 보존. 운영 공개 config phoneVerificationEnabled=true 확인. 이전 HANDOFF의 운영 SMS OFF는 오래된 정보.
+- 운영 provider는 기존 Supabase Auth updateUser/verifyOtp 그대로 보존. 국내010 입력을 +82로 정규화, UI cooldown/expiry를 공급자60초/5분에 맞춤. 통합 branch의 /api/phone provider 및 Firebase/FCM은 운영에 추가하지 않음.
+- 로컬 검사: 새 확인화면 미동의 차단/문구/저장 흐름, 모바일 관리자6폭, 인증 입력/오류/인라인 성공. 실제 고객 SMS 발송·신규 실계정가입 이번 작업에서 미실행.
+- Netlify 배포 전 billing UI: Personal1000 credits/month, 사용287.7, 잔여712.3, billing Oct3-Nov2/credit expiryNov3, auto recharge disabled. 배포 후 재확인 예정.
 ## 최신 완료 — 2026-10-05 대표자 관리자 권한 운영 적용·공개 배포
 - 사용자 실행직전 답변 “적용하고 배포” 수신 후 040+041 단일 트랜잭션 운영 적용 완료. 대표자 jkw2686@gmail.com, 관리자1개, owner_review_installed=true.
 - Production commit d851d02, Netlify deploy 6ac3a7596c1c1d0008116c0e ready, 22:34 KST. 관리자 https://bohumso.netlify.app/admin 실제 대표자 로그인/관리자 계정 관리 펼침 확인.

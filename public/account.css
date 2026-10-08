@@ -80,3 +80,50 @@ body .public-signup .btn{margin:0;min-height:54px}.public-signup #signupSubmit{h
 @media(max-width:600px){body[data-account-page="signup"] .public-signup{padding:0;border:0;background:transparent;box-shadow:none}.policy-dialog{width:100vw;max-width:100vw;height:88dvh;margin:auto 0 0;border-radius:18px 18px 0 0}}
 
 #socialAuthStatus{font-size:12px;line-height:1.5;margin:var(--space-3) 0}#retrySocialAuth{min-height:44px;padding:0 var(--space-3);border:1px solid var(--border);border-radius:12px;background:var(--card);color:var(--brand)}
+
+/* Keep phone verification visible while the expert edits their profile. */
+.phone-signup-panel{border:2px solid var(--blue);border-radius:20px;background:var(--brand-soft);padding:20px;margin:16px 0 24px;min-width:0}
+.phone-signup-panel h2{margin:0 0 8px;font-size:1.25rem;word-break:keep-all}
+.phone-signup-panel p{word-break:keep-all;overflow-wrap:anywhere}
+.phone-verification-form{display:grid;gap:12px;width:100%;min-width:0}
+.phone-verification-form label{display:grid;gap:8px;font-weight:600;min-width:0}
+.phone-verification-form input{box-sizing:border-box;width:100%;min-width:0;min-height:54px;font-size:18px;background:var(--card)}
+.phone-verification-form .btn{width:100%;min-height:52px;white-space:normal;word-break:keep-all}
+.phone-verification-form [hidden]{display:none!important}
+.phone-verified{font-weight:700;color:var(--blue)}
+@media(max-width:420px){.phone-signup-panel{padding:16px}}
+
+/* Member and operations screens: readable text and consistent touch targets. */
+body[data-account-page]{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR","Malgun Gothic",system-ui,sans-serif;font-size:16px;line-height:1.6}
+body[data-account-page] main{min-width:0}
+body[data-account-page] main :is(h1,h2,h3,p,label,summary,.btn){word-break:keep-all;overflow-wrap:anywhere}
+body[data-account-page] main :is(input,select,textarea){min-width:0;font-size:16px;line-height:1.5}
+body[data-account-page] main input:not([type=checkbox]):not([type=radio]):not([type=hidden]),body[data-account-page] main select{min-height:48px}
+body[data-account-page] main :is(button,.btn){box-sizing:border-box;min-height:48px;max-width:100%;font-family:inherit;font-size:15px;line-height:1.4;padding:12px 16px;border-radius:12px;white-space:normal;box-shadow:none}
+body[data-account-page] main button:disabled{cursor:not-allowed}
+body[data-account-page] .consent-line button{flex:0 0 44px;padding:0;font-size:13px;white-space:nowrap}
+body[data-account-page] .account-links{gap:12px;align-items:center}
+body[data-account-page] .account-links a{display:flex;align-items:center;min-height:48px;box-sizing:border-box;padding:10px 12px}
+body[data-account-page] .expert-review-card{padding:20px;margin:16px 0}
+body[data-account-page] .expert-review-card h3{font-size:18px;line-height:1.4;margin:0 0 8px}
+body[data-account-page] .expert-review-card p{margin:8px 0 16px;font-size:14px}
+body[data-account-page] .expert-review-card .review-meta{color:var(--muted)}
+body[data-account-page] .expert-review-card label{display:grid;gap:8px;margin:16px 0;font-size:14px;line-height:1.5}
+body[data-account-page] .expert-review-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+body[data-account-page] .expert-review-actions .btn{width:auto;flex:1 1 160px;margin:0;font-weight:700}
+body[data-account-page] .expert-review-actions .review-stop{flex:0 1 120px;background:var(--card);color:var(--danger);border:1px solid var(--danger)}
+body[data-account-page] .review-document{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--border);padding-top:16px;margin-top:16px}
+body[data-account-page] .review-document p{flex-basis:100%;margin:0}
+body[data-account-page] .review-document .btn{width:auto;margin:0}
+@media(max-width:600px){
+ body[data-account-page] .container{padding:20px 16px calc(112px + env(safe-area-inset-bottom))}
+ body[data-account-page] .container h1{font-size:24px;line-height:1.4;margin:12px 0 16px}
+ body[data-account-page] .container h2{font-size:20px;line-height:1.4}
+ body[data-account-page] .card{padding:16px;border-radius:16px}
+ body[data-account-page] .expert-review-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+ body[data-account-page] .expert-review-actions .btn{width:100%;padding:12px;font-size:14px}
+ body[data-account-page] .account-links{display:grid;grid-template-columns:1fr;width:100%}
+ body[data-account-page] .account-links a{border:1px solid var(--border);border-radius:12px;text-decoration:none}
+}
+
+.expert-meeting-notice{padding:20px;border:1px solid var(--brand);border-radius:16px;background:var(--brand-soft);margin:16px 0}.expert-meeting-notice h3{font-size:18px;line-height:1.5;margin:0 0 12px}.expert-meeting-notice p{margin:12px 0;line-height:1.6}
