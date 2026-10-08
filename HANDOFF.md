@@ -1,3 +1,8 @@
+## 대표자 본인 선언 공개 — 준비 완료 / 실행 승인 대기
+- 사용자 2026-10-08: 소속 월드에셋라이프, 본인 자격 확인 생략 및 자격있음 본인인증 요청. 새 supabase/042_owner_declaration.sql: 대표자 본인만 OWNER_DECLARATION 참조로 공개. 기존 서류 VERIFIED/verified_at를 조작하지 않음. 대표자+활성회원+인증전화+확인된 이메일/동의/활동정지 조건 유지, 일반 심사 그대로. private 선언 이력 RLS/직접접근금지, 감사 OWNER_DECLARED_PUBLICATION.
+- 테스트 tests/owner-admin.test.mjs 3 PASS: 042 두 번 실행, 타인/일반회원 차단, 전화없음 차단, 자격상태 NOT_SUBMITTED 유지, catalog verified=false 공개, 정지차단, 롤백숨김. rollback_owner_declaration.sql 준비. 운영함수/대표프로필 백업 outputs/owner-declaration-before.json 저장.
+- 운영 적용 아직 안함. CUA browser2 ownerSqlTab5 편집기에 042 준비, resumeAdmin4 대표자 카드 월드에셋라이프/OWNER_DECLARATION/본인선언 사유 입력. 저장·승인 버튼 미클릭. 실행 직전 보안확인 async 요청: 운영DB 대표자 예외 적용+지도공개 승인 대기. 답변 전 실행 금지.
+- 승인 후: tab5 Run→경고 확인→성공 검사, tab4 대표자 첫 승인 버튼 클릭→관리자 APPROVED·휴대전화확인됨→운영지도/카탈로그 실제 공개 확인. 다른 전문가 심사 건 변경금지. 새 프론트 배포 불필요(SQL+기존 UI).
 ## 최신 확인 — 2026-10-08 대표자 지도 노출 대기
 - 운영 /admin 실제 로그인 상태에서 대표 보험소장 / 경기 분당 / 휴대전화 확인됨 확인. 기존 OTP 입력 대기 기록은 해소됨. 상태는 PROFILE_COMPLETE_VERIFICATION_REQUIRED 그대로이며 지도는 예정 거점 83곳만 표시, 대표자 공개 없음.
 - 소속명·등록번호/실제 확인근거 미입력. 사용자에게 정확한 소속명 및 등록번호 또는 확인 가능한 자격/소속 근거를 async로 요청. 사용자 본인 자격있다는 말만으로 자료확인 완료 기록을 생성하지 않음. 전문가 승인 버튼 미실행, 새 SMS/배포/DB 변경 없음.
