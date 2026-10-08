@@ -125,3 +125,5 @@ body[data-account-page] .review-document .btn{width:auto;margin:0}
  body[data-account-page] .account-links{display:grid;grid-template-columns:1fr;width:100%}
  body[data-account-page] .account-links a{border:1px solid var(--border);border-radius:12px;text-decoration:none}
 }
+
+.expert-meeting-notice{padding:20px;border:1px solid var(--brand);border-radius:16px;background:var(--brand-soft);margin:16px 0}.expert-meeting-notice h3{font-size:18px;line-height:1.5;margin:0 0 12px}.expert-meeting-notice p{margin:12px 0;line-height:1.6}

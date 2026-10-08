@@ -1,5 +1,14 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 최신 운영 배포 완료 — 2026-10-08 12:34 KST
+- 운영 main 5b3f815, Netlify deploy 6ac70f4aacd4020008ce0422 ready/Production. URL https://bohumso.netlify.app/ . 실제 /partner 화면 첫 미팅 약속, 1회 지도노출 정지1개월/2회3개월/3회영구제명 및 체크박스 표시 확인. 실제 사용자를 대신해 동의/저장/SMS 발송은 하지 않음. outputs/expert-first-meeting-live.png.
+- 전문가 프로필5단계 중 4단계 별도 확인: 첫 미팅 보험가입권유금지, 청구도움완료이후권유가능. 미동의 다음/저장차단 모의검사 PASS. 이번 요청은 확인 화면·문구이며 자동 기간정지/영구제명 실행 또는 신규 버전 동의이력 DB 구현은 포함하지 않음.
+- 기존 휴대전화 인라인 화면·내 정보 인증 버튼, 관리자/회원 모바일 스타일도 같이 배포. 최신 운영 문자인증은 다른 작업자가 추가한 Supabase Auth Send SMS Hook→SOLAPI(d2a6f88/a2d0002)이며 이를 merge해서 보존. 운영 config phoneVerificationEnabled=true. 이전 OFF 설명은 폐기. release provider는 기존 Auth 유지, 국내010→+82 정규화, 60초/5분 타이머. 통합 branch의 별도 /api/phone provider와 FCM은 미배포.
+- 운영본 work/bohumso-ui-release codex/home-copy-release 5b3f815. 통합 branch를 운영에 통째로 덮어쓰지 말 것. 여기 src/phone-verification.js는 별도 실험 경로이므로 운영 수정은 UI release 기준으로 진행해야 함.
+- 검증: 운영본 빌드, 신규 약속/위반 문구·미동의 차단+가입10 시나리오, 관리자6너비/클릭payload, 인증입력/오류/성공/프로필 보존 모두PASS(로컬 mock). Netlify commit_ref=5b3f815/public state ready, 실제 공개DOM 문구 확인. 이번 실제 SMS수신 검증 없음.
+- Netlify billing 최종 화면값 잔여712.3/1000(71.23%), 사용287.7, Production deploy19/285credits, auto recharge disabled. Oct3-Nov2 기간, credits expiryNov3. 이번 배포 직후에도 19로 집계돼 반영지연 가능, 화면이 안내한 몇 분 지연을 사용자에게 고지. 임의 충전/플랜변경 없음.
+이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
+
 ## 최신 — 2026-10-08 관리자·회원 모바일 디자인 정비 (운영 미배포)
 - 사용자 첨부 관리자 승인/정지 버튼이 붙고 과도하게 강조된 화면 개선 요청. src/early-expert-admin.js: 상태 한글화, 심사 카드/자료/버튼 그룹 클래스 추가. 승인 파랑/정지 빨간 테두리, 모바일 두 버튼 간격 10px, 기존 RPC/검증/권한 그대로.
 - public/account.css: 계정 화면 범위에서 시스템 폰트16px, 버튼15px/최소48px, 입력16px/최소48px, 모바일 제목24/20px, 카드16px, 읽기 좋은 줄바꿈·하단 안전여백. 내 계정 메뉴 한 열, 약관 보기 버튼44px 폭/48px 높이/한 줄. 홈 로고/카피/지도/라우팅 미변경.
