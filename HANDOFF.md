@@ -1,3 +1,10 @@
+## 완료 — 2026-10-08 대표자 운영 지도 공개
+- 사용자 실행 직전 승인 후 042 운영 적용. 관리자 대표자 카드 OWNER_DECLARATION 승인 실행, APPROVED/휴대전화 확인됨 확인. 새 프론트 배포 없이 DB 변경 반영.
+- 운영 catalog는 로컬 fixture와 달리 planner_directory.is_test=false 조건도 있음. 실제 대표자 directory/partner is_test=true 발견. 사용자 승인한 대표자 선언 레코드+eligible인 계정만 두 플래그 false로 전환, 기존 회원/예약/타인 테스트 데이터는 미변경. 042에 이 호환 처리 추가, 로컬 tests/owner-admin.test.mjs 3 PASS 재확인.
+- 운영 지도 실제 대표 보험소장 · 전문가 마커 확인(총84곳), 클릭 상세/시간입력 열림. catalog 실제 소속 (주)월드에셋라이프, 지역 경기 분당. outputs/owner-map-published.png. 실제 예약 생성/완료는 테스트 안함.
+- 운영 편집기 Monaco textbox.fill은 긴 내용 일부만 교체할 수 있어 매번 ControlOrMeta+A / Backspace 후 입력. 잘못된 읽기쿼리는 구문오류로 끝났고 변경 없음. 이후 installed table/gate/review true 확인.
+- 관리자 화면 사용자가 다른 카드에도 입력 중인 흔적 있음; 다른 전문가 승인/수정 실행 금지. 대표자 재승인 시 evidence_required 한 번 발생, 이후 기존 승인 declaration을 유지한 채 제한된 SQL로 is_test만 바로잡음. code 재적용 완료.
+- rollback_owner_declaration.sql 실행하면 미검증 대표자 공개 숨김 및 기존 gate 복원, 선언/감사이력 보존. 본인선언은 서류VERIFIED를 조작하지 않으며 일반 전문가 심사 유지. 통합브랜치 codex/bohumso-oct03에 SQL/테스트 보관, Production 프론트 d851d02 그대로.
 ## 대표자 본인 선언 공개 — 준비 완료 / 실행 승인 대기
 - 사용자 2026-10-08: 소속 월드에셋라이프, 본인 자격 확인 생략 및 자격있음 본인인증 요청. 새 supabase/042_owner_declaration.sql: 대표자 본인만 OWNER_DECLARATION 참조로 공개. 기존 서류 VERIFIED/verified_at를 조작하지 않음. 대표자+활성회원+인증전화+확인된 이메일/동의/활동정지 조건 유지, 일반 심사 그대로. private 선언 이력 RLS/직접접근금지, 감사 OWNER_DECLARED_PUBLICATION.
 - 테스트 tests/owner-admin.test.mjs 3 PASS: 042 두 번 실행, 타인/일반회원 차단, 전화없음 차단, 자격상태 NOT_SUBMITTED 유지, catalog verified=false 공개, 정지차단, 롤백숨김. rollback_owner_declaration.sql 준비. 운영함수/대표프로필 백업 outputs/owner-declaration-before.json 저장.

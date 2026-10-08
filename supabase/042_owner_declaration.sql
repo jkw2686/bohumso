@@ -59,6 +59,13 @@ begin
  values(subject,p.specialties,p.start_hour||':00–'||p.end_hour||':00',area.latitude,area.longitude,'0'||substr(phone,4),'대표자 본인 확인: '||why,false,true)
  on conflict(user_id) do update set specialties=excluded.specialties,hours=excluded.hours,latitude=excluded.latitude,longitude=excluded.longitude,phone=excluded.phone,evidence=excluded.evidence,is_sample=false,available=true;
  -- No VERIFIED document status, verified_at or verified_by is fabricated.
+ -- Explicit publication applies only to this owner profile, not historical test data.
+ if exists(select 1 from pg_catalog.pg_attribute where attrelid='private.planner_directory'::regclass and attname='is_test' and not attisdropped) then
+  execute 'update private.planner_directory set is_test=false where user_id=$1' using subject;
+ end if;
+ if exists(select 1 from pg_catalog.pg_attribute where attrelid='public.partner_applications'::regclass and attname='is_test' and not attisdropped) then
+  execute 'update public.partner_applications set is_test=false where user_id=$1' using subject;
+ end if;
  update private.expert_profiles set status='APPROVED',map_visible=true,updated_at=now() where user_id=subject;
  insert into private.expert_verification_events(subject,actor,action,reason) values(subject,subject,'OWNER_DECLARED_PUBLICATION',why);
  return jsonb_build_object('saved',true,'verification_method','OWNER_DECLARATION');

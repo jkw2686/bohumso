@@ -3,6 +3,7 @@ import {setupUrgent} from './urgent-fixture.mjs';import {ids} from './commerce-f
 const sql=n=>readFile('supabase/'+n,'utf8');
 test('owner declaration publishes only self without forging document verification; suspension and rollback hide it',async()=>{const f=await setup();try{
  await f.db.exec('reset role');await f.db.exec(await sql('037_solapi_phone_otp.sql'));
+ await f.db.exec('alter table private.planner_directory add column if not exists is_test boolean default true;alter table public.partner_applications add column if not exists is_test boolean default true;');
  for(let i=0;i<2;i++)await f.db.exec(await sql('042_owner_declaration.sql'));
  await f.login(ids.admin);await f.rpc('expert_profile_command',['save',{display_name:'대표 선언 테스트',primary_area:'경기 분당',secondary_areas:[],specialties:['claim'],weekdays:[1,2,3,4,5],start_hour:9,end_hour:18,consent:true}]);
  const p={user_id:ids.admin,organization:'테스트 소속',registration_reference:'OWNER_DECLARATION',reason:'대표자 본인이 자격 보유를 선언하고 공개 요청'};
@@ -11,6 +12,7 @@ test('owner declaration publishes only self without forging document verificatio
  await f.login(ids.other);await assert.rejects(f.rpc('early_expert_review',['approve',{...p,user_id:ids.other}]),/owner_required/);
  await f.login(ids.admin);await assert.rejects(f.rpc('early_expert_review',['approve',{...p,user_id:ids.other}]),/owner_required/);
  await f.rpc('early_expert_review',['approve',p]);
+ await f.db.exec('reset role');assert.equal((await f.db.query('select is_test from private.planner_directory where user_id=$1',[ids.admin])).rows[0].is_test,false);await f.login(ids.admin);
  const catalog=await f.rpc('planner_catalog',['','']);const owner=catalog.planners.find(x=>x.id===ids.admin);assert.ok(owner);assert.equal(owner.verified,false);
  await f.db.exec('reset role');let row=(await f.db.query('select registration_status,organization_status from private.expert_profiles where user_id=$1',[ids.admin])).rows[0];assert.equal(row.registration_status,'NOT_SUBMITTED');assert.equal(row.organization_status,'NOT_SUBMITTED');
  assert.equal((await f.db.query("select count(*)::int n from private.expert_verification_events where action='OWNER_DECLARED_PUBLICATION'")).rows[0].n,1);
