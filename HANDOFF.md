@@ -1,3 +1,11 @@
+이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
+
+## 최신 — 2026-10-08 휴대전화 인증 입력 화면 개선 (코드 검증 완료, 운영 미배포)
+- 사용자: 이충경 가입자가 전화인증 화면을 못 찾음. 전문가 프로필 상단에 전화번호/인증번호 받기/6자리 입력/인증 완료하기를 인라인 배치. 신규 src/phone-signup-panel.js, expert-early-access.js 연결. 별도 form으로 프로필 draft 보존, 인증 성공 시 페이지 이동 없이 완료 상태. 이미 인증된 사람은 완료 표시.
+- 내 계정 account.html 첫 메뉴에 큰 휴대전화 인증하기 링크 추가. phone-verification-ui.js는 기존 단독 페이지 복귀 유지, 인라인 callback 지원, Enter 발송, 오류/30초 재발송 대기 유지. account.css 모바일 입력 54px, 버튼 52px, 패널 파란 테두리.
+- npm build PASS; phone-provider/solapi-otp 4 PASS; early-access-browser 10 시나리오 PASS; 신규 phone-entry-browser PASS (320/390/1440 넘침 없음, Enter, 오류 후 재시도, 쿨다운, draft 유지, 이미 인증한 상태). 실제 SMS를 이번 작업에서 발송하지 않음. artifacts/phone-entry-390.png 시각 확인.
+- Production d851d02에는 아직 구 Supabase Auth 전화인증 UI/공급자이며 운영 phoneVerificationEnabled=false. 통합 branch에는 실제 SOLAPI/FCM 작업 포함. UI 변경을 포함해 통합 branch 전체를 main에 배포하면 안 됨. 이 변경은 아직 작업 branch만 저장/전송. 사용자 최신 요청은 입력 UX 개선; 이번에 운영 SMS 활성화/타인 번호 허용/새 프리뷰 로그인 주소 변경은 수행하지 않음.
+- 다음 할 일: 실제 운영 제공이 필요하면 운영 기준 checkout으로 SOLAPI 기능+위 UI만 선별하고 전화 기능 운영 전환 조건을 확인. 기존 SMS_MODE(test)/SMS_ALLOWLIST는 대표자 허용번호 범위 그대로; 이충경 실제 번호 발송 검증 안 됨. 기존 Google/Auth/FCM 설정 건드리지 말 것. deno.lock 미추적 파일은 별도 작업으로 제외.
 ## 완료 — 2026-10-08 대표자 운영 지도 공개
 - 사용자 실행 직전 승인 후 042 운영 적용. 관리자 대표자 카드 OWNER_DECLARATION 승인 실행, APPROVED/휴대전화 확인됨 확인. 새 프론트 배포 없이 DB 변경 반영.
 - 운영 catalog는 로컬 fixture와 달리 planner_directory.is_test=false 조건도 있음. 실제 대표자 directory/partner is_test=true 발견. 사용자 승인한 대표자 선언 레코드+eligible인 계정만 두 플래그 false로 전환, 기존 회원/예약/타인 테스트 데이터는 미변경. 042에 이 호환 처리 추가, 로컬 tests/owner-admin.test.mjs 3 PASS 재확인.

@@ -1,4 +1,5 @@
 import {renderEarlyDocuments} from './early-documents.js';
+import {renderPhoneSignupPanel} from './phone-signup-panel.js';
 const names={claim:'보험금 청구',death:'사망',critical:'암·중대질병',surgery:'입원·수술',medical:'실손',accident:'사고',coverage:'보장 점검',corporate:'기업보험'};
 const states={DRAFT:'작성 중',PROFILE_COMPLETE_VERIFICATION_REQUIRED:'프로필 저장 완료 · 자격 확인 필요',VERIFICATION_PENDING:'확인자료 검토 중',APPROVED:'승인 완료',SUSPENDED:'활동 정지',REJECTED:'승인되지 않음'};
 export async function renderEarlyExpert({client,config,message}){
@@ -9,6 +10,7 @@ export async function renderEarlyExpert({client,config,message}){
  let profile=workspace.data.profile,step=1;
  const values={display_name:profile?.display_name||'',primary_area:profile?.primary_area||'',secondary_areas:profile?.secondary_areas||[],specialties:profile?.specialties||[],weekdays:profile?.weekdays||[1,2,3,4,5],start_hour:profile?.start_hour??9,end_hour:profile?.end_hour??18,consent:!!profile};
  state.textContent=states[profile?.status]||'보험설계사 프로필 · 약 2분';form.hidden=false;
+ await renderPhoneSignupPanel({client,config,before:form});
  const el=(tag,text,parent=form)=>{const n=document.createElement(tag);if(text)n.textContent=text;parent.append(n);return n;};
  function check(text,selected,handler){const label=el('label');label.className='consent-row';const input=el('input',null,label);input.type='checkbox';input.checked=selected;label.append(document.createTextNode(text));input.onchange=()=>handler(input);return input;}
  function draw(){form.replaceChildren();el('p',`${step} / 4`);el('h2',['주활동지역','상담 분야','상담 가능한 시간','프로필 저장'][step-1]);
