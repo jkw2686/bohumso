@@ -3,9 +3,9 @@
 - PRODUCTION에서도 기존 public signup/expert/예약 확인 구현을 사용하도록 config와 expert-documents 분기 호환. earlyAccess 내부 속성은 호환용이므로 삭제 금지. DB가 사업상 이용 가능 여부의 최종 기준; 환경변수는 공급자 인프라만 제어.
 - 044_operational_policy.sql 단일트랜잭션/재실행/원래 설정·스키마·함수·RLS 백업; 기존 동의행 불변, 앞으로 기록할 버전만 변경. 롤백 SQL은 설정 복원만, 신규 기록 삭제 없음. backup/pre-operational-policy-20261009 태그.
 - 로컬 DB 11검사 PASS: 신규동의/전화미확인차단/요청저장/고객·전문가조회/수락·확정·취소/중복차단/18시거점/문서관리권한. 실제 운영에서는 대표 계정의 일반상담 request→DB row/회원연결/시간/created_at→workspace→cancel을 트랜잭션 ROLLBACK 검사 PASS; 예약·알림 잔존 없음. 운영 다른 회원을 임의 사용하지 않음. 전체 실제 Google/SMS/전문가수락 E2E로 보고 금지.
-- build PASS, 정책4종 x4너비 PASS, 공개안내6개 x4너비 PASS, JS 문법 검사. lint/typecheck 전용 스크립트는 원래 없음. 추가 가입브라우저 회귀 검사 중.
-- 운영 Storage expert-documents private/4MB/JPEG PNG PDF 확인. 서비스키 Production Functions 범위 존재. EXPERT_DOCUMENTS_ENABLED production=true 적용 진행 중. 실제 HTTP 파일 업로드 왕복은 미확인.
-- 다음: ENV 저장 완료→코드 Production 배포→044 운영 실행→공개 config/예약/UI/문서보호 확인. 현재 운영 main 912920b, DB policies_approved=false. 이 항목은 실행 결과로 갱신할 것.
+- build PASS, 정책4종 x4너비 PASS, 공개안내6개 x4너비 PASS, JS 문법 검사. lint/typecheck 전용 스크립트는 원래 없음. 가입·전문가 신청 브라우저 10 시나리오 회귀 검사 PASS.
+- 운영 Storage expert-documents private/4MB/JPEG PNG PDF 확인. 서비스키 Production Functions 범위 존재. EXPERT_DOCUMENTS_ENABLED production=true 적용 및 새 배포 반영 완료. 실제 HTTP 파일 업로드 왕복은 미확인.
+- 완료: ad53541 / Netlify 6ac886c8948f07000937427e Published (2026-10-09 15:16 KST). 044 운영 적용 완료, DB PRODUCTION/policies_approved=true, backup_count=1, consultations=0. 공개 config bookingEnabled/documentsEnabled=true, policyVersion=2026-10-09-v1. 문서 API 비로그인401/외부Origin403. 기존 로그인 세션에서 실제 예약 양식 및 내역0건 조회 확인. 이전 신뢰 UX 변경도 함께 운영 반영됨. 상세 docs/operational-release-report.md.
 
 ## 2026-10-09 신뢰·공개 탐색 개선 (운영 미반영)
 - branch codex/trust-ux-review, baseline 912920b, backup tag backup/pre-trust-ux-20261009. 원복은 개선 커밋 revert 후 새 배포; DB 변경 없음.
