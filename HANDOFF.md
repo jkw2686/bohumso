@@ -1,3 +1,7 @@
+## 2026-10-09 동일 좌표 지도 아이콘 겹침 수정
+- 전문가 활동지역과 보험소 기준점이 같아 나중에 그린 집 아이콘이 사람 아이콘을 가림. public/map.js 동일 기준점 그룹의 아이콘 anchor를 44px 간격으로 배치; 실제 좌표/거리/예약 불변.
+- visit-map-icons-browser 동일 좌표 fixture, 320/390/768/1440 겹침 없음 및 기존 동작 PASS. Git CD 배포 후 김포 운영 화면 확인.
+
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
 ## 2026-10-09 두 상담 방식 + 지도 아이콘 개편 (운영 배포 완료)

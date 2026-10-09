@@ -72,10 +72,16 @@
     spotMarkers.forEach(function (m) { map.removeLayer(m); });
     spotMarkers = [];
     var coords = [];
-    SPOTS.filter(function(s){return showOffices?(s.office||s.planned):!showExperts||(!s.office&&!s.planned);}).forEach(function (s) {
+    var visibleSpots=SPOTS.filter(function(s){return Number.isFinite(s.lat)&&Number.isFinite(s.lng)&&(showOffices?(s.office||s.planned):!showExperts||(!s.office&&!s.planned));});
+    var groups={};
+    visibleSpots.forEach(function(s){var key=s.lat.toFixed(4)+','+s.lng.toFixed(4);(groups[key]||(groups[key]=[])).push(s);});
+    visibleSpots.forEach(function (s) {
       if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) return; // 좌표 없으면 목록에만 표시
       coords.push([s.lat, s.lng]);
-      s._marker = L.marker([s.lat, s.lng], { icon: pinIcon(false,s.planned||s.office,s.planned), title: s.name+(s.planned?' · 개설 예정 보험소':s.office?' · 보험소':' · 전문가 활동지역') }).addTo(map);
+      var icon=pinIcon(false,s.planned||s.office,s.planned), group=groups[s.lat.toFixed(4)+','+s.lng.toFixed(4)];
+      // Separate shared reference points visually without changing stored coordinates or distance calculations.
+      if(group.length>1){var index=group.indexOf(s),columns=Math.min(group.length,4),row=Math.floor(index/columns),rowCount=Math.ceil(group.length/columns);icon.options.iconAnchor=[icon.options.iconAnchor[0]-(index%columns-(Math.min(columns,group.length-row*columns)-1)/2)*44,icon.options.iconAnchor[1]-(row-(rowCount-1)/2)*44];}
+      s._marker = L.marker([s.lat, s.lng], { icon: icon, title: s.name+(s.planned?' · 개설 예정 보험소':s.office?' · 보험소':' · 전문가 활동지역') }).addTo(map);
       s._marker.on('click', function () { openCard(s); });
       spotMarkers.push(s._marker);
     });
