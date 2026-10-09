@@ -19,10 +19,10 @@
       var point=[pos.coords.latitude,pos.coords.longitude];
       if(me)map.removeLayer(me);if(circle)map.removeLayer(circle);
       var approximate=pos.source==='network';
-      me=L.circleMarker(point,{radius:8,color:'#1E4FD6',fillOpacity:approximate?0.15:1}).addTo(map).bindTooltip(approximate?'접속 지역 · 대략':'내 위치');
+      me=L.circleMarker(point,{radius:8,color:'#1E4FD6',fillOpacity:approximate?0.15:1}).addTo(map).bindTooltip(approximate?'접속 지역 · 대략':pos.coords.accuracy>500?'기기 추정 위치':'내 위치');
       if(!approximate)circle=L.circle(point,{radius:pos.coords.accuracy,interactive:false}).addTo(map);
-      map.setView(point,approximate||pos.coords.accuracy>5000?10:13,{animate:false});
-      notice.textContent=approximate?'접속 지역 기준의 대략적인 지도예요. 정확한 위치는 브라우저·기기 위치 권한을 켜 주세요.':pos.coords.accuracy>5000?'대략적인 위치예요. 지도를 움직여 지역을 확인하세요.':'내 위치를 찾았어요.';button.disabled=false;
+      map.setView(point,approximate||pos.coords.accuracy>500?10:13,{animate:false});
+      notice.textContent=approximate?'접속 지역 기준의 대략적인 지도예요. 정확한 위치는 브라우저·기기 위치 권한을 켜 주세요.':pos.coords.accuracy>500?'위치 오차가 약 '+Math.round(pos.coords.accuracy)+'m로 큽니다. 실제 위치와 다를 수 있어요.':'내 위치 · 오차 약 '+Math.round(pos.coords.accuracy)+'m';button.disabled=false;
     }});
   }
   button.addEventListener('click',locate);

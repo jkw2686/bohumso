@@ -97,10 +97,10 @@
   }
 
   function setMe(loc,accuracy,approximate) {
-    userLoc = loc;const nearest=PLANNED.slice().sort((a,b)=>haversine(loc,[a.lat,a.lng])-haversine(loc,[b.lat,b.lng]))[0];if(nearest&&!approximate)selectedArea=nearest.region;
-    if (meMarker) meMarker.setLatLng(loc); else meMarker = L.marker(loc, { icon: pinIcon(true), title: approximate?'접속 지역 · 대략':'내 위치', zIndexOffset: 1000 }).addTo(map);
+    userLoc = loc;const nearest=PLANNED.slice().sort((a,b)=>haversine(loc,[a.lat,a.lng])-haversine(loc,[b.lat,b.lng]))[0];if(nearest&&!approximate&&accuracy<=500)selectedArea=nearest.region;
+    if (meMarker) meMarker.setLatLng(loc); else meMarker = L.marker(loc, { icon: pinIcon(true), title: approximate?'접속 지역 · 대략':accuracy>500?'기기 추정 위치':'내 위치', zIndexOffset: 1000 }).addTo(map);
     if(accuracyCircle)map.removeLayer(accuracyCircle);if(accuracy)accuracyCircle=L.circle(loc,{radius:accuracy,interactive:false,color:'var(--brand)'}).addTo(map);
-    if (map) map.setView(loc, approximate||accuracy>5000?10:13);
+    if (map) map.setView(loc, approximate||accuracy>500?10:13);
     renderList();
   }
 
@@ -294,7 +294,7 @@
         await reloadSpots('');if(revision!==regionRevision)return;
         $('regionCity').value='';$('regionGu').innerHTML='<option value="">구/군</option>';
         setMe([pos.coords.latitude,pos.coords.longitude],pos.coords.accuracy,pos.source==='network');showList();
-        notice.textContent=pos.source==='network'?'접속 지역 기준의 대략적인 지도예요. 정확한 위치는 브라우저·기기 위치 권한을 켜 주세요.':pos.coords.accuracy>5000?'대략적인 위치예요. 지역을 선택해 범위를 좁힐 수 있어요.':'내 위치를 찾았어요. 위치 오차 약 '+Math.round(pos.coords.accuracy)+'m';
+        notice.textContent=pos.source==='network'?'접속 지역 기준의 대략적인 지도예요. 정확한 위치는 브라우저·기기 위치 권한을 켜 주세요.':pos.coords.accuracy>500?'위치 오차가 약 '+Math.round(pos.coords.accuracy)+'m로 큽니다. 지역을 직접 선택해 주세요.':'내 위치를 찾았어요. 위치 오차 약 '+Math.round(pos.coords.accuracy)+'m';
         $('locateFab').disabled=false;
       },
       error:function(message){if(revision!==regionRevision)return;notice.textContent=message;$('locateFab').disabled=false;}

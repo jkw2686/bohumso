@@ -8,18 +8,20 @@
     clear:function(){try{sessionStorage.removeItem(key);}catch{}}
   };
   window.startBohumsoLocation = async function (locate,restore) {
-    var saved=window.BohumsoLocationStore.get();if(saved&&restore){restore(saved);return;}
+    var saved=window.BohumsoLocationStore.get();if(saved&&restore){restore(saved);if(saved.source==='MANUAL'||(saved.source==='DEVICE'&&saved.accuracy<=500&&Date.now()-saved.at<30000))return;}
     var asked=false;try{asked=sessionStorage.getItem('bohumso-location-asked')==='1';}catch{}
     var state='prompt';try{state=(await navigator.permissions.query({name:'geolocation'})).state;}catch{}
     if(state==='granted'||!asked){try{sessionStorage.setItem('bohumso-location-asked','1');}catch{}locate();}
   };
   window.findBohumsoLocation = function (handlers) {
-    var stopped = false, timer;
+    var stopped = false, timer, best;
     function cancel() { stopped = true; clearTimeout(timer); }
+    function finish(position){cancel();window.bohumsoTrack?.('location_success');window.BohumsoLocationStore.set({source:'DEVICE',latitude:position.coords.latitude,longitude:position.coords.longitude,accuracy:position.coords.accuracy});handlers.success(position);}
     async function fail(code) {
       window.bohumsoTrack?.(code===1?'location_denied':'location_failed');
       if (stopped) return;
       clearTimeout(timer);
+      if(best&&code!==1){finish(best);return;}
       if(code!==1)handlers.progress('접속 지역을 확인하고 있어요…');
       try{
         var response=await fetch('/api/approximate-location',{cache:'no-store',signal:AbortSignal.timeout(5000)}),data=await response.json();
@@ -47,8 +49,8 @@
       navigator.geolocation.getCurrentPosition(function (position) {
         if (settled || stopped) return;
         if (!Number.isFinite(position.coords.latitude) || !Number.isFinite(position.coords.longitude)) { error({code:2}); return; }
-        settled = true; cancel(); window.bohumsoTrack?.('location_success'); window.BohumsoLocationStore.set({source:'DEVICE',latitude:position.coords.latitude,longitude:position.coords.longitude,accuracy:position.coords.accuracy});handlers.success(position);
-      }, error, {enableHighAccuracy: precise, timeout: precise ? 8000 : 4000, maximumAge: precise ? 0 : 300000});
+        if(!Number.isFinite(position.coords.accuracy)||position.coords.accuracy<0){error({code:2});return;}if(!best||position.coords.accuracy<best.coords.accuracy)best=position;settled=true;clearTimeout(timer);if(!precise&&position.coords.accuracy>500){attempt(true);return;}finish(best);
+      }, error, {enableHighAccuracy: true, timeout: precise ? 8000 : 4000, maximumAge: 0});
     }
     attempt(false);
     return cancel;

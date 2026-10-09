@@ -1,3 +1,7 @@
+## 2026-10-09 위치 오차 개선
+- DEVICE 최초 요청도 highAccuracy true/maximumAge 0, 500m 초과시 재측정 후 더 정확한 결과 선택. 재측정 실패시 기존 device 정확도 유지. NETWORK/오래된 DEVICE 자동 갱신(권한 허용시), MANUAL 선택 유지.
+- 홈/지도 500m 초과 경고 및 오차 표시. 큰 오차로 가까운 구역을 확정하지 않음. location-fresh/store 4검사 PASS, 문법/빌드 PASS. 실제 사용자 건물 위치 일치 미확인.
+
 ## 2026-10-09 예약 준비 안내 개선
 - 고객 화면의 약관 검토 후 오픈 문구 제거. 예약/긴급 상담 접수 준비 상태와 이용 문의 링크 명시. 기존 서버 이용 조건은 변경하지 않음.
 - 공개 release_status 확인: EARLY_ACCESS, signupEnabled true, policiesApproved false, closedBeta false. 따라서 실제 예약 접수는 여전히 닫힘. 약관 승인 또는 운영 DB 설정 변경을 했다고 보고하지 말 것.
