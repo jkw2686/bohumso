@@ -41,3 +41,6 @@ commit;
 
 - 실제 urgent 미서비스 검색 및 지도 거점→공통양식→격리 로컬 SQL 저장 PASS. 운영 지도 신청창/관리자 집계 빈상태 확인.
 - 운영 배포: 34a8925 / Netlify 6ac8a332ff3762000867c0a2 ready, 2026-10-09. 공개 주소 https://bohumso.netlify.app/ . 증거 outputs/waitlist-live-form.png (작업 폴더).
+
+- 확장 변경 운영 완료: 048 적용 후 신청 0건 유지, last_notified_at/새 동의/원본조회 차단/cron1 확인. 최종 55bff82 / Netlify 6ac8a82b4dbc690008ed4bd7 ready. 운영 하남 소비자·전문가 신청창과 Esc 복귀 확인. outputs/waitlist-opening-live.png 증거.
+
