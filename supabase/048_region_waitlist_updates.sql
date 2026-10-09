@@ -1,14 +1,5 @@
 begin;
 select pg_advisory_xact_lock(420042);
-create table if not exists private.region_waitlist (
- id uuid primary key default gen_random_uuid(),
- region text not null check(length(region) between 1 and 120),
- role text not null check(role in ('consumer','planner')),
- contact text not null check(contact ~ '^0[0-9]{8,10}$'),
- need text check(need in ('claim','illness','medical','accident','death','coverage','other')),
- consent_version text not null, consented_at timestamptz not null default now(),
- created_at timestamptz not null default now(), last_notified_at timestamptz, notified_at timestamptz
-);
 alter table private.region_waitlist add column if not exists last_notified_at timestamptz;
 alter table private.region_waitlist add column if not exists notified_at timestamptz;
 create unique index if not exists region_waitlist_unique on private.region_waitlist(region,role,contact);

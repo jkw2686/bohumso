@@ -914,3 +914,7 @@ dialog.waitlist-overlay{margin:0;padding:0;border:0;width:100%;height:100%;max-w
 .waitlist-sheet :focus-visible{outline:var(--focus-width) solid var(--brand);outline-offset:var(--focus-width)}
 .waitlist-sheet .btn{white-space:normal;min-height:var(--touch-target)}
 .waitlist-table{overflow-x:auto}.waitlist-table table{width:100%;border-collapse:collapse}.waitlist-table th,.waitlist-table td{padding:var(--space-3);text-align:left;color:var(--text);border-bottom:1px solid var(--border)}
+.office-opening-section{padding:var(--space-4) 0;display:grid;gap:var(--space-3)}
+.office-opening-section + .office-opening-section{border-top:1px solid var(--border)}
+.office-slot .office-opening-section h3,.office-slot .office-opening-section p{margin:0;color:var(--text);word-break:keep-all;overflow-wrap:anywhere}
+.office-opening-section .btn{white-space:normal;text-align:center}
