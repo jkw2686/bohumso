@@ -1,4 +1,5 @@
 import {memberService,memberState,requireActiveMember,MEMBER} from './member-access.js';
+import {renderContactFlow,revealRequestedBooking} from './contact-flow.js';
 const purposes={death:'가족 사망',illness:'암·질병',medical:'입원·수술',accident:'사고',claim:'보험금 청구',coverage:'내 보험 확인'};
 import {waitlistActions} from './region-waitlist.js';
 const labels={REQUESTED:'전문가에게 방문상담을 요청했습니다.',ACCEPTED:'전문가가 요청을 수락했습니다.',CONFIRMED:'방문상담 일정이 확정되었습니다.',PREPARING:'출발 준비',DEPARTED:'상담 장소로 출발',EN_ROUTE:'이동 중',ARRIVED:'도착',COMPLETED:'상담 완료',CANCELLED:'취소',EXPIRED:'요청 시간 만료',REJECTED:'전문가가 요청을 받기 어렵습니다.'};
@@ -11,6 +12,7 @@ function field(root,title,type='text'){const l=el('label',title,root,'field'),n=
 async function rpc(client,op,payload={}){const {data,error}=await client.rpc('urgent_command',{operation:op,payload});if(error)throw Error(error.message);return data;}
 async function catalog(client,payload){const {data,error}=await client.rpc('visit_catalog',{payload});if(error)throw Error(error.message);return data;}
 function locationOnce(){return new Promise((resolve,reject)=>{if(!navigator.geolocation)return reject(Error('invalid_location'));navigator.geolocation.getCurrentPosition(p=>{if(p.coords.accuracy>3000)return reject(Error('invalid_location'));resolve({latitude:p.coords.latitude,longitude:p.coords.longitude,accuracy:p.coords.accuracy});},()=>reject(Error('invalid_location')),{enableHighAccuracy:true,timeout:20000,maximumAge:0});});}
+errors.reception_paused='위의 상담 접수를 ON으로 바꾼 뒤 방문 가능을 켜 주세요.';
 errors.slot_unavailable='희망시간에 다른 상담이 있어요. 다른 전문가나 시간을 선택해 주세요.';
 const time=value=>new Date(value).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Seoul'});
 const distance=km=>km<1?'약 '+Math.round(km*1000/100)*100+'m':'약 '+Number(km).toFixed(1)+'km';
@@ -28,11 +30,11 @@ export async function renderInstant(client,root){
     const label=el('label','자동 종료',dialog,'field'),duration=el('select','',label);for(const v of [60,120,240]){const o=el('option',v/60+'시간 뒤',duration);o.value=v;}duration.value=String(data.visitConfig?.availabilityMinutes||240);
     const consent=field(dialog,'위치 사용 목적을 확인하고 동의합니다.','checkbox');
     button('위치 사용하고 시작',dialog,async()=>{if(!consent.checked){status(dialog,'위치 사용 동의를 확인해 주세요.');return;}const point=await locationOnce();await rpc(client,'start',{...point,consent:true,duration:duration.value});dialog.close();dialog.remove();await load();});
-    button('닫기',dialog,()=>{dialog.close();dialog.remove();},true);dialog.addEventListener('cancel',()=>dialog.remove());dialog.showModal();});start.disabled=!data.eligible;
+    button('닫기',dialog,()=>{dialog.close();dialog.remove();},true);dialog.addEventListener('cancel',()=>dialog.remove());dialog.showModal();});start.disabled=!data.eligible||data.receptionEnabled===false;if(data.receptionEnabled===false)el('p','상담 접수를 ON으로 바꾸면 방문 가능도 켤 수 있어요.',card);
   }
   el('p','브라우저를 닫으면 위치가 갱신되지 않습니다. 30분 이상 지난 위치는 검색에 사용하지 않아요. 끄더라도 접수한 상담은 유지됩니다.',card,'visit-hint');
   clearTimeout(timer);timer=setTimeout(()=>{if(card.isConnected&&document.visibilityState==='visible')load().catch(()=>{});},60000);
- };try{await load();}catch{status(card,'방문 가능 상태를 불러오지 못했어요.');button('다시 확인',card,load);}
+ };window.addEventListener('availability-changed',()=>load().catch(()=>{}));try{await load();}catch{status(card,'방문 가능 상태를 불러오지 못했어요.');button('다시 확인',card,load);}
 }
 export async function renderUrgentWorkspace(client,root){
  const panel=el('section','',root,'card urgent-panel');el('h2','전문가 방문상담 내역',panel);const body=el('div','',panel);let busy=false;
@@ -41,21 +43,25 @@ export async function renderUrgentWorkspace(client,root){
    el('strong',r.rejected?labels.REJECTED:r.confirmed&&r.state==='ACCEPTED'?labels.CONFIRMED:labels[r.state],c);
    el('p',r.region+(r.distanceKm!=null?' · 검색 기준 '+distance(r.distanceKm):''),c);if(r.expertName)el('p',r.expertName+' 전문가',c);
    if(r.preferredAt)el('p',(r.confirmed?'확정시간':'희망시간')+' · '+time(r.preferredAt),c);
-   if(r.details){el('p','만날 장소 · '+r.details.place,c);link(r.details.phone,'tel:'+r.details.phone,c);if(r.details.note)el('p',r.details.note,c);}else el('p','고객이 일정을 확정한 뒤 방문 주소와 연락처를 확인할 수 있어요.',c,'visit-hint');
+   c.dataset.bookingId=r.id;
+   if(r.details){el('p','만날 장소 · '+r.details.place,c);if(r.details.phone)link(r.details.phone,'tel:'+r.details.phone,c);if(r.details.note)el('p',r.details.note,c);}else el('p','방문 주소는 고객이 일정을 확정한 뒤 확인할 수 있어요.',c,'visit-hint');
+   if(r.contactFlow===2&&r.state==='ACCEPTED'&&!r.confirmed)renderContactFlow(c,{exchange:r.exchange,recipient:r.mine?r.expertName:'이번 방문상담 고객',isCustomer:r.mine,visit:true,run:(op,payload)=>rpc(client,op,{id:r.id,...payload}),refresh:load});
+   if(r.confirmed&&r.exchange?.phone)link('상담 상대방에게 전화하기','tel:'+r.exchange.phone,c);
    const act=(title,op,payload={})=>button(title,c,async()=>{await rpc(client,op,{id:r.id,...payload});await load();});
    if(!r.mine&&!r.assigned&&r.state==='REQUESTED'){act('희망시간 수락','accept');act('요청 거절','pass');}
-   if(r.mine&&r.state==='ACCEPTED'&&!r.confirmed){const agree=field(c,'이 일정으로 확정하고 선택한 전문가에게 방문 주소·연락처·요청내용을 제공합니다.','checkbox');button('방문 일정 확정',c,async()=>{if(!agree.checked){status(c,'주소 제공 동의를 확인해 주세요.');return;}await rpc(client,'confirm_visit',{id:r.id,consent:true});await load();});}
+   if(r.contactFlow!==2&&r.mine&&r.state==='ACCEPTED'&&!r.confirmed){const agree=field(c,'이 일정으로 확정하고 선택한 전문가에게 방문 주소·연락처·요청내용을 제공합니다.','checkbox');button('방문 일정 확정',c,async()=>{if(!agree.checked){status(c,'주소 제공 동의를 확인해 주세요.');return;}await rpc(client,'confirm_visit',{id:r.id,consent:true});await load();});}
    if(r.assigned&&r.confirmed){if(['ACCEPTED','PREPARING'].includes(r.state))act('출발 알리기','trip',{state:'DEPARTED'});if(['DEPARTED','EN_ROUTE'].includes(r.state))act('도착 알리기','trip',{state:'ARRIVED'});if(r.state==='ARRIVED')act('상담 완료','trip',{state:'COMPLETED'});}
    if((r.mine||r.assigned)&&!['COMPLETED','CANCELLED','EXPIRED'].includes(r.state))act('요청 취소','cancel');
   }
+  revealRequestedBooking(body);
  }finally{busy=false;}};
  button('내역 새로고침',panel,load,true);try{await load();}catch{status(panel,'내역을 불러오지 못했어요. 새로고침해 주세요.');}
- const timer=setInterval(()=>{if(!panel.isConnected){clearInterval(timer);return;}if(document.visibilityState==='visible'&&!document.querySelector('dialog[open]'))load().catch(()=>{});},30000);
+ const timer=setInterval(()=>{if(!panel.isConnected){clearInterval(timer);return;}if(document.visibilityState==='visible'&&!document.querySelector('dialog[open]')&&!panel.contains(document.activeElement))load().catch(()=>{});},30000);
 }
 async function customerPage(client,root){
  const {data:list,error}=await client.rpc('service_area_catalog');if(error)throw error;
  const params=new URLSearchParams(location.search);let searchPoint=null,area=null,revision=0;
- el('h1','내 근처 전문가 찾기',root);el('p','방문 가능한 전문가 한 명을 직접 선택하세요. 요청 → 전문가 수락 → 고객 일정 확정 순서로 진행합니다.',root);
+ el('h1','내 근처 전문가 찾기',root);el('p','방문 가능한 전문가 한 명을 직접 선택하세요. 요청 → 수락 → 연락처 동의 → 전화·연락 → 일정 확정 순서로 진행합니다.',root);
  link('내가 보험소에 방문할게요','/map.html?view=offices',root);
  const browse=el('section','',root,'card urgent-panel'),tracking=el('div','',root);
  const query=()=>({area:area.id,...(searchPoint||{})});
@@ -78,12 +84,12 @@ async function customerPage(client,root){
   const place=field(browse,'실제 방문 주소·만날 장소');place.maxLength=160;place.autocomplete='street-address';place.placeholder='도로명 주소와 건물명·만날 위치';
   el('p','현재 위치를 선택해도 주소가 자동 전달되지 않습니다. 방문할 곳의 주소를 정확히 적어 주세요.',browse,'visit-hint');
   const tl=el('label','오늘 희망시간 (한국 시간)',browse,'field'),slot=el('select','',tl);const start=Math.ceil((Date.now()+20*60000)/1800000)*1800000;for(let t=start;t<Date.now()+4*3600000;t+=1800000){const o=el('option',time(t),slot);o.value=new Date(t).toISOString();}
-  const phone=field(browse,'연락 가능한 휴대전화','tel');phone.autocomplete='tel';phone.inputMode='tel';
+  el('p','인증된 휴대전화 번호를 사용합니다. 번호는 양쪽이 공개에 동의한 뒤에만 보입니다.',browse,'visit-hint');
   const note=field(browse,'요청내용 (선택)','textarea');note.maxLength=300;el('p','주민번호·진단서 등 민감한 정보는 적지 마세요.',browse,'visit-hint');
-  const consent=field(browse,'이 전문가 한 명에게 상담 분야·대략 지역·희망시간을 전달하는 데 동의합니다.','checkbox');el('p','정확한 주소·연락처는 전문가 수락 후, 고객님이 일정을 확정할 때 공개됩니다.',browse,'visit-hint');
-  button('방문상담 요청 보내기',browse,async()=>{if(place.value.trim().length<2){status(browse,'방문 주소를 입력해 주세요.');place.focus();return;}const number=phone.value.replace(/\D/g,'');if(!/^01\d{8,9}$/.test(number)){status(browse,'연락 가능한 휴대전화를 확인해 주세요.');phone.focus();return;}if(!consent.checked){status(browse,'요청 전달 동의를 확인해 주세요.');return;}
-   await rpc(client,'request',{...query(),request_key:requestKey,planner_id:expert.id,purpose:purpose.value,meeting_kind:kind.value,place:place.value.trim(),phone:number,note:note.value.trim(),preferred_at:slot.value,consent:true});
-   browse.replaceChildren();el('h2',labels.REQUESTED,browse);el('p','아직 예약 확정 전입니다. 전문가가 수락하면 아래에서 주소 제공에 동의하고 일정을 확정해 주세요.',browse);tracking.replaceChildren();await renderUrgentWorkspace(client,tracking);
+  const consent=field(browse,'이 전문가 한 명에게 상담 분야·대략 지역·희망시간을 전달하는 데 동의합니다.','checkbox');el('p','연락처는 서로 동의한 뒤 공개되고, 방문 주소는 일정 확정 후 담당 전문가에게만 공개됩니다.',browse,'visit-hint');
+  button('방문상담 요청 보내기',browse,async()=>{if(place.value.trim().length<2){status(browse,'방문 주소를 입력해 주세요.');place.focus();return;}if(!consent.checked){status(browse,'요청 전달 동의를 확인해 주세요.');return;}
+   await rpc(client,'request',{...query(),request_key:requestKey,planner_id:expert.id,purpose:purpose.value,meeting_kind:kind.value,place:place.value.trim(),note:note.value.trim(),preferred_at:slot.value,consent:true});
+   browse.replaceChildren();el('h2',labels.REQUESTED,browse);el('p','아직 예약 확정 전입니다. 수락 후 연락처 공개에 동의하고, 서로 연락하여 일정을 확정해 주세요.',browse);tracking.replaceChildren();await renderUrgentWorkspace(client,tracking);
   });button('목록으로',browse,show,true);
  }
  const initial=list.find(a=>a.id===params.get('region'));if(initial){area=initial;await show();}else selectArea();

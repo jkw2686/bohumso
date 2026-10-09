@@ -13,7 +13,8 @@
       var planner=section('전문가이신가요?','이 지역에서 활동을 시작하고 싶다면 알려주세요.');action(planner,'planner','이 지역에서 활동하고 싶어요');
       var nearby=section('지금 상담이 필요하신가요?');var browse=document.createElement('a');browse.textContent='주변 지역 전문가 보기';browse.className='btn ghost';var query=new URLSearchParams({view:'experts',purpose:office.purpose||'claim'});if(office.situation)query.set('situation',office.situation);browse.href='/map.html?'+query;nearby.appendChild(browse);return;
     }
-    add('p','희망 상담시간을 선택하세요. 보험소가 담당자를 배정해요.');
+    if(office.bookingEnabled===false){add('p','지금은 새 상담 접수를 쉬고 있어요. 기존 예약은 내 예약에서 확인해 주세요.');var other=add('a','주변 전문가 보기');other.href='/map.html?view=experts';other.className='btn ghost';return;}
+    add('p','희망시간을 고르면 담당자와 연락한 뒤 예약을 확정해요.');
     var dl=add('label','방문 날짜'),date=document.createElement('input');date.type='date';date.min=day(new Date());date.max=day(new Date(Date.now()+89*86400000));date.value=day(new Date(Date.now()+86400000));dl.appendChild(date);
     var tl=add('label','방문 시간'),time=document.createElement('select');tl.appendChild(time);
     var next=add('button','이 시간으로 방문 요청');next.type='button';next.className='btn';

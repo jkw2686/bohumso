@@ -1,5 +1,14 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-09 상담 접수 ON/OFF · 연락 후 확정 (운영 적용 대기)
+- 최신 요청: 보험소·설계사 편한 ON/OFF, 전화·연락 후 확정, 양측 단계 알림, 번호 공개 사전동의.
+- 049/050 + contact-flow/notifications UI 준비. 일반·보험소 예약과 방문상담 양측 동의→서버 인증번호 공개→양측 연락확인→고객 확정. 방문 주소는 최종 확정 후에만. OFF 신규접수 차단/기존 요청 유지, 지도상 접수상태 반영. 관리자만 보험소 토글, 개설예정 거점 활성화 안함. 기존 운영 OTP·권한 함수 내부 래퍼 보존.
+- 알림함 복구 및 헤더 카운트, 기존 private.notifications 재사용. SMS/외부 푸시 발송 추가 안함. 30초 인앱 갱신. 기존 데이터·Storage 변경 없음.
+- 신규 DB 6시나리오, 기존 예약/운영 회귀 6시나리오 통과. 실제 UI+격리SQL 고객·전문가·관리자/일반·방문/알림/스위치/키보드/320~1440폭 통과. 시각검사 후 토글폭 보정. 알림의 해당 예약 자동 이동/포커스 일반·방문 검사 통과. 최종 build 통과. docs/contact-first-release.md와 rollback_contact_first.sql 참조.
+- 준비 파일 artifacts/contact-first-apply.sql은 049+050 외부 단일트랜잭션. 운영은 미실행. 새 전화번호 공개 시점을 확정 전으로 옮기므로 브라우저의 민감정보 접근 확대 실행직전 확인 필요. 승인 후 Supabase 적용→Git main 배포→운영 화면 조회 확인. 실제 회원 SMS/예약/ON 상태변경 미실행.
+- 운영 사전조회 회원4/프로필2/일반예약0/방문예약0/알림0/운영보험소0. 실제 보험소 운영 정보 등록 전에는 예정 거점을 ON할 수 없음. Supabase tab33 /sql/3e5ead8f-0313-4d61-8c4c-49e736d8a6cf 에 합본 SQL 준비(미실행).
+- 기존 deno.lock 미추적 유지. production baseline 49a4a6b/문서6c140ff.
+
 ## 2026-10-09 신청창 크기 최적화
 - public/styles.css/design-system.md: 폭 최대420, 높이 최대640 및 화면 안쪽84% 상한. 모바일도 좌우·하단12 여백과 모서리 유지, 헤더·본문·버튼 여백 토큰으로 축소. 짧은 창에서 입력·동의 행은 압축하지 않고 본문만 스크롤.
 - 데이터/신청 동작 변경 없음. 기존 6크기 UI 검사와 빌드 PASS. 49a4a6b → Netlify 6ac8ae627cab21000894d2f2 ready. 운영 신청창 420px 폭/높이 상한 확인, outputs/waitlist-sized-live.png. 후속 질문 점검: partner-work에 방문 가능 ON/OFF 존재, 운영 대표 계정 OFF 및 켜기 버튼 확인. 보험소는 office_locations planned/active/closed 및 영업일/시간/예외 구조만 있고 별도 상담 가능 토글 UI/RPC는 없음. 실제 상태 전환·GPS 전송 없이 조회만 함.

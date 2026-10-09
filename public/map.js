@@ -18,7 +18,7 @@
   // 지인 테스트용 샘플 거점(실데이터 아님, 삭제 가능). 실제 목록은 추후 planner_catalog 연동.
   var SPOTS = [];
   var PLANNED = (window.COVERAGE_AREAS || []).map(function(o,i){return {id:'planned-'+i,name:officeName(o.name),job:'오픈 예정 보험소',specialty:'지역 상담 거점',region:o.region+' '+o.name,lat:o.lat,lng:o.lng,rating:0,planned:true};});
-  var AVAIL = { now: '지금 상담 가능', today: '오늘 상담 가능', scheduled: '예약 상담', unavailable: '상담 준비 중' };
+  var AVAIL = { now: '지금 상담 가능', today: '오늘 상담 가능', scheduled: '예약 상담', unavailable: '상담 접수 쉬는 중' };
   // 전문분야 코드→한글 (consultation-ui.js와 동일)
   var SPECIALTY = { death: '사망보험금', illness: '암·질병', medical: '실손보험', claim: '보험금 청구', accident: '자동차·상해', life: '생명보험', nonlife: '손해보험', corporate: '법인보험', remodel: '보험 리모델링', management: '기존 보험 관리', coverage: '보장 점검', new: '신규 가입', other: '기타 문의' };
   // 지도 방식 → 기존 요청 흐름의 method 값 매핑(전화 통화 / 바로 만나기 / 시간 예약)
@@ -151,7 +151,7 @@
   function openCard(s) {
     if(!s.planned&&!s.office)window.bohumsoTrack?.('expert_viewed');
     current = s;
-    window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned&&!s.office,purpose:PURPOSE,situation:SITUATION});
+    window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,bookingEnabled:s.bookingEnabled,expert:!s.planned&&!s.office,purpose:PURPOSE,situation:SITUATION});
     showCard();
   }
   function showCard(){
@@ -222,7 +222,7 @@
           photo: p.photo_url || '', availability: p.availability_status || ''
         };
       });
-      if(window.bohumsoOffices){const offices=await window.bohumsoOffices();const active=offices.filter(o=>o.status==='active'&&Number.isFinite(o.latitude)&&Number.isFinite(o.longitude));PLANNED=PLANNED.filter(p=>!active.some(o=>o.region===p.region));spots=spots.concat(active.filter(o=>!area||o.region.indexOf(area)===0).map(o=>({id:o.id,name:o.name,region:o.region,job:'보험소',specialty:o.address,lat:o.latitude,lng:o.longitude,rating:0,planned:false,office:true})));}
+      if(window.bohumsoOffices){const offices=await window.bohumsoOffices();const active=offices.filter(o=>o.status==='active'&&Number.isFinite(o.latitude)&&Number.isFinite(o.longitude));PLANNED=PLANNED.filter(p=>!active.some(o=>o.region===p.region));spots=spots.concat(active.filter(o=>!area||o.region.indexOf(area)===0).map(o=>({id:o.id,name:o.name,region:o.region,job:'보험소',specialty:o.address,lat:o.latitude,lng:o.longitude,rating:0,planned:false,office:true,bookingEnabled:o.bookingEnabled})));}
       return spots; // 실전문가가 하나라도 있으면 샘플 폴백 안 함(좌표 없어도 목록엔 표시)
     } catch (e) { return null; }
   }

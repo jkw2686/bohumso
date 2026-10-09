@@ -47,6 +47,8 @@
 - **하단 탭바 `.bottom-nav`**: 반투명 흰 배경, blur, radius 22, z-index 30. 활성 항목 `--brand` + `--brand-soft` 배경.
 - **바텀시트 `.sheet-overlay`/`.sheet`**: 하단 슬라이드업 모달. 보이게 하려면 `.show` 클래스 필수(기본 opacity:0/pointer-events:none).
 - **상황 선택 `.situation-grid`**: `--brand-soft` 배경 카드형 링크.
+- **상담 접수 `.availability-panel` / `.availability-row`**: 기존 카드와 버튼 사용. ON/OFF는 텍스트 및 `role=switch`, `aria-checked` 함께 표시. 개설 예정 보험소는 비활성.
+- **연락 확인 `.contact-flow`**: 기존 입력·버튼·카드 기반 3단계 안내. 동의 체크와 전화 행동을 분리하고 양측 연락 확인 뒤 확정 표시. 색상·간격·모서리는 공통 토큰 사용.
 
 ## 6. 상태·접근성 (필수)
 - 모든 인터랙션 요소에 hover + **focus-visible** 표시(현재 `outline:3px solid #6c9fff`).
