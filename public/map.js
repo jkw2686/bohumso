@@ -83,6 +83,7 @@
       if(group.length>1){var index=group.indexOf(s),columns=Math.min(group.length,4),row=Math.floor(index/columns),rowCount=Math.ceil(group.length/columns);icon.options.iconAnchor=[icon.options.iconAnchor[0]-(index%columns-(Math.min(columns,group.length-row*columns)-1)/2)*44,icon.options.iconAnchor[1]-(row-(rowCount-1)/2)*44];}
       s._marker = L.marker([s.lat, s.lng], { icon: icon, title: s.name+(s.planned?' · 개설 예정 보험소':s.office?' · 보험소':' · 전문가 활동지역') }).addTo(map);
       s._marker.on('click', function () { openCard(s); });
+      s._marker.getElement().addEventListener('keydown',function(event){if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();openCard(s);}});
       spotMarkers.push(s._marker);
     });
     // 전문가 위치에 맞춰 범위 자동 조정(위치 권한 허용 시 locate가 다시 내 위치로 이동)
@@ -157,7 +158,7 @@
   function showCard(){
     var sheet=$('cardSheet');cardOpener=document.activeElement;
     $('listSheet').hidden=true;$('listReopen').hidden=true;
-    $('cardScrim').hidden=true;sheet.style.height='';sheet.hidden=false;
+    $('cardScrim').hidden=true;sheet.style.height='';sheet.style.maxHeight='';sheet.hidden=false;$('cardBody').scrollTop=0;
     sheet.classList.remove('detail');sheet.classList.add('show');$('cardClose').focus();
     if(map&&current&&Number.isFinite(current.lat)&&Number.isFinite(current.lng)){
       var point=map.project([current.lat,current.lng],map.getZoom());

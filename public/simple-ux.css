@@ -39,4 +39,22 @@ body.has-bottom-nav .simple-home{padding-bottom:24px}body.has-bottom-nav.custome
 #homeMap .leaflet-popup-content a.btn,#homeMap .leaflet-popup-content a.btn:visited{display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;text-decoration:none;font-size:14px;line-height:1.4;min-height:46px;padding:12px;margin-top:14px}
 #homeMap .leaflet-popup-content-wrapper{border-radius:18px}
 #homeMap .leaflet-popup-close-button{width:44px;height:44px;line-height:40px;font-size:24px;color:var(--ink-muted);border-radius:12px;z-index:1}
+
+/* A selected office stays smaller than the map behind it. */
+:root{--office-card-width:320px;--office-card-height:280px;--type-office-title:18px}
+.office-slot .office-opening-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2)}
+.office-slot .office-opening-section{padding:0;gap:var(--space-2);min-width:0;border:0}
+.office-slot .office-opening-section:first-child{grid-column:1 / -1}
+.office-slot .office-opening-section p{font-size:var(--type-small);line-height:1.5;color:var(--ink-body)}
+.office-slot .office-opening-section .btn{margin:0;padding:var(--space-2);min-height:var(--touch-target);font-size:var(--type-small);line-height:1.4;white-space:normal;word-break:keep-all;gap:0;border-radius:var(--radius-control);box-shadow:none}
+.office-slot .office-opening-section .btn.ghost{background:var(--brand-soft);color:var(--brand-dark);border-color:var(--border)}
+.office-slot :is(button,a,input,select):focus-visible{outline:var(--focus-width) solid var(--brand);outline-offset:var(--focus-width)}
+#homeMap .leaflet-popup-content{margin:var(--space-3);max-height:var(--office-popup-content-height);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+#homeMap .office-slot h2{position:sticky;top:0;z-index:1;background:var(--card);font-size:var(--type-office-title);margin:0 0 var(--space-2);padding-right:var(--touch-target);line-height:1.4}
+#homeMap .office-slot .office-opening-section .btn{margin:0;padding:var(--space-2);min-height:var(--touch-target);font-size:var(--type-small);line-height:1.4}
+#homeMap .office-slot .office-opening-section .btn.ghost{background:var(--brand-soft);color:var(--brand-dark)}
+.map-page .card-sheet,.map-page .card-sheet.show{width:min(var(--office-card-width),calc(100% - var(--space-4)*2));max-height:min(var(--office-card-height),50%);border-radius:var(--radius);box-shadow:var(--shadow)}
+.map-page .card-sheet-body{padding:0 var(--space-3) var(--space-3)}
+.map-page .card-sheet h2{font-size:var(--type-office-title);margin:0 0 var(--space-2)}
+.map-page .card-sheet .office-opening-section .btn{margin:0}
 #homeMap .leaflet-control-attribution{font-size:9px;line-height:1.4;max-width:calc(100% - 16px)}

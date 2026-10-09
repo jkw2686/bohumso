@@ -32,6 +32,7 @@
 
 ## 3. 간격·레이아웃
 - 공통 재사용 토큰: `--space-2:8px`, `--space-3:12px`, `--space-4:16px`, `--space-5:20px`, `--sheet-radius:22px`, `--focus-width:3px`, `--touch-target:44px`.
+- 보험소 선택 카드: `--office-card-width:320px`, `--office-card-height:280px`, `--type-office-title:18px`. 홈 지도 팝업은 지도 높이에 맞춰 본문 상한을 줄이며, 지도 페이지는 지도 영역 절반 이하. 준비 안내 1개와 주요 버튼 1개, 보조 버튼 2열을 사용한다. 닫기는 44px 터치 영역을 유지한다.
 - 간편 신청창: `--dialog-width:420px`, `--dialog-height:640px`. 화면 안쪽 높이의 84%를 상한으로 사용하고 모바일 좌우·하단 여백은 `--space-3`. 내용만 스크롤하고 제목·닫기·신청은 유지한다.
 - 컨테이너 최대폭 760px(홈 등 넓은 화면 1120~1168px), 좌우 여백 24px(모바일 16px).
 - 카드 padding 20~25px. 섹션 상하 여백 28~46px. 하단 안전여백 80~120px(하단 탭바 고려).

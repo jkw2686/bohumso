@@ -1,5 +1,10 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-09 보험소 선택 안내창 축소 (배포 준비)
+- 홈 지도340px보다 안내창534px가 더 큰 운영 문제 확인. office-slot 준비 설명/3행 버튼을 간단 안내+주요 버튼+보조 2열로 축소, 홈 팝업 높이 지도 연동/본문 스크롤, 지도 카드 최대폭320/높이280 및 지도 절반 제한. 닫기44px 유지, 재선택 시 스크롤/수동 높이 초기화. 지도 마커 Enter/Space 선택 지원.
+- 운영 main(6c140ff)에서 codex/compact-office-card 분리. 앞선 상담 ON/OFF·연락처 동의·알림 1a25662는 codex/trust-ux-review에 저장되어 있으며 운영 DB 적용 승인 대기. 이번 화면 수정에는 해당 DB/권한 변경을 포함하지 않는다. 후속 상담 배포 전 main의 이번 수정 병합 필요.
+- 원복 기준6c140ff, 데이터·기능 연결 변경 없음. build 및 격리 DB 연결 신청 검사 PASS. 320/360/390/590/844/1440 폭에서 홈 팝업184~210px, 지도 카드90~229px 및 지도 영역 내 경계·가로 넘침 없음·두 신청 버튼·닫기·재선택·키보드 검사 PASS. 실제 신청/SMS 없음. 배포 결과 아래 추가.
+
 ## 2026-10-09 신청창 크기 최적화
 - public/styles.css/design-system.md: 폭 최대420, 높이 최대640 및 화면 안쪽84% 상한. 모바일도 좌우·하단12 여백과 모서리 유지, 헤더·본문·버튼 여백 토큰으로 축소. 짧은 창에서 입력·동의 행은 압축하지 않고 본문만 스크롤.
 - 데이터/신청 동작 변경 없음. 기존 6크기 UI 검사와 빌드 PASS. 49a4a6b → Netlify 6ac8ae627cab21000894d2f2 ready. 운영 신청창 420px 폭/높이 상한 확인, outputs/waitlist-sized-live.png. 후속 질문 점검: partner-work에 방문 가능 ON/OFF 존재, 운영 대표 계정 OFF 및 켜기 버튼 확인. 보험소는 office_locations planned/active/closed 및 영업일/시간/예외 구조만 있고 별도 상담 가능 토글 UI/RPC는 없음. 실제 상태 전환·GPS 전송 없이 조회만 함.

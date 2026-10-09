@@ -11,9 +11,9 @@
   areas.forEach(function(area){
     var content=document.createElement('div');
     window.renderOfficeSlot(content,{name:window.officeName(area.name),region:area.region+' '+area.name,planned:true});
-    L.marker([area.lat,area.lng],{title:window.officeName(area.name),icon:L.divIcon({className:'home-office-pin',html:window.uiIcon('home'),iconSize:[30,30]})}).addTo(map).bindPopup(content,{maxWidth:280,minWidth:180,autoPanPaddingTopLeft:[16,16],autoPanPaddingBottomRight:[16,24]});
+    L.marker([area.lat,area.lng],{title:window.officeName(area.name),icon:L.divIcon({className:'home-office-pin',html:window.uiIcon('home'),iconSize:[30,30]})}).addTo(map).bindPopup(content,{maxWidth:280,minWidth:220,autoPanPaddingTopLeft:[16,16],autoPanPaddingBottomRight:[16,24]});
   });
-  async function actualOffices(){try{if(!window.bohumsoOffices)return;const offices=await window.bohumsoOffices();offices.filter(o=>o.status==='active'&&Number.isFinite(o.latitude)&&Number.isFinite(o.longitude)).forEach(function(o){const content=document.createElement('div');window.renderOfficeSlot(content,{id:o.id,name:o.name,region:o.region,planned:false});L.marker([o.latitude,o.longitude],{title:o.name+' · 운영 중',icon:L.divIcon({className:'home-office-pin',html:window.uiIcon('home'),iconSize:[30,30]})}).addTo(map).bindPopup(content,{maxWidth:280,minWidth:180,autoPanPaddingTopLeft:[16,16],autoPanPaddingBottomRight:[16,24]});});}catch{}}
+  async function actualOffices(){try{if(!window.bohumsoOffices)return;const offices=await window.bohumsoOffices();offices.filter(o=>o.status==='active'&&Number.isFinite(o.latitude)&&Number.isFinite(o.longitude)).forEach(function(o){const content=document.createElement('div');window.renderOfficeSlot(content,{id:o.id,name:o.name,region:o.region,planned:false});L.marker([o.latitude,o.longitude],{title:o.name+' · 운영 중',icon:L.divIcon({className:'home-office-pin',html:window.uiIcon('home'),iconSize:[30,30]})}).addTo(map).bindPopup(content,{maxWidth:280,minWidth:220,autoPanPaddingTopLeft:[16,16],autoPanPaddingBottomRight:[16,24]});});}catch{}}
   window.addEventListener('bohumso-member-ready',actualOffices,{once:true});if(window.bohumsoOffices)actualOffices();
   var button=document.getElementById('homeLocate'),notice=document.getElementById('homeLocationStatus'),me,circle;
   function locate(){
@@ -35,5 +35,6 @@
     if(saved.source==='DEVICE')me=L.circleMarker(point,{radius:8}).addTo(map).bindTooltip('최근 확인한 위치');
   });
   document.getElementById('homeMapResize').addEventListener('click',function(){var large=host.classList.toggle('large');this.textContent=large?'지도 작게':'지도 크게';this.setAttribute('aria-expanded',String(large));map.invalidateSize();});
-  new ResizeObserver(function(){map.invalidateSize();}).observe(host);
+  function fitOfficePopup(){host.style.setProperty('--office-popup-content-height',Math.max(120,Math.min(240,host.clientHeight*.7-26))+'px');map.invalidateSize();}
+  fitOfficePopup();new ResizeObserver(fitOfficePopup).observe(host);
 })();
