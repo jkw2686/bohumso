@@ -2,7 +2,7 @@
 - 전체 28개 HTML에 마지막 공통 type-system.css 적용. 자체 호스팅 Pretendard Variable/OFL 포함, 외부 폰트 CDN import 제거.
 - 제목/본문/보조 텍스트 위계, 링크·네이비/블루 강조, 폼 레이블 정리. 휴대전화 인증 화면 계층 및 완료 배지 개선. 기존 인증/예약/권한 로직 유지.
 - type-system-browser: 6페이지 x 4너비 폰트 로드/overflow PASS. mobile-controls-browser 6너비/동작 모의검사 PASS. phone-entry-browser OTP 동작 모의검사 PASS. npm run build PASS. 실제 SMS 미발송. 실기기 검증 미실시.
-- 배포 완료 여부는 다음 기록 참조. 통합 checkout의 FCM/추가 OTP 작업은 포함하지 않음.
+- 운영 배포 완료: c0123de / Netlify 6ac85fc3a7a2130007a8fc2f ready, 2026-10-09 12:30 KST. 실제 홈 공통 글꼴 적용 확인, outputs/typography-live.png 저장. 인증 페이지 갱신 후 세션 만료로 로그인 복귀: 완료 상태는 모의 화면에서 시각 검증. 통합 checkout의 FCM/추가 OTP 작업은 포함하지 않음.
 
 ## 2026-10-09 SMS 미수신 수정
 - 운영 Auth 로그 10/8 18:36:33 KST /user PUT hook Invalid payload sent to hook, 같은시각 Netlify 함수 실행 있으나 공급자 오류 로그 없음.
