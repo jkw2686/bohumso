@@ -3,7 +3,8 @@
 - 홈 CTA/공개 상황안내6개/3단계/가입의무없음, 회사정보 공통 설정, 전문가 누락정보 정리, 정적 SEO 추가. 실제 예약·개인정보 인증은 유지.
 - docs/trust-ux-review.md 법적/운영 미확정사항 기록. 약관을 확정한 것으로 표시하지 않음. 운영 예약은 여전히 닫혀 있으며 개설예정 거점 유지.
 - trust-ux-browser: 공개 안내6개 x 4너비, CTA/미가입진입/연락처 빈값 PASS. 실제 가입/예약/SMS 미실행. artifacts/trust-home-mobile.png, trust-guide-mobile.png 시각확인.
-- 별도 Netlify preview 배포 진행. 운영 main에 merge/push 하지 말고 미리보기 확인 후 사용자 방향 반영.
+- 별도 Netlify preview ready: https://6ac87f82936f7f893109a2b5--bohumso.netlify.app (개선 커밋 9e35ced). 운영 main 미변경. 실제 미가입 브라우저에서 홈→암 안내→지도 이동 확인. outputs/trust-preview-home.png 증거.
+- 원복은 git revert 9e35ced 후 새 배포. 원본 backup/pre-trust-ux-20261009 원격 보관. 운영 main에 merge/push 하지 말고 미리보기 확인 후 사용자 방향 반영. CLI 생성 deno.lock은 미포함.
 
 ## 2026-10-09 홈 지도 안내창 가림 수정
 - 예약 UI 01a2bde 배포 ready 확인(6ac8719075ca410008733d9a). 후속 홈지도: 팝업 동안 줌 컨트롤 숨김/닫은 후 복귀, 기본 우하단 배치, 안내창 폭 280px, 닫기 44px, CTA 흰색 글자 지정.
