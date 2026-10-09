@@ -2,7 +2,7 @@
 - 운영 Auth 로그 10/8 18:36:33 KST /user PUT hook Invalid payload sent to hook, 같은시각 Netlify 함수 실행 있으나 공급자 오류 로그 없음.
 - send-sms-hook는 user.phone만 읽어 첫 전화등록(user.phone 비어있음, user.new_phone 존재)에 missing_fields HTTP400. 공식 Auth phone.go/v0hooks/user.go 확인: sms.phone 우선, 구버전 user.new_phone, 기존 user.phone 순으로 수신번호 처리 수정. 서명검증/OTP검증/관리자권한 변경 없음.
 - tests/send-sms-hook.test.mjs: 초기등록,번호변경,새 sms.phone우선,기존로그인,잘못된서명차단,수신번호없음차단,공급자실패 전달 모의검사 PASS. npm run build PASS. 실제SMS 발송 안함.
-- SOLAPI 세션 만료: 사용자 로그인 질문 보냄. 기존로그 확인으로 코드 결함 식별했으나 실제 수신은 배포후 사용자 재시도 필요. 현재 수정 배포 준비.
+- SOLAPI 세션 만료: 사용자 로그인 질문 보냄. 기존로그 확인으로 코드 결함 식별했으나 실제 수신은 배포후 사용자 재시도 필요. 운영 e7b0da7 / Netlify 6ac85741165f1b0008bdd201 ready, 2026-10-09 11:54 KST 배포 완료. 실제 이충경 번호 수신은 미확인.
 
 ## 2026-10-08 13:09 KST 공개 배포 완료
 - Production fab3024 / Netlify 6ac7171eaa22e1a131f31023 ready. 첫 Git 빌드는 Node22 다운로드 단계 실패, 동일 커밋 재시도 성공.
