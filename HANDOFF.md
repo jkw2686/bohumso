@@ -1,3 +1,9 @@
+## 2026-10-09 회사 명단 승인 연결 오류 수정
+- 045_review_roster_refresh.sql: 관리자 승인 시 기존 NOT_SUBMITTED 프로필을 정상 roster matcher로 재평가. 연락처 검증/명단 만료/관리자 제한/자격자료 상태 유지. owner declaration 외부 wrapper가 있으면 내부 before_owner_declaration만 수정. 단일 트랜잭션, 재실행 가능, rollback_review_roster_refresh.sql 준비.
+- 로컬 DB 재현 테스트 PASS: 명단 후등록→프로필 재저장 없이 승인, 미인증/미등록/비관리자/만료 차단, 실패 시 변경 원복, 자격서류 NOT_SUBMITTED 유지.
+- 운영 045 적용 성공. 실제 관리자 화면에서 이충경 승인 완료, 김포 지도 마커·상세카드 확인. 별도 프런트 배포 불필요(DB 수정). 기존 관리자 JWT 직접 지정 SQL은 자동검토로 거절되어 실행하지 않음. 정상 로그인 관리자 UI와 정식 승인 함수로 완료.
+- 사용자 확인: 이충경 SMS 오전 수신 확인. DB 휴대전화 인증 완료도 확인. 회사 소속 명단 만료 2027-10-09 23:59 KST. 개인 연락처는 문서에 저장하지 않음.
+
 ## 2026-10-09 정식 정책·실예약 전환
 - 사용자 첨부 689d3705 지시가 이전 보수적 비활성 유지 지시보다 우선. 4개 정책 2026-10-09-v1, 이전 문서 archive 유지, BUSINESS_INFO 중앙설정/빈행숨김/운영팀 문의 유지. BUSINESS_SETUP.md 사업자·위탁/국외이전 확인 및 내부 보유기간 수동관리 절차.
 - PRODUCTION에서도 기존 public signup/expert/예약 확인 구현을 사용하도록 config와 expert-documents 분기 호환. earlyAccess 내부 속성은 호환용이므로 삭제 금지. DB가 사업상 이용 가능 여부의 최종 기준; 환경변수는 공급자 인프라만 제어.
