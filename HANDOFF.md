@@ -1,3 +1,8 @@
+## 2026-10-09 예약 준비 안내 개선
+- 고객 화면의 약관 검토 후 오픈 문구 제거. 예약/긴급 상담 접수 준비 상태와 이용 문의 링크 명시. 기존 서버 이용 조건은 변경하지 않음.
+- 공개 release_status 확인: EARLY_ACCESS, signupEnabled true, policiesApproved false, closedBeta false. 따라서 실제 예약 접수는 여전히 닫힘. 약관 승인 또는 운영 DB 설정 변경을 했다고 보고하지 말 것.
+- src/account.js, workflow.js, urgent.js 수정. 빌드/차이 검사 통과. 실제 예약 생성 없음.
+
 ## 2026-10-09 공통 타이포그래피 정비
 - 전체 28개 HTML에 마지막 공통 type-system.css 적용. 자체 호스팅 Pretendard Variable/OFL 포함, 외부 폰트 CDN import 제거.
 - 제목/본문/보조 텍스트 위계, 링크·네이비/블루 강조, 폼 레이블 정리. 휴대전화 인증 화면 계층 및 완료 배지 개선. 기존 인증/예약/권한 로직 유지.
