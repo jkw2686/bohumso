@@ -1,0 +1,17 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import {fixture,ids} from './commerce-fixture.mjs';
+test('region interest privacy, order, consent, daily cap and retention',async()=>{
+ const f=await fixture();try{await f.db.exec('reset role');const sql=await readFile('supabase/042_region_waitlist.sql','utf8');await f.db.exec(sql);await f.db.exec(sql);
+ const call=(operation,payload={})=>f.rpc('region_waitlist',[operation,payload]);const base={region:'서울 강남구',role:'consumer',contact:'01000000001',need:'claim',consent:true};await f.login(null,'anon');
+ assert.deepEqual(await call('join',base),{position:1});assert.deepEqual(await call('join',{...base,contact:'01000000002',need:null}),{position:2});
+ assert.deepEqual(await call('join',{...base,role:'planner'}),{position:1});assert.deepEqual(await call('join',base),{position:1});
+ for(const [extra,error] of [[{consent:false},'consent_required'],[{consent:'true'},'consent_required'],[{contact:'x'},'invalid_contact'],[{role:'x'},'invalid_role'],[{need:'x'},'invalid_need'],[{region:' '},'invalid_region']])await assert.rejects(call('join',{...base,...extra}),new RegExp(error));
+ await assert.rejects(call('counts'),/admin_required/);await assert.rejects(call('unknown',{operation:'counts'}),/invalid_operation/);await assert.rejects(f.db.query('select * from private.region_waitlist'),/permission denied/);
+ await f.login(ids.customer);await assert.rejects(call('counts'),/admin_required/);await assert.rejects(f.db.query('select private.expire_region_waitlist()'),/permission denied/);
+ for(let i=0;i<5;i++)await call('join',{...base,contact:'01000000003',region:'지역 '+i});await assert.rejects(call('join',{...base,contact:'01000000003',region:'지역 6'}),/rate_limited/);assert.deepEqual(await call('join',{...base,contact:'01000000003',region:'지역 0'}),{position:1});
+ await f.db.exec('reset role');const original=(await f.db.query('select * from private.region_waitlist where contact=$1 and role=$2',[base.contact,base.role])).rows[0];assert.equal(original.consent_version,'2026-10-09');assert.equal((await f.db.query("select need from private.region_waitlist where contact='01000000002'")).rows[0].need,null);
+ await f.login(null,'anon');await call('join',{...base,consent_version:'forged',need:'other'});await f.db.exec('reset role');const again=(await f.db.query('select * from private.region_waitlist where contact=$1 and role=$2',[base.contact,base.role])).rows;assert.equal(again.length,1);assert.equal(String(again[0].created_at),String(original.created_at));assert.equal(again[0].need,'claim');
+ await f.login(ids.admin);const counts=await call('counts');assert.equal(counts[0].region,'서울 강남구');assert.equal(counts[0].consumers,2);assert.equal(counts[0].planners,1);assert.deepEqual(Object.keys(counts[0]).sort(),['consumers','latest_at','planners','region']);
+ await f.db.exec("reset role;update private.region_waitlist set created_at=now()-interval '1 year 1 day' where contact='01000000002';update private.region_waitlist set notified_at=now() where role='planner';select private.expire_region_waitlist();");assert.equal((await f.db.query("select count(*)::int n from private.region_waitlist where notified_at is not null or created_at<now()-interval '1 year'")).rows[0].n,0);
+ const cron=await readFile('supabase/047_region_waitlist_retention.sql','utf8');assert.match(cron,/cron.schedule\('bohumso-region-waitlist-retention'/);
+ }finally{await f.db.close();}
+});

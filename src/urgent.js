@@ -3,7 +3,7 @@ import {memberService,requireActiveMember} from './member-access.js';
 export const ENABLE_LIVE_LOCATION=false;
 export const ENABLE_BACKGROUND_LOCATION=false;
 const labels={REQUESTED:'요청 전달',ACCEPTED:'전문가 확인',PREPARING:'출발 준비',DEPARTED:'상담 장소로 출발',EN_ROUTE:'이동 중',ARRIVED:'도착',COMPLETED:'상담 완료',CANCELLED:'취소',EXPIRED:'요청 종료'};
-const purposes={death:'가족 사망 관련 도움',illness:'진단 후 보험 확인',medical:'입원·수술 보험 확인',accident:'사고 후 보험 확인',claim:'보험금 청구',coverage:'내 보험 확인'};
+export const purposes={death:'가족 사망 관련 도움',illness:'진단 후 보험 확인',medical:'입원·수술 보험 확인',accident:'사고 후 보험 확인',claim:'보험금 청구',coverage:'내 보험 확인',other:'기타 도움'};
 const errorCopy={policies_not_approved:"현재 긴급 상담 접수를 준비하고 있습니다. 문의하기에서 이용 문의를 남겨 주세요.",beta_invitation_required:"초대된 베타 참여자만 요청할 수 있어요.",phone_verification_required:"휴대전화 인증이 필요합니다. 인증 연결을 준비 중입니다.",expert_verification_required:'휴대전화·전문가 등록 확인과 활동지역 설정이 필요합니다.',no_available_expert:'지금 가능한 전문가가 없습니다. 예약 상담을 이용해 주세요.',request_limit:'진행 중인 요청을 확인하거나 잠시 후 다시 시도해 주세요.',offer_unavailable:'이미 다른 전문가가 수락했거나 종료된 요청입니다.',expert_busy:'현재 진행 중인 상담이 있습니다.',live_location_disabled:'위치공유는 아직 준비 중입니다.',invalid_location:'정확한 현재 위치를 확인하지 못했어요. 다시 시도해 주세요.'};
 function el(tag,text,root,cls){const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;if(root)root.append(n);return n;}
 function button(text,root,fn){const b=el('button',text,root,'btn');b.type='button';b.onclick=async()=>{b.disabled=true;try{await fn();}catch(e){status(root,errorCopy[e.message]||'연결 또는 입력을 확인한 뒤 다시 시도해 주세요.');}finally{b.disabled=false;}};return b;}

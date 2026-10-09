@@ -1,3 +1,4 @@
+import {renderWaitlistCounts} from './region-waitlist.js';
 import {renderEarlyExpertAdmin} from './early-expert-admin.js';
 import {renderPublicSignup,finishPublicSignup,PRODUCTION_ORIGIN} from './public-signup.js';
 import {betaCode,betaReturn,renderBetaSignup,renderBetaFinish,renderBetaAdmin,renderBetaExpert} from './beta.js';
@@ -75,6 +76,7 @@ async function start(){
  if(mode==="reset"){$("accountContent").hidden=false;onForm("passwordForm",async d=>{const {error}=await client.auth.updateUser({password:String(d.get("password"))});fail(error);message("비밀번호를 변경했습니다. 내 계정에서 계속 이용할 수 있습니다.");});return;}
  await refreshMembership();
  if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config});if(document.body.dataset.workspace==='partner'){const tools=document.createElement('div');$("accountContent").prepend(tools);await renderServiceArea(client,tools);await renderInstant(client,tools);await renderUrgentWorkspace(client,tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
+ if(mode==='requests'&&document.body.dataset.workspace==='admin')await renderWaitlistCounts(client,document.getElementById('regionWaitlistHost'));
  if(mode==="payment")await renderPaymentResult(client,message);
  if(mode==="phone")await renderPhoneVerification({client,config,root:$("accountContent")});
  if(mode==="account")await renderAccount();
