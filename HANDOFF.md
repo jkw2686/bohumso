@@ -2,7 +2,7 @@
 
 ## 2026-10-09 신청창 크기 최적화
 - public/styles.css/design-system.md: 폭 최대420, 높이 최대640 및 화면 안쪽84% 상한. 모바일도 좌우·하단12 여백과 모서리 유지, 헤더·본문·버튼 여백 토큰으로 축소. 짧은 창에서 입력·동의 행은 압축하지 않고 본문만 스크롤.
-- 데이터/신청 동작 변경 없음. 기존 6크기 UI 검사와 빌드 확인, 운영 배포 확인 진행 중.
+- 데이터/신청 동작 변경 없음. 기존 6크기 UI 검사와 빌드 PASS. 49a4a6b → Netlify 6ac8ae627cab21000894d2f2 ready. 운영 신청창 420px 폭/높이 상한 확인, outputs/waitlist-sized-live.png. 후속 질문 점검: partner-work에 방문 가능 ON/OFF 존재, 운영 대표 계정 OFF 및 켜기 버튼 확인. 보험소는 office_locations planned/active/closed 및 영업일/시간/예외 구조만 있고 별도 상담 가능 토글 UI/RPC는 없음. 실제 상태 전환·GPS 전송 없이 조회만 함.
 
 ## 2026-10-09 신청창 잘림·여백 개선
 - src/region-waitlist.js/public/styles.css: 신청창 제목·닫기 상단 유지, 신청 버튼 하단 유지, 입력 영역만 스크롤. 지역/제목 위계, 동의 영역, 보조 설명 글자와 간격 정리. 최초 전화번호 포커스를 닫기로 옮겨 자동 키보드·상단 밀림 방지. visualViewport 높이 변경 반영 및 닫을 때 이벤트 정리.
