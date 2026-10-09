@@ -1,11 +1,11 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
-## 2026-10-09 두 상담 방식 + 지도 아이콘 개편 (046 적용, 웹 배포 진행)
+## 2026-10-09 두 상담 방식 + 지도 아이콘 개편 (운영 배포 완료)
 - src/expert-visits.js 새 방문상담 UI, urgent.js 기존 활동지역 유지 후 새 UI export. 익명 탐색/직접 1명 선택/희망시간/주소분리/고객 확정 후 주소 공개/전문가 ON 동의 및 수동위치갱신. 홈·안내6종 두 방식 CTA, 고객 예약 내 방문상담 내역, 지도 집/사람/점선거점 아이콘과 필터.
 - supabase/046_expert_visits.sql 단일트랜잭션/재실행/기존함수백업. 원본GPS 비공개, 새동의버전 필수, fresh10/stale30/기본4시간. 기존 보험소 예약 유지. rollback_expert_visits.sql 신규요청 존재시 과거주소노출 동작 복원 거부.
 - DB4시나리오/기존정책2시나리오/브라우저실제 로컬SQL 왕복/지도4너비 PASS. 문법/차이검사 PASS. 최종 빌드 PASS. docs/expert-visits-release.md 상세.
 - 운영 읽기전용 preflight: 필요한 함수/전화bridge 존재, urgent_requests0/consultations0/enabled_experts0. 실제GPS·SMS·운영예약 테스트 안함. 원복 기준908a340.
-- 사용자 1번(적용하고 배포) 실행직전 승인 수신. 운영046 전체단일실행 성공. 다음 할 일: 공개RPC/기존행보존 확인→main 배포 및 실페이지 확인. Supabase 임시tab26 /sql/fc40f9cc-cacf-4dd3-83e9-be487c709d62 (046 실행 후 검증 조회). 사용자 추가 요청: 보험소와 설계사 아이콘 구분 포함 완료.
+- 사용자 1번(적용하고 배포) 실행직전 승인 수신. 운영046 전체단일실행 성공. 운영 공개RPC 조회 가능/익명 쓰기 차단/GPS 테이블 비공개/백업1건/예약0건 유지 확인. main 38433f8 → Netlify 6ac89a62d674d10009400f7d Published 2026-10-09 16:40 KST. 운영 홈 두 CTA·김포 이충경 사람 마커·보험소 집 마커·활동지역 안내·방문 가능 빈 목록 확인. Supabase 임시tab26 /sql/fc40f9cc-cacf-4dd3-83e9-be487c709d62 (046 실행 후 검증 조회). 사용자 추가 요청: 보험소와 설계사 아이콘 구분 포함 완료.
 - deno.lock은 기존 미추적CLI파일로 제외. 수정된 public/assets는 build 산출물이며 Git ignore.
 
 ## 2026-10-09 회사 명단 승인 연결 오류 수정
