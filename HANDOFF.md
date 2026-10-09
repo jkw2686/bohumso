@@ -1,3 +1,7 @@
+## 2026-10-09 고객 예약 화면 정리
+- requests 페이지 전용 스타일: 예약 안내/분리된 행동 버튼/내역 건수/검색/빈 상태 순으로 단일 컬럼 정리. 제목 중복 제거, 모바일 버튼 44px 이상, 기존 접수 제한 및 예약 처리 유지.
+- workflow 빈 예약과 필터 결과 없음 분리, 건수 표시. requests-page-browser 320/390/768/1440 가로넘침·버튼간격·검색·새로고침 모의검사 PASS. 실제 예약 접수 안함. artifacts/requests-page-mobile.png 시각 검증.
+
 ## 2026-10-09 위치 오차 개선
 - DEVICE 최초 요청도 highAccuracy true/maximumAge 0, 500m 초과시 재측정 후 더 정확한 결과 선택. 재측정 실패시 기존 device 정확도 유지. NETWORK/오래된 DEVICE 자동 갱신(권한 허용시), MANUAL 선택 유지.
 - 홈/지도 500m 초과 경고 및 오차 표시. 큰 오차로 가까운 구역을 확정하지 않음. location-fresh/store 4검사 PASS, 문법/빌드 PASS. 실제 사용자 건물 위치 일치 미확인.

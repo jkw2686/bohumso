@@ -1,0 +1,31 @@
+/* Customer booking page only; existing booking actions remain unchanged. */
+.customer-requests main.container{max-width:800px;padding-bottom:110px}
+.customer-requests .request-heading{margin:24px 0 20px}
+.customer-requests .request-heading .request-eyebrow{font-size:11px;letter-spacing:.12em;color:var(--brand);font-weight:700}
+.customer-requests .request-heading h1{margin:8px 0;font-size:30px}
+.customer-requests .request-heading p:last-child{font-size:15px}
+.customer-requests #accountContent{display:flex;flex-direction:column;gap:20px}
+.customer-requests #accountContent[hidden],.customer-requests #requestForm[hidden]{display:none}
+.customer-requests #requestForm{width:100%;box-sizing:border-box;margin:0}
+.customer-requests #requestForm.booking-gate{display:block;background:var(--brand-soft);border:1px solid var(--border);box-shadow:none;padding:24px}
+.customer-requests .booking-gate-label{display:inline-block;font-size:12px;font-weight:700;color:var(--brand);margin-bottom:8px}
+.customer-requests #requestForm.booking-gate h2{font-size:22px;margin:0 0 8px}
+.customer-requests #requestForm.booking-gate p{font-size:14px;line-height:1.65;color:var(--ink-muted);margin:0 0 20px}
+.customer-requests .booking-gate-actions{display:flex;gap:10px;flex-wrap:wrap}
+.customer-requests .booking-gate-actions a,.customer-requests #requestForm.booking-gate>a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 18px;box-sizing:border-box;border-radius:12px;background:var(--brand);color:white;text-decoration:none;font-size:14px;font-weight:650}
+.customer-requests .booking-gate-actions a+a{background:var(--card);color:var(--brand);border:1px solid var(--border)}
+.customer-requests .booking-list-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px}
+.customer-requests .booking-list-heading h2{font-size:20px;margin:0}
+.customer-requests #bookingCount{color:var(--brand);font-size:14px;margin-left:6px}
+.customer-requests .booking-list-heading p{margin:6px 0 0;font-size:12px;color:var(--ink-muted)}
+.customer-requests .refresh-bookings{flex-shrink:0;border:1px solid var(--border);background:var(--card);color:var(--ink-body);border-radius:12px;min-height:44px;padding:10px 14px;font-size:13px;cursor:pointer}
+.customer-requests .request-filters{border-bottom:1px solid var(--border);margin:0}
+.customer-requests .request-filters summary{font-size:14px;padding:12px 0}
+.customer-requests .request-filters summary span{font-weight:400;color:var(--ink-muted);font-size:12px;margin-left:8px}
+.customer-requests #requestList .card{margin:0 0 16px}
+.customer-requests .booking-empty{text-align:center;padding:36px 20px;box-shadow:none}
+.customer-requests .booking-empty::before{content:'□';display:grid;place-items:center;width:48px;height:48px;margin:0 auto 16px;background:var(--brand-soft);color:var(--brand);border-radius:16px;font-size:28px}
+.customer-requests .booking-empty h2{font-size:18px;margin:0 0 8px}
+.customer-requests .booking-empty p{font-size:14px;color:var(--ink-muted);margin:0 0 16px}
+.customer-requests .booking-empty a{display:inline-block;padding:10px;font-size:14px;font-weight:600;text-decoration:none;min-height:44px;box-sizing:border-box}
+@media(max-width:480px){.customer-requests #requestForm.booking-gate{padding:20px}.customer-requests .booking-gate-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.customer-requests .booking-gate-actions a{padding:10px 8px;font-size:13px}.customer-requests .booking-list-heading h2{font-size:18px}.customer-requests .refresh-bookings{padding:8px 10px}.customer-requests .request-heading h1{font-size:28px}}
