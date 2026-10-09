@@ -11,12 +11,12 @@ export async function renderDirectory(client){
   host.replaceChildren();const list=sortedProfiles(profiles,position,purpose.value).filter(p=>!form.elements.availability.value||availabilityOf(p)===form.elements.availability.value);
   if(!list.length)el('p','선택한 지역·분야는 보험소 개설 예정 · 전문가 모집 중입니다. 다른 지역을 선택해 주세요.',host);
   for(const p of list){const card=el('article',undefined,host);card.className='card planner-card';card.id='profile-'+p.id;
-   if(p.photo_url){const img=el('img',undefined,card);img.src=p.photo_url;img.alt=p.name+' 프로필';img.loading='lazy';img.className='profile-photo';}else el('div','사진 미등록',card).className='profile-placeholder';
-   el('span',p.is_sample?'샘플 · 실제 상담 불가':'관리자 등록 확인',card).className='sample-tag';
-   el('h2',p.name,card);if(p.profession)el('p',PROFESSIONS[p.profession]?.name||p.profession,card);if(p.protection_pledge){const badge=el('button','소비자보호 서약',card);badge.type='button';badge.className='pledge-badge';badge.onclick=pledgeDialog;}el('p',p.organization+' · '+p.region+(p.distance!==null?' · 약 '+(p.distance<1?Math.round(p.distance*1000)+'m':p.distance.toFixed(1)+'km'):''),card);
-   el('p',p.specialties.map(s=>specialties[s]||s).join(' · '),card);el('p',p.biography||'자기소개 준비 중',card);
-   el('p',(p.experience?'경력 '+p.experience+'년':'경력 정보 미등록')+' · 완료 상담 '+p.completed_count+'건',card);
-   el('p',(p.is_sample?'샘플 상태 · ': '')+availabilityLabels[availabilityOf(p)],card).className='availability-status';el('p','전문가가 설정한 상태입니다. 실제 통화·만남은 응답 후 확정됩니다.',card);el('p',p.hours||'상담가능 시간 확인 필요',card);el('p',p.rating?('평점 '+p.rating+' / 5 · 공개 후기 '+p.reviews.length+'건'):'후기 없음 · 평점 미집계',card);for(const r of p.reviews||[]){el('blockquote',r.rating+'점 · '+r.body,card);}
+   if(p.photo_url){const img=el('img',undefined,card);img.src=p.photo_url;img.alt=p.name+' 프로필';img.loading='lazy';img.className='profile-photo';}else el('div',(p.name||'전문가').slice(0,1),card).className='profile-placeholder';
+   el('span',p.is_sample?'샘플 · 실제 상담 불가':p.verified?'등록 확인':'등록 전문가',card).className='sample-tag';
+   el('h2',p.name,card);if(p.profession)el('p',PROFESSIONS[p.profession]?.name||p.profession,card);if(p.protection_pledge){const badge=el('button','소비자보호 서약',card);badge.type='button';badge.className='pledge-badge';badge.onclick=pledgeDialog;}el('p',[p.organization,p.region].filter(Boolean).join(' · ')+(p.distance!==null?' · 약 '+(p.distance<1?Math.round(p.distance*1000)+'m':p.distance.toFixed(1)+'km'):''),card);
+   el('p',(p.specialties||[]).map(s=>specialties[s]||s).join(' · '),card);if(p.biography)el('p',p.biography,card);
+   if(p.experience)el('p','경력 '+p.experience+'년',card);if(Number.isFinite(p.completed_count)&&p.completed_count>0)el('p','완료 상담 '+p.completed_count+'건',card);
+   el('p',(p.is_sample?'샘플 상태 · ': '')+availabilityLabels[availabilityOf(p)],card).className='availability-status';el('p','전문가가 설정한 상태입니다. 실제 통화·만남은 응답 후 확정됩니다.',card);el('p',p.hours||'상담가능 시간 확인 필요',card);el('p',p.rating?('평점 '+p.rating+' / 5 · 공개 후기 '+(p.reviews||[]).length+'건'):'아직 공개 후기가 없어요',card);for(const r of p.reviews||[]){el('blockquote',r.rating+'점 · '+r.body,card);}
    for(const [method,label]of [['phone','전화상담 요청'],...(p.visitEnabled&&p.available_slots?.length?[['nearby','만나기 요청']]:[]),['scheduled','상담 예약']]){
     const a=link(card,label,'/requests.html?planner='+encodeURIComponent(p.id)+'&purpose='+encodeURIComponent(purpose.value||'other')+'&method='+method+'&region='+encodeURIComponent(p.region));a.className='btn ghost';
     if(!client||p.is_sample||p.id.startsWith('sample-')||!p.available){a.removeAttribute('href');a.setAttribute('aria-disabled','true');a.textContent=label+(!p.available?' · 현재 요청 중지':' · 샘플');}

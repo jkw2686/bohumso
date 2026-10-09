@@ -53,7 +53,7 @@ async function start(){
 }
  ({client,config}=await memberService());
  if(config.visitMetrics){try{const day=new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul"}).format(new Date());const key="bohumso-visit-"+day;let id=sessionStorage.getItem(key);if(!id){id=crypto.randomUUID();sessionStorage.setItem(key,id);}client.rpc("record_visit_session",{session_id:id}).catch(()=>{});}catch{}}
- $("accountNotice").textContent="운영: "+config.operator+" · 문의: "+config.contact;
+ $("accountNotice").textContent=[config.operator&&"운영: "+config.operator,config.contact&&"문의: "+config.contact].filter(Boolean).join(" · ");
  if(mode==="directory"){$("accountContent").hidden=false;await renderDirectory(client);return;}
  if(mode==="signup"||mode==="login"){
  if(config.closedBeta)betaCode();const next=pendingAction();const state=await memberState(client);if(state.state!==MEMBER.anonymous&&(mode==='login'||state.membership?.member||(config.closedBeta&&betaCode()))){location.replace(config.closedBeta&&betaCode()?betaReturn():accountReturn(next));return;}
