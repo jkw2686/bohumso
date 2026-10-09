@@ -62,7 +62,10 @@ export default async function handler(req: Request): Promise<Response> {
   if (!ok) return new Response('unauthorized', { status: 401 });
   let payload: any;
   try { payload = JSON.parse(body); } catch { return new Response('bad_request', { status: 400 }); }
-  const phone = payload?.user?.phone || payload?.phone;
+  // Auth phone_change keeps user.phone empty/old until the OTP is verified.
+  // Newer Auth supplies the exact destination in sms.phone; older versions
+  // expose the pending destination as user.new_phone.
+  const phone = payload?.sms?.phone || payload?.user?.new_phone || payload?.user?.phone || payload?.phone;
   const otp = payload?.sms?.otp || payload?.otp;
   if (!phone || !otp) return new Response(JSON.stringify({ error: { message: 'missing_fields' } }), { status: 400, headers: { 'Content-Type': 'application/json' } });
   const sent = await solapiSend(toLocal(phone), `[우리곁에 보험소] 인증번호 ${otp} (타인에게 알려주지 마세요)`);
