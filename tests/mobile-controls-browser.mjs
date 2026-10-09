@@ -9,7 +9,7 @@ document.querySelector('#accountContent').hidden=false;document.querySelector('#
 const browser=await chromium.launch({channel:'msedge',headless:true});const report=[];
 try{
  const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.route('**/*',async r=>{const u=new URL(r.request().url());if(u.pathname==='/assets/account.js')return r.fulfill({body:bundle,contentType:'text/javascript; charset=utf-8'});if(u.origin!=='https://fixture.test')return r.abort();try{return r.fulfill({body:await readFile(path.resolve('public','.'+u.pathname)),contentType:u.pathname.endsWith('.css')?'text/css':u.pathname.endsWith('.svg')?'image/svg+xml':'text/html; charset=utf-8'});}catch{return r.fulfill({status:404,body:''});}});
+ await page.route('**/*',async r=>{const u=new URL(r.request().url());if(u.pathname==='/assets/account.js')return r.fulfill({body:bundle,contentType:'text/javascript; charset=utf-8'});if(u.origin!=='https://fixture.test')return r.abort();try{return r.fulfill({body:await readFile(path.resolve('public','.'+u.pathname)),contentType:u.pathname.endsWith('.woff2')?'font/woff2':u.pathname.endsWith('.css')?'text/css':u.pathname.endsWith('.svg')?'image/svg+xml':'text/html; charset=utf-8'});}catch{return r.fulfill({status:404,body:''});}});
  for(const width of [320,360,390,430,768,1440]){
   await page.setViewportSize({width,height:844});await page.goto('https://fixture.test/admin.html');
   await expect(page.getByText('경기 분당 · 승인 완료')).toBeVisible();

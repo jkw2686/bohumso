@@ -26,8 +26,8 @@
 - 페이지 배경은 `--bg`, 카드 내부만 `--card`(#fff). 새 hex 만들지 말고 위 토큰 사용.
 
 ## 2. 타이포그래피
-- 폰트: 시스템 산세리프 스택(별도 웹폰트 미로드) — `-apple-system, "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif`.
-- 히어로 h1 ~46px(모바일 35px, letter-spacing -2.2px), 섹션 h2 ~28px, 카드 h3 17~18px, 본문 16px, 보조 12~13px.
+- 폰트: 자체 호스팅 Pretendard Variable (`public/fonts`, OFL 라이선스 포함). `type-system.css`를 페이지별 CSS 뒤에 로드하고 `--font-ui`를 공통 사용한다. 외부 폰트 CDN에 의존하지 않는다.
+- 기존 홈 히어로 크기는 유지한다. 계정 화면 제목 25~32px(모바일 26px), 섹션 20~24px, 본문 16px, 레이블 14px, 보조 13px. 제목 `--ink-heading`, 본문 `--ink-body`, 보조 `--ink-muted`, 완료 상태 `--success-ink` / `--success-surface` 사용.
 - 로고: `우리곁에`(작게) + `보험소`(굵게). line-height 본문 1.6~1.7.
 
 ## 3. 간격·레이아웃

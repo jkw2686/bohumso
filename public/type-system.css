@@ -1,0 +1,33 @@
+/* Shared typography, deliberately loaded after page-specific styles. */
+@font-face{font-family:'Bohumso Sans';src:url('/fonts/PretendardVariable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+:root{--font-ui:'Bohumso Sans','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;--ink-heading:#172844;--ink-body:#334155;--ink-muted:#64748b;--type-small:13px;--type-label:14px;--type-body:16px;--type-title:clamp(25px,4vw,32px);--type-section:clamp(20px,3vw,24px);--space-control:12px;--radius-control:12px;--success-ink:#16704f;--success-surface:#edf8f2}
+body,body[data-account-page],body.customer-requests{font-family:var(--font-ui);font-size:var(--type-body);line-height:1.65;letter-spacing:-.015em;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:var(--font-ui)}
+h1,h2,h3{letter-spacing:-.035em;line-height:1.35;word-break:keep-all;text-wrap:balance}
+body[data-account-page] main h1{font-size:var(--type-title);font-weight:750;color:var(--ink-heading);margin:28px 0 12px}
+body[data-account-page] main h2{font-size:var(--type-section);font-weight:700;color:var(--ink-heading)}
+body[data-account-page] main h3{font-weight:700;color:var(--ink-heading)}
+body[data-account-page] main p{color:var(--ink-body)}
+body[data-account-page] #accountNotice{font-size:var(--type-small);line-height:1.65;color:var(--ink-muted);padding:0;margin:0 0 24px;overflow-wrap:anywhere}
+body[data-account-page] main :is(label,legend){font-size:var(--type-label);font-weight:600;color:var(--ink-body)}
+body[data-account-page] main :is(input,select,textarea){font-size:var(--type-body);font-weight:400;color:var(--ink-heading)}
+body[data-account-page] main :is(button,.btn){font-family:var(--font-ui);font-weight:650;letter-spacing:-.015em}
+body[data-account-page] main :is(.muted,.review-meta,small){color:var(--ink-muted)}
+/* Text links retain an underline outside navigation for discoverability. */
+a:not([class]){color:var(--brand);text-underline-offset:4px;text-decoration-thickness:1px}
+.nav>a:not(.logo),.account-links a{color:var(--brand);text-decoration:none;font-weight:600}
+.policy-footer{font-family:var(--font-ui);font-size:var(--type-small);line-height:1.7;color:var(--ink-muted)}
+.policy-footer a{color:var(--ink-muted);text-decoration:none}
+.policy-footer a:hover,.nav>a:not(.logo):hover{text-decoration:underline;text-underline-offset:4px}
+.phone-page .container{max-width:520px;padding-top:32px}
+.phone-page .back-link{display:inline-flex;align-items:center;gap:8px;min-height:44px;color:var(--ink-muted);font-size:var(--type-label);font-weight:600;text-decoration:none}
+.phone-page .back-link::before{content:'←';color:var(--brand)}
+.phone-page .page-eyebrow{margin:24px 0 8px;color:var(--brand);font-size:12px;font-weight:750;letter-spacing:.07em}
+body.phone-page main h1{margin-top:0}
+.phone-page .page-description{margin:0 0 20px;font-size:15px;color:var(--ink-muted)}
+.phone-page #accountContent{padding:24px;border-radius:20px;border-color:var(--border);box-shadow:var(--shadow-sm)}
+.phone-page #accountContent>.btn{display:flex;width:100%;margin-top:24px}
+.phone-page #accountContent>button{display:block;width:100%;margin-top:12px;background:var(--card);border:1px solid var(--border);color:var(--ink-muted)}
+body[data-account-page] .phone-success{display:flex;align-items:center;gap:10px;background:var(--success-surface);color:var(--success-ink);font-size:17px;font-weight:700;line-height:1.5;border-radius:var(--radius-control);padding:16px;margin:0}
+.phone-verification-form+ [role=status]{font-size:var(--type-small);line-height:1.65;color:var(--ink-muted);margin-top:20px}
+@media(max-width:600px){body[data-account-page] main h1{font-size:26px}.phone-page .container{padding-top:20px}.phone-page #accountContent{padding:20px}.phone-page .page-description{font-size:14px}}
