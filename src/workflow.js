@@ -55,7 +55,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
    if(workspace==='customer'&&(config.earlyAccess||row.allocation_mode!=='office')&&row.state==='coordinating'&&row.planner_ok){
     const form=el('form',undefined,card),name=input(form,'예약자 이름','name'),phone=input(form,'연락처','phone','tel');name.required=phone.required=true;name.minLength=2;name.maxLength=60;phone.pattern='0[0-9 -]{8,13}';
     check(form,'선택한 '+row.planner_name+'에게 이름·연락처를 상담 일정 연락 목적으로 제공하는 데 동의합니다.','share_consent').required=true;link(form,'제공 항목·보유 기간 확인','/privacy.html');
-    if(config.earlyAccess)el('p','제공받는 자: '+row.planner_name+' ('+row.organization+'). 제공 항목: 이름·확인된 휴대전화. 목적: 예약 일정 연락과 요청한 상담. 거부하면 연락처를 전달하지 않으며 상담 확정이 제한됩니다. 보유·이용기간은 공개 개인정보처리방침의 최종 확정 정책을 따릅니다.',form);
+    if(config.earlyAccess)el('p','제공받는 자: '+row.planner_name+' ('+row.organization+'). 제공 항목: 이름·확인된 휴대전화. 목적: 예약 일정 연락과 요청한 상담. 거부하면 연락처를 전달하지 않으며 상담 확정이 제한됩니다. 보유·이용기간: 상담 종료 또는 취소 시까지. 분쟁이 접수된 경우 해결에 필요한 범위에서 처리 종료까지 보관합니다.',form);
     el('p','소비자 이용은 무료이며 보험 가입 의무가 없습니다. 광고 구독은 상담 이용과 별도입니다.',form);el('button','동의하고 일정 확정',form).type='submit';submit(form,d=>command('confirm',{id:row.id,revision:row.revision,...Object.fromEntries(d),share_consent:d.get('share_consent')==='on'}));
    }
    if(['customer','partner'].includes(workspace)&&['requested','coordinating','confirmed','scheduled'].includes(row.state))scheduleForm(card,row);
