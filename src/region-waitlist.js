@@ -6,7 +6,7 @@ function el(tag,text,root,cls){const n=document.createElement(tag);if(text)n.tex
 export function normalizeWaitlistPhone(value){return /^[+\d\s()-]+$/.test(value)?normalizeKoreanPhone(value).replace(/^\+82/,'0'):'';}
 export function openRegionWaitlist({region,role='consumer',client}={}){
  if(!region||!['consumer','planner'].includes(role))return;
- const previous=document.activeElement,dialog=el('dialog','',document.body,'sheet-overlay show waitlist-overlay');dialog.setAttribute('aria-labelledby','waitlistTitle');
+ const previous=document.activeElement,dialog=el('dialog','',document.body,'sheet-overlay show waitlist-overlay');dialog.setAttribute('aria-labelledby','waitlistTitle');dialog.addEventListener('keydown',e=>{if(e.key==='Escape')e.stopPropagation();});
  const sheet=el('div','',dialog,'sheet waitlist-sheet');
  const close=el('button','닫기',sheet,'btn ghost');close.type='button';
  const finish=()=>{dialog.close();dialog.remove();previous?.focus();};close.onclick=finish;dialog.addEventListener('cancel',e=>{e.preventDefault();finish();});
