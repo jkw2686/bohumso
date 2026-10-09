@@ -31,3 +31,12 @@ body.has-bottom-nav .simple-home{padding-bottom:24px}body.has-bottom-nav.custome
 .home-page #situations,.home-page #situations + .intro-caption,.home-page .situation-copy strong,.home-page .situation-copy small{word-break:keep-all;overflow-wrap:normal}
 .home-page #situations{text-wrap:balance}
 .home-page #situations + .intro-caption,.home-page .situation-copy small{text-wrap:pretty}
+/* Keep the home-map popup clear of map controls, including on narrow phones. */
+#homeMap.popup-open .leaflet-control-zoom{display:none}
+#homeMap .leaflet-popup-content{max-width:calc(100vw - 112px);margin:20px 18px 18px;font-family:var(--font-ui)}
+#homeMap .leaflet-popup-content h2{padding-right:28px;font-size:18px;line-height:1.4}
+#homeMap .leaflet-popup-content p{font-size:13px;line-height:1.6}
+#homeMap .leaflet-popup-content a.btn,#homeMap .leaflet-popup-content a.btn:visited{display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;text-decoration:none;font-size:14px;line-height:1.4;min-height:46px;padding:12px;margin-top:14px}
+#homeMap .leaflet-popup-content-wrapper{border-radius:18px}
+#homeMap .leaflet-popup-close-button{width:44px;height:44px;line-height:40px;font-size:24px;color:var(--ink-muted);border-radius:12px;z-index:1}
+#homeMap .leaflet-control-attribution{font-size:9px;line-height:1.4;max-width:calc(100% - 16px)}

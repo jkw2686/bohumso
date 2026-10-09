@@ -4,13 +4,16 @@
   if (!host || !window.L) return;
   var map = L.map(host, {scrollWheelZoom:true,zoomAnimation:true,zoomSnap:0.25,zoomDelta:0.5,wheelPxPerZoomLevel:120,wheelDebounceTime:40,touchZoom:true,dragging:!L.Browser.mobile}).setView([37.5,127.1],9);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap 기여자'}).addTo(map);
+  map.zoomControl.setPosition('bottomright');
+  map.on('popupopen',function(){host.classList.add('popup-open');});
+  map.on('popupclose',function(){host.classList.remove('popup-open');});
   var areas = window.COVERAGE_AREAS || [];
   areas.forEach(function(area){
     var content=document.createElement('div');
     window.renderOfficeSlot(content,{name:window.officeName(area.name),region:area.region+' '+area.name,planned:true});
-    L.marker([area.lat,area.lng],{title:window.officeName(area.name),icon:L.divIcon({className:'home-office-pin',html:window.uiIcon('home'),iconSize:[30,30]})}).addTo(map).bindPopup(content,{maxWidth:320,minWidth:230});
+    L.marker([area.lat,area.lng],{title:window.officeName(area.name),icon:L.divIcon({className:'home-office-pin',html:window.uiIcon('home'),iconSize:[30,30]})}).addTo(map).bindPopup(content,{maxWidth:280,minWidth:180,autoPanPaddingTopLeft:[16,16],autoPanPaddingBottomRight:[16,24]});
   });
-  async function actualOffices(){try{if(!window.bohumsoOffices)return;const offices=await window.bohumsoOffices();offices.filter(o=>o.status==='active'&&Number.isFinite(o.latitude)&&Number.isFinite(o.longitude)).forEach(function(o){const content=document.createElement('div');window.renderOfficeSlot(content,{id:o.id,name:o.name,region:o.region,planned:false});L.marker([o.latitude,o.longitude],{title:o.name+' · 운영 중',icon:L.divIcon({className:'home-office-pin',html:window.uiIcon('home'),iconSize:[30,30]})}).addTo(map).bindPopup(content,{maxWidth:320,minWidth:230});});}catch{}}
+  async function actualOffices(){try{if(!window.bohumsoOffices)return;const offices=await window.bohumsoOffices();offices.filter(o=>o.status==='active'&&Number.isFinite(o.latitude)&&Number.isFinite(o.longitude)).forEach(function(o){const content=document.createElement('div');window.renderOfficeSlot(content,{id:o.id,name:o.name,region:o.region,planned:false});L.marker([o.latitude,o.longitude],{title:o.name+' · 운영 중',icon:L.divIcon({className:'home-office-pin',html:window.uiIcon('home'),iconSize:[30,30]})}).addTo(map).bindPopup(content,{maxWidth:280,minWidth:180,autoPanPaddingTopLeft:[16,16],autoPanPaddingBottomRight:[16,24]});});}catch{}}
   window.addEventListener('bohumso-member-ready',actualOffices,{once:true});if(window.bohumsoOffices)actualOffices();
   var button=document.getElementById('homeLocate'),notice=document.getElementById('homeLocationStatus'),me,circle;
   function locate(){
