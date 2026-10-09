@@ -1,14 +1,15 @@
+이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
+
 ## 2026-10-09 지역 오픈 알림 신청
 - 사용자 첨부31cee427 구현. 042 신규 비공개 신청+RPC, 047 매시15분 보관기한 정리. 중복최초순번/동의서버버전/UTC하루5건/관리자집계/직접조회차단. 기존 회원·예약 변경 없음.
 - region-waitlist 공유 시트: urgent 미서비스 검색·지도 개설예정 거점, 소비자/설계사 공용, 기존 전화정규화 공통화. admin-requests 집계 표, privacy 수집/보관 안내.
 - DB/전화검사 PASS, 360px4장/키보드 PASS, 실제 화면→로컬 SQL 저장 PASS, 지도4너비 PASS, 빌드 PASS. docs/region-waitlist.md. 실제 SMS 없음.
-- 사용자 운영 권한추가 및 신규신청 보관기한 영구삭제 승인(1) 수신. 운영사전검사 신규테이블없음/admin/cron있음/예약0/방문0. SQL 단일트랜잭션 적용 및 배포 확인 진행.
+- 사용자 운영 권한추가 및 신규신청 보관기한 영구삭제 승인(1) 수신. 운영사전검사 신규테이블없음/admin/cron있음/예약0/방문0. 042+047 단일트랜잭션 운영 적용 완료. RLS/원본조회차단/cron 활성1건/신청0/기존예약0 유지 확인. 34a8925 → Netlify 6ac8a332ff3762000867c0a2 ready. 운영 지도 신청창·관리자 집계 빈상태 확인. 실제 사용자 신청·SMS 없음.
 
 ## 2026-10-09 동일 좌표 지도 아이콘 겹침 수정
 - 전문가 활동지역과 보험소 기준점이 같아 나중에 그린 집 아이콘이 사람 아이콘을 가림. public/map.js 동일 기준점 그룹의 아이콘 anchor를 44px 간격으로 배치; 실제 좌표/거리/예약 불변.
 - visit-map-icons-browser 동일 좌표 fixture, 320/390/768/1440 겹침 없음 및 기존 동작 PASS. Git CD 배포 후 김포 운영 화면 확인.
 
-이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
 ## 2026-10-09 두 상담 방식 + 지도 아이콘 개편 (운영 배포 완료)
 - src/expert-visits.js 새 방문상담 UI, urgent.js 기존 활동지역 유지 후 새 UI export. 익명 탐색/직접 1명 선택/희망시간/주소분리/고객 확정 후 주소 공개/전문가 ON 동의 및 수동위치갱신. 홈·안내6종 두 방식 CTA, 고객 예약 내 방문상담 내역, 지도 집/사람/점선거점 아이콘과 필터.
@@ -105,7 +106,6 @@
 - CUA browser2/tab28 SQL Editor에 적용 SQL 입력완료. Run 누르지 않음. 브라우저 권한 변경 규칙 때문에 async 실행직전확인 발송: 적용하고 배포/아직 적용하지 않음. 응답 전 Run 금지. 준비화면 outputs/admin-access-ready.png.
 - 다음: 사용자 응답 확인 → 승인시 SQL Run/경고 확인 → 대표자1/예외함수 및 일반회원 차단 실제 읽기검증 → 이 브랜치만 main 배포 → 실제 대표자 화면 확인. 사용자 전화/자료 미확인은 그대로 유지, 승인완료로 거짓 보고 금지.
 - 현 worktree work/bohumso-ui-release branch codex/home-copy-release. Production 0c85822 유지. 통합 work/bohumso SMS/FCM 변경 섞지 말 것.
-이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
 ## 최신 — 모바일 홈 줄바꿈 보완 운영 반영
 - 사용자 모바일 스크린샷의 확인하세요/청구/알려드려요 단어 중간 줄바꿈 해결. public/simple-ux.css에서 홈 상황 제목·보조문구·카드 텍스트에 keep-all/normal 및 balance/pretty만 적용. 메인h1/문구/아이콘/라우팅 유지.
