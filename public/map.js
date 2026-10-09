@@ -30,7 +30,7 @@
 
   var cancelLocate = null, regionRevision = 0, spotsRevision = 0, cardOpener = null;
   var map, meMarker, accuracyCircle, userLoc = null, sortBy = 'distance', current = null, usingSamples = false;
-  var showExperts=new URLSearchParams(location.search).get('view')==='experts';var SAMPLES = [], spotMarkers = [], selectedArea = '';
+  var showExperts=new URLSearchParams(location.search).get('view')==='experts',showOffices=new URLSearchParams(location.search).get('view')==='offices';var SAMPLES = [], spotMarkers = [], selectedArea = '';
   var $ = function (id) { return document.getElementById(id); };
 
   function haversine(a, b) {
@@ -42,13 +42,14 @@
   // 받침 유무로 은/는 선택 (받침 있으면 '은', 없으면 '는')
   function eun(word) { var c = word ? word.charCodeAt(word.length - 1) : 0; return (c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0) ? '은' : '는'; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
-  function thumbHtml(s, cls) { return s.photo ? '<img class="' + cls + ' thumb-img" src="' + esc(s.photo) + '" alt="" loading="lazy">' : '<span class="' + cls + '" aria-hidden="true">' + esc(s.name.charAt(0)) + '</span>'; }
+  function thumbHtml(s, cls) { return s.photo&&!s.office&&!s.planned ? '<img class="' + cls + ' thumb-img" src="' + esc(s.photo) + '" alt="" loading="lazy">' : '<span class="' + cls + '" aria-hidden="true">' + (window.uiIcon?.(s.office||s.planned?'home':'person')||esc(s.name.charAt(0))) + '</span>'; }
   function availHtml(s) { return (s.availability && AVAIL[s.availability]) ? '<span class="avail avail-' + s.availability + '">' + AVAIL[s.availability] + '</span>' : ''; }
   function spotDist(s) { if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) return Infinity; var ref = userLoc || SEOUL; return haversine(ref, [s.lat, s.lng]); }
   function distLabel(s) { var d = spotDist(s); return isFinite(d) ? distText(d) : '위치 미등록'; }
 
-  function pinIcon(me,planned) {
-    if(planned)return L.divIcon({html:'<span class="planned-pin">'+(window.uiIcon?.('home')||'')+'</span>',className:'',iconSize:[32,32],iconAnchor:[16,16]});
+  function pinIcon(me,office,planned) {
+    if(office)return L.divIcon({html:'<span class="planned-pin'+(planned?' is-planned':'')+'">'+(window.uiIcon?.('home')||'')+'</span>',className:'',iconSize:[32,32],iconAnchor:[16,16]});
+    if(!me)return L.divIcon({html:'<span class="professional-pin">'+(window.uiIcon?.('person')||'')+'</span>',className:'',iconSize:[36,36],iconAnchor:[18,18]});
     // 색은 토큰으로. presentation attribute(fill=)는 var()를 못 받으므로 style로 지정한다.
     var color = me ? 'var(--accent)' : 'var(--brand)';
     var html = '<svg class="' + (me ? 'pin-me' : 'pin-marker') + '" width="34" height="42" viewBox="0 0 34 42" xmlns="http://www.w3.org/2000/svg">' +
@@ -71,10 +72,10 @@
     spotMarkers.forEach(function (m) { map.removeLayer(m); });
     spotMarkers = [];
     var coords = [];
-    SPOTS.forEach(function (s) {
+    SPOTS.filter(function(s){return showOffices?(s.office||s.planned):!showExperts||(!s.office&&!s.planned);}).forEach(function (s) {
       if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) return; // 좌표 없으면 목록에만 표시
       coords.push([s.lat, s.lng]);
-      s._marker = L.marker([s.lat, s.lng], { icon: pinIcon(false,s.planned||s.office), title: s.name+(s.planned?' · 오픈 예정':s.office?' · 보험소':' · 전문가') }).addTo(map);
+      s._marker = L.marker([s.lat, s.lng], { icon: pinIcon(false,s.planned||s.office,s.planned), title: s.name+(s.planned?' · 개설 예정 보험소':s.office?' · 보험소':' · 전문가 활동지역') }).addTo(map);
       s._marker.on('click', function () { openCard(s); });
       spotMarkers.push(s._marker);
     });
@@ -105,7 +106,7 @@
   }
 
   function sortedSpots() {
-    var arr = SPOTS.filter(function(s){return !showExperts||(!s.planned&&!s.office);});
+    var arr = SPOTS.filter(function(s){return showOffices?(s.office||s.planned):!showExperts||(!s.planned&&!s.office);});
     if (sortBy === 'rating') arr.sort(function (a, b) { return b.rating - a.rating; });
     else if (sortBy === 'specialty') arr.sort(function (a, b) { return a.specialty.localeCompare(b.specialty, 'ko'); });
     else arr.sort(function (a, b) { return spotDist(a) - spotDist(b); });
@@ -117,12 +118,12 @@
 
     var arr = sortedSpots(),sheet=$('listSheet'),areaLink=$('areaRequest');
     sheet.classList.toggle('is-empty',!arr.length);
-    areaLink.hidden=false;areaLink.href='/requests.html?purpose='+encodeURIComponent(PURPOSE||'claim')+'&region='+encodeURIComponent(selectedArea||'');areaLink.textContent='이 지역에서 시간 선택하기';
+    areaLink.hidden=showOffices;areaLink.href='/urgent.html?situation='+encodeURIComponent(SITUATION||'claim')+'&region='+encodeURIComponent(selectedArea||'');areaLink.textContent='이 지역 방문 가능한 전문가 찾기';
     if (!arr.length) {
-      $('listCount').textContent = '지금 바로 가능한 전문가는 없어요.';
+      $('listCount').textContent = showOffices?'이 지역에 등록된 보험소가 없습니다.':'이 지역에 등록된 전문가가 없습니다.';
       return;
     }
-    $('listCount').textContent = showExperts?'주변 전문가 '+arr.length+'명':'전문가·보험소 '+arr.length+'곳';
+    $('listCount').textContent = showOffices?'보험소 거점 '+arr.length+'곳':showExperts?'공개 활동지역 · 전문가 '+arr.length+'명':'전문가·보험소 '+arr.length+'곳';
     arr.forEach(function (s) {
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'spot';
@@ -131,9 +132,9 @@
         '<span class="info">' +
           '<span class="name">' + esc(s.name) + '</span>' +
           '<span class="sub">' + esc(String(s.specialty||s.job||'').split(/[·,]/).slice(0,2).join(' · ')) + '</span>' +
-          '<span class="meta">' + (s.planned ? '오픈 예정 · '+esc(s.region) : esc(s.region)) + (userLoc?' · '+distLabel(s):'') + '</span>' +
+          '<span class="meta">' + (s.planned ? '오픈 예정 · '+esc(s.region) : esc(s.region)) + (userLoc?' · '+(!s.office&&!s.planned?'활동지역까지 ':'')+distLabel(s):'') + '</span>' +
           availHtml(s) +
-          '<span class="spot-action">예약하기 →</span>' +
+          '<span class="spot-action">'+(s.planned?'거점 안내':s.office?'방문 예약':'방문상담 알아보기')+' →</span>' +
         '</span>';
       b.addEventListener('click', function () { if (map && Number.isFinite(s.lat) && Number.isFinite(s.lng)) map.setView([s.lat, s.lng], 15); openCard(s); });
       body.appendChild(b);
@@ -145,7 +146,6 @@
     if(!s.planned&&!s.office)window.bohumsoTrack?.('expert_viewed');
     current = s;
     window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned&&!s.office,purpose:PURPOSE,situation:SITUATION});
-    if(s.availability==='now'){var urgent=document.createElement('a');urgent.className='btn';urgent.textContent='지금 도움 요청';urgent.href='/urgent.html?region='+encodeURIComponent(s.region);$('cardBody').prepend(urgent);}
     showCard();
   }
   function showCard(){
@@ -241,9 +241,9 @@
     // 정렬 탭
     document.querySelectorAll('.sort-tabs button').forEach(function (t) {
       t.addEventListener('click', function () {
-        sortBy = t.getAttribute('data-sort');showExperts=sortBy==='rating';
+        sortBy = t.getAttribute('data-sort');showExperts=sortBy==='rating';showOffices=sortBy==='offices';
         document.querySelectorAll('.sort-tabs button').forEach(function (x) { x.setAttribute('aria-selected', x === t ? 'true' : 'false'); });
-        renderList();
+        drawMarkers();renderList();
       });
     });
 

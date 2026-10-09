@@ -39,7 +39,7 @@
 </div>
 
 <!-- 지도: 화면 세로의 큰 비중(65dvh) -->
-<a class="urgent-map-link" href="/urgent.html">● 지금 가능한 전문가 찾기 →</a><main class="map-stage" id="mapStage">
+<a class="urgent-map-link" href="/urgent.html">지금 방문 가능한 전문가 찾기 →</a><p class="map-key" aria-label="지도 아이콘 안내"><span><i data-icon="home"></i>보험소 거점</span><span><i data-icon="person"></i>전문가 활동지역 · 현재 위치 아님</span></p><main class="map-stage" id="mapStage">
 <div id="map" role="application" aria-label="내 주변 보험소 지도"></div>
 <p class="map-credit">지도 © OpenStreetMap 기여자</p>
 
@@ -52,7 +52,7 @@
     <strong id="listCount">주변 보험소</strong>
     <div class="sort-tabs" role="tablist" aria-label="정렬 기준">
       <button role="tab" data-sort="distance" aria-selected="true">거리순</button>
-      <button role="tab" data-sort="rating" aria-selected="false">전문가</button>
+      <button role="tab" data-sort="rating" aria-selected="false">전문가 활동지역</button><button role="tab" data-sort="offices" aria-selected="false">보험소 방문</button>
     </div>
   </div>
   <a id="areaRequest" class="area-request" hidden>이 지역에서 시간 정하기</a><div class="list-body" id="listBody"></div>

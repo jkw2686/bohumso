@@ -5,6 +5,7 @@
     function add(tag,text){var node=document.createElement(tag);if(text)node.textContent=text;host.appendChild(node);return node;}
     function day(value){return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(value);}
     add('h2',office.name);
+    if(office.expert){add('p','지도는 공개 활동지역을 나타내며, 전문가의 현재 위치나 방문할 사무실 주소가 아닙니다.');var visit=add('a','이 지역 방문 가능한 전문가 찾기');visit.className='btn';var vq=new URLSearchParams({region:office.region,purpose:office.purpose||'claim',situation:office.situation||''});visit.href='/urgent.html?'+vq;return;}
     if(office.planned){add('p','개설 예정 · 현재 방문예약을 준비하고 있습니다.');var browse=add('a','주변 전문가 보기');browse.className='btn';var query=new URLSearchParams({region:office.region,view:'experts',purpose:office.purpose||'claim'});if(office.situation)query.set('situation',office.situation);browse.href='/map.html?'+query;return;}
     add('p','희망 상담시간을 선택하세요. 보험소가 담당자를 배정해요.');
     var dl=add('label','방문 날짜'),date=document.createElement('input');date.type='date';date.min=day(new Date());date.max=day(new Date(Date.now()+89*86400000));date.value=day(new Date(Date.now()+86400000));dl.appendChild(date);

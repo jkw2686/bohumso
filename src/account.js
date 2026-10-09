@@ -74,7 +74,7 @@ async function start(){
  if(document.body.dataset.workspace==='partner'&&membership.partner_status!=='approved'){message('승인된 전문가만 이용할 수 있습니다.');return;}
  if(mode==="reset"){$("accountContent").hidden=false;onForm("passwordForm",async d=>{const {error}=await client.auth.updateUser({password:String(d.get("password"))});fail(error);message("비밀번호를 변경했습니다. 내 계정에서 계속 이용할 수 있습니다.");});return;}
  await refreshMembership();
- if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config});if(document.body.dataset.workspace==='partner'){const tools=document.createElement('div');$("accountContent").prepend(tools);await renderServiceArea(client,tools);await renderInstant(client,tools);await renderUrgentWorkspace(client,tools);}}
+ if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config});if(document.body.dataset.workspace==='partner'){const tools=document.createElement('div');$("accountContent").prepend(tools);await renderServiceArea(client,tools);await renderInstant(client,tools);await renderUrgentWorkspace(client,tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
  if(mode==="payment")await renderPaymentResult(client,message);
  if(mode==="phone")await renderPhoneVerification({client,config,root:$("accountContent")});
  if(mode==="account")await renderAccount();
@@ -84,4 +84,3 @@ async function start(){
  $("accountContent").hidden=false;
 }
 start().catch(e=>{message(safeError(e));$("accountContent").hidden=true;$("accountNotice").textContent="회원 서비스 연결 상태를 확인할 수 없습니다.";});
-
