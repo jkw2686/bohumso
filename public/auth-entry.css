@@ -1,0 +1,25 @@
+/* Account entry reuses the existing card, field and button components. */
+:root{--auth-width:440px;--auth-control-height:56px;--auth-pill:999px;--auth-icon:20px;--auth-stroke:#747775;--auth-ink:#1f1f1f}
+body:is([data-account-page="login"],[data-account-page="signup"]) main.container{max-width:var(--auth-width);padding-top:var(--space-5)}
+body:is([data-account-page="login"],[data-account-page="signup"]) main h1{text-align:center;margin:var(--space-5) 0 var(--space-3)}
+body:is([data-account-page="login"],[data-account-page="signup"]) #accountNotice{text-align:center;margin-bottom:var(--space-5)}
+body:is([data-account-page="login"],[data-account-page="signup"]) .auth-card{margin:0;padding:var(--space-5);background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+body .auth-methods{display:grid;gap:var(--space-3);margin:var(--space-4) 0}
+body[data-account-page] main .auth-method{display:flex;align-items:center;justify-content:center;gap:var(--space-3);width:100%;min-height:var(--auth-control-height);padding:var(--space-3) var(--space-4);margin:0;background:var(--card);background-image:none;border:1px solid var(--auth-stroke);border-radius:var(--auth-pill);color:var(--auth-ink);font-size:var(--type-body);font-weight:500;line-height:1.4;letter-spacing:normal;box-shadow:none}
+body[data-account-page] main .auth-method img,body[data-account-page] main .auth-method svg{width:var(--auth-icon);height:var(--auth-icon);flex:0 0 var(--auth-icon);object-fit:contain}
+body[data-account-page] main .auth-method:hover:not(:disabled){background:var(--bg)}
+body[data-account-page] main .auth-method:focus-visible,.email-auth summary:focus-visible{outline:var(--focus-width) solid var(--brand);outline-offset:var(--focus-width)}
+body[data-account-page] main .auth-method:disabled{opacity:1;color:var(--ink-muted);background:var(--bg);border-color:var(--border);cursor:not-allowed}
+.auth-method-badge{font-size:var(--type-small);font-weight:600;white-space:nowrap}
+body[data-account-page] main .auth-help{font-size:var(--type-small);line-height:1.65;color:var(--ink-muted);text-align:center;margin:var(--space-4) 0}
+#socialAuthStatus:empty{display:none}#socialAuthStatus,#phoneAuthStatus{font-size:var(--type-small);color:var(--ink-body);margin:var(--space-3) 0}
+.email-auth{margin-top:var(--space-5);padding-top:var(--space-3);border-top:1px solid var(--border)}
+.email-auth summary{display:list-item;min-height:var(--touch-target);padding:var(--space-3) 0;color:var(--ink-muted);font-size:var(--type-label);cursor:pointer}
+body[data-account-page] main .email-auth .btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:var(--touch-target);font-size:var(--type-label);margin:var(--space-2) 0}
+#phoneAuthPanel{padding-top:var(--space-4);border-top:1px solid var(--border)}
+body[data-account-page] main #phoneAuthPanel h2{font-size:var(--type-section);margin:0 0 var(--space-2)}
+body .public-signup #phoneAuthPanel form,.phone-verification-form{display:grid;gap:var(--space-3)}
+body .phone-verification-form label.field{margin:0;display:grid;gap:var(--space-2)}
+body .phone-verification-form input{min-height:var(--auth-control-height);border-radius:var(--radius-control);font-size:var(--type-body)}
+body .phone-verification-form .btn{margin:0;min-height:var(--auth-control-height);width:100%}
+body .phone-verification-form input:disabled{background:var(--bg)}

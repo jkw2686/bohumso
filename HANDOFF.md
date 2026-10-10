@@ -1,5 +1,14 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-10 Google·카카오 준비 중·휴대전화 가입 (운영 적용 직전)
+- branch codex/three-signin-options, 원복 기준 main a84862c. 사용자 요청대로 Google 공식 G 흰색 둥근 버튼, 카카오 준비 중 비활성, 휴대전화 OTP 세 가지를 첫 화면에 배치. 기존 이메일 가입/로그인 접힌 보조 메뉴 보존. src/social-auth.js/phone-auth.js/public-signup.js/account.js, public/login.html/signup.html/auth-entry.css/brand/google-g.png, public-config.mjs 및 design-system.md.
+- 익명 전화 가입은 signInWithOtp→verifyOtp sms→account 필수 동의→complete_membership. 로그인 회원 전화 변경 phone_change는 기존 유지. 미인증/재확인/정지 차단. 대표자 관리자 조건과 전문가 심사/자료 조회 권한 유지.
+- 051_phone_signup.sql: 단일 트랜잭션/재실행 가능, 기존 함수 4개 최초 백업. 이메일 인증 전용 회원 조건에 Auth 전화 인증+기존 private.verified_contact 조건 추가. release_status의 phoneSignupEnabled=true로 새 UI 활성. 기존 데이터 삭제/열 변경 없음. rollback_phone_signup.sql 준비. docs/phone-signup-release.md 참조.
+- 운영 읽기 사전 검사: auth.users 4, member_profiles 2, consultations 0. 전화 인증 bridge 있음/새 백업 테이블 없음. Google/phone 제공자와 가입/전화인증 설정 활성. DB 함수 원문이 051의 기준과 일치. 실제 문자/새 운영 계정 생성 없음.
+- build/문법/diff 검사 PASS. 단위/실제 격리 DB(전화 회원·필수 동의·기존 회원·본인 범위·정지 차단·전문가 프로필 비공개·자료 제출/관리자 조회·함수 ACL·반복/원복) PASS. 가입/로그인 320/360/390/768, Google 복귀·OTP 오류/입력 포커스·약관 동의 후 가입 PASS. 기존 이메일/Google/전문가 회귀 10항목 PASS. artifacts/auth-signup-mobile.png/auth-login-mobile.png.
+- 다음: 브라우저 보안 규칙에 따른 운영 회원 접근 조건 변경 실행 직전 확인 → 051 운영 실행 → 기존 수/백업4/phoneSignupEnabled 확인 → main 배포 → 공개 config/화면 검증. 현재 운영 DB/Production 미반영. SQL 탭33 /sql/33f3a10c-a4ad-4c0d-9813-98a4387369a9에 051 준비, Run 미실행.
+- 앞선 상담 ON/OFF·연락처 동의·알림 049/050(다른 branch codex/trust-ux-review)은 이번 작업에 포함하지 않음. 기존 미추적 deno.lock 제외.
+
 ## 2026-10-09 보험소 선택 안내창 축소 (운영 배포 완료)
 - 홈 지도340px보다 안내창534px가 더 큰 운영 문제 확인. office-slot 준비 설명/3행 버튼을 간단 안내+주요 버튼+보조 2열로 축소, 홈 팝업 높이 지도 연동/본문 스크롤, 지도 카드 최대폭320/높이280 및 지도 절반 제한. 닫기44px 유지, 재선택 시 스크롤/수동 높이 초기화. 지도 마커 Enter/Space 선택 지원.
 - 운영 main(6c140ff)에서 codex/compact-office-card 분리. 앞선 상담 ON/OFF·연락처 동의·알림 1a25662는 codex/trust-ux-review에 저장되어 있으며 운영 DB 적용 승인 대기. 이번 화면 수정에는 해당 DB/권한 변경을 포함하지 않는다. 후속 상담 배포 전 main의 이번 수정 병합 필요.
