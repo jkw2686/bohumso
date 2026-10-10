@@ -33,12 +33,38 @@ export async function renderDirectory(client){
    if(position){markers.push(window.L.circleMarker([position.lat,position.lng],{radius:8}).addTo(map).bindPopup('내 현재 위치 · 저장하지 않음'));map.setView([position.lat,position.lng],11);}
   }else document.getElementById('mapNotice').textContent='지도를 불러오지 못했습니다. 아래 목록에서 같은 전문가를 확인할 수 있습니다.';
  }
- async function refresh(){notice.textContent='전문가 정보를 확인하고 있습니다.';try{if(client){const {data,error}=await client.rpc('planner_catalog',{area:region.value,wanted:purpose.value});if(error)throw error;profiles=(data.planners||[]).filter(p=>!p.is_sample).map(p=>({...p,latitude:p.area_latitude??null,longitude:p.area_longitude??null}));notice.textContent='소비자 가입·탐색·상담 요청 무료 · 보험 가입 의무 없음';}else{profiles=[];notice.textContent='등록된 전문가를 준비하고 있습니다.';}draw();window.BohumsoProfile.refreshDetail(profiles);await renderSponsored(sponsored,region.value);}catch{notice.textContent='전문가 정보를 불러오지 못했습니다. 다시 시도해 주세요.';host.replaceChildren();}}
+ let loading=false,requestId=0;
+ // background=true 는 60초 재조회다. 진행 중 조회가 있으면 건너뛴다.
+ // 사용자가 직접 누른 조회는 기다리지 않고 보내되, 요청 순번으로 늦게 도착한 이전 응답을 버린다.
+ async function refresh({background=false}={}){
+  if(background&&loading)return;
+  loading=true;const mine=++requestId;
+  notice.textContent='전문가 정보를 확인하고 있습니다.';
+  try{
+   if(client){
+    const {data,error}=await client.rpc('planner_catalog',{area:region.value,wanted:purpose.value});
+    if(mine!==requestId)return;
+    if(error)throw error;
+    profiles=(data.planners||[]).filter(p=>!p.is_sample).map(p=>({...p,latitude:p.area_latitude??null,longitude:p.area_longitude??null}));
+    notice.textContent='소비자 가입·탐색·상담 요청 무료 · 보험 가입 의무 없음';
+   }else{profiles=[];notice.textContent='등록된 전문가를 준비하고 있습니다.';}
+   draw();window.BohumsoProfile.refreshDetail(profiles);await renderSponsored(sponsored,region.value);
+  }catch{
+   if(mine!==requestId)return;
+   // 재조회 실패: 목록을 비우지 않는다. draw()가 availability_until 로 다시 판정하므로
+   // 유효시간이 지난 '지금 가능' 배지만 내려가고 나머지는 마지막으로 확인한 상태가 유지된다.
+   draw();window.BohumsoProfile.refreshDetail(profiles);
+   notice.textContent='최신 상태를 확인하지 못했습니다. 표시된 내용은 마지막으로 확인한 정보입니다.';
+  }finally{if(mine===requestId)loading=false;}
+ }
  form.elements.location_consent.onchange=()=>{if(!form.elements.location_consent.checked){position=null;draw();}};
  form.onsubmit=e=>{e.preventDefault();params.set('region',region.value);params.set('purpose',purpose.value);params.set('availability',form.elements.availability.value);history.replaceState(null,'',location.pathname+'?'+params);refresh();};
  document.getElementById('locatePlanners').onclick=()=>{if(!form.elements.location_consent.checked){notice.textContent='위치 사용 동의를 선택하거나 지역을 직접 선택해 주세요.';return;}if(!navigator.geolocation){notice.textContent='지역을 직접 선택해 주세요.';return;}navigator.geolocation.getCurrentPosition(p=>{if(!form.elements.location_consent.checked)return;position={lat:p.coords.latitude,lng:p.coords.longitude};notice.textContent='현재 위치는 거리 정렬에만 사용하며 저장하지 않습니다.';draw();},()=>{position=null;notice.textContent='위치를 사용하지 않고 지역 선택으로 찾을 수 있습니다.';draw();},{timeout:8000});};
  window.BohumsoProfile.onChange(refresh);
  await refresh();
  if(params.get('planner'))document.getElementById('profile-'+params.get('planner'))?.scrollIntoView({block:'start'});
- const timer=setInterval(()=>{if(!document.hidden)draw();},60000);window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
+ // 화면이 보일 때만 서버에서 다시 받아온다. draw()만 돌리면 서버가 내려준 availability_status가
+ // 그대로 남아, 열어둔 화면에서 만료된 '지금 가능' 배지가 사라지지 않는다.
+ const timer=setInterval(()=>{if(!document.hidden)refresh({background:true});},60000);
+ window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
 }

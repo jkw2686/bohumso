@@ -52,7 +52,7 @@
   var closing=false;function dismiss(){if(closing)return;closing=true;if(history.state?.bohumsoExpertDetail===token)history.back();else finish();}
   window.addEventListener('popstate',pop);close.onclick=dismiss;dialog.addEventListener('cancel',function(e){e.preventDefault();dismiss();});
   dialog.addEventListener('click',function(e){if(e.target!==dialog)return;var b=dialog.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)dismiss();});
-  activeDetail={id:p.id,replace:function(next,ctx){activeDetail.id=next.id;render(next,ctx||context);}};document.body.style.overflow='hidden';dialog.showModal();close.focus();
+  activeDetail={id:p.id,last:p,replace:function(next,ctx){activeDetail.id=next.id;activeDetail.last=next;render(next,ctx||context);}};document.body.style.overflow='hidden';dialog.showModal();close.focus();
  }
  function onChange(callback){
   function version(){try{return localStorage.getItem('bohumso-profile-updated')||'';}catch{return '';}}
@@ -60,7 +60,15 @@
   window.addEventListener('storage',function(e){if(e.key==='bohumso-profile-updated')check();});
   window.addEventListener('pageshow',check);document.addEventListener('visibilitychange',function(){if(!document.hidden)check();});window.addEventListener('bohumso-profile-updated',check);
  }
- function refreshDetail(profiles){if(activeDetail){var p=profiles.find(function(p){return p.id===activeDetail.id;});if(p)activeDetail.replace(p);}}
+ // 목록에서 사라진 선택 전문가를 다른 전문가로 자동 교체하지 않는다.
+ // 마지막으로 확인한 정보를 그대로 유지하고 새 요청만 막는다.
+ function refreshDetail(profiles){
+  if(!activeDetail)return;
+  var p=(profiles||[]).find(function(p){return p.id===activeDetail.id;});
+  if(p){activeDetail.replace(p);return;}
+  if(!activeDetail.last||activeDetail.last.newRequestsRestricted)return;
+  activeDetail.replace(Object.assign({},activeDetail.last,{available:false,newRequestsRestricted:true}));
+ }
  function markerIcon(p){var box=node('div');avatar(box,p);return window.L.divIcon({html:box.firstChild,className:'expert-map-marker',iconSize:[48,48],iconAnchor:[24,24],popupAnchor:[0,-28]});}
  window.BohumsoProfile={types:types,tasks:tasks,identity:identity,avatar:avatar,setAvatar:setAvatar,photoURL:photoURL,profileLink:profileLink,openDetail:openDetail,markerIcon:markerIcon,onChange:onChange,refreshDetail:refreshDetail};
 })();

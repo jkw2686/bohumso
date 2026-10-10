@@ -4,7 +4,11 @@ import path from 'node:path';
 import {setupSupport,ids} from './support-integration-fixture.mjs';
 
 const f=await setupSupport(),origin='https://support.example.test',api='https://fixture.supabase.co';
-const browser=await chromium.launch({channel:'msedge',headless:true});let queue=Promise.resolve();const serial=fn=>{const next=queue.then(fn);queue=next.catch(()=>{});return next;};
+// 기본은 기존과 동일한 msedge. PLAYWRIGHT_CHANNEL='' 로 두면 번들 Chromium 으로 실행한다
+// (Edge 가 없는 컨테이너·CI 에서 검증하기 위한 통로이며 기본 동작은 바뀌지 않는다).
+const channel=process.env.PLAYWRIGHT_CHANNEL??'msedge';
+const executablePath=process.env.PLAYWRIGHT_EXECUTABLE_PATH||undefined;
+const browser=await chromium.launch({headless:true,...(channel?{channel}:{}),...(executablePath?{executablePath}:{})});let queue=Promise.resolve();const serial=fn=>{const next=queue.then(fn);queue=next.catch(()=>{});return next;};
 const errors=[],calls=[];let failMine=false,failCreate=false,loseReceipt=false,loseReplyReceipt=false,delayCreate=false,legacy=false,failExpertReview=false,failLegacyList=false;
 async function context(actor,width=390){
  const ctx=await browser.newContext({viewport:{width,height:844}});const session={access_token:Buffer.from('{"alg":"HS256"}').toString('base64url')+'.'+Buffer.from(JSON.stringify({sub:actor,exp:Math.floor(Date.now()/1000)+3600})).toString('base64url')+'.fixture',refresh_token:'fixture',expires_at:Math.floor(Date.now()/1000)+3600,expires_in:3600,token_type:'bearer',user:{id:actor,email:'fixture@example.test',email_confirmed_at:new Date().toISOString(),aud:'authenticated'}};

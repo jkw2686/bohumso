@@ -43,7 +43,19 @@
   function eun(word) { var c = word ? word.charCodeAt(word.length - 1) : 0; return (c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0) ? '은' : '는'; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
   function thumbHtml(s, cls) { return '<span class="' + cls + '" aria-hidden="true">' + (window.uiIcon?.(s.office||s.planned?'home':'person')||esc(s.name.charAt(0))) + '</span>'; }
-  function availHtml(s) { return (s.availability && AVAIL[s.availability]) ? '<span class="avail avail-' + s.availability + '">' + AVAIL[s.availability] + '</span>' : ''; }
+  // src/availability.js 의 availabilityOf 와 같은 규칙. map.js 는 번들 밖 일반 스크립트라
+  // import 할 수 없어 복제했다. 두 결과가 같은지는 tests/availability.test.mjs 가 검증한다.
+  // 렌더 시점마다 다시 계산하므로, 화면을 열어둔 채 유효시간이 지나면 배지가 내려간다.
+  function availOf(s, now) {
+    if (!s.available) return 'unavailable';
+    if (['now', 'today'].indexOf(s.availabilityStatus) >= 0 && Date.parse(s.availabilityUntil) > (now || Date.now())) return s.availabilityStatus;
+    return 'scheduled';
+  }
+  function availHtml(s) {
+    if (s.office || s.planned) return '';
+    var a = availOf(s);
+    return AVAIL[a] ? '<span class="avail avail-' + a + '">' + AVAIL[a] + '</span>' : '';
+  }
   function spotDist(s) { if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) return Infinity; var ref = userLoc || SEOUL; return haversine(ref, [s.lat, s.lng]); }
   function distLabel(s) { var d = spotDist(s); return isFinite(d) ? distText(d) : '위치 미등록'; }
 
@@ -99,6 +111,9 @@
     var real = await loadReal(selectedArea);
     if(revision!==spotsRevision)return;
     if (real) { SPOTS = real; usingSamples = false; }
+    // 재조회 실패(preserve)에서는 목록을 비우지 않고 마지막으로 확인한 상태를 유지한다.
+    // 다시 그리기만 하므로 availabilityUntil 이 지난 '지금 가능' 배지는 내려간다.
+    else if (preserve) { if (map) drawMarkers(); renderList(); return; }
     else { SPOTS = []; usingSamples = false; }
     SPOTS = SPOTS.concat(PLANNED.filter(function(s){return !selectedArea || s.region.indexOf(selectedArea)===0;}));
     if (map) drawMarkers();
@@ -223,7 +238,7 @@
           lat: Number.isFinite(p.area_latitude) ? p.area_latitude : null, lng: Number.isFinite(p.area_longitude) ? p.area_longitude : null,
           rating: p.rating || 0, pledge: !!p.verified,
           hours: p.hours || '', completed: p.completed_count || 0, reviews: Array.isArray(p.reviews) ? p.reviews.length : 0,
-          biography:p.biography,insurance_types:p.insurance_types,help_tasks:p.help_tasks,offices:p.offices,newRequestsRestricted:!!p.newRequestsRestricted,available: !!p.available, photo: p.photo_url || '', availability: !p.available?'unavailable':p.availability_status || 'scheduled'
+          biography:p.biography,insurance_types:p.insurance_types,help_tasks:p.help_tasks,offices:p.offices,newRequestsRestricted:!!p.newRequestsRestricted,available: !!p.available, photo: p.photo_url || '', availabilityStatus: p.availability_status || 'scheduled', availabilityUntil: p.availability_until || null
         };
       });
       if(window.bohumsoOffices){const offices=await window.bohumsoOffices();const active=offices.filter(o=>o.status==='active'&&Number.isFinite(o.latitude)&&Number.isFinite(o.longitude));PLANNED=PLANNED.filter(p=>!active.some(o=>o.region===p.region));spots=spots.concat(active.filter(o=>!area||o.region.indexOf(area)===0).map(o=>({id:o.id,name:o.name,region:o.region,job:'보험소',specialty:o.address,lat:o.latitude,lng:o.longitude,rating:0,planned:false,office:true})));}
@@ -251,6 +266,10 @@
     reloadSpots(new URLSearchParams(location.search).get('region')||'').then(function(){var selected=new URLSearchParams(location.search).get('planner');var spot=SPOTS.find(function(s){return s.id===selected&&!s.planned&&!s.office;});if(spot)openCard(spot);});
 
     window.BohumsoProfile.onChange(function(){reloadSpots(selectedArea,true);});
+    // 목록(src/directory.js)과 같은 60초 주기. 화면이 보일 때만 다시 받아오고,
+    // reloadSpots 의 spotsRevision 이 늦게 도착한 이전 응답을 버린다.
+    var spotsTimer=setInterval(function(){if(!document.hidden)reloadSpots(selectedArea,true);},60000);
+    window.addEventListener('pagehide',function(){clearInterval(spotsTimer);},{once:true});
 
     // 정렬 탭
     document.querySelectorAll('.sort-tabs button').forEach(function (t) {

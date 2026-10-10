@@ -6,6 +6,7 @@ import {betaCode,betaReturn,renderBetaSignup,renderBetaFinish,renderBetaAdmin,re
 import {bindPhoneAuth} from './phone-auth.js';
 import {renderPhoneVerification} from './phone-verification-ui.js';
 import {renderServiceArea,renderInstant,renderUrgentWorkspace} from './urgent.js';
+import {renderExpertSettings} from './expert-settings.js';
 import './member-entry.js';
 import {renderExpertAdmin} from './expert-admin.js';
 import {bindMembershipConsent} from "./membership-consent.js";
@@ -80,7 +81,10 @@ async function start(){
  if(document.body.dataset.workspace==='partner'&&membership.partner_status!=='approved'){message('승인된 전문가만 이용할 수 있습니다.');return;}
  if(mode==="reset"){$("accountContent").hidden=false;onForm("passwordForm",async d=>{const {error}=await client.auth.updateUser({password:String(d.get("password"))});fail(error);message("비밀번호를 변경했습니다. 내 계정에서 계속 이용할 수 있습니다.");});return;}
  await refreshMembership();
- if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config});if(document.body.dataset.workspace==='partner'){const tools=document.createElement('div');$("accountContent").prepend(tools);await renderServiceArea(client,tools);await renderInstant(client,tools);await renderUrgentWorkspace(client,tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
+ if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config});if(document.body.dataset.workspace==='partner'){const tools=document.createElement('div');$("accountContent").prepend(tools);
+  // 상태 → 지역 → 진행 중 요청 순서. 지도·지금 방문 스위치는 renderExpertSettings 한 곳에서만 다룬다.
+  // renderInstant 는 같은 상태를 중복 조작하므로 이 화면에서 걷어냈다(함수 자체는 보존).
+  await renderExpertSettings(client,tools);await renderServiceArea(client,tools);await renderUrgentWorkspace(client,tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
  if(mode==='requests'&&document.body.dataset.workspace==='admin')await renderWaitlistCounts(client,document.getElementById('regionWaitlistHost'));
  if(mode==='requests'&&document.body.dataset.workspace!=='admin')await renderCareCases(client,$('accountContent'),document.body.dataset.workspace);
  if(mode==="payment")await renderPaymentResult(client,message);

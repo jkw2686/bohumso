@@ -1,7 +1,12 @@
 import {chromium,expect} from '@playwright/test';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import path from 'node:path';
-const browser=await chromium.launch({channel:'msedge',headless:true});
+// 기본은 기존과 동일한 msedge. Edge 가 없는 컨테이너·CI 에서는
+// PLAYWRIGHT_CHANNEL='' 와 PLAYWRIGHT_EXECUTABLE_PATH 로 다른 Chromium 을 지정한다.
+// 환경변수를 주지 않으면 기본 동작은 그대로다.
+const channel=process.env.PLAYWRIGHT_CHANNEL??'msedge';
+const executablePath=process.env.PLAYWRIGHT_EXECUTABLE_PATH||undefined;
+const browser=await chromium.launch({headless:true,...(channel?{channel}:{}),...(executablePath?{executablePath}:{})});
 const context=await browser.newContext({viewport:{width:390,height:844}});await mkdir('artifacts',{recursive:true});
 const id='40000000-0000-4000-8000-000000000052',otherId='40000000-0000-4000-8000-000000000053';
 let profile={id,name:'박도움',organization:'함께 확인하는 보험회사',region:'경기 김포시',area_latitude:37.615,area_longitude:126.716,available:true,insurance_types:[],help_tasks:[],offices:[],biography:'',photo_url:''};

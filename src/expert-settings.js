@@ -22,14 +22,21 @@ export async function renderExpertSettings(client,parent){
  const message=el('p','상태를 불러오고 있습니다.',card);message.setAttribute('role','status');message.setAttribute('aria-live','polite');
  function draw(){
   for(const [item,value]of [[map,!!state?.mapVisible],[visit,!!state?.visitAvailable]]){item.b.setAttribute('aria-checked',String(value));item.label.textContent=value?item.on:item.off;}
-  map.b.disabled=busy||checking||!state||(!state.eligible&&!state.mapEnabled);visit.b.disabled=busy||checking||!state||!state.mapVisible;
-  if(state&&!state.eligible)map.label.textContent='숨김 · 승인 상태 확인 필요';
+  // 승인 전에는 본인 선택과 무관하게 지도에 표시되지 않는다(mapVisible=self_map_visible and planner_eligible).
+  // 스위치를 누를 수 있게 두면 OFF로 보이는데 '숨길까요?' 확인창이 떠서 표시와 동작이 어긋난다.
+  map.b.disabled=busy||checking||!state||!state.eligible;
+  // 진행 중 방문이 있으면 새 요청을 받지 않으므로 켜고 끌 대상이 아니다.
+  visit.b.disabled=busy||checking||!state||!state.mapVisible||!!state.visitInProgress;
+  if(state&&!state.eligible)map.label.textContent='승인 후 지도에 표시됩니다';
   refresh.hidden=!state?.visitEnabled;refresh.disabled=busy||checking;reload.disabled=busy||checking;
   card.setAttribute('aria-busy',String(busy||checking));
   if(!state){location.textContent='';return;}
   const expired=state.locationState==='expired';
   location.textContent=expired?'위치 유효시간이 지났습니다. 현재 위치를 갱신해야 지금 방문 요청을 받을 수 있어요.':state.locationState==='fresh'?'현재 위치 확인 · '+new Date(state.locationUpdatedAt).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+' · 등록 활동지역과 별도입니다.':'현재 위치를 사용하려면 지금 방문을 켤 때 동의해 주세요.';
-  if(state.visitEnabled&&!state.visitAvailable&&!expired)visit.label.textContent='지금 방문 쉬는 중 · 진행 중인 요청 또는 승인 상태 확인';
+  // 같은 'OFF로 보이는' 상태라도 원인이 다르면 다르게 안내한다.
+  if(state.visitInProgress)visit.label.textContent='진행 중인 방문이 있어 새 요청을 받지 않습니다';
+  else if(state.visitEnabled&&expired)visit.label.textContent='지금 방문 쉬는 중 · 위치 유효시간 만료';
+  else if(state.visitEnabled&&!state.visitAvailable)visit.label.textContent='지금 방문 쉬는 중 · 승인 상태 확인 필요';
  }
  async function load(announce=true){if(busy||checking)return;checking=true;draw();try{state=await settingsCall(client);if(announce)message.textContent='서버에 저장된 상태입니다.';}catch(e){state=null;message.textContent=failures[e.message]||'설정에 연결하지 못했습니다. 상태 다시 확인을 눌러 주세요.';}finally{checking=false;draw();}}
  async function change(op,payload){if(busy||!state)return false;busy=true;draw();message.textContent='저장 중…';const previous=state;
@@ -37,10 +44,14 @@ export async function renderExpertSettings(client,parent){
   catch(e){state=previous;try{state=await settingsCall(client);}catch{}message.textContent=failures[e.message]||'저장하지 못했습니다. 현재 저장 상태를 확인하고 다시 시도해 주세요.';return false;}
   finally{busy=false;draw();}
  }
- map.b.onclick=async()=>{if(busy||!state)return;const enabled=!state.mapEnabled;if(!enabled&&!confirm('지도에서 숨기면 지금 방문 상담도 함께 꺼집니다. 기존 요청·예약·대화는 유지됩니다. 숨길까요?'))return;await change('map',{enabled,confirmed:!enabled});};
+ map.b.onclick=async()=>{if(busy||!state||!state.eligible)return;const enabled=!state.mapEnabled;if(!enabled&&!confirm('지도에서 숨기면 새 요청을 받지 않고 지금 방문 상담도 꺼집니다. 이미 받은 요청·예약·대화는 그대로 진행됩니다.'))return;await change('map',{enabled,confirmed:!enabled});};
  visit.b.onclick=async()=>{
   if(busy||!state||dialog)return;
-  if(state.visitEnabled){await change('visit',{enabled:false});return;}
+  if(state.visitInProgress){message.textContent='진행 중인 방문이 있어 새 요청을 받지 않습니다.';return;}
+  // 스위치 표시는 visitAvailable 기준이다. visitEnabled 만 보고 분기하면, 위치 유효시간이
+  // 끝나 OFF로 보이는 상태에서 누를 때 stop 이 호출돼 표시와 동작이 어긋난다.
+  // OFF로 보이면 언제나 '켜기'(동의·위치 확인)로 간다.
+  if(state.visitAvailable){await change('visit',{enabled:false});return;}
   dialog=el('dialog',undefined,document.body);dialog.className='card instant-dialog interaction-dialog';dialog.setAttribute('aria-labelledby','visitConsentTitle');el('h2','지금 방문 상담 켜기',dialog).id='visitConsentTitle';
   el('p','현재 위치를 기준으로 방문 요청을 받습니다. 정확한 위치·이동경로는 공개하지 않습니다.',dialog);
   const label=el('label','자동 종료',dialog);label.className='field';const duration=el('select',undefined,label);for(const v of [60,120,240]){const o=el('option',v/60+'시간 뒤',duration);o.value=v;}duration.value=String(state.visitConfig.availabilityMinutes);
