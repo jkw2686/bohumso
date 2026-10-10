@@ -7,14 +7,64 @@
   map.zoomControl.setPosition('bottomright');
   map.on('popupopen',function(){host.classList.add('popup-open');});
   map.on('popupclose',function(){host.classList.remove('popup-open');});
-  var areas = window.COVERAGE_AREAS || [];
-  areas.forEach(function(area){
-    var content=document.createElement('div');
-    window.renderOfficeSlot(content,{name:window.officeName(area.name),region:area.region+' '+area.name,planned:true});
-    L.marker([area.lat,area.lng],{title:window.officeName(area.name),icon:L.divIcon({className:'home-office-pin',html:window.uiIcon('home'),iconSize:[30,30]})}).addTo(map).bindPopup(content,{maxWidth:280,minWidth:220,autoPanPaddingTopLeft:[16,16],autoPanPaddingBottomRight:[16,24]});
+  var planned = (window.COVERAGE_AREAS || []).map(function(area){
+    return {name:window.officeName(area.name),region:area.region+' '+area.name,planned:true,latitude:area.lat,longitude:area.lng};
   });
-  async function actualOffices(){try{if(!window.bohumsoOffices)return;const offices=await window.bohumsoOffices();offices.filter(o=>o.status==='active'&&Number.isFinite(o.latitude)&&Number.isFinite(o.longitude)).forEach(function(o){const content=document.createElement('div');window.renderOfficeSlot(content,{id:o.id,name:o.name,region:o.region,planned:false});L.marker([o.latitude,o.longitude],{title:o.name+' · 운영 중',icon:L.divIcon({className:'home-office-pin',html:window.uiIcon('home'),iconSize:[30,30]})}).addTo(map).bindPopup(content,{maxWidth:280,minWidth:220,autoPanPaddingTopLeft:[16,16],autoPanPaddingBottomRight:[16,24]});});}catch{}}
-  window.addEventListener('bohumso-member-ready',actualOffices,{once:true});if(window.bohumsoOffices)actualOffices();
+  var offices=[],experts=[],markers=[],expertMarkers=new Map(),officeLoading=false,expertLoading=false;
+  var expertPanel=document.getElementById('homeExperts'),expertList=document.getElementById('homeExpertList');
+  function hasPoint(s){return Number.isFinite(s.latitude)&&Number.isFinite(s.longitude);}
+  function expertURL(s){return '/map.html?view=experts&region='+encodeURIComponent(s.region||'');}
+  function expertContent(s){
+    var content=document.createElement('div');content.className='office-slot';
+    function add(tag,text){var el=document.createElement(tag);el.textContent=text;content.appendChild(el);return el;}
+    add('h2',s.name);add('p',[s.organization,s.region].filter(Boolean).join(' · '));
+    add('p','공개 활동지역입니다. 현재 위치나 방문할 사무실 주소가 아닙니다.');
+    var link=add('a','전문가 지도에서 보기');link.className='btn';link.href=expertURL(s);
+    return content;
+  }
+  function drawMarkers(){
+    markers.forEach(function(marker){map.removeLayer(marker);});markers=[];expertMarkers.clear();
+    var spots=planned.concat(offices,experts).filter(hasPoint),groups=new Map();
+    spots.forEach(function(s){var key=s.latitude.toFixed(4)+','+s.longitude.toFixed(4);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(s);});
+    groups.forEach(function(group){group.forEach(function(s,index){
+      var columns=Math.min(group.length,4),rows=Math.ceil(group.length/columns);
+      var x=(index%columns-(columns-1)/2)*44,y=(Math.floor(index/columns)-(rows-1)/2)*44;
+      var size=s.expert?36:30,content;
+      if(s.expert)content=expertContent(s);else{content=document.createElement('div');window.renderOfficeSlot(content,s);}
+      var marker=L.marker([s.latitude,s.longitude],{
+        title:s.name+(s.expert?' · 전문가 활동지역':s.planned?'':' · 운영 중'),
+        zIndexOffset:s.expert?100:0,
+        icon:L.divIcon({className:s.expert?'home-expert-pin':'home-office-pin',html:window.uiIcon(s.expert?'person':'home'),iconSize:[size,size],iconAnchor:[size/2-x,size/2-y],popupAnchor:[x,y-size/2]})
+      }).addTo(map).bindPopup(content,{maxWidth:280,minWidth:220,autoPanPaddingTopLeft:[16,16],autoPanPaddingBottomRight:[16,24]});
+      if(s.expert)expertMarkers.set(s.id,marker);markers.push(marker);
+    });});
+  }
+  function renderExperts(){
+    if(!expertPanel||!expertList)return;
+    expertList.replaceChildren();expertPanel.hidden=!experts.length;
+    experts.forEach(function(s){
+      var item=document.createElement(hasPoint(s)?'button':'a');item.className='btn ghost';item.textContent=s.name+' · '+s.region;
+      if(hasPoint(s)){
+        item.type='button';item.setAttribute('aria-label',s.name+' · '+s.region+' 활동지역 보기');
+        item.addEventListener('click',function(){var marker=expertMarkers.get(s.id);if(!marker)return;map.setView(marker.getLatLng(),13,{animate:false});marker.openPopup();host.scrollIntoView({block:'center',behavior:'instant'});marker.getElement()?.focus({preventScroll:true});});
+      }else item.href=expertURL(s);
+      expertList.appendChild(item);
+    });
+  }
+  async function actualOffices(){
+    if(officeLoading||!window.bohumsoOffices)return;officeLoading=true;
+    try{offices=(await window.bohumsoOffices()).filter(function(o){return o.status==='active'&&hasPoint(o);});drawMarkers();}catch{}finally{officeLoading=false;}
+  }
+  async function publicExperts(){
+    if(expertLoading||!window.bohumsoCatalog)return;expertLoading=true;
+    try{
+      var catalog=await window.bohumsoCatalog('','');
+      experts=(catalog.planners||[]).filter(function(p){return !p.is_sample;}).map(function(p){return {id:p.id,name:p.name,region:p.region,organization:p.organization,latitude:p.area_latitude,longitude:p.area_longitude,expert:true};});
+      drawMarkers();renderExperts();
+    }catch{}finally{expertLoading=false;}
+  }
+  function loadPublicMap(){actualOffices();publicExperts();}
+  drawMarkers();window.addEventListener('bohumso-member-ready',loadPublicMap,{once:true});loadPublicMap();
   var button=document.getElementById('homeLocate'),notice=document.getElementById('homeLocationStatus'),me,circle;
   function locate(){
     button.disabled=true;

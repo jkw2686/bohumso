@@ -17,6 +17,13 @@ try{
  await customer.getByRole('button',{name:'내역 새로고침'}).click();await customer.getByRole('checkbox').check();await customer.getByRole('button',{name:'방문 일정 확정',exact:true}).click();await expect(customer.locator('.urgent-request')).toContainText('방문상담 일정이 확정되었습니다.');
  await pro.getByRole('button',{name:'내역 새로고침'}).click();await expect(pro.locator('.urgent-request')).toContainText('격리 테스트 방문 주소');await pro.getByRole('button',{name:'출발 알리기'}).click();await pro.getByRole('button',{name:'도착 알리기'}).click();await pro.getByRole('button',{name:'상담 완료',exact:true}).click();
  await customer.getByRole('button',{name:'내역 새로고침'}).click();await expect(customer.locator('.urgent-request')).toContainText('상담 완료');
+ await f.login(ids.planner);await f.urgent('stop');await f.login(ids.next);await f.urgent('stop');
+ await f.db.exec("reset role;update public.partner_applications set region='경기 분당';");
+ await anon.goto('https://fixture.test/urgent.html?region='+encodeURIComponent('경기 분당')+'&situation=claim');
+ await expect(anon.getByText('이 주변에서 지금 방문 가능한 전문가가 없습니다.',{exact:true})).toBeVisible();
+ await expect(anon.locator('.urgent-panel').first()).toContainText('등록된 활동지역 전문가:');
+ await expect(anon.getByRole('link',{name:'이 지역 전문가 지도 보기'})).toHaveAttribute('href','/map.html?view=experts&region='+encodeURIComponent('경기 분당').replace(/%20/g,'+')+'&situation=claim');
+ await expect(anon.getByRole('button',{name:'오픈 알림 신청',exact:true})).toHaveCount(0);await expect(anon.locator('.visit-candidate')).toHaveCount(0);
  await anon.goto('https://fixture.test/help/cancer.html');await expect(anon.getByRole('link',{name:'전문가가 찾아오게 하기'})).toHaveAttribute('href','/urgent.html?situation=cancer');await expect(anon.getByRole('link',{name:'가까운 보험소 방문하기'})).toHaveAttribute('href',/view=offices/);
  console.log('PASS local DB + real UI: anonymous search; opt-in GPS; one expert; private address until customer confirmation; arrival/completion; 4 viewport widths; both guide routes. Simulated GPS/accounts only.');expect(errors).toEqual([]);
 }finally{await b.close();await f.db.close();}

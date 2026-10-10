@@ -1,5 +1,13 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-10 메인 지도 전문가 표시 복구
+- 운영 익명 planner_catalog 조회에서 이충경·경기 김포시·월드에셋라이프 공개 및 scheduled 확인. 실제 현재 GPS가 아닌 공개 활동지역 기준점. 기존 승인/전화/위치 동의/방문 ON 상태 변경 없음.
+- 홈은 보험소만 불러오고 전문가 조회가 없었음. home-map.js에 기존 공개 catalog 연결, 사람 아이콘·공개 활동지역 팝업·하단 이름 선택 추가. 같은 기준점의 보험소와 전문가를 44px 간격으로 분리. 좌표 없는 프로필은 지역 지도 링크로 표시. 각 조회 실패 독립 처리.
+- 즉시 방문 빈 화면에서 wanted:null로 등록 전문가까지 누락되던 검색값을 빈 문자열로 수정. 등록 전문가 이름과 활동지역 지도 링크 제공. 방문 가능하지 않은 전문가를 즉시 방문 후보로 만들지 않음.
+- public/index.html/simple-ux.css, src/expert-visits.js, tests/home-experts-browser.mjs/expert-visits-browser.mjs. 원복 기준8dd013d, branch codex/home-expert-visibility. 기존 deno.lock 제외, 049/050 포함하지 않음.
+- build/문법/diff PASS. 홈 전문가 320/360/390/1440(동일 기준점·이름 선택·늦은 로드·개별 조회 실패), 기존 팝업6크기/지도4크기, 격리 DB 방문상담 요청→수락→고객확정→도착→완료 및 OFF 전문가 이름/지역 지도 표시 PASS. 실제 SMS/GPS/상담 데이터 변경 없음.
+- 다음 작업: 사용자 첨부37093718의 6개 상황별 청구 도움 후속 화면. 이번 노출 수정 배포 확인 후 시작. 기존 public/help 6개 재사용, 홈 디자인/인증/운영 ON/OFF/DB 변경 없음.
+
 ## 2026-10-10 메인 회원가입 영역 복구
 - 사용자: 메인에서 회원가입창이 보이지 않음. 운영 대표 로그인 시 상단이 예약·고객/전문가 정보/내 정보로 대체되며, 본문 가입 카드 마크업이 없고 help-guide.css에 display:none 잔존 확인.
 - public/index.html: 메인 CTA 아래·상황 카드 위에 무료 회원가입 카드 복구. 기존 home-membership/btn 재사용, 본문 가입 버튼은 로그인 여부와 관계없이 유지. help-guide.css 숨김 제거, 공통 토큰/44px/모바일 줄바꿈. src/member-entry.js는 로그인 상태 설명·보조 계정 링크만 갱신.

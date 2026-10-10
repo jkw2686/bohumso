@@ -66,7 +66,17 @@ async function customerPage(client,root){
  };
  const show=async()=>{const version=++revision;browse.replaceChildren();el('h2','지금 방문 가능한 전문가',browse);el('p',searchPoint?'내 위치 기준 · 실제 만날 주소는 별도로 입력해요.':area.region+' '+area.name+' 중심 기준 · 실제 거리와 다를 수 있어요.',browse);el('p','거리·시간은 검색 위치까지의 직선거리 추정입니다. 실제 방문 주소·교통 상황에 따라 달라져요.',browse,'visit-hint');
   const rows=await catalog(client,query());if(version!==revision)return;
-  if(!rows.length){el('p','이 주변에서 지금 방문 가능한 전문가가 없습니다.',browse);const [registered,offices]=await Promise.all([client.rpc('planner_catalog',{area:area.id,wanted:null}),client.rpc('office_catalog')]);if(version!==revision)return;if(!registered.error&&!offices.error&&!(registered.data?.planners||[]).length&&!(offices.data||[]).some(o=>o.status==='active'&&o.region===area.id))waitlistActions(browse,area.id,client);link('보험소 방문 예약 알아보기','/map.html?view=offices&region='+encodeURIComponent(area.id),browse);}
+  if(!rows.length){
+   el('p','이 주변에서 지금 방문 가능한 전문가가 없습니다.',browse);
+   const [registered,offices]=await Promise.all([client.rpc('planner_catalog',{area:area.id,wanted:''}),client.rpc('office_catalog')]);if(version!==revision)return;
+   const publicProfiles=(registered.data?.planners||[]).filter(p=>!p.is_sample);
+   if(!registered.error&&publicProfiles.length){
+    el('p','등록된 활동지역 전문가: '+publicProfiles.map(p=>p.name).join(', ')+'. 현재 방문 가능 상태와는 별도입니다.',browse,'visit-hint');
+    const mapQuery=new URLSearchParams({view:'experts',region:area.id});if(params.get('situation'))mapQuery.set('situation',params.get('situation'));
+    link('이 지역 전문가 지도 보기','/map.html?'+mapQuery,browse);
+   }else if(!registered.error&&!offices.error&&!(offices.data||[]).some(o=>o.status==='active'&&o.region===area.id))waitlistActions(browse,area.id,client);
+   link('보험소 방문 예약 알아보기','/map.html?view=offices&region='+encodeURIComponent(area.id),browse);
+  }
   for(const p of rows){const card=el('article','',browse,'card visit-candidate');el('h3',p.name+' 전문가',card);el('strong',distance(p.distanceKm)+' · 약 '+p.etaMin+'~'+p.etaMax+'분 거리',card);el('p',(p.specialties||[]).map(x=>purposes[x]||x).join(' · '),card);
    const checks=[p.registrationVerified&&'자격 확인',p.organizationVerified&&'소속 확인'].filter(Boolean);if(checks.length)el('p',checks.map(x=>'✓ '+x).join(' · '),card,'visit-verification');
    el('p',p.stale?'방문 가능 · 위치 확인 10분 이상 경과':'지금 방문 가능',card);button('이 전문가에게 방문상담 요청',card,async()=>{if(!await requireActiveMember({client,next:'/urgent.html?region='+encodeURIComponent(area.id)+'&situation='+(params.get('situation')||'claim')}))return;const release=await client.rpc('release_status');if(release.error)throw release.error;if(!release.data.phoneVerified){status(card,'휴대전화 인증을 마치면 요청할 수 있어요.');link('휴대전화 인증하기','/phone-verification.html?next='+encodeURIComponent('/urgent.html?region='+area.id),card);return;}requestFlow(p);});
