@@ -5,7 +5,7 @@
 - public/index.html: 메인 CTA 아래·상황 카드 위에 무료 회원가입 카드 복구. 기존 home-membership/btn 재사용, 본문 가입 버튼은 로그인 여부와 관계없이 유지. help-guide.css 숨김 제거, 공통 토큰/44px/모바일 줄바꿈. src/member-entry.js는 로그인 상태 설명·보조 계정 링크만 갱신.
 - src/account.js: 명시적 /signup.html?view=options는 로그인 회원에게도 가입 방법 화면을 표시하고 로그인 상태 및 내 정보 링크 안내. 일반 /signup.html 로그인 회원의 기존 계정 복귀는 유지. 자동 로그아웃/실제 인증 요청/DB·권한 변경 없음.
 - 기존 auth-options-browser 검사에 비회원 홈 320/360/390/768 가로넘침·가입 버튼, 로그인 완료 후 홈 카드/가입 화면 접근·기본 복귀 회귀 추가 PASS. 기존 Google/OTP/약관동의 흐름도 PASS, build/diff PASS. artifacts/home-signup-entry-mobile.png 시각 확인.
-- branch codex/home-signup-entry, 원복 기준 250b43c. 다음: 이 변경만 운영 main 배포하고 대표 로그인 상태에서 본문 카드 및 가입 화면 확인. 049/050 대기 작업은 포함하지 않음.
+- branch codex/home-signup-entry, 원복 기준 250b43c. 9ef93eb → Netlify 6ac9bfed2dbba30008fe4b58 production ready, 2026-10-10 13:32 KST. 대표 로그인 상태의 공개 홈 본문 카드 유지 및 회원가입하기→signup?view=options에서 실제 3가지 가입 방법 표시 확인. 기존 세션 유지, 실제 인증/SMS 없음. outputs/home-signup-entry-live.png. 049/050 대기 작업은 포함하지 않음.
 
 ## 2026-10-10 Google·카카오 준비 중·휴대전화 가입 (운영 배포 완료)
 - branch codex/three-signin-options, 원복 기준 main a84862c. 사용자 요청대로 Google 공식 G 흰색 둥근 버튼, 카카오 준비 중 비활성, 휴대전화 OTP 세 가지를 첫 화면에 배치. 기존 이메일 가입/로그인 접힌 보조 메뉴 보존. src/social-auth.js/phone-auth.js/public-signup.js/account.js, public/login.html/signup.html/auth-entry.css/brand/google-g.png, public-config.mjs 및 design-system.md.
