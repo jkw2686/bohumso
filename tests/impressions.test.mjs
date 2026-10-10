@@ -1,6 +1,8 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';
 import {impressionToken,verifyImpressionToken} from '../netlify/functions/_shared/impressions.mjs';
-import ads from '../artifacts/functions/ads.js';
+import {build} from 'esbuild';import {mkdir} from 'node:fs/promises';
+await mkdir('artifacts/functions',{recursive:true});await build({entryPoints:['netlify/functions/ads.mts'],bundle:true,platform:'node',format:'esm',packages:'external',outfile:'artifacts/functions/ads.js'});
+const {default:ads}=await import('../artifacts/functions/ads.js');
 test('Signed impressions reject tampering, wrong secrets and expiry without exposing signing material',()=>{
  const secret='fixture-only-signing-secret-32-characters',id=randomUUID(),now=1000000,token=impressionToken(secret,id,now);
  assert.equal(verifyImpressionToken(secret,token,now).subscriptionId,id);

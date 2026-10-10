@@ -1,5 +1,7 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';
-import payment from '../artifacts/functions/payment.js';import webhook from '../artifacts/functions/payment-webhook.js';
+import {build} from 'esbuild';import {mkdir} from 'node:fs/promises';
+await mkdir('artifacts/functions',{recursive:true});await build({entryPoints:['netlify/functions/payment.mts','netlify/functions/payment-webhook.mts'],bundle:true,platform:'node',format:'esm',packages:'external',outdir:'artifacts/functions'});
+const {default:payment}=await import('../artifacts/functions/payment.js');const {default:webhook}=await import('../artifacts/functions/payment-webhook.js');
 test('Public payment endpoints reject disabled/live config, bad origins and anonymous users without contacting PG',async()=>{
  const before=globalThis.Netlify,oldFetch=globalThis.fetch;let calls=0;const values={};globalThis.Netlify={env:{get:key=>values[key]}};globalThis.fetch=async()=>{calls++;throw Error('network_not_allowed');};
  try{

@@ -128,4 +128,21 @@ body[data-account-page] .review-document .btn{width:auto;margin:0}
 
 .expert-meeting-notice{padding:20px;border:1px solid var(--brand);border-radius:16px;background:var(--brand-soft);margin:16px 0}.expert-meeting-notice h3{font-size:18px;line-height:1.5;margin:0 0 12px}.expert-meeting-notice p{margin:12px 0;line-height:1.6}
 
+.appointment-care{display:grid;gap:var(--space-3);margin-block:var(--space-4);min-width:0;color:var(--ink-body);scroll-margin-top:var(--space-5)}
+.appointment-care :is(p,h3){margin:0;overflow-wrap:anywhere;word-break:keep-all}
+.appointment-care :is(form,.field,.appointment-proposal,.appointment-case){display:grid;gap:var(--space-2);min-width:0}
+.appointment-care .field{margin:0}
+.appointment-care :is(details,.appointment-proposal,.appointment-case){border:1px solid var(--border);border-radius:var(--radius-control);padding:var(--space-3)}
+.appointment-care form{margin-top:var(--space-3)}
+.appointment-care :is(input,select,textarea){width:100%;max-width:100%;min-width:0;box-sizing:border-box;font:inherit;padding:var(--space-3);border:1px solid var(--border);border-radius:var(--radius-control);background:var(--card);color:var(--ink-heading)}
+.appointment-care input[type=checkbox]{width:var(--space-5);height:var(--space-5);min-height:0;flex:none}
+.appointment-care .field:has([type=checkbox]){display:flex;align-items:center;min-height:var(--touch-target);font-weight:400}
+.appointment-care :is(button,.btn,summary),.appointment-policy summary{min-height:var(--touch-target);white-space:normal;overflow-wrap:anywhere}
+.appointment-care summary,.appointment-policy summary{cursor:pointer;display:list-item;align-content:center;color:var(--brand);font-weight:650}
+.appointment-care :is(button,.btn){width:100%;margin:0}
+.appointment-care :is(button,a,input,select,textarea,summary):focus-visible,.appointment-policy summary:focus-visible{outline:var(--focus-width) solid var(--brand);outline-offset:var(--space-2)}
+.appointment-care .review-feedback:empty{display:none}
+.appointment-policy{margin-block:var(--space-3);font-size:var(--type-label)}
+.appointment-policy p{margin-block:var(--space-2)}
+
 .review-feedback:empty{display:none}.review-feedback{padding:12px;border:1px solid var(--brand);border-radius:12px;background:var(--brand-soft);color:var(--text);font-weight:600}.form-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}.form-actions .btn{flex:1 1 160px;margin:0}

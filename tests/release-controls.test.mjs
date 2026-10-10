@@ -5,7 +5,8 @@ test('release controls preserve login/history, deny bypasses and require policy,
   assert.equal((await f.db.query("select count(*)::int n from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='private' and c.relkind='r' and not c.relrowsecurity")).rows[0].n,0);
   await f.login(ids.customer);assert.equal((await f.rpc('my_membership')).member,true);assert.equal((await f.rpc('release_status')).policiesApproved,false);
   assert.equal((await f.rpc('consultation_workspace',['customer'])).bookings.length,0);
-  const payload={office_assignment:true,request_key:crypto.randomUUID(),region:'경기 분당',purpose:'claim',method:'scheduled',preferred_at:f.slot()};
+  const testDay=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date(Date.now()+2*86400000));
+  const payload={office_assignment:true,request_key:crypto.randomUUID(),region:'경기 분당',purpose:'claim',method:'scheduled',preferred_at:testDay+'T14:00:00+09:00'};
   await assert.rejects(f.cmd('request',payload),/policies_not_approved/);
   await assert.rejects(f.urgent('request',{}),/policies_not_approved/);
   await assert.rejects(f.rpc('consultation_command_before_release',['request',payload]),/permission denied/);

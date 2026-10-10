@@ -1,5 +1,19 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-10 약속 관리·불참 사실 확인 (개발 브랜치, 운영 적용 금지)
+- 최신 첨부 7c612f0f 지침이 이전 약속/노쇼 지침을 대체한다. **운영 DB·배포·실사용자 발송·비용 집행 금지**. 기존 배포 승인을 재사용하지 않는다.
+- 브랜치 codex/appointment-care, 시작 8215194. 053/054 미배포 개발 변경을 이어받음. 미추적 deno.lock은 이번 변경에서 제외.
+- 새 공통 src/appointment-care.js: 소비자·전문가 지각/변경/취소, 사실 확인/설명/철회 요청/이의제기, 짧은 정책 안내, 앱 알림·과거 사건·운영자 검토/재개. workflow/expert-visits/account에 연결. 실제 요청·회원 확인·연락처 동의 유지, 직접 선택 복구 경로에는 전화/주소/메모를 복제하지 않음.
+- 055_appointment_care.sql 초안: 단일 트랜잭션·반복실행·기존 함수 백업·비공개 표/RPC. 같은 날짜/시간/방식/장소 확인, 변경 수락 시 충돌 재검사, 취소 후 제안/알림 중단, 신고와 예약 상태 분리. 발생 시각 기준 90일/시행일 이후 사건만 계산. 소비자 3/7일, 전문가 7/30일+재개 확인. 제한 중 추가 사건은 종료를 연장하지 않고 별도 검토. 유료 전문가 집행 및 정책 시행 기본 OFF.
+- 기존 notifications 구조를 사용하고 기존 알림 트리거가 있으면 중복 방지. private.flush_appointment_reminders() 준비, 운영 예약 작업 등록 없음. 화면이 열려 있으면 같은 함수로 예정 알림 보완. 실제 SMS·알림톡 없음.
+- 방문 정보 정리 후 약속/제안의 장소도 비우고 사건 설명은 보존. 미종료 약속과 사건/이의/알림 보관기간은 운영 확정 필요. 신규 보관기간을 임의 시행하지 않음.
+- 원복 supabase/rollback_appointment_care.sql: 미해결 제안/신고/이의·유효 제한이 있으면 거부. 해소 후 기존 함수 복원, 새 API는 disabled 응답, 데이터 삭제 없음. 프론트 커밋 원복도 함께 준비.
+- 검증: 약속 SQL 9 시나리오, 보관·알림 변경 3 시나리오 및 최종 입력 검증 변경 2 시나리오 재검증 통과. 360/390/430 공통 UI와 실제 requests/partner-work 빌드+격리 SQL 통합 통과. 기존 connection-review-browser 통과. 전체 npm test 첫 실행106/109통과, 나머지3 테스트 준비/시각 의존 수정 후 모두 통과(해당 파일+신규검사13/13). build 통과. 실제 다중 DB 연결 경합/운영 트리거/운영 예약 작업/실제 로그인·문자 등은 미검증.
+- 전체 결과 docs/appointment-care.md. 격리 화면 artifacts/appointment-consumer-390.png, appointment-expert-390.png, appointment-admin-390.png, 실제 페이지 appointment-requests-page-390.png/appointment-partner-page-390.png.
+- 최종 캡처 및 대비 4.5:1·터치 44px 측정 통과. docs/appointment-care-screens에 3역할 화면 보관. 다음: 운영 적용은 별도 승인 전까지 진행하지 않음. 이후 요청 시 운영 스키마의 별도049/050 및 선행053/054 상태 비교, 보관기준/시행일/유료 구독 처리/추가 사건 처리 확정, 실제 다중 연결 경합 검증, 알림 작업 설정을 먼저 수행.
+- 개발 코드·보고서만 로컬 저장하며 main/운영 변경 없음. 이번 신규 브랜치의 원격 전송은 아직 하지 않았다.
+
+
 ## 2026-10-10 총괄 지침 3단계 보완 (개발·검증 완료, 운영 미반영)
 - 구현 커밋 `9beeb30` 및 인수인계 `2f22251`을 `origin/codex/connection-review`에 전송 완료. 최초 자동 승인 검토가 목적지·내용에 대한 명시적 승인 부족으로 거절했으나 사용자 ‘개발 브랜치 전송 승인’을 받은 뒤 정상 push했다. 저장소 https://github.com/jkw2686/bohumso/tree/codex/connection-review . [skip netlify] 유지, main·운영 DB·배포는 변경하지 않음. 이 브랜치에서 이어받고 원격 main으로 덮어쓰지 말 것.
 - **최신 사용자 지침은 개발·검증만 승인. 운영 DB·배포·유료 서비스는 별도 승인 필요. 이전 배포 승인을 재사용하지 말 것.** 현재 branch `codex/connection-review`, 기준 `e08a4d5`. 기존 운영 배포 `fb04f34` / `6ac9fdf4ca4eb500092bc4a6` 유지. 상세 보고 `docs/connection-review.md`.

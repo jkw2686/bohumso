@@ -10,7 +10,7 @@
       add('p',office.region+' · 공개 활동지역 기준',content);add('p','현재 GPS 위치가 아닙니다.',content);
       var vq=new URLSearchParams({planner:office.id,region:office.region,purpose:office.purpose||'claim',situation:office.situation||''});
       if(office.available)add('p','상담 요청 가능 · 통화 후 일정 조율',content);
-      else add('p','현재 상담 요청을 받지 않습니다. 다른 전문가나 보험소를 확인해 주세요.',content);
+      else add('p',office.newRequestsRestricted?'현재 새 상담 요청을 받을 수 없습니다.':'현재 상담 요청을 받지 않습니다. 다른 전문가나 보험소를 확인해 주세요.',content);
       var actions=add('div');actions.className='expert-card-actions';
       if(office.available){var request=add('a','상담 요청',actions);request.className='btn';request.href='/requests.html?'+vq+'&method=phone';}
       (office.offices||[]).forEach(function(o){if(o.available){var a=add('a','보험소 방문예약 · '+o.name,actions);a.className='btn ghost';a.href='/requests.html?'+new URLSearchParams({office:o.id,region:o.region,purpose:office.purpose||'claim',situation:office.situation||'',method:'scheduled'});}else add('p',o.name+' · 방문예약 중지',content);});

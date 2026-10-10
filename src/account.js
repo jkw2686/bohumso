@@ -1,4 +1,5 @@
 import {renderWaitlistCounts} from './region-waitlist.js';
+import {renderCareAdmin,renderCareCases,careErrors} from './appointment-care.js';
 import {renderEarlyExpertAdmin} from './early-expert-admin.js';
 import {renderPublicSignup,finishPublicSignup,PRODUCTION_ORIGIN} from './public-signup.js';
 import {betaCode,betaReturn,renderBetaSignup,renderBetaFinish,renderBetaAdmin,renderBetaExpert} from './beta.js';
@@ -22,6 +23,7 @@ function message(text){$("accountMessage").textContent=text;}
 let toastTimer;function toast(text){const t=$("toast");if(!t){message(text);return;}t.textContent=text;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2800);}
 function flagInvalid(field,msg){toast(msg);let hint=field.parentElement.querySelector(".field-error");if(!hint){hint=document.createElement("p");hint.className="field-error";hint.id="error-"+(field.name||field.id);hint.setAttribute("role","alert");field.after(hint);}hint.textContent=msg;field.setAttribute("aria-describedby",hint.id);field.addEventListener("change",()=>{hint.remove();field.removeAttribute("aria-invalid");},{once:true});field.setAttribute("aria-invalid","true");field.classList.add("invalid");field.scrollIntoView({block:"center",behavior:"smooth"});field.focus({preventScroll:true});field.addEventListener("input",()=>{field.removeAttribute("aria-invalid");field.classList.remove("invalid");},{once:true});return false;}
 function safeError(error){
+ if(careErrors[error?.message])return careErrors[error.message];
  const scheduleErrors={schedule_pending:'상대방의 일정 제안이 있습니다. 먼저 수락하거나 기존 일정을 유지해 주세요.',schedule_slot_unavailable:'제안한 시간에 다른 예약이 있습니다. 기존 일정은 유지됩니다. 다른 시간을 선택해 주세요.'};if(scheduleErrors[error?.message])return scheduleErrors[error.message];
 if(error instanceof TypeError||error?.message?.includes("fetch"))return "네트워크 연결을 확인해 주세요.";if(error?.code==="23505")return "이미 처리되었거나 해당 시간이 예약되었습니다. 새로고침 후 다른 일정을 선택해 주세요.";const known={policies_not_approved:"현재 예약 접수를 준비하고 있습니다. 문의하기에서 이용 문의를 남겨 주세요.",beta_invitation_required:"초대된 베타 참여자만 요청할 수 있습니다.",phone_verification_required:"예약을 이어가려면 휴대전화 번호를 확인해 주세요.",stale_application:"다른 화면에서 신청 내용이 바뀌었습니다. 새로고침 후 확인해 주세요.",application_locked:"현재 상태에서는 신청을 수정할 수 없습니다.",invalid_application:"연락처·자격 정보·경력·상담 방식을 확인해 주세요.",verification_consent_required:"자격 확인에 필요한 개인정보 검토에 동의해 주세요.",plan_not_available:"구독 조건이 아직 확정되지 않았습니다.",slot_unavailable:"이용 중이거나 결제 확인 중인 광고 슬롯입니다. 기존 주문 상태를 확인해 주세요.",order_expired:"주문 시간이 만료됐습니다. 구독 화면에서 새로 선택해 주세요.",refund_not_eligible:"기간 종료와 약정 노출 미달 여부를 확인해 주세요.",refund_evidence_required:"관리자의 플랫폼 귀책 확인 근거가 필요합니다.",stale_request:"다른 화면에서 예약이 변경되었습니다. 새로고침 후 다시 확인해 주세요.",test_payment_not_configured:"테스트 결제 설정 전입니다. 실제 결제는 발생하지 않습니다.",price_changed:"구독 조건이 변경되었습니다. 새로고침하여 확인해 주세요.",payment_in_progress:"결제 상태를 확인 중입니다. 승인·환불 확인 후 다시 시도해 주세요.",automatic_not_allowed:"자동 배정은 지원하지 않습니다. 설계사를 직접 선택해 주세요.",select_planner:"목록에서 설계사를 직접 선택해 주세요.",invalid_slot:"희망 일정은 30분 이후부터 90일 이내의 정각 또는 30분으로 선택해 주세요.",invalid_partner:"담당자의 직군·승인 상태가 맞지 않습니다. 다시 확인해 주세요.",request_limit:"진행 중인 요청은 최대 5건입니다.",request_forbidden:"이 요청을 처리할 권한이 없습니다.",address_required:"방문 장소의 정확한 주소를 입력해 주세요.",admin_required:"관리자 권한이 필요합니다.",self_review_forbidden:"본인 신청은 직접 심사할 수 없습니다.",invalid_transition:"신청 상태가 변경되었습니다. 새로고침해 주세요.",consent_required:"필수 동의를 확인해 주세요.",membership_required:"고객 가입을 먼저 완료해 주세요.",verified_account_required:"계정 인증 후 다시 로그인해 주세요."};return known[error?.message]||"처리하지 못했습니다. 입력 내용과 연결 상태를 확인한 뒤 다시 시도해 주세요.";}
 async function action(form,fn){const buttons=[...form.querySelectorAll("button")];const disabled=buttons.map(b=>b.disabled);buttons.forEach(b=>b.disabled=true);message("");try{await fn()}catch(e){message(safeError(e))}finally{buttons.forEach((b,i)=>b.disabled=disabled[i])}}
@@ -45,7 +47,7 @@ async function renderAccount(){
  $("logout").onclick=async()=>{const {error}=await client.auth.signOut();if(error){message("로그아웃하지 못했습니다. 다시 시도해 주세요.");return}location.replace("/login.html");};
 }
 async function renderPartner(){return renderPartnerApplication({client,user,membership,message,action,config});}
-async function renderAdmin(){if(!membership.admin)throw {message:'admin_required'};await (config.earlyAccess?renderEarlyExpertAdmin:renderExpertAdmin)({client,host:$('applications'),message});}
+async function renderAdmin(){if(!membership.admin)throw {message:'admin_required'};await (config.earlyAccess?renderEarlyExpertAdmin:renderExpertAdmin)({client,host:$('applications'),message});await renderCareAdmin(client,$('accountContent'));}
 async function start(){
  // 백엔드(Functions) 미배포·미설정 시 에러 대신 '준비 중'으로 degrade. 정적 공유 배포에서도 화면이 깨지지 않는다.
  const response=await fetch("/api/config",{cache:"no-store"}).catch(()=>null);config=response&&response.ok?await response.json():{enabled:false};
@@ -80,6 +82,7 @@ async function start(){
  await refreshMembership();
  if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config});if(document.body.dataset.workspace==='partner'){const tools=document.createElement('div');$("accountContent").prepend(tools);await renderServiceArea(client,tools);await renderInstant(client,tools);await renderUrgentWorkspace(client,tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
  if(mode==='requests'&&document.body.dataset.workspace==='admin')await renderWaitlistCounts(client,document.getElementById('regionWaitlistHost'));
+ if(mode==='requests'&&document.body.dataset.workspace!=='admin')await renderCareCases(client,$('accountContent'),document.body.dataset.workspace);
  if(mode==="payment")await renderPaymentResult(client,message);
  if(mode==="phone")await renderPhoneVerification({client,config,root:$("accountContent")});
  if(mode==="account")await renderAccount();
