@@ -1,5 +1,17 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-10 고객센터·관리자 통합 검증 — 개발 반영, 운영 미적용
+- 최신 지시 우선: **운영 DB 변경·공개 배포 금지**. 이전 ‘작업후 배포’ 승인을 이번 고객센터에 재사용하지 않는다. 실제 고객 알림·예약·결제 변경과 유료 AI 호출 없음.
+- 작업 브랜치 `codex/support-integration`, 시작점 `65e4d8d`. 실제 작업 폴더는 `work/bohumso-ui-release`. `deno.lock`은 기존 미추적 파일로 제외.
+- 실제 공개 고객센터는 member_rights/admin_member_rights이고 AI 미연동. src/test-flow의 FAQ는 로컬 체험용이며 운영 AI로 보고하지 않는다.
+- 구현: `src/support-ui.js`, member-rights, early-operations-admin, early-expert-admin, `public/support.css`와 관련 HTML. 한 문의의 대화 누적, 운영자 인수/해제, 내부 메모 분리, 고객 해결 확인, 오래된 미답변 우선·페이지 이동, 관련 예약 최소정보 확인, 실패/전송 유실/초안 보존. 전문가 심사 장애가 문의함을 막지 않게 분리.
+- SQL 후보 `057_support_conversations.sql`: 비공개 threads/messages/receipts/ai_runs 4개 테이블, 기존 RPC 호환 트리거, support_command. 운영 적용하지 않음. 기존 회원·예약 컬럼/데이터 삭제·타입 변경·Storage 변경 없음. 원복 `057_support_conversations_rollback.sql`은 새 API만 중단하고 대화 기록 보존.
+- AI는 외부 공급자/변경 도구/실행기 미연동, 기본 OFF. private 시작·완료 가드에 브라우저/service_role 실행 권한 없음. 모의 완료와 운영자 인수의 순서 경합을 격리 DB로 검증했으며 실제 AI 품질·원격 병렬 부하 검증은 아님.
+- 검증: `npm run test:support` (빌드 + 새 SQL 검사 + 브라우저). 별도로 기존 early-access와 support 회귀 통과. 브라우저는 모든 요청을 가로채 소비자/전문가/관리자 가상 세션과 로컬 PGlite 사용. 360/390/430/1280, 초안·답변·메모·새로고침, 일반 회원 관리자 차단, 관련 예약 소유권, 재실행·원복 보존 확인.
+- 보고서 `docs/support-integration-review.md`, 증거 `artifacts/support-integration-browser.json`, 화면 `artifacts/support-customer-390.png`, `artifacts/support-operator-360.png`, `artifacts/support-operator-desktop.png`. 공개 미리보기·새 배포 없음.
+- 미연동: 실제 AI/요약/과금, 외부 알림, 실제 처리시간 측정, 실제 Supabase 로그인. 비용 없음으로 단정하지 않고 미확인/미연동으로 표시. 실제 작업시간은 접수~답변 경과시간과 구분하여 최소 측정안 보고서에 기재.
+- 다음: Claude Code 읽기 전용 검수(아직 수행 안 됨). 057의 권한·인수 경합·전송 영수증, UI 초안 보존·원복을 우선 검토. 지적은 가상 데이터로 재현 후 수정. 별도 테스트 환경의 실제 인증·실기기 확인과 운영 정책 결정을 마친 뒤, 운영 적용/배포 승인을 별도로 받는다.
+
 ## 2026-10-10 예약 점검 보완·공개 배포 완료
 - 사용자 최신 지시 ‘작업후 배포’로 프로필 개선 5ec8182와 이번 점검 보완 배포 승인. 이전 배포 금지 문서는 이 범위에 한해 갱신. 055 약속 제재 정책은 운영 적용하지 않음.
 - 이번 소스: account/consultation-ui/directory/office-request/profile-editor/workflow. 목적 전체·암·수술 검색, 방문 경로, 인증 연락처·동의 확정, 입력 보존, 재선택, 관리자 반복 조회 보완. 프로필·지도·상세 개발분 포함. 보고서 docs/booking-audit-release.md.

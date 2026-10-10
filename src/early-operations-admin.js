@@ -1,6 +1,12 @@
+import {mountSupportInbox,supportAvailable} from './support-ui.js';
 export async function renderEarlyOperations({client,host,message}){
  const el=(tag,text,parent=host)=>{const n=document.createElement(tag);n.textContent=text||'';parent.append(n);return n;};
- const panel=el('details');el('summary','문의·개인정보 요청',panel);const result=await client.rpc('admin_member_rights',{operation:'list'});if(result.error){el('p','요청함 연결을 확인하지 못했습니다.',panel);return;}if(!result.data.length)el('p','새 요청이 없습니다.',panel);
+ const panel=el('details');el('summary','문의·개인정보 요청',panel);
+ let enhanced=false;try{enhanced=await supportAvailable(client);}catch{el('p','문의함 연결을 확인하지 못했습니다. 새로고침해 주세요.',panel);return;}
+ if(enhanced){await mountSupportInbox({client,host:panel});}else{
+ const result=await client.rpc('admin_member_rights',{operation:'list'});if(result.error){el('p','요청함 연결을 확인하지 못했습니다.',panel);return;}if(!result.data.length)el('p','새 요청이 없습니다.',panel);
+ result.data.sort((a,b)=>Number(Boolean(a.response))-Number(Boolean(b.response))||new Date(a.created_at)-new Date(b.created_at));
  for(const row of result.data){const form=el('form',null,panel);form.className='card';el('h3',({ACCESS:'열람',CORRECT:'정정',DELETE:'삭제',WITHDRAW:'탈퇴',REPORT:'신고',INQUIRY:'문의'})[row.kind],form);el('p',new Date(row.created_at).toLocaleString('ko-KR')+' · '+row.status,form);el('p',row.detail,form);const label=el('label','처리 상태',form);const status=el('select',null,label);for(const [v,t] of [['IN_PROGRESS','처리 중'],['COMPLETED','처리 완료'],['DECLINED','처리 제한 사유 안내']]){const o=el('option',t,status);o.value=v;}status.value=row.status==='RECEIVED'?'IN_PROGRESS':row.status;const l=el('label','답변·처리 결과',form);const text=el('textarea',null,l);text.value=row.response;text.minLength=5;text.maxLength=2000;text.required=true;el('p','완료를 선택하기 전에 실제 처리 범위와 보관 사유를 확인하세요. 이 버튼으로 원본 데이터가 자동 삭제되지는 않습니다.',form);const save=el('button','답변 저장',form);save.type='submit';save.className='btn';form.onsubmit=async event=>{event.preventDefault();save.disabled=true;try{const r=await client.rpc('admin_member_rights',{operation:'respond',payload:{id:row.id,status:status.value,response:text.value}});if(r.error)throw r.error;message('답변을 저장했습니다. 요청자가 문의 화면에서 확인할 수 있습니다.');}catch{message('저장하지 못했습니다. 다시 확인해 주세요.');}finally{save.disabled=false;}};}
+ }
  const metrics=el('details');el('summary','오류·이용 단계 집계',metrics);const counts=await client.rpc('operational_metrics');if(counts.error){el('p','집계 연결을 확인하지 못했습니다.',metrics);return;}el('p','최근 30일 · 시간별 합계 · 개인정보와 상세 상담내용은 포함하지 않습니다.',metrics);if(!counts.data.length)el('p','기록된 집계가 없습니다. 수집 설정이 꺼져 있으면 저장하지 않습니다.',metrics);for(const c of counts.data.slice(0,100))el('p',new Date(c.hour).toLocaleString('ko-KR')+' · '+c.event+' '+c.total+'회',metrics);
 }

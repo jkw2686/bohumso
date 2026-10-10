@@ -12,7 +12,8 @@
     "smoke": "node scripts/smoke.mjs",
     "concurrency": "node scripts/concurrency-test.mjs",
     "dev:test-flow": "node scripts/test-flow.mjs",
-    "test:connected": "node --test tests/connected-flow.test.mjs && node tests/connected-flow-browser.mjs"
+    "test:connected": "node --test tests/connected-flow.test.mjs && node tests/connected-flow-browser.mjs",
+    "test:support": "node scripts/build.mjs && node --test tests/support-integration.test.mjs && node tests/support-integration-browser.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0"

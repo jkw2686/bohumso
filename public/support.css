@@ -1,0 +1,24 @@
+.support-workspace{color:var(--ink-body);min-width:0;overflow-wrap:anywhere}
+.support-workspace :is(h2,h3,strong){color:var(--ink-heading)}
+.support-workspace h3{scroll-margin-block-start:calc(var(--space-8) * 3)}
+.support-workspace :is(form,.field){display:grid;gap:var(--space-3)}
+.support-workspace :is(input,textarea,select){font:inherit;min-width:0;max-width:100%;color:var(--ink-body);border-color:var(--border);border-radius:var(--radius-control)}
+.support-workspace textarea{resize:vertical;scroll-margin-block:var(--space-6)}
+.support-workspace .btn{min-height:var(--touch-target);white-space:normal;margin:0;padding:var(--space-3) var(--space-4);width:auto;max-width:100%}
+.support-workspace .btn:not(.ghost){color:var(--card);background:var(--brand);border-color:var(--brand)}
+.support-workspace .btn.ghost{color:var(--brand);background:var(--card);border:1px solid var(--border)}
+.support-workspace button:disabled{cursor:default}
+.support-workspace :is(button,summary,textarea,select):focus-visible{outline:var(--focus-width) solid var(--brand);outline-offset:var(--space-1)}
+.support-workspace summary{min-height:var(--touch-target);padding-block:var(--space-3);cursor:pointer;font-weight:650}
+.support-workspace :is([role=status],small){color:var(--ink-body);font-size:var(--type-small)}
+.support-workspace [role=status]:empty{display:none}
+.support-threads,.support-workspace [aria-label="문의 처리"]{margin-top:var(--space-5)}
+.support-workspace [aria-label="문의 처리"]:empty{display:none}
+.support-conversation{padding:0;margin:var(--space-4) 0;display:grid;gap:var(--space-3);list-style:none}
+.support-message{padding:var(--space-4);border:1px solid var(--border);border-radius:var(--radius-control);background:var(--bg);overflow-wrap:anywhere}
+.support-message p{white-space:pre-wrap;margin:var(--space-2) 0}
+.support-message.operator{background:var(--brand-soft)}
+.support-message.note{border-style:dashed;background:var(--card)}
+.support-workspace .support-ticket{padding:var(--space-4);margin-block:var(--space-4)}
+.support-workspace [data-inquiry-id].btn{display:block;text-align:left;width:100%;margin-block:var(--space-2)}
+@media(max-width:600px){.support-workspace .review-actions{gap:var(--space-2)}.support-workspace .review-actions .btn{flex:1 1 auto}.support-workspace [aria-label="문의 처리"]{padding-bottom:calc(var(--space-6) + env(safe-area-inset-bottom))}}
