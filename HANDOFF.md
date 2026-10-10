@@ -1,5 +1,15 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-10 전체 클릭 UI·전문가 설정 — 중간 저장
+- 사용자 사용량 2% 남음, Claude Code가 이어서 구현할 수 있도록 인수인계 요청. Claude Code는 별도 작업 중이며 검수자로 가정하지 않는다. 최종 검수는 ChatGPT 총괄.
+- 다음 할 일: **docs/interaction-settings-handoff.md 먼저 읽기**. branch codex/interaction-settings, 시작3922c2c. 기존 고객센터 개발분 포함, main 아님.
+- src/expert-settings.js와 supabase/058_expert_settings.sql 및 _rollback.sql 새 후보 작성. **화면 미연결·신규 기능 미검증·운영 미적용.** 기존 파일 연결 패치는 실패하여 실행되지 않았다.
+- 발견: 노출/상담 설정 분산, 위치만료 ON 표시, 저장 활동지역/검색지역 불일치. DB 두 열 제안은 사용자에게 먼저 설명했고 운영 승인 아님.
+- 최우선 검증: 058 격리 SQL 실행/권한/재실행, 숨김 이후 기존 방문요청 처리 보존, 상태→지역→프로필 UI 연결, 공통 클릭 규칙, 전후·단계별 캡처.
+- 기존 profile-usability-browser baseline 통과(360/390/430/1440). artifacts/profile-final-{editor,map,detail}.png는 기존 화면. 새 후보 검증 근거로 사용 금지.
+- **운영 DB·배포·요금·무료기간·가입정책 변경 금지.** 실제 고객 알림·예약·결제 없음. 기존 미추적 deno.lock 제외. Claude 다른 작업본 확인 안 함.
+- 작업본 work/bohumso-ui-release. 개발 브랜치 https://github.com/jkw2686/bohumso/tree/codex/interaction-settings . 공개/로컬 미리보기 없음.
+
 ## 2026-10-10 고객센터·관리자 통합 검증 — 개발 반영, 운영 미적용
 - 최신 지시 우선: **운영 DB 변경·공개 배포 금지**. 이전 ‘작업후 배포’ 승인을 이번 고객센터에 재사용하지 않는다. 실제 고객 알림·예약·결제 변경과 유료 AI 호출 없음.
 - 작업 브랜치 `codex/support-integration`, 시작점 `65e4d8d`. 실제 작업 폴더는 `work/bohumso-ui-release`. `deno.lock`은 기존 미추적 파일로 제외.
