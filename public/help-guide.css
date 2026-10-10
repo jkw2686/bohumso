@@ -7,3 +7,40 @@
 .home-membership-actions a:focus-visible{outline:var(--focus-width) solid var(--brand);outline-offset:var(--focus-width)}
 @media(max-width:600px){.home-page .home-membership{flex-direction:column;align-items:stretch}.home-membership-actions{flex-direction:row;flex-wrap:wrap}.home-membership-actions a{flex:1;white-space:nowrap}}
 @media(max-width:600px){.service-steps ol{grid-template-columns:1fr;gap:16px}.service-steps li{padding-bottom:16px;border-bottom:1px solid var(--border)}.service-steps li:last-child{border:0;padding-bottom:0}.help-guide section,.service-steps,.home-trust{padding:20px}.guide-actions{flex-direction:column}.help-guide ul,.help-guide ol{padding-left:20px}}
+.claim-help-page .help-guide{padding:var(--space-4) var(--space-4) var(--space-5)}
+.claim-help-page .nav{gap:var(--space-3);flex-wrap:wrap}
+.claim-help-page .guide-intro{margin:var(--space-4) 0 var(--space-5)}
+.claim-help-page .guide-icon{display:grid;place-items:center;width:var(--touch-target);height:var(--touch-target);border-radius:var(--radius-control);background:var(--brand-soft);color:var(--brand)}
+.claim-help-page .guide-icon .ui-icon{width:var(--ux-title);height:var(--ux-title)}
+.claim-help-page .guide-eyebrow{font-size:var(--type-small);font-weight:700;color:var(--brand);margin:var(--space-3) 0 var(--space-2)}
+.claim-help-page .help-guide h1{margin:0 0 var(--space-3);font-size:var(--type-title);line-height:1.4;word-break:keep-all;overflow-wrap:anywhere}
+.claim-help-page .guide-intro>p:last-child{margin:0;color:var(--ink-body);font-size:var(--type-body);line-height:1.7;word-break:keep-all;overflow-wrap:anywhere}
+.claim-help-page .help-guide .guide-steps{margin:var(--space-5) 0;padding:var(--space-4)}
+.claim-help-page .guide-steps ol{padding:0;margin:0;gap:var(--space-4)}
+.claim-help-page .guide-steps li{display:flex;gap:var(--space-3);padding:0;min-width:0;border:0}
+.claim-help-page .guide-steps .guide-step-number{flex:none;font-size:var(--type-label);color:var(--brand);line-height:1.6}
+.claim-help-page .guide-steps h2{font-size:var(--type-body);line-height:1.6;margin:0;color:var(--ink-heading);word-break:keep-all}
+.claim-help-page .guide-steps p{font-size:var(--type-small);margin:var(--space-2) 0 0;line-height:1.65;word-break:keep-all;overflow-wrap:anywhere}
+.claim-help-page .guide-actions{margin:var(--space-5) 0 var(--space-3);gap:var(--space-2)}
+.claim-help-page .guide-actions .btn{flex:1;min-width:0;min-height:var(--touch-target);margin:0;padding:var(--space-3) var(--space-4);font-size:var(--type-label);line-height:1.5;white-space:normal;word-break:keep-all}
+.claim-help-page .guide-actions .btn.ghost{background:var(--brand-soft);border-color:var(--border);color:var(--brand-dark);box-shadow:none}
+.claim-help-page .guide-access{margin:0 0 var(--space-5)}
+.claim-help-page .guide-documents{scroll-margin-top:calc(var(--touch-target)*3);border:1px solid var(--border);border-radius:var(--radius);background:var(--card);padding:var(--space-4)}
+.claim-help-page summary{cursor:pointer;min-height:var(--touch-target);font-weight:700;color:var(--ink-heading);font-size:var(--type-label);line-height:1.7}
+.claim-help-page .guide-documents summary span{margin-left:var(--space-2);font-size:var(--type-small);font-weight:400;color:var(--ink-muted)}
+.claim-help-page .guide-documents[open] summary span{display:none}
+.claim-help-page .guide-document-body h2{font-size:var(--type-section);margin:var(--space-3) 0}
+.claim-help-page .guide-document-body p{font-size:var(--type-label);margin:var(--space-2) 0}
+.claim-help-page .guide-document-body ul{padding-left:var(--space-5);margin:var(--space-4) 0}
+.claim-help-page .guide-document-body li{font-size:var(--type-label);margin:0 0 var(--space-3)}
+.claim-help-page .help-guide .guide-trust{padding:var(--space-4);margin:var(--space-5) 0;background:var(--brand-soft)}
+.claim-help-page .guide-trust h2{font-size:var(--type-body);margin:0 0 var(--space-2)}
+.claim-help-page .guide-trust p{margin:var(--space-2) 0;font-size:var(--type-small)}
+.claim-help-page .guide-situation-choice{margin:var(--space-5) 0;padding:var(--space-4);border:1px solid var(--border);border-radius:var(--radius);background:var(--card)}
+.claim-help-page .guide-situation-choice legend{font-size:var(--type-body);font-weight:700;color:var(--ink-heading)}
+.claim-help-page .guide-situation-choice legend span{font-size:var(--type-small);font-weight:400;color:var(--ink-muted)}
+.claim-help-page .guide-situation-choice label{display:flex;align-items:center;gap:var(--space-3);min-height:var(--touch-target);font-size:var(--type-label);color:var(--ink-body);cursor:pointer}
+.claim-help-page .guide-situation-choice input{width:var(--space-4);height:var(--space-4);margin:0;flex:none;accent-color:var(--brand)}
+.claim-help-page :is(a,summary,input):focus-visible{outline:var(--focus-width) solid var(--brand);outline-offset:var(--focus-width)}
+.claim-help-page .policy-footer{padding:var(--space-4);margin-bottom:var(--space-5)}
+@media(max-width:600px){.claim-help-page .guide-steps li+li{padding-top:var(--space-3);border-top:1px solid var(--border)}.claim-help-page .nav{padding:var(--space-3) var(--space-4)}.claim-help-page .brand-logo{width:calc(var(--touch-target)*4);height:auto}.claim-help-page .member-header{margin-left:auto}.claim-help-page .member-header a{padding:var(--space-2);font-size:var(--type-small)}.claim-help-page .expert-header-entry{display:none}}

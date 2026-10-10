@@ -230,15 +230,17 @@
 
   async function boot() {
     // 홈 상황선택에서 넘어왔으면 안내 칩 표시
-    if (PURPOSE && PURPOSE_LABELS[PURPOSE]) {
+    var situationLabels={death:'사망보험금 확인·청구 도움',cancer:'암 진단 · 보험금 청구 도움',illness:'진단 후 보험금 청구 도움',hospitalization:'입원·수술 보험금 청구 도움',accident:'사고 보험금 확인·청구 도움',claim:'받을 보험금·필요서류 확인',coverage:'가입보험·받을 보험금 확인'};
+    if (Object.hasOwn(situationLabels,SITUATION) || (PURPOSE && PURPOSE_LABELS[PURPOSE])) {
       var chip = document.createElement('div');
       chip.className = 'purpose-chip';
       chip.setAttribute('role', 'note');
-      chip.textContent = ({death:'가족 사망 관련 도움',cancer:'진단 후 보험 확인',hospitalization:'입원·수술 후 보험 확인',accident:'사고 후 보험 확인'}[SITUATION]||PURPOSE_LABELS[PURPOSE])+' · 가까운 곳에서';
+      chip.textContent = (Object.hasOwn(situationLabels,SITUATION)?situationLabels[SITUATION]:PURPOSE_LABELS[PURPOSE])+' · 가까운 전문가를 찾아보세요.';
       var nav = document.querySelector('.map-nav');
       if (nav) nav.after(chip);
     }
-    if (PURPOSE) { var ll = $('listLink'); if (ll) ll.href = '/find.html?purpose=' + encodeURIComponent(PURPOSE); }
+    var guideQuery=new URLSearchParams();if(PURPOSE)guideQuery.set('purpose',PURPOSE);if(SITUATION)guideQuery.set('situation',SITUATION);
+    if (guideQuery.size) { var ll = $('listLink'); if (ll) ll.href = '/find.html?' + guideQuery;var visitLink=document.querySelector('.urgent-map-link');if(visitLink)visitLink.href='/urgent.html?'+guideQuery; }
     SAMPLES = SPOTS.slice(); // 지역 재필터용 원본 샘플 보관
     SPOTS = PLANNED.slice();
     initMap(SEOUL, 12);

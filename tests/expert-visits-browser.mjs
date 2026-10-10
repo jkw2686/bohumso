@@ -24,6 +24,6 @@ try{
  await expect(anon.locator('.urgent-panel').first()).toContainText('등록된 활동지역 전문가:');
  await expect(anon.getByRole('link',{name:'이 지역 전문가 지도 보기'})).toHaveAttribute('href','/map.html?view=experts&region='+encodeURIComponent('경기 분당').replace(/%20/g,'+')+'&situation=claim');
  await expect(anon.getByRole('button',{name:'오픈 알림 신청',exact:true})).toHaveCount(0);await expect(anon.locator('.visit-candidate')).toHaveCount(0);
- await anon.goto('https://fixture.test/help/cancer.html');await expect(anon.getByRole('link',{name:'전문가가 찾아오게 하기'})).toHaveAttribute('href','/urgent.html?situation=cancer');await expect(anon.getByRole('link',{name:'가까운 보험소 방문하기'})).toHaveAttribute('href',/view=offices/);
+ await anon.goto('https://fixture.test/help/cancer.html');await expect(anon.getByRole('link',{name:'암 보험금 도움받기'})).toHaveAttribute('href','/map.html?view=experts&purpose=claim&situation=cancer');await expect(anon.getByRole('link',{name:'필요서류 먼저 확인하기'})).toHaveAttribute('href','#documents');
  console.log('PASS local DB + real UI: anonymous search; opt-in GPS; one expert; private address until customer confirmation; arrival/completion; 4 viewport widths; both guide routes. Simulated GPS/accounts only.');expect(errors).toEqual([]);
 }finally{await b.close();await f.db.close();}

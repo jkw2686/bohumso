@@ -1,4 +1,6 @@
 import {build} from 'esbuild';import {mkdir,readdir,readFile,writeFile} from 'node:fs/promises';
+import {buildHelpGuides} from './build-help-guides.mjs';
+await buildHelpGuides();
 await mkdir('public/assets',{recursive:true});
 await build({entryPoints:{rights:'src/member-rights.js',account:'src/account.js',visit:'src/visit.js',member:'src/member-entry.js',urgent:'src/urgent.js'},bundle:true,format:'esm',platform:'browser',target:['es2020'],outdir:'public/assets',minify:true});
 await build({entryPoints:['src/test-flow/ui.js'],bundle:true,format:'esm',platform:'browser',target:['es2022'],outfile:'artifacts/test-flow.js',minify:true});
