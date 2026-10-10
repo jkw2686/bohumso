@@ -6,6 +6,7 @@
 - 즉시 방문 빈 화면에서 wanted:null로 등록 전문가까지 누락되던 검색값을 빈 문자열로 수정. 등록 전문가 이름과 활동지역 지도 링크 제공. 방문 가능하지 않은 전문가를 즉시 방문 후보로 만들지 않음.
 - public/index.html/simple-ux.css, src/expert-visits.js, tests/home-experts-browser.mjs/expert-visits-browser.mjs. 원복 기준8dd013d, branch codex/home-expert-visibility. 기존 deno.lock 제외, 049/050 포함하지 않음.
 - build/문법/diff PASS. 홈 전문가 320/360/390/1440(동일 기준점·이름 선택·늦은 로드·개별 조회 실패), 기존 팝업6크기/지도4크기, 격리 DB 방문상담 요청→수락→고객확정→도착→완료 및 OFF 전문가 이름/지역 지도 표시 PASS. 실제 SMS/GPS/상담 데이터 변경 없음.
+- bc5e20c → Netlify6ac9c6a731a9180008af6e26 production ready, 2026-10-10 14:01 KST. 운영 홈 이충경 이름 선택→월드에셋라이프·경기 김포시 팝업/사람 아이콘 확인. urgent 김포 빈 화면도 이충경 이름 및 전문가 지도 링크 표시, 클릭 후 지도1명 확인. outputs/lee-home-map-live.png.
 - 다음 작업: 사용자 첨부37093718의 6개 상황별 청구 도움 후속 화면. 이번 노출 수정 배포 확인 후 시작. 기존 public/help 6개 재사용, 홈 디자인/인증/운영 ON/OFF/DB 변경 없음.
 
 ## 2026-10-10 메인 회원가입 영역 복구
