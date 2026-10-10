@@ -7,6 +7,7 @@
 - 지도 진입: /map.html?view=experts&purpose=claim&situation=<기존slug>, coverage는 purpose=coverage. 지도 상단 작은 상황 안내, 목록/방문상담 링크에 situation 보존. 긴 설문/상품추천/지급확정 없음. 상담 신청 인증 유지.
 - 서류 예시는 삼성화재 공식 안내 https://direct.samsungfire.com/claim/PP040202_001.html?pcMode=true (2026-10-10 확인) 기준. 회사별 금액기준/기한 등은 일반화하지 않으며 최종 제출서류는 가입 보험사에 확인하도록 안내. 각 페이지 해당 근거 링크 제공.
 - 검사 완료: build/JS 문법/diff PASS. claim-help-browser 6경로×로그인 전후×320/360/390/768/1440 폭, 서류 펼침·포커스·뒤로가기·상황값·지도 배너/링크·가로넘침·하단 메뉴 검사 PASS. claim 5선택과 기존 보험소 예약의 회원 전후 인증/복귀 경로 PASS. 계정/예약은 로컬 fixture이며 실제 가입·SMS·GPS·상담 요청은 실행하지 않음. 전용 lint/typecheck 스크립트는 없음. artifacts/claim-help-cancer-mobile.png 시각 확인. 기존 미추적 deno.lock 및 049/050 제외.
+- 운영 완료: a0329ce → Netlify6ac9cab016099a00086d2156 production ready, 2026-10-10 14:18 KST. 실제 /help/cancer.html 서류 CTA→펼침/포커스, 도움 CTA→전문가 지도(암 진단 안내 및 purpose/situation 유지) 확인. 기존 대표 로그인 유지. outputs/claim-help-live.png. 원복은 a0329ce revert 후 새 배포, DB 원복 불필요.
 
 ## 2026-10-10 메인 지도 전문가 표시 복구
 - 운영 익명 planner_catalog 조회에서 이충경·경기 김포시·월드에셋라이프 공개 및 scheduled 확인. 실제 현재 GPS가 아닌 공개 활동지역 기준점. 기존 승인/전화/위치 동의/방문 ON 상태 변경 없음.
