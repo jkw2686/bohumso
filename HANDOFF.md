@@ -3,6 +3,7 @@
 ## 2026-10-10 고객센터·관리자 통합 검증 — 개발 반영, 운영 미적용
 - 최신 지시 우선: **운영 DB 변경·공개 배포 금지**. 이전 ‘작업후 배포’ 승인을 이번 고객센터에 재사용하지 않는다. 실제 고객 알림·예약·결제 변경과 유료 AI 호출 없음.
 - 작업 브랜치 `codex/support-integration`, 시작점 `65e4d8d`. 실제 작업 폴더는 `work/bohumso-ui-release`. `deno.lock`은 기존 미추적 파일로 제외.
+- 구현 `69e9e17`을 `origin/codex/support-integration`에 전송 완료. 저장소 https://github.com/jkw2686/bohumso/tree/codex/support-integration . main 변경 없음, `[skip netlify] [skip ci]`. 검수자는 이 개발 브랜치를 읽고 운영에 적용하지 않는다.
 - 실제 공개 고객센터는 member_rights/admin_member_rights이고 AI 미연동. src/test-flow의 FAQ는 로컬 체험용이며 운영 AI로 보고하지 않는다.
 - 구현: `src/support-ui.js`, member-rights, early-operations-admin, early-expert-admin, `public/support.css`와 관련 HTML. 한 문의의 대화 누적, 운영자 인수/해제, 내부 메모 분리, 고객 해결 확인, 오래된 미답변 우선·페이지 이동, 관련 예약 최소정보 확인, 실패/전송 유실/초안 보존. 전문가 심사 장애가 문의함을 막지 않게 분리.
 - SQL 후보 `057_support_conversations.sql`: 비공개 threads/messages/receipts/ai_runs 4개 테이블, 기존 RPC 호환 트리거, support_command. 운영 적용하지 않음. 기존 회원·예약 컬럼/데이터 삭제·타입 변경·Storage 변경 없음. 원복 `057_support_conversations_rollback.sql`은 새 API만 중단하고 대화 기록 보존.

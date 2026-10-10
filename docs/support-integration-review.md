@@ -4,6 +4,8 @@
 
 개발 브랜치 `codex/support-integration`에서 구현·격리 검증했다. **운영 Supabase 변경, 공개 배포, 실제 고객 알림, 실제 예약·결제 변경, 유료 AI 호출은 하지 않았다.**
 
+구현 커밋 [69e9e17](https://github.com/jkw2686/bohumso/commit/69e9e17d7fea4452de23cae91d3f77c0c127846a)을 개발 브랜치에 전송했다. 운영 브랜치는 변경하지 않았다.
+
 현재 공개 고객센터는 `member_rights`와 `admin_member_rights`로 문의 한 건과 마지막 답변을 저장한다. `src/test-flow/support.js`의 자동안내는 별도 로컬 체험용 FAQ이며 운영 AI가 아니다. 이번 작업에도 AI 공급자나 외부 변경 도구를 연결하지 않았다. 화면 개선과 운영 가동 완료를 구분해야 한다.
 
 검증은 기존 정적 HTML·esbuild·Supabase RPC 구조를 유지하고, PostgreSQL 호환 PGlite에 기존 SQL과 057 후보를 적용해 수행했다. 소비자·전문가·관리자 인증은 분리된 가상 세션이다. 브라우저의 모든 요청을 가로채 로컬 파일·격리 DB로 처리하며 나머지는 차단한다. 실제 Supabase 로그인, 원격 Postgres 병렬 부하, 실기기 키보드 검증을 대신하지 않는다.
