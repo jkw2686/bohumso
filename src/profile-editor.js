@@ -7,11 +7,11 @@ export async function renderProfileEditor(client,parent){
  const instantLink=el('a','주활동지역 · 지금 가능 설정 →',parent);instantLink.href='/partner-work.html';
  const details=el('details',undefined,parent);details.className='card';el('summary','설계사 프로필·상담가능 상태 관리',details);
  const form=el('form',undefined,details);
- input(form,'상담가능 시간 안내','hours','text',p.hours||'');input(form,'예약 확정 후 공개할 상담 연락처','phone','tel',p.phone||'');
+ el('p','상담시간 · '+(p.hours||'위의 상담 가능 요일·시간에서 설정해 주세요.'),form);input(form,'예약 확정 후 공개할 상담 연락처','phone','tel',p.phone||'');
  const available=input(form,'상담 요청 받기','available','checkbox');available.checked=!!p.available;
- input(form,'공개 상담 거점 위도 (선택)','latitude','number',p.latitude??'').step='any';input(form,'공개 상담 거점 경도 (선택)','longitude','number',p.longitude??'').step='any';el('p','거점 좌표만 입력하세요. 고객 위치·집 주소는 입력하지 마세요.',form);
- for(const [key,title] of Object.entries(specialties)){const c=input(form,title,'specialty','checkbox');c.value=key;c.checked=p.specialties?.includes(key)||false;}
+ el('p','지도는 설정한 활동지역을 표시합니다. 현재 위치는 공개하지 않습니다.',form);
+ el('p','상담 분야 · '+(p.specialties||[]).map(k=>specialties[k]||k).join(' · '),form);el('p','상담 분야와 요일·시간은 위의 전문가 프로필에서 변경해 주세요.',form);
  el('p',p.verified_at?(p.is_sample?'샘플 프로필 · 운영 검증을 의미하지 않습니다.':'관리자 등록 확인 이력이 있습니다.'):'프로필 저장만으로 상담을 수락할 수 없습니다. 관리자 확인이 필요합니다.',form);
  const button=el('button','프로필 저장',form);button.type='submit';const message=el('p','',details);message.setAttribute('role','status');
- form.onsubmit=async e=>{e.preventDefault();button.disabled=true;try{const d=new FormData(form);const payload={hours:d.get('hours'),phone:d.get('phone'),available:available.checked,specialties:d.getAll('specialty'),latitude:d.get('latitude')?Number(d.get('latitude')):null,longitude:d.get('longitude')?Number(d.get('longitude')):null};const {error}=await client.rpc('consultation_command',{operation:'profile',payload});if(error)throw error;message.textContent='프로필을 저장했습니다. 등록 확인 전에는 목록에 공개되지 않습니다.';}catch{message.textContent='프로필을 저장하지 못했습니다. 입력과 설계사 신청 상태를 확인하세요.';}finally{button.disabled=false;}};
+ form.onsubmit=async e=>{e.preventDefault();button.disabled=true;try{const d=new FormData(form);const payload={hours:p.hours||'',phone:d.get('phone'),available:available.checked,specialties:p.specialties||[],latitude:p.latitude??null,longitude:p.longitude??null};const {error}=await client.rpc('consultation_command',{operation:'profile',payload});if(error)throw error;message.textContent='프로필을 저장했습니다. 등록 확인 전에는 목록에 공개되지 않습니다.';}catch{message.textContent='프로필을 저장하지 못했습니다. 입력과 설계사 신청 상태를 확인하세요.';}finally{button.disabled=false;}};
 }

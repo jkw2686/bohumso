@@ -6,7 +6,7 @@ const purposeLabels={claim:'보험금 청구',coverage:'보장 확인',managemen
 const methodLabels={phone:'전화상담 · 통화 시간 조율',nearby:'전문가가 고객에게 방문 · 장소·시간 조율',scheduled:'전문가와 상담 장소·시간 조율'};
 export function renderOfficeRequest({form,command,refresh,message,selectedOffice=null,selectedPlanner=null,availability=null}){
  const params=requestParams(location.search),region=selectedOffice?.region||selectedPlanner?.region||params.get('region')||'';
- const purpose=Object.hasOwn(purposeLabels,params.get('purpose'))?params.get('purpose'):'claim';
+ const purpose=Object.hasOwn(purposeLabels,params.get('purpose'))?params.get('purpose'):'other';
  const method=selectedOffice?'scheduled':['phone','nearby','scheduled'].includes(params.get('method'))?params.get('method'):'scheduled';
  if(selectedOffice){params.set('office',selectedOffice.id);params.delete('planner');}else if(selectedPlanner){params.set('planner',selectedPlanner.id);params.delete('office');}
  params.set('method',method);params.set('purpose',purpose);
@@ -54,7 +54,7 @@ export function renderOfficeRequest({form,command,refresh,message,selectedOffice
     try{await refresh();}catch{el('p','요청은 접수됐지만 내역을 불러오지 못했어요. 내 예약을 새로고침해 주세요.',form);}return;
    }catch(error){
     const unavailable=['new_appointments_restricted','invalid_partner','office_not_active','visit_not_available','select_planner'].includes(error.message);
-    const messages={new_appointments_restricted:'새 약속은 잠시 제한됩니다. 기존 약속 관리와 운영자 문의는 이용할 수 있어요.',request_limit:'진행 중인 요청을 내 예약에서 먼저 확인해 주세요.',invalid_slot:'이 시간은 이용할 수 없습니다. 다른 시간을 선택해 주세요.',slot_unavailable:'이 시간은 이용할 수 없습니다. 다른 시간을 선택해 주세요.',membership_required:'회원가입을 완료한 후 이용할 수 있습니다.',phone_verification_required:'휴대전화 인증 후 같은 요청을 이어갈 수 있어요.',invalid_partner:'선택한 전문가가 현재 요청을 받을 수 없습니다. 다른 전문가를 직접 선택해 주세요.',office_not_active:'선택한 보험소는 현재 방문예약을 받을 수 없습니다.',visit_not_available:'현재 이 전문가에게 방문을 요청할 수 없습니다.',select_planner:'전문가를 다시 선택해 주세요.',request_key_conflict:'선택 정보가 바뀌었어요. 전문가와 시간을 다시 확인해 주세요.',request_closed:'이미 종료된 요청입니다. 내 예약을 확인하거나 다른 시간을 선택해 주세요.'};
+    const messages={new_appointments_restricted:'새 약속은 잠시 제한됩니다. 기존 약속 관리와 운영자 문의는 이용할 수 있어요.',request_limit:'진행 중인 요청을 내 예약에서 먼저 확인해 주세요.',invalid_slot:'이 시간은 이용할 수 없습니다. 다른 시간을 선택해 주세요.',reservation_slot_taken:'이 시간은 이용할 수 없습니다. 다른 시간을 선택해 주세요.',slot_unavailable:'이 시간은 이용할 수 없습니다. 다른 시간을 선택해 주세요.',membership_required:'회원가입을 완료한 후 이용할 수 있습니다.',phone_verification_required:'휴대전화 인증 후 같은 요청을 이어갈 수 있어요.',invalid_partner:'선택한 전문가가 현재 요청을 받을 수 없습니다. 다른 전문가를 직접 선택해 주세요.',office_not_active:'선택한 보험소는 현재 방문예약을 받을 수 없습니다.',visit_not_available:'현재 이 전문가에게 방문을 요청할 수 없습니다.',select_planner:'전문가를 다시 선택해 주세요.',request_key_conflict:'선택 정보가 바뀌었어요. 전문가와 시간을 다시 확인해 주세요.',request_closed:'이미 종료된 요청입니다. 내 예약을 확인하거나 다른 시간을 선택해 주세요.'};
     notice.textContent=messages[error.message]||(error.code==='23505'?'이미 예약된 시간입니다. 다른 시간을 선택해 주세요.':'연결을 확인한 뒤 다시 시도해 주세요. 같은 요청은 중복 접수되지 않습니다.');
     recovery.hidden=!unavailable;
     if(error.message==='phone_verification_required'){recovery.hidden=false;const a=el('a','휴대전화 인증 후 이어가기',recovery);a.href='/phone-verification.html?next='+encodeURIComponent(location.pathname+'?'+params);}
