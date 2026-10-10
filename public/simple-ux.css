@@ -58,7 +58,7 @@ body.has-bottom-nav .simple-home{padding-bottom:24px}body.has-bottom-nav.custome
 .map-page .card-sheet h2{font-size:var(--type-office-title);margin:0 0 var(--space-2)}
 .map-page .card-sheet .office-opening-section .btn{margin:0}
 #homeMap .leaflet-control-attribution{font-size:9px;line-height:1.4;max-width:calc(100% - 16px)}
-.home-expert-pin{display:grid;place-items:center;box-sizing:border-box;border:2px solid var(--brand-dark);border-radius:var(--radius);background:var(--card);color:var(--brand-dark);box-shadow:var(--shadow)}
+.home-expert-pin:not(.expert-map-marker){display:grid;place-items:center;box-sizing:border-box;border:2px solid var(--brand-dark);border-radius:var(--radius);background:var(--card);color:var(--brand-dark);box-shadow:var(--shadow)}
 .home-expert-pin .ui-icon{width:var(--space-5);height:var(--space-5)}
 .home-experts{padding:var(--space-3) var(--space-4);border-top:1px solid var(--border)}
 .home-experts>p{margin:0 0 var(--space-2);font-size:var(--type-small);color:var(--ink-muted)}

@@ -6,16 +6,16 @@
     function day(value){return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(value);}
     if(!office.expert)add('h2',office.name);
     if(office.expert){
-      var content=add('div');content.className='expert-card-content';window.BohumsoProfile.identity(content,office);
+      var content=add('div');content.className='expert-card-content';window.BohumsoProfile.identity(content,office,{interactive:true,summary:true,context:office});
       add('p',office.region+' · 공개 활동지역 기준',content);add('p','현재 GPS 위치가 아닙니다.',content);
       var vq=new URLSearchParams({planner:office.id,region:office.region,purpose:office.purpose||'claim',situation:office.situation||''});
       if(office.available)add('p','상담 요청 가능 · 통화 후 일정 조율',content);
       else add('p',office.newRequestsRestricted?'현재 새 상담 요청을 받을 수 없습니다.':'현재 상담 요청을 받지 않습니다. 다른 전문가나 보험소를 확인해 주세요.',content);
       var actions=add('div');actions.className='expert-card-actions';
+      var profile=window.BohumsoProfile.profileLink(actions,office,office,'프로필 보기');profile.classList.add('btn','ghost');
       if(office.available){var request=add('a','상담 요청',actions);request.className='btn';request.href='/requests.html?'+vq+'&method=phone';}
-      (office.offices||[]).forEach(function(o){if(o.available){var a=add('a','보험소 방문예약 · '+o.name,actions);a.className='btn ghost';a.href='/requests.html?'+new URLSearchParams({office:o.id,region:o.region,purpose:office.purpose||'claim',situation:office.situation||'',method:'scheduled'});}else add('p',o.name+' · 방문예약 중지',content);});
+      (office.offices||[]).forEach(function(o){if(o.available){var a=add('a','보험소 방문예약 · '+o.name,actions);a.className='btn ghost expert-office-action';a.href='/requests.html?'+new URLSearchParams({office:o.id,region:o.region,purpose:office.purpose||'claim',situation:office.situation||'',method:'scheduled'});}else add('p',o.name+' · 방문예약 중지',content);});
       var visit=add('a','이 전문가의 방문 가능 여부',content);visit.className='expert-visit-link';visit.href='/urgent.html?'+vq;
-      var profile=add('a','상세 프로필 보기',content);profile.className='expert-visit-link';profile.href='/find.html?'+vq+'#profile-'+encodeURIComponent(office.id);
       return;
     }
     if(office.planned){

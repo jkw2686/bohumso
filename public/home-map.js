@@ -17,7 +17,7 @@
   function expertContent(s){
     var content=document.createElement('div');content.className='office-slot';
     function add(tag,text){var el=document.createElement(tag);el.textContent=text;content.appendChild(el);return el;}
-    window.BohumsoProfile.identity(content,s);add('p',s.region);
+    window.BohumsoProfile.identity(content,s,{interactive:true,summary:true});window.BohumsoProfile.profileLink(content,s,{},'프로필 보기');add('p',s.region);
     add('p','공개 활동지역입니다. 현재 위치나 방문할 사무실 주소가 아닙니다.');
     var link=add('a','전문가 지도에서 보기');link.className='btn';link.href=expertURL(s);
     return content;
@@ -28,13 +28,15 @@
     spots.forEach(function(s){var key=s.latitude.toFixed(4)+','+s.longitude.toFixed(4);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(s);});
     groups.forEach(function(group){group.forEach(function(s,index){
       var columns=Math.min(group.length,4),rows=Math.ceil(group.length/columns);
-      var x=(index%columns-(columns-1)/2)*44,y=(Math.floor(index/columns)-(rows-1)/2)*44;
-      var size=s.expert?36:30,content;
+      var x=(index%columns-(columns-1)/2)*56,y=(Math.floor(index/columns)-(rows-1)/2)*56;
+      var size=s.expert?48:30,content;
       if(s.expert)content=expertContent(s);else{content=document.createElement('div');window.renderOfficeSlot(content,s);}
+      var icon=s.expert?window.BohumsoProfile.markerIcon(s):L.divIcon({className:'home-office-pin',html:window.uiIcon('home'),iconSize:[size,size]});
+      icon.options.iconAnchor=[size/2-x,size/2-y];icon.options.popupAnchor=[x,y-size/2];if(s.expert)icon.options.className+=' home-expert-pin';
       var marker=L.marker([s.latitude,s.longitude],{
         title:s.name+(s.expert?' · 전문가 활동지역':s.planned?'':' · 운영 중'),
         zIndexOffset:s.expert?100:0,
-        icon:L.divIcon({className:s.expert?'home-expert-pin':'home-office-pin',html:window.uiIcon(s.expert?'person':'home'),iconSize:[size,size],iconAnchor:[size/2-x,size/2-y],popupAnchor:[x,y-size/2]})
+        icon:icon
       }).addTo(map).bindPopup(content,{maxWidth:280,minWidth:220,autoPanPaddingTopLeft:[16,16],autoPanPaddingBottomRight:[16,24]});
       if(s.expert)expertMarkers.set(s.id,marker);markers.push(marker);
     });});
@@ -59,11 +61,12 @@
     if(expertLoading||!window.bohumsoCatalog)return;expertLoading=true;
     try{
       var catalog=await window.bohumsoCatalog('','');
-      experts=(catalog.planners||[]).filter(function(p){return !p.is_sample;}).map(function(p){return {id:p.id,name:p.name,region:p.region,organization:p.organization,photo_url:p.photo_url,biography:p.biography,insurance_types:p.insurance_types,help_tasks:p.help_tasks,offices:p.offices,latitude:p.area_latitude,longitude:p.area_longitude,expert:true};});
-      drawMarkers();renderExperts();
+      experts=(catalog.planners||[]).filter(function(p){return !p.is_sample;}).map(function(p){return {id:p.id,name:p.name,region:p.region,organization:p.organization,photo_url:p.photo_url,biography:p.biography,insurance_types:p.insurance_types,help_tasks:p.help_tasks,offices:p.offices,available:!!p.available,newRequestsRestricted:!!p.newRequestsRestricted,latitude:p.area_latitude,longitude:p.area_longitude,expert:true};});
+      var openId;expertMarkers.forEach(function(marker,id){if(marker.isPopupOpen())openId=id;});drawMarkers();renderExperts();if(openId)expertMarkers.get(openId)?.openPopup();window.BohumsoProfile.refreshDetail(experts);
     }catch{}finally{expertLoading=false;}
   }
   function loadPublicMap(){actualOffices();publicExperts();}
+  window.BohumsoProfile.onChange(publicExperts);
   drawMarkers();window.addEventListener('bohumso-member-ready',loadPublicMap,{once:true});loadPublicMap();
   var button=document.getElementById('homeLocate'),notice=document.getElementById('homeLocationStatus'),me,circle;
   function locate(){

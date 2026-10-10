@@ -42,14 +42,14 @@
   // 받침 유무로 은/는 선택 (받침 있으면 '은', 없으면 '는')
   function eun(word) { var c = word ? word.charCodeAt(word.length - 1) : 0; return (c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0) ? '은' : '는'; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
-  function thumbHtml(s, cls) { return window.BohumsoProfile?.photoURL(s.photo)&&!s.office&&!s.planned ? '<img class="' + cls + ' thumb-img" src="' + esc(s.photo) + '" alt="" loading="lazy">' : '<span class="' + cls + '" aria-hidden="true">' + (window.uiIcon?.(s.office||s.planned?'home':'person')||esc(s.name.charAt(0))) + '</span>'; }
+  function thumbHtml(s, cls) { return '<span class="' + cls + '" aria-hidden="true">' + (window.uiIcon?.(s.office||s.planned?'home':'person')||esc(s.name.charAt(0))) + '</span>'; }
   function availHtml(s) { return (s.availability && AVAIL[s.availability]) ? '<span class="avail avail-' + s.availability + '">' + AVAIL[s.availability] + '</span>' : ''; }
   function spotDist(s) { if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) return Infinity; var ref = userLoc || SEOUL; return haversine(ref, [s.lat, s.lng]); }
   function distLabel(s) { var d = spotDist(s); return isFinite(d) ? distText(d) : '위치 미등록'; }
 
-  function pinIcon(me,office,planned) {
+  function pinIcon(me,office,planned,profile) {
     if(office)return L.divIcon({html:'<span class="planned-pin'+(planned?' is-planned':'')+'">'+(window.uiIcon?.('home')||'')+'</span>',className:'',iconSize:[32,32],iconAnchor:[16,16]});
-    if(!me)return L.divIcon({html:'<span class="professional-pin">'+(window.uiIcon?.('person')||'')+'</span>',className:'',iconSize:[36,36],iconAnchor:[18,18]});
+    if(!me)return window.BohumsoProfile.markerIcon({photo_url:profile?.photo});
     // 색은 토큰으로. presentation attribute(fill=)는 var()를 못 받으므로 style로 지정한다.
     var color = me ? 'var(--accent)' : 'var(--brand)';
     var html = '<svg class="' + (me ? 'pin-me' : 'pin-marker') + '" width="34" height="42" viewBox="0 0 34 42" xmlns="http://www.w3.org/2000/svg">' +
@@ -78,9 +78,9 @@
     visibleSpots.forEach(function (s) {
       if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) return; // 좌표 없으면 목록에만 표시
       coords.push([s.lat, s.lng]);
-      var icon=pinIcon(false,s.planned||s.office,s.planned), group=groups[s.lat.toFixed(4)+','+s.lng.toFixed(4)];
+      var icon=pinIcon(false,s.planned||s.office,s.planned,s), group=groups[s.lat.toFixed(4)+','+s.lng.toFixed(4)];
       // Separate shared reference points visually without changing stored coordinates or distance calculations.
-      if(group.length>1){var index=group.indexOf(s),columns=Math.min(group.length,4),row=Math.floor(index/columns),rowCount=Math.ceil(group.length/columns);icon.options.iconAnchor=[icon.options.iconAnchor[0]-(index%columns-(Math.min(columns,group.length-row*columns)-1)/2)*44,icon.options.iconAnchor[1]-(row-(rowCount-1)/2)*44];}
+      if(group.length>1){var index=group.indexOf(s),columns=Math.min(group.length,4),row=Math.floor(index/columns),rowCount=Math.ceil(group.length/columns);icon.options.iconAnchor=[icon.options.iconAnchor[0]-(index%columns-(Math.min(columns,group.length-row*columns)-1)/2)*56,icon.options.iconAnchor[1]-(row-(rowCount-1)/2)*56];}
       s._marker = L.marker([s.lat, s.lng], { icon: icon, title: s.name+(s.planned?' · 개설 예정 보험소':s.office?' · 보험소':' · 전문가 활동지역') }).addTo(map);
       s._marker.on('click', function () { openCard(s); });
       s._marker.getElement().addEventListener('keydown',function(event){if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();openCard(s);}});
@@ -92,7 +92,8 @@
   }
 
   // 지역 선택 등으로 SPOTS를 다시 불러온다(실데이터 area 필터, 없으면 샘플을 지역으로 필터).
-  async function reloadSpots(area) {
+  async function reloadSpots(area,preserve) {
+    var previous=preserve&&map?{center:map.getCenter(),zoom:map.getZoom(),id:current?.id}:null;
     var revision=++spotsRevision;
     selectedArea = area || '';
     var real = await loadReal(selectedArea);
@@ -102,6 +103,7 @@
     SPOTS = SPOTS.concat(PLANNED.filter(function(s){return !selectedArea || s.region.indexOf(selectedArea)===0;}));
     if (map) drawMarkers();
     renderList();
+    if(previous){map.setView(previous.center,previous.zoom,{animate:false});var next=SPOTS.find(function(s){return s.id===previous.id;});if(next&&!$('cardSheet').hidden)openCard(next,true);window.BohumsoProfile.refreshDetail(SPOTS.filter(function(s){return !s.office&&!s.planned;}).map(function(s){return {...s,photo_url:s.photo,organization:s.job};}));}
   }
 
   function setMe(loc,accuracy,approximate) {
@@ -145,15 +147,16 @@
         '</span>';
       b.addEventListener('click', function () { if (map && Number.isFinite(s.lat) && Number.isFinite(s.lng)) map.setView([s.lat, s.lng], 15); openCard(s); });
       body.appendChild(b);
+      if(!s.office&&!s.planned){var thumbnail=b.querySelector('.thumb'),avatar=window.BohumsoProfile.avatar(null,{photo_url:s.photo});avatar.classList.add('thumb');thumbnail.replaceWith(avatar);}
     });
   }
 
   /* 마커/목록 탭 → 하단 카드(요약). 다른 마커 탭하면 내용만 교체. */
-  function openCard(s) {
+  function openCard(s,preserveView) {
     if(!s.planned&&!s.office)window.bohumsoTrack?.('expert_viewed');
-    current = s;var context=new URLSearchParams(location.search);if(!s.planned&&!s.office)context.set('planner',s.id);else context.delete('planner');history.replaceState(null,'',location.pathname+'?'+context);
+    current = s;spotMarkers.forEach(function(m){m.getElement()?.classList.toggle('is-selected',m===s._marker);m.setZIndexOffset(m===s._marker?900:0);});var context=new URLSearchParams(location.search);if(!s.planned&&!s.office)context.set('planner',s.id);else context.delete('planner');history.replaceState(history.state,'',location.pathname+'?'+context);
     window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned&&!s.office,purpose:PURPOSE,situation:SITUATION,newRequestsRestricted:s.newRequestsRestricted,available:s.available,organization:s.job,specialty:s.specialty,photo_url:s.photo,biography:s.biography,insurance_types:s.insurance_types,help_tasks:s.help_tasks,offices:s.offices});
-    $('cardSheet').classList.toggle('expert-card-sheet',!s.planned&&!s.office);showCard();
+    $('cardSheet').classList.toggle('expert-card-sheet',!s.planned&&!s.office);if(!preserveView)showCard();
   }
   function showCard(){
     var sheet=$('cardSheet');cardOpener=document.activeElement;
@@ -247,6 +250,8 @@
     renderList();
     reloadSpots(new URLSearchParams(location.search).get('region')||'').then(function(){var selected=new URLSearchParams(location.search).get('planner');var spot=SPOTS.find(function(s){return s.id===selected&&!s.planned&&!s.office;});if(spot)openCard(spot);});
 
+    window.BohumsoProfile.onChange(function(){reloadSpots(selectedArea,true);});
+
     // 정렬 탭
     document.querySelectorAll('.sort-tabs button').forEach(function (t) {
       t.addEventListener('click', function () {
@@ -262,7 +267,7 @@
     $('cardGrip').addEventListener('click',function(){showList();$('listGrip').focus();});
     $('cardClose').addEventListener('click',closeCard);
     $('cardScrim').addEventListener('click',closeCard);
-    document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(!$('cardSheet').hidden)closeCard();else hideList();}});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!document.querySelector('dialog[open]')){if(!$('cardSheet').hidden)closeCard();else hideList();}});
 
     // 현재 위치
     $('locateFab').addEventListener('click', locate);
