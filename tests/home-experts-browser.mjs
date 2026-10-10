@@ -30,13 +30,13 @@ try{
   await expect(page.locator('.home-expert-pin')).toHaveCount(1);
   await expect(page.locator('#homeExpertList .btn')).toHaveCount(2);
   await expect(page.getByText('예시 전문가',{exact:true})).toHaveCount(0);
-  await expect(page.locator('#homeExpertList a')).toHaveAttribute('href','/map.html?view=experts&region='+encodeURIComponent('경기 하남시'));
+  await expect(page.locator('#homeExpertList a')).toHaveAttribute('href','/map.html?view=experts&region='+encodeURIComponent('경기 하남시')+'&planner=no-point');
   await page.getByRole('button',{name:'김포 전문가 · 경기 김포시 활동지역 보기',exact:true}).press('Enter');
   await expect(page.locator('#homeMap .home-expert-pin')).toBeFocused();
   const popup=page.locator('#homeMap .leaflet-popup');
-  await expect(popup).toContainText('김포 전문가');await expect(popup).toContainText('공개 소속 · 경기 김포시');
+  await expect(popup).toContainText('김포 전문가');await expect(popup).toContainText('공개 소속');await expect(popup).toContainText('경기 김포시');
   await expect(popup).toContainText('현재 위치나 방문할 사무실 주소가 아닙니다.');
-  await expect(popup.getByRole('link',{name:'전문가 지도에서 보기'})).toHaveAttribute('href','/map.html?view=experts&region='+encodeURIComponent('경기 김포시'));
+  await expect(popup.getByRole('link',{name:'전문가 지도에서 보기'})).toHaveAttribute('href','/map.html?view=experts&region='+encodeURIComponent('경기 김포시')+'&planner=expert');
   const group=page.locator('#homeMap .leaflet-marker-icon').filter({has:page.locator('svg')});
   const boxes=await group.evaluateAll(els=>els.filter(e=>['김포보험소','공개 보험소 · 운영 중','김포 전문가 · 전문가 활동지역'].includes(e.title)).map(e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom};}));
   expect(boxes).toHaveLength(3);

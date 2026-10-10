@@ -43,4 +43,5 @@
 .claim-help-page .guide-situation-choice input{width:var(--space-4);height:var(--space-4);margin:0;flex:none;accent-color:var(--brand)}
 .claim-help-page :is(a,summary,input):focus-visible{outline:var(--focus-width) solid var(--brand);outline-offset:var(--focus-width)}
 .claim-help-page .policy-footer{padding:var(--space-4);margin-bottom:var(--space-5)}
+.claim-help-page .guide-reassurance{padding:var(--space-3) var(--space-4);background:var(--brand-soft);border-radius:var(--radius-control);font-size:var(--type-label);color:var(--ink-heading)}
 @media(max-width:600px){.claim-help-page .guide-steps li+li{padding-top:var(--space-3);border-top:1px solid var(--border)}.claim-help-page .nav{padding:var(--space-3) var(--space-4)}.claim-help-page .brand-logo{width:calc(var(--touch-target)*4);height:auto}.claim-help-page .member-header{margin-left:auto}.claim-help-page .member-header a{padding:var(--space-2);font-size:var(--type-small)}.claim-help-page .expert-header-entry{display:none}}

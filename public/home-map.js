@@ -13,11 +13,11 @@
   var offices=[],experts=[],markers=[],expertMarkers=new Map(),officeLoading=false,expertLoading=false;
   var expertPanel=document.getElementById('homeExperts'),expertList=document.getElementById('homeExpertList');
   function hasPoint(s){return Number.isFinite(s.latitude)&&Number.isFinite(s.longitude);}
-  function expertURL(s){return '/map.html?view=experts&region='+encodeURIComponent(s.region||'');}
+  function expertURL(s){return '/map.html?view=experts&region='+encodeURIComponent(s.region||'')+'&planner='+encodeURIComponent(s.id);}
   function expertContent(s){
     var content=document.createElement('div');content.className='office-slot';
     function add(tag,text){var el=document.createElement(tag);el.textContent=text;content.appendChild(el);return el;}
-    add('h2',s.name);add('p',[s.organization,s.region].filter(Boolean).join(' · '));
+    window.BohumsoProfile.identity(content,s);add('p',s.region);
     add('p','공개 활동지역입니다. 현재 위치나 방문할 사무실 주소가 아닙니다.');
     var link=add('a','전문가 지도에서 보기');link.className='btn';link.href=expertURL(s);
     return content;
@@ -59,7 +59,7 @@
     if(expertLoading||!window.bohumsoCatalog)return;expertLoading=true;
     try{
       var catalog=await window.bohumsoCatalog('','');
-      experts=(catalog.planners||[]).filter(function(p){return !p.is_sample;}).map(function(p){return {id:p.id,name:p.name,region:p.region,organization:p.organization,latitude:p.area_latitude,longitude:p.area_longitude,expert:true};});
+      experts=(catalog.planners||[]).filter(function(p){return !p.is_sample;}).map(function(p){return {id:p.id,name:p.name,region:p.region,organization:p.organization,photo_url:p.photo_url,biography:p.biography,insurance_types:p.insurance_types,help_tasks:p.help_tasks,offices:p.offices,latitude:p.area_latitude,longitude:p.area_longitude,expert:true};});
       drawMarkers();renderExperts();
     }catch{}finally{expertLoading=false;}
   }

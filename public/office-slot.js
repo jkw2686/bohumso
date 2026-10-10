@@ -1,11 +1,22 @@
 (function(){
   'use strict';
   window.renderOfficeSlot=function(host,office){
-    host.replaceChildren();host.classList.add('office-slot');host.classList.toggle('office-slot-planned',!!office.planned);
-    function add(tag,text){var node=document.createElement(tag);if(text)node.textContent=text;host.appendChild(node);return node;}
+    host.replaceChildren();host.classList.add('office-slot');host.classList.toggle('office-slot-planned',!!office.planned);host.classList.toggle('expert-card-body',!!office.expert);
+    function add(tag,text,parent){var node=document.createElement(tag);if(text)node.textContent=text;(parent||host).appendChild(node);return node;}
     function day(value){return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(value);}
-    add('h2',office.name);
-    if(office.expert){add('p','지도는 공개 활동지역을 나타내며, 전문가의 현재 위치나 방문할 사무실 주소가 아닙니다.');var visit=add('a','이 지역 방문 가능한 전문가 찾기');visit.className='btn';var vq=new URLSearchParams({region:office.region,purpose:office.purpose||'claim',situation:office.situation||''});visit.href='/urgent.html?'+vq;return;}
+    if(!office.expert)add('h2',office.name);
+    if(office.expert){
+      var content=add('div');content.className='expert-card-content';window.BohumsoProfile.identity(content,office);
+      add('p',office.region+' · 공개 활동지역 기준',content);add('p','현재 GPS 위치가 아닙니다.',content);
+      var vq=new URLSearchParams({planner:office.id,region:office.region,purpose:office.purpose||'claim',situation:office.situation||''});
+      if(office.available)add('p','상담 요청 가능 · 통화 후 일정 조율',content);
+      else add('p','현재 상담 요청을 받지 않습니다. 다른 전문가나 보험소를 확인해 주세요.',content);
+      var actions=add('div');actions.className='expert-card-actions';
+      if(office.available){var request=add('a','이 전문가에게 도움 요청',actions);request.className='btn';request.href='/requests.html?'+vq+'&method=phone';}
+      (office.offices||[]).forEach(function(o){if(o.available){var a=add('a','보험소 방문예약 · '+o.name,actions);a.className='btn ghost';a.href='/requests.html?'+new URLSearchParams({office:o.id,region:o.region,purpose:office.purpose||'claim',situation:office.situation||'',method:'scheduled'});}else add('p',o.name+' · 방문예약 중지',content);});
+      var visit=add('a','이 전문가의 방문 가능 여부',content);visit.className='expert-visit-link';visit.href='/urgent.html?'+vq;
+      return;
+    }
     if(office.planned){
       var options=add('div');options.className='office-opening-options';
       function section(title,description){var block=document.createElement('section');options.appendChild(block);block.className='office-opening-section';if(title){var heading=document.createElement('h3');heading.textContent=title;block.appendChild(heading);}if(description){var text=document.createElement('p');text.textContent=description;block.appendChild(text);}return block;}

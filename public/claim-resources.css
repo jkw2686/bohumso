@@ -1,0 +1,32 @@
+.resources-page .container{max-width:calc(var(--dialog-width)*2 + var(--space-5));padding:var(--space-5) var(--space-4)}
+.resources-page .nav{gap:var(--space-3);flex-wrap:wrap;padding:var(--space-3) var(--space-4)}
+.resources-page .brand-logo{max-width:calc(var(--touch-target)*4);height:auto}
+.resources-page h1{font-size:var(--type-title);margin:var(--space-2) 0 var(--space-3)}
+.resources-page h2{font-size:var(--type-section);margin:0 0 var(--space-3)}
+.resources-page h3{font-size:var(--type-body);margin:0 0 var(--space-2)}
+.resources-page p,.resources-page li,.resources-page dd{line-height:1.7;word-break:keep-all;overflow-wrap:anywhere;color:var(--ink-body)}
+.resources-page a{color:var(--brand-dark)}
+.resources-page .card{padding:var(--space-4);margin:var(--space-4) 0;border-radius:var(--radius);min-width:0}
+.resources-page .resource-eyebrow{font-size:var(--type-small);font-weight:700;color:var(--brand-dark)}
+.resource-filters,.resource-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4)}
+.resource-filters .field{display:flex;flex-direction:column;gap:var(--space-2);min-width:0;font-size:var(--type-label)}
+.resource-filters input,.resource-filters select,.resource-preparation textarea{width:100%;box-sizing:border-box;min-width:0;font:inherit;color:var(--ink-body);background:var(--card);border:1px solid var(--border);border-radius:var(--radius-control);padding:var(--space-3);min-height:var(--touch-target)}
+.resource-grid>.card{margin:0}
+.resources-page .resource-note,.resources-page .resource-meta{font-size:var(--type-small);color:var(--ink-muted)}
+.resource-actions{display:flex;gap:var(--space-2);flex-wrap:wrap;margin:var(--space-3) 0}
+.resources-page .btn{display:inline-flex;align-items:center;justify-content:center;min-height:var(--touch-target);padding:var(--space-3) var(--space-4);font-size:var(--type-label);line-height:1.5;white-space:normal;text-decoration:none;margin:0;color:var(--card)}
+.resources-page .btn.ghost{color:var(--brand-dark);background:var(--brand-soft);box-shadow:none}
+.resources-page summary{min-height:var(--touch-target);display:flex;align-items:center;cursor:pointer;color:var(--brand-dark);font-size:var(--type-label)}
+.resources-page details[open]>summary{font-weight:700}
+.resource-checklist{margin:var(--space-3) 0;padding:0;border:0}
+.resource-checklist legend{font-size:var(--type-label);font-weight:700;margin-bottom:var(--space-2)}
+.resource-checklist label,.resource-choices label{display:flex;align-items:flex-start;gap:var(--space-2);padding:var(--space-2) 0;min-height:var(--touch-target);box-sizing:border-box;font-size:var(--type-label);line-height:1.65;color:var(--ink-body)}
+.resource-checklist input,.resource-choices input{flex:none;width:var(--space-4);height:var(--space-4);margin:var(--space-2) 0 0;accent-color:var(--brand)}
+.resource-choices{display:flex;gap:var(--space-4);flex-wrap:wrap}
+.resource-choices .field{display:flex;flex-direction:column;flex:1;min-width:0}.resource-choices select{width:100%;min-width:0;min-height:var(--touch-target);font:inherit;background:var(--card);color:var(--ink-body);border:1px solid var(--border);border-radius:var(--radius-control);padding:var(--space-2)}
+.resources-page #moreResources{margin-top:var(--space-4)}.resources-page [hidden]{display:none!important}
+.resources-page :is(#compareTitle,#preparationTitle){scroll-margin-top:calc(var(--touch-target)*2)}
+.resources-page dl{margin:var(--space-3) 0}.resources-page dt{font-weight:700;font-size:var(--type-label);margin-top:var(--space-3)}.resources-page dd{margin:var(--space-2) 0;font-size:var(--type-label)}
+.resource-preparation textarea{resize:vertical;line-height:1.7}.resource-preparation .field{display:block}
+.resources-page :is(a,button,input,select,textarea,summary):focus-visible{outline:var(--focus-width) solid var(--brand);outline-offset:var(--focus-width)}
+@media(max-width:600px){.resource-filters,.resource-grid{grid-template-columns:1fr}.resource-actions .btn{flex:1}.resources-page .nav>a:last-child{font-size:var(--type-small)}}

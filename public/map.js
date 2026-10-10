@@ -18,7 +18,7 @@
   // 지인 테스트용 샘플 거점(실데이터 아님, 삭제 가능). 실제 목록은 추후 planner_catalog 연동.
   var SPOTS = [];
   var PLANNED = (window.COVERAGE_AREAS || []).map(function(o,i){return {id:'planned-'+i,name:officeName(o.name),job:'오픈 예정 보험소',specialty:'지역 상담 거점',region:o.region+' '+o.name,lat:o.lat,lng:o.lng,rating:0,planned:true};});
-  var AVAIL = { now: '지금 상담 가능', today: '오늘 상담 가능', scheduled: '예약 상담', unavailable: '상담 준비 중' };
+  var AVAIL = { now: '지금 상담 가능', today: '오늘 상담 가능', scheduled: '예약 상담', unavailable: '상담 요청 중지' };
   // 전문분야 코드→한글 (consultation-ui.js와 동일)
   var SPECIALTY = { death: '사망보험금', illness: '암·질병', medical: '실손보험', claim: '보험금 청구', accident: '자동차·상해', life: '생명보험', nonlife: '손해보험', corporate: '법인보험', remodel: '보험 리모델링', management: '기존 보험 관리', coverage: '보장 점검', new: '신규 가입', other: '기타 문의' };
   // 지도 방식 → 기존 요청 흐름의 method 값 매핑(전화 통화 / 바로 만나기 / 시간 예약)
@@ -42,7 +42,7 @@
   // 받침 유무로 은/는 선택 (받침 있으면 '은', 없으면 '는')
   function eun(word) { var c = word ? word.charCodeAt(word.length - 1) : 0; return (c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0) ? '은' : '는'; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
-  function thumbHtml(s, cls) { return s.photo&&!s.office&&!s.planned ? '<img class="' + cls + ' thumb-img" src="' + esc(s.photo) + '" alt="" loading="lazy">' : '<span class="' + cls + '" aria-hidden="true">' + (window.uiIcon?.(s.office||s.planned?'home':'person')||esc(s.name.charAt(0))) + '</span>'; }
+  function thumbHtml(s, cls) { return window.BohumsoProfile?.photoURL(s.photo)&&!s.office&&!s.planned ? '<img class="' + cls + ' thumb-img" src="' + esc(s.photo) + '" alt="" loading="lazy">' : '<span class="' + cls + '" aria-hidden="true">' + (window.uiIcon?.(s.office||s.planned?'home':'person')||esc(s.name.charAt(0))) + '</span>'; }
   function availHtml(s) { return (s.availability && AVAIL[s.availability]) ? '<span class="avail avail-' + s.availability + '">' + AVAIL[s.availability] + '</span>' : ''; }
   function spotDist(s) { if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) return Infinity; var ref = userLoc || SEOUL; return haversine(ref, [s.lat, s.lng]); }
   function distLabel(s) { var d = spotDist(s); return isFinite(d) ? distText(d) : '위치 미등록'; }
@@ -125,7 +125,7 @@
 
     var arr = sortedSpots(),sheet=$('listSheet'),areaLink=$('areaRequest');
     sheet.classList.toggle('is-empty',!arr.length);
-    areaLink.hidden=showOffices;areaLink.href='/urgent.html?situation='+encodeURIComponent(SITUATION||'claim')+'&region='+encodeURIComponent(selectedArea||'');areaLink.textContent='이 지역 방문 가능한 전문가 찾기';
+    areaLink.hidden=showOffices;areaLink.href='/urgent.html?purpose='+encodeURIComponent(PURPOSE||'claim')+'&situation='+encodeURIComponent(SITUATION||'claim')+'&region='+encodeURIComponent(selectedArea||'');areaLink.textContent='이 지역 방문 가능한 전문가 찾기';
     if (!arr.length) {
       $('listCount').textContent = showOffices?'이 지역에 등록된 보험소가 없습니다.':'이 지역에 등록된 전문가가 없습니다.';
       return;
@@ -141,7 +141,7 @@
           '<span class="sub">' + esc(String(s.specialty||s.job||'').split(/[·,]/).slice(0,2).join(' · ')) + '</span>' +
           '<span class="meta">' + (s.planned ? '오픈 예정 · '+esc(s.region) : esc(s.region)) + (userLoc?' · '+(!s.office&&!s.planned?'활동지역까지 ':'')+distLabel(s):'') + '</span>' +
           availHtml(s) +
-          '<span class="spot-action">'+(s.planned?'거점 안내':s.office?'방문 예약':'방문상담 알아보기')+' →</span>' +
+          '<span class="spot-action">'+(s.planned?'거점 안내':s.office?'방문 예약':'전문가 선택')+' →</span>' +
         '</span>';
       b.addEventListener('click', function () { if (map && Number.isFinite(s.lat) && Number.isFinite(s.lng)) map.setView([s.lat, s.lng], 15); openCard(s); });
       body.appendChild(b);
@@ -151,9 +151,9 @@
   /* 마커/목록 탭 → 하단 카드(요약). 다른 마커 탭하면 내용만 교체. */
   function openCard(s) {
     if(!s.planned&&!s.office)window.bohumsoTrack?.('expert_viewed');
-    current = s;
-    window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned&&!s.office,purpose:PURPOSE,situation:SITUATION});
-    showCard();
+    current = s;var context=new URLSearchParams(location.search);if(!s.planned&&!s.office)context.set('planner',s.id);else context.delete('planner');history.replaceState(null,'',location.pathname+'?'+context);
+    window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned&&!s.office,purpose:PURPOSE,situation:SITUATION,available:s.available,organization:s.job,specialty:s.specialty,photo_url:s.photo,biography:s.biography,insurance_types:s.insurance_types,help_tasks:s.help_tasks,offices:s.offices});
+    $('cardSheet').classList.toggle('expert-card-sheet',!s.planned&&!s.office);showCard();
   }
   function showCard(){
     var sheet=$('cardSheet');cardOpener=document.activeElement;
@@ -220,7 +220,7 @@
           lat: Number.isFinite(p.area_latitude) ? p.area_latitude : null, lng: Number.isFinite(p.area_longitude) ? p.area_longitude : null,
           rating: p.rating || 0, pledge: !!p.verified,
           hours: p.hours || '', completed: p.completed_count || 0, reviews: Array.isArray(p.reviews) ? p.reviews.length : 0,
-          photo: p.photo_url || '', availability: p.availability_status || ''
+          biography:p.biography,insurance_types:p.insurance_types,help_tasks:p.help_tasks,offices:p.offices,available: !!p.available, photo: p.photo_url || '', availability: !p.available?'unavailable':p.availability_status || 'scheduled'
         };
       });
       if(window.bohumsoOffices){const offices=await window.bohumsoOffices();const active=offices.filter(o=>o.status==='active'&&Number.isFinite(o.latitude)&&Number.isFinite(o.longitude));PLANNED=PLANNED.filter(p=>!active.some(o=>o.region===p.region));spots=spots.concat(active.filter(o=>!area||o.region.indexOf(area)===0).map(o=>({id:o.id,name:o.name,region:o.region,job:'보험소',specialty:o.address,lat:o.latitude,lng:o.longitude,rating:0,planned:false,office:true})));}
@@ -245,7 +245,7 @@
     SPOTS = PLANNED.slice();
     initMap(SEOUL, 12);
     renderList();
-    reloadSpots(new URLSearchParams(location.search).get('region')||'');
+    reloadSpots(new URLSearchParams(location.search).get('region')||'').then(function(){var selected=new URLSearchParams(location.search).get('planner');var spot=SPOTS.find(function(s){return s.id===selected&&!s.planned&&!s.office;});if(spot)openCard(spot);});
 
     // 정렬 탭
     document.querySelectorAll('.sort-tabs button').forEach(function (t) {

@@ -212,3 +212,12 @@
 .map-page > .policy-footer{display:none}
 .professional-pin{display:grid;place-items:center;width:36px;height:36px;border:2px solid var(--brand);border-radius:50%;background:var(--card);color:var(--brand);box-shadow:var(--shadow)}.professional-pin .ui-icon{width:24px;height:24px}.map-page .planned-pin.is-planned{background:var(--brand-soft);color:var(--brand);border:2px dashed var(--brand)}.spot .thumb .ui-icon{width:26px;height:26px}.map-page .list-head{flex-wrap:wrap;gap:8px}.map-page .sort-tabs{flex-wrap:wrap}.map-key{display:flex;gap:16px;flex-wrap:wrap;padding:8px 16px;margin:0;font-size:12px;color:var(--muted)}.map-key span{display:inline-flex;gap:5px;align-items:center}.map-key .ui-icon{width:18px;height:18px;color:var(--brand)}
 @media(min-width:900px){.map-page .list-sheet:not(.open) .sort-tabs{display:flex}}
+.map-page #cardSheet.expert-card-sheet{width:min(var(--expert-card-width),calc(100% - var(--space-4)*2));max-height:min(65%,calc(100% - var(--space-4)*2));bottom:var(--space-4)}
+.map-page .expert-card-sheet .card-sheet-body{padding:0 var(--space-4) var(--space-4);min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.map-page .expert-card-sheet .expert-profile h2{margin:0;font-size:var(--type-office-title);overflow-wrap:anywhere}
+.map-page .expert-card-sheet .btn{min-height:var(--touch-target);box-sizing:border-box;white-space:normal;line-height:1.5}
+.map-page .expert-card-sheet .expert-profile p{margin:0}.map-page .expert-card-sheet .expert-profile-note{font-size:var(--type-small)}
+.map-page #cardBody.expert-card-body{display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.expert-card-content{min-height:0;overflow-y:auto;overscroll-behavior:contain}.expert-card-actions{display:grid;flex-shrink:0;gap:var(--space-2);padding-top:var(--space-2);max-height:50%;overflow-y:auto}
+.map-page .expert-card-actions .btn{margin:0}.expert-visit-link{display:flex;align-items:center;min-height:var(--touch-target);font-size:var(--type-small);color:var(--brand-dark)}
+@media(min-width:900px){.map-page .card-sheet.expert-card-sheet{left:auto;right:calc(var(--touch-target) + var(--space-5));transform:none}}

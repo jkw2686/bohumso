@@ -8,7 +8,7 @@
  var allowed=['illness','hospitalization','accident','death','claim'];
  function update(){var selected=choices.querySelector('input:checked')?.value;if(!allowed.includes(selected))return;
   root.querySelector('[data-guide-primary]').href='/map.html?'+new URLSearchParams({view:'experts',purpose:'claim',situation:selected});
-  root.querySelector('[data-guide-secondary]').href=['claim','illness'].includes(selected)?'#documents':'/help/'+selected+'.html#documents';
+  root.querySelector('[data-guide-secondary]').href='/map.html?'+new URLSearchParams({view:'offices',purpose:'claim',situation:selected});
  }
  choices.addEventListener('change',update);window.addEventListener('pageshow',update);update();
 })();
