@@ -1,5 +1,11 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-10 자료실 검색·목록 간소화
+- 사용자: 검색이 불편하고 입력이 많아 첨부 HTML 목록 방식을 선호. public/claim-resources.html/css/js를 검색창 1개·명시적 검색 버튼·선택형 분류·기관/지역/공식 링크 목록으로 변경. 신청자별 준비사항은 각 기관에서 펼침, 비교/안내문 작성은 접힌 도구. 기존 91자료와 공식 상세/홈페이지/재확인 구분 유지.
+- public/claim-resource-search.js: 검색어 순서·띄어쓰기·대학 약칭·기존 보험사 별칭 지원. 지역 접미사 검색은 기관명/등록 지역에 대한 텍스트 검색이며 새 주소를 추정하지 않음. 새 검색 입력 시 이전 분류를 전체로 돌려 결과 누락 방지. 한글 조합 중 검색 대기. 기존 선택 안내문과 소비자 상황 복귀 유지.
+- tests/claim-resource-search.test.mjs 2항목, claim-resources-browser.mjs 320/360/390/768/1440 검색/기관별 신청자/비교/키보드/복사·공유 대체수단/가로넘침 및 기존 선택 전문가·희망시간·미확정 요청 회귀 확인. 실제 공유·상담·SMS 없음. 모바일 검색 버튼이 전폭 CSS를 상속하던 넘침 및 선택 분류 색상 우선순위 수정. 배포 build 통과.
+- 원복 기준 5823208. 범위는 자료실만, DB·인증·지도 프로필·원본 링크 데이터 변경 없음. 배포 후 운영 검색 확인 결과를 여기에 추가할 것. artifacts/resources-simple-mobile.png / resources-simple-search-mobile.png 로컬 화면. 미추적 deno.lock 제외.
+
 ## 2026-10-10 선택형 지도 프로필 (운영 DB·공개 배포 완료)
 - d84ea7c → Netlify 6ac9e65fcfa4cf00082ca465, production ready/일치하는 commit_ref 확인, 2026-10-10 16:17 KST 공개. 기존 로그인 유지, 대표 partner의 선택 프로필 편집 UI 표시, 업무→자료실/검색, 소비자 암 안내의 전문가/보험소 CTA 및 서류 보조 메뉴 확인. 실제 김포 이충경 카드: 390px 화면에340px너비/283px높이, 가로넘침 없음, 메뉴·요청버튼 가림 없음. 활동지역 기준이며 GPS로 표시하지 않음. outputs/expert-profile-live-mobile.png, claim-resources-live-desktop.png(작업루트).
 - 운영 사진 API는 없는 버전에404/not_found/no-store 정상(503 또는 설정오류 아님). 실제 회원 사진 업로드·수정·삭제나 상담·SMS는 하지 않음. 사진 생명주기/ONOFF/운영자/권한은 격리DB·브라우저 테스트 통과이며 운영 실계정 변경 성공으로 보고하지 말 것. 실제 운영자 관계0으로 방문예약 별도버튼 숨김; 운영자 확인 후 연결 필요. 링크 재확인29는 확인 완료로 승격하지 않음.

@@ -11,20 +11,37 @@ try{
  expect(resources.filter(r=>r.type==='hospital')).toHaveLength(47);expect(new Set(resources.map(r=>r.id)).size).toBe(resources.length);expect(resourceScope.summary.preserved).toHaveLength(8);
  for(const r of resources){expect(r.url).toMatch(/^https?:\/\//);if(r.reviewStatus==='homepage')expect(r.urlLabel).toBe('공식 홈페이지');}
  for(const width of [320,360,390,768,1440]){
-  await page.setViewportSize({width,height:844});await page.goto('https://fixture.test/claim-resources.html');await expect(page.locator('#resourceList article')).toHaveCount(12);
-  await page.getByLabel('병원·지역·보험사 검색').fill('분당 서울대');await expect(page.locator('#resourceList article')).toHaveCount(1);await expect(page.locator('#resourceList')).toContainText('분당서울대학교병원');
-  await page.getByLabel('기록 발급 신청자').selectOption('family');await page.locator('#resourceList summary').first().press('Enter');await expect(page.locator('#resourceList details').first()).toHaveAttribute('open','');await expect(page.locator('#resourceList')).toContainText('친족 신청');await page.locator('#resourceList input[type=checkbox]').first().check();
-  await expect(page.locator('#preparationText')).toHaveValue(/친족 신청/);await page.getByRole('button',{name:'안내 복사',exact:true}).click();expect(await page.evaluate(()=>window.copiedText)).toContain('www.snubh.org');await page.getByRole('button',{name:'공유',exact:true}).click();expect((await page.evaluate(()=>window.sharedData)).text).toContain('친족 신청');
-  await page.getByLabel('병원·지역·보험사 검색').fill('캐롯');await expect(page.locator('#resourceList article')).toHaveCount(1);await expect(page.locator('#resourceList h3')).toHaveText('한화손해보험');
-  await page.getByRole('button',{name:'검색 초기화'}).click();await page.getByLabel('자료 종류').selectOption('post');await expect(page.locator('#resourceList article')).toHaveCount(1);await expect(page.locator('#resourceList')).toContainText('우체국보험');
-  await page.getByLabel('자료 종류').selectOption('hospital');await page.getByLabel('지역',{exact:true}).selectOption('부산');await expect(page.locator('#resourceList article')).toHaveCount(4);
-  await page.getByLabel('병원·지역·보험사 검색').fill('목록에없는기관');await expect(page.locator('#resourceList')).toContainText('검색 결과가 없습니다.');
-  await page.getByLabel('첫 번째 보험사').selectOption('samsungfire');await page.getByLabel('두 번째 보험사').selectOption('db');await expect(page.locator('#compareResults article')).toHaveCount(2);await expect(page.locator('#compareResults')).toContainText('접수·발급 방법');
+  await page.setViewportSize({width,height:844});await page.goto('https://fixture.test/claim-resources.html');
+  await expect(page.locator('#resourceList .resource-row')).toHaveCount(91);
+  await expect(page.locator('input:visible')).toHaveCount(1);await expect(page.locator('select:visible')).toHaveCount(0);
+  const categoryColors=await page.locator('#resourceCategories button').evaluateAll(buttons=>buttons.map(button=>getComputedStyle(button).backgroundColor));expect(categoryColors[0]).not.toBe(categoryColors[1]);
+  await expect(page.locator('#comparisonTools')).not.toHaveAttribute('open','');await expect(page.locator('#preparationTools')).not.toHaveAttribute('open','');
+  if(width===390)await page.screenshot({path:'artifacts/resources-simple-mobile.png'});
+  await page.getByLabel('병원·지역·보험사 검색',{exact:true}).fill('서울 삼성');await expect(page.locator('#resourceList .resource-row')).toHaveCount(2);
+  await expect(page.locator('#resourceList h3').first()).toHaveText('삼성서울병원');
+  await page.getByRole('button',{name:'검색',exact:true}).click();await expect(page.locator('#resourceCount')).toContainText('검색 결과 2곳');
+  await page.getByLabel('병원·지역·보험사 검색',{exact:true}).fill('분당 서울대');await expect(page.locator('#resourceList .resource-row')).toHaveCount(1);
+  await page.locator('#resourceList .resource-detail-toggle').press('Enter');await expect(page.locator('#resourceList .resource-detail-toggle')).toHaveAttribute('aria-expanded','true');
+  await page.getByLabel('분당서울대학교병원 기록 발급 신청자',{exact:true}).selectOption('family');await expect(page.locator('#resourceList')).toContainText('친족 신청');
+  await page.locator('#resourceList input[type=checkbox]').first().check();await page.getByRole('button',{name:'선택한 안내문 보기',exact:true}).click();
+  await expect(page.locator('#preparationText')).toHaveValue(/친족 신청/);await page.getByRole('button',{name:'안내 복사',exact:true}).click();expect(await page.evaluate(()=>window.copiedText)).toContain('www.snubh.org');
+  await page.getByRole('button',{name:'공유',exact:true}).click();expect((await page.evaluate(()=>window.sharedData)).text).toContain('친족 신청');
+  await page.getByLabel('병원·지역·보험사 검색',{exact:true}).fill('부산 병원');await expect(page.locator('#resourceList .resource-row')).toHaveCount(5);
+  await page.getByRole('button',{name:'병원',exact:true}).click();await expect(page.getByRole('button',{name:'병원',exact:true})).toHaveAttribute('aria-pressed','true');
+  // A new search starts from all institutions, not a previous category.
+  await page.getByLabel('병원·지역·보험사 검색',{exact:true}).fill('캐롯');await expect(page.getByRole('button',{name:'전체',exact:true})).toHaveAttribute('aria-pressed','true');await expect(page.locator('#resourceList h3')).toHaveText('한화손해보험');
+  await page.getByRole('button',{name:'전체 목록',exact:true}).click();await expect(page.locator('#resourceList .resource-row')).toHaveCount(91);
+  await page.getByRole('button',{name:'보험사',exact:true}).click();await expect(page.locator('#resourceList .resource-row')).toHaveCount(38);
+  await page.getByLabel('병원·지역·보험사 검색',{exact:true}).fill('목록에없는기관');await expect(page.locator('#resourceEmpty')).toBeVisible();
+  await page.getByRole('button',{name:'전체 목록 보기',exact:true}).click();await expect(page.locator('#resourceList .resource-row')).toHaveCount(91);
+  await page.getByRole('button',{name:'별도 참고',exact:true}).click();await expect(page.locator('#resourceList .resource-row')).toHaveCount(3);
+  await page.locator('#comparisonTools>summary').click();await page.getByLabel('첫 번째 보험사').selectOption('samsungfire');await page.getByLabel('두 번째 보험사').selectOption('db');await expect(page.locator('#compareResults article')).toHaveCount(2);await expect(page.locator('#compareResults')).toContainText('접수·발급 방법');
+  if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1)){console.log(await page.evaluate(()=>[...document.querySelectorAll('main *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1).map(e=>[e.tagName,e.id,e.className,e.getBoundingClientRect().width,e.scrollWidth]).slice(0,18)));await page.screenshot({path:'artifacts/resources-overflow.png'});}
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
-  await page.getByRole('button',{name:'검색 초기화'}).click();await page.getByLabel('병원·지역·보험사 검색').fill('삼성서울');await page.locator('#resourceList summary').first().click();
-  if(width===390){await page.screenshot({path:'artifacts/claim-resources-mobile.png',fullPage:true});await page.locator('#resourceFilters').scrollIntoViewIfNeeded();await page.screenshot({path:'artifacts/claim-resources-mobile-top.png'});}
   for(const a of await page.locator('a[target=_blank]').all())expect(await a.getAttribute('rel')).toBe('noopener noreferrer');
-  console.log('PASS resources search, aliases, categories, applicant, comparison, copy/share and overflow',width);
+  await page.getByRole('button',{name:'전체 목록',exact:true}).click();await page.getByLabel('병원·지역·보험사 검색',{exact:true}).fill('강남구');await expect(page.locator('#resourceList .resource-row')).toHaveCount(2);
+  if(width===390)await page.screenshot({path:'artifacts/resources-simple-search-mobile.png'});
+  console.log('PASS one-field list, reordered search, categories, relation details, keyboard, copy/share and overflow',width);
  }
  await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{value:{writeText:async()=>{throw Error('denied');}}}));await page.getByRole('button',{name:'안내 복사',exact:true}).click();await expect(page.locator('#preparationText')).toBeFocused();await expect(page.locator('#preparationStatus')).toContainText('안내문을 선택');
  await page.goto('https://fixture.test/claim-resources.html?view=consumer&purpose=claim&situation=death');await expect(page.locator('#resourceBack')).toHaveAttribute('href','/map.html?view=experts&purpose=claim&situation=death');
