@@ -1,4 +1,5 @@
 import {createClient} from '@supabase/supabase-js';
+import {requestParams} from './request-intent.js';
 export const MEMBER={anonymous:'ANONYMOUS',incomplete:'AUTHENTICATED_INCOMPLETE',active:'ACTIVE_MEMBER',beta:'BETA_MEMBER',expertPending:'EXPERT_PENDING',expertApproved:'EXPERT_APPROVED',admin:'ADMIN'};
 const pendingKey='bohumso-pending-action';
 const returnPages=new Set('/ /index.html /map.html /requests.html /account.html /partner.html /partner-work.html /admin-requests.html /admin.html /phone-verification.html /notifications.html /urgent.html /find.html /consult.html /analysis.html /diagnosis.html /dashboard.html /support.html /payment-result.html /my-reservations /reserve /consultation/new /pro /terms.html /privacy.html'.split(' '));
@@ -7,7 +8,7 @@ export function safeNext(value,fallback='/account.html'){
  if(typeof value!=='string'||!value.startsWith('/')||value.startsWith('//')||/[\\\u0000-\u0020]/.test(value))return fallback;
  try{const decoded=decodeURIComponent(value);if(decoded.startsWith('//')||/[\\\u0000-\u001f]/.test(decoded))return fallback;const u=new URL(value,'https://internal.invalid');if(!returnPages.has(u.pathname))return fallback;if(u.origin!=='https://internal.invalid'||u.pathname.startsWith('//')||/^\/(login|signup|auth|reset-password)(\.html)?\/?$/i.test(u.pathname))return fallback;for(const key of ['code','access_token','refresh_token','token','token_hash','next','returnTo','redirect','redirect_to','redirectTo'])if(u.searchParams.has(key))u.searchParams.delete(key);if(/(?:access_token|refresh_token|token_hash)=/.test(u.hash))u.hash='';return u.pathname+u.search+u.hash;}catch{return fallback;}
 }
-export function rememberAction(next){const path=safeNext(next);try{sessionStorage.setItem(pendingKey,JSON.stringify({next:path,at:Date.now()}));}catch{}return path;}
+export function rememberAction(next){let path=safeNext(next);const url=new URL(path,'https://internal.invalid');if(/^\/(requests|urgent)(\.html)?$/.test(url.pathname)){url.search=requestParams(url.search).toString();path=url.pathname+url.search+url.hash;}try{sessionStorage.setItem(pendingKey,JSON.stringify({next:path,at:Date.now()}));}catch{}return path;}
 export function pendingAction(){const query=new URLSearchParams(location.search).get('next')||new URLSearchParams(location.search).get('returnTo');if(query)return rememberAction(query);try{const value=JSON.parse(sessionStorage.getItem(pendingKey)||'null');if(value&&Date.now()-value.at<2*60*60*1000)return safeNext(value.next);const legacy=sessionStorage.getItem('bohumso-booking-return');if(legacy)return rememberAction(legacy);}catch{}return '/account.html';}
 export function clearAction(){try{sessionStorage.removeItem(pendingKey);sessionStorage.removeItem('bohumso-booking-return');}catch{}}
 export function authURL(next,mode='signup'){return '/'+(mode==='login'?'login':'signup')+'.html?next='+encodeURIComponent(safeNext(next));}

@@ -15,6 +15,7 @@ if(initialQuery.get('view')==='consumer'){
 function sourceInfo(parent,r){
  const stale=Date.now()-new Date(r.checkedAt+'T00:00:00+09:00').getTime()>90*86400000;
  el('p',r.verification+' · '+r.checkedAt+(stale?' · 최신 내용 재확인 필요':''),parent,'resource-meta');
+ if(r.importedVerification)el('p','원자료: '+r.importedVerification+' · '+(r.sourceDate||r.checkedAt),parent,'resource-meta');
  if(r.checkNote)el('p',r.checkNote,parent,'resource-note');
  if(r.alternateUrl)official(parent,'공식 홈페이지',r.alternateUrl);
  el('p','메뉴: '+r.menu,parent,'resource-note');
@@ -54,6 +55,9 @@ function details(parent,r){
  const toPreparation=el('button','선택한 안내문 보기',actions,'btn ghost');toPreparation.type='button';
  toPreparation.onclick=()=>{$('preparationTools').open=true;$('preparationSummary').focus();$('preparationTools').scrollIntoView({block:'start'});};
  sourceInfo(parent,r);
+ const tools=el('div','',parent,'resource-actions'),status=el('p','',parent,'resource-meta');status.setAttribute('role','status');
+ const copy=el('button','링크 복사',tools,'btn ghost');copy.type='button';copy.onclick=async()=>{try{await navigator.clipboard.writeText(r.url);status.textContent='공식 링크를 복사했습니다.';}catch{let fallback=parent.querySelector('[data-link-copy]');if(!fallback){const label=el('label','복사할 공식 링크',parent,'field');fallback=el('input','',label);fallback.readOnly=true;fallback.dataset.linkCopy='';fallback.value=r.url;}fallback.focus();fallback.select();status.textContent='주소를 선택했습니다. 복사 기능을 사용해 주세요.';}};
+ const report=el('a','링크 오류 제보',tools,'btn ghost');report.href='/support.html?resource='+encodeURIComponent(r.id);el('small','기관명과 링크만 문의 내용에 담습니다. 접수 전 직접 확인하세요.',parent,'resource-note');
 }
 function row(parent,r){
  const tr=el('tr','',parent,'resource-row');tr.dataset.resourceId=r.id;
@@ -66,7 +70,7 @@ function row(parent,r){
  const cell=el('td','',info);cell.colSpan=3;let built=false;
  toggle.onclick=()=>{const open=info.hidden;info.hidden=!open;toggle.setAttribute('aria-expanded',String(open));if(open&&!built){details(cell,r);built=true;}};
 }
-function updateCategories(){for(const button of $('resourceCategories').querySelectorAll('button'))button.setAttribute('aria-pressed',String(button.dataset.category===category));}
+function updateCategories(){const insurance=['insurer','life','nonlife','post'].includes(category);$('insuranceCategories').hidden=!insurance;for(const button of $('resourceCategories').querySelectorAll('button'))button.setAttribute('aria-pressed',String(button.dataset.category===category||(insurance&&button.dataset.category==='insurer')));for(const button of $('insuranceCategories').querySelectorAll('button'))button.setAttribute('aria-pressed',String(button.dataset.category===category));}
 function render(){
  const rows=resources.filter(r=>inResourceCategory(r,category)&&matchesResourceQuery(r,queryInput.value,resourceTypes));
  const fragment=document.createDocumentFragment();for(const r of rows)row(fragment,r);$('resourceList').replaceChildren(fragment);
@@ -80,7 +84,7 @@ queryInput.oncompositionend=()=>{composing=false;category='all';search();};
 queryInput.oninput=()=>{if(!composing){category='all';search();}};
 form.onsubmit=e=>{e.preventDefault();search();};
 $('resetResources').onclick=reset;$('clearEmptySearch').onclick=reset;
-for(const button of $('resourceCategories').querySelectorAll('button'))button.onclick=()=>{category=button.dataset.category;search();};
+for(const button of document.querySelectorAll('#resourceCategories button,#insuranceCategories button'))button.onclick=()=>{category=button.dataset.category;search();};
 function preview(){
  const groups=new Map();
  for(const {resource,text}of selected.values()){if(!groups.has(resource.id))groups.set(resource.id,{resource,texts:[]});groups.get(resource.id).texts.push(text);}
@@ -101,7 +105,7 @@ for(const labelText of ['첫 번째 보험사','두 번째 보험사']){
  for(const r of resources.filter(r=>r.type==='insurer'))el('option',r.name,select).value=r.id;select.onchange=comparison;
 }
 const scope=resourceScope.summary;
-$('resourceScope').textContent='병원 '+scope.hospital+'곳 · 생명보험 '+scope.life+'곳 · 손해보험 '+scope.nonlife+'곳 · 우체국보험 '+scope.post+'곳. 연금보험 '+scope.pension+'곳과 보증·재보험 '+scope.other+'곳은 별도 참고입니다.';
+$('resourceScope').textContent='병원 '+scope.hospital+'곳 · 생명보험 '+(scope.life+scope.pension)+'곳(연금보험 '+scope.pension+'곳 포함) · 손해보험 '+scope.nonlife+'곳 · 우체국보험 '+scope.post+'곳. 연금보험과 보증·재보험 '+scope.other+'곳은 업무 범위를 구분해 안내합니다.';
 $('clearPreparation').onclick=()=>{selected.clear();for(const input of $('resourceList').querySelectorAll('input[type=checkbox]'))input.checked=false;preview();};
 function manualCopy(){const text=$('preparationText');text.focus();text.select();$('preparationStatus').textContent='안내문을 선택했습니다. 길게 누르거나 복사 기능을 사용해 주세요.';}
 $('copyPreparation').onclick=async()=>{try{await navigator.clipboard.writeText($('preparationText').value);$('preparationStatus').textContent='안내문을 복사했습니다.';}catch{manualCopy();}};

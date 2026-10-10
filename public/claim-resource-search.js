@@ -14,5 +14,8 @@ export function inResourceCategory(resource,category){
  if(category==='all')return true;
  if(category==='service')return ['service','inheritance','funeral'].includes(resource.type);
  if(category==='reference')return ['pension','other'].includes(resource.type);
+ if(category==='insurer')return resource.type==='insurer'||resource.type==='pension';
+ if(category==='life')return resource.insuranceClass==='life'||resource.type==='pension';
+ if(category==='nonlife'||category==='post')return resource.insuranceClass===category;
  return resource.type===category;
 }

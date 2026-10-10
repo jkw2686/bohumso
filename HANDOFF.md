@@ -1,5 +1,16 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-10 총괄 지침 3단계 보완 (개발·검증 완료, 운영 미반영)
+- **최신 사용자 지침은 개발·검증만 승인. 운영 DB·배포·유료 서비스는 별도 승인 필요. 이전 배포 승인을 재사용하지 말 것.** 현재 branch `codex/connection-review`, 기준 `e08a4d5`. 기존 운영 배포 `fb04f34` / `6ac9fdf4ca4eb500092bc4a6` 유지. 상세 보고 `docs/connection-review.md`.
+- 1단계: `src/request-intent.js` 선택 항목 URL 허용 목록·24시간 동일 요청 식별자. member-access/office-request/expert-visits에서 인증 복귀·A/B 재선택·수동 제출·OFF 재선택·방문 방향·선택 시간 보존. 전화·주소·메모 URL 보존 안 함. workflow/account는 원래 일정과 새 제안 분리·상대방 수락·취소 상태·명확한 오류 안내. `053_connection_review.sql` 비공개 백업/스냅샷/제안 3테이블, 서버 대상·동일 요청·권한·일정 충돌 검사. **운영 미적용**, 새 일정 UI는 capability가 있어야 표시.
+- 2단계: 기존 선택형 프로필·미리보기·192px 사진·40자·최대3업무·경력값 보존 유지. optional-profile/expert-profile-card에서 실제 운영 보험소만 방문 업무 허용. office-slot 주 버튼 ‘상담 요청’ 및 상세 프로필 링크, directory 선택자 위치로 이동. `054_profile_office_scope.sql` 서버 운영자 조건·공개 표시 필터 및 비공개 함수 백업. 기존 저장값/Storage/정렬 유지. **운영 미적용**, 실제 운영자 임의 지정 없음.
+- 3단계: 한 검색창·단순 목록 유지. 생명22(연금1포함)/손해16/우체국1 분류, 원본 조사상태/일자 보존, 공식 링크 복사·오류 제보 초안 및 로그인 복귀. claim-resource-search/claim-resources 데이터·화면·member-rights. 기존8개 포함91자료/47병원 유지. 상세44/홈페이지21/추가확인26. 서울대·고대구로·삼성생명 공식 목적 본문 PC1440/모바일390 확인 후3개만 상세 승격. 모든기관 본문 검증 완료라고 보고하지 말 것.
+- 검증: build, connection-review SQL2/브라우저320·390·1440(실제 빌드/가짜 제공자 응답), 기존 방문상담 SQL·브라우저, 선택프로필/사진API/운영자조건 SQL3, 프로필브라우저320·390·1440(사진등록변경삭제/비우기/새로고침/글자확대), 자료검색2/브라우저320·360·390·768·1440 및 기존 가입방식 브라우저 통과. 실제 Google·SMS 수신·운영 가입/예약은 수행하지 않음. 사진/개인정보 운영 쓰기 없음.
+- 공식91주소 PC/모바일 HTTP 검사: 관련문구 후보67/63, 동적 또는 목적미확인20/24, TLS연결실패4/4. `artifacts/claim-link-audit.json`. 조선대/칠곡경북대 인증서호스트, 경상국립대 체인, 한화생명 TLS 재협상. 경고 우회하지 않음. 확인불가를 고장이나 확인완료로 단정하지 말 것.
+- 화면: artifacts/connection-review-mobile.png, expert-profile-mobile.png, resources-simple-mobile.png, resources-simple-search-mobile.png. scripts/preview.mjs 기본3190유지/PREVIEW_PORT지원. 현재 로컬3194 실행(session38107), /claim-resources.html HTTP200확인. Codex내장브라우저는 연결 시간초과 및 오류페이지 URL정책으로 미리보기/닫기 실패, 화면파일 제공. 외부공유주소 아님. 실제 가입·예약 API비활성. 임시공식조회tab4, 오류previewtab5는 자동정리 대상이며 사용자 원래 자료실tab1은 변경하지 않음.
+- 원복: rollback_profile_office_scope.sql → rollback_connection_review.sql. 후자는 미해결 일정제안이 있으면 거부. 신규표·회원·예약·저장옵션 삭제 없음. 프론트는 이번 기능 커밋 revert 후 별도승인 배포. 미추적deno.lock/이전별도049·050 제외.
+- 다음 할 일: 사용자가 승인하면 운영 구조·건수/백업 비교 후053→054 적용, 본 작업 빌드배포, 운영읽기 검증. 승인 전 main병합·Production배포 금지. 이번 feature브랜치만 [skip netlify] 커밋으로 저장. 미확인 공식26자료와 실인증·실예약 검증은 한계를 유지해 보고.
+
 ## 2026-10-10 자료실 검색·목록 간소화 (공개 배포 완료)
 - 7db2443/fb04f34 → Netlify 6ac9fdf4ca4eb500092bc4a6, production ready/commit_ref 일치, 2026-10-10 17:57 KST 공개. 운영 /claim-resources에서 '서울 삼성'→2곳, 초기화→91곳 실제 확인. 모바일 390px 가로넘침 없음. 전체 목록 버튼도 작은 폭으로 수정 후 운영65px 확인. outputs/claim-resources-simple-live.png(작업루트) 증거. 원복은 두 구현 커밋 역순 revert 후 배포, DB 원복 불필요.
 - 사용자: 검색이 불편하고 입력이 많아 첨부 HTML 목록 방식을 선호. public/claim-resources.html/css/js를 검색창 1개·명시적 검색 버튼·선택형 분류·기관/지역/공식 링크 목록으로 변경. 신청자별 준비사항은 각 기관에서 펼침, 비교/안내문 작성은 접힌 도구. 기존 91자료와 공식 상세/홈페이지/재확인 구분 유지.

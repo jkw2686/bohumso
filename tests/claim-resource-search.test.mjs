@@ -16,7 +16,10 @@ test('search accepts reordered words, school abbreviations, spaces and insurer a
 test('directory categories keep every existing entry and separate reference scope',()=>{
  assert.equal(resources.filter(r=>inResourceCategory(r,'all')).length,91);
  assert.equal(resources.filter(r=>inResourceCategory(r,'hospital')).length,47);
- assert.equal(resources.filter(r=>inResourceCategory(r,'insurer')).length,38);
+ assert.equal(resources.filter(r=>inResourceCategory(r,'insurer')).length,39);
  assert.equal(resources.filter(r=>inResourceCategory(r,'reference')).length,3);
  assert.equal(resources.filter(r=>inResourceCategory(r,'service')).length,3);
+ assert.equal(resources.filter(r=>inResourceCategory(r,'life')).length,22);
+ assert.equal(resources.filter(r=>inResourceCategory(r,'nonlife')).length,16);
+ assert.equal(resources.filter(r=>inResourceCategory(r,'post')).length,1);
 });

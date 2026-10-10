@@ -14,7 +14,7 @@ export async function renderOptionalProfile(client,parent){
  const remove=el('button','사진 삭제',form);remove.type='button';remove.className='btn ghost';remove.disabled=!p.photo_url;
  const intro=input(form,'한 줄 소개 (선택 · 40자)','biography','text',Array.from(p.biography||'').length<=40?p.biography:'');intro.maxLength=40;intro.oninput=()=>{introChanged=true;draw();};
  if(Array.from(p.biography||'').length>40){el('p','기존 소개는 보관되어 있습니다. 새 한 줄 소개를 입력하면 변경됩니다.',form);const clearIntro=el('button','기존 소개 비우기',form);clearIntro.type='button';clearIntro.className='btn ghost';clearIntro.onclick=()=>{intro.value='';introChanged=true;draw();message.textContent='저장하면 기존 소개가 삭제됩니다.';};}
- function choices(title,name,values,selected){const set=el('fieldset',undefined,form);el('legend',title,set);for(const [key,label]of Object.entries(values)){if(key==='office_consultation'&&!p.offices?.length)continue;const c=input(set,label,name,'checkbox');c.value=key;c.checked=(selected||[]).includes(key);c.onchange=draw;}}
+ function choices(title,name,values,selected){const set=el('fieldset',undefined,form);el('legend',title,set);for(const [key,label]of Object.entries(values)){if(key==='office_consultation'&&!p.offices?.some(o=>o.available===true))continue;const c=input(set,label,name,'checkbox');c.value=key;c.checked=(selected||[]).includes(key);c.onchange=draw;}}
  choices('보험 취급 구분 (선택)','insurance_types',window.BohumsoProfile.types,p.insurance_types);el('p','직접 선택한 정보이며 자격 인증 표시가 아닙니다.',form);
  choices('도움 가능한 업무 (선택 · 최대 3개)','help_tasks',window.BohumsoProfile.tasks,p.help_tasks);
  const save=el('button','선택 프로필 저장',form);save.type='submit';save.className='btn';

@@ -36,5 +36,6 @@ export async function renderDirectory(client){
  form.onsubmit=e=>{e.preventDefault();params.set('region',region.value);params.set('purpose',purpose.value);params.set('availability',form.elements.availability.value);history.replaceState(null,'',location.pathname+'?'+params);refresh();};
  document.getElementById('locatePlanners').onclick=()=>{if(!form.elements.location_consent.checked){notice.textContent='위치 사용 동의를 선택하거나 지역을 직접 선택해 주세요.';return;}if(!navigator.geolocation){notice.textContent='지역을 직접 선택해 주세요.';return;}navigator.geolocation.getCurrentPosition(p=>{if(!form.elements.location_consent.checked)return;position={lat:p.coords.latitude,lng:p.coords.longitude};notice.textContent='현재 위치는 거리 정렬에만 사용하며 저장하지 않습니다.';draw();},()=>{position=null;notice.textContent='위치를 사용하지 않고 지역 선택으로 찾을 수 있습니다.';draw();},{timeout:8000});};
  await refresh();
+ if(params.get('planner'))document.getElementById('profile-'+params.get('planner'))?.scrollIntoView({block:'start'});
  const timer=setInterval(()=>{if(!document.hidden)draw();},60000);window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
 }

@@ -1,7 +1,7 @@
 // Official link directory. No customer information.
 export const resourceTypes={"hospital":"병원 기록 발급","insurer":"보험사 전체","life":"생명보험","nonlife":"손해보험","post":"우체국보험","service":"실손24","inheritance":"사망·보험 조회","funeral":"장례 정보","pension":"연금보험 · 별도 범위","other":"보증·재보험 · 별도 범위"};
 export const applicantTypes={"self":"환자 본인","family":"친족","agent":"지정 대리인","death":"환자 사망","other":"미성년·기타 사유"};
-export const resourceScope={"hospital":"제5기(2024~2026) 상급종합병원 47곳. 전국 모든 병원 목록이 아님. 기존 다른 병원 목록 유지·병합 권장.","designationSource":"https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000","recheckAfter":"2026-12-31","date":"2026-10-10","summary":{"hospital":47,"life":21,"nonlife":16,"post":1,"pension":1,"other":2,"detail":41,"homepage":21,"check":29,"preserved":["삼성서울병원","서울아산병원","분당서울대학교병원","삼성화재","DB손해보험","실손24","내보험찾아줌 · 상속인 조회 안내","e하늘 장사정보서비스"]}};
+export const resourceScope={"hospital":"제5기(2024~2026) 상급종합병원 47곳. 전국 모든 병원 목록이 아님. 기존 다른 병원 목록 유지·병합 권장.","designationSource":"https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000","recheckAfter":"2026-12-31","date":"2026-10-10","summary":{"hospital":47,"life":21,"nonlife":16,"post":1,"pension":1,"other":2,"detail":44,"homepage":21,"check":26,"preserved":["삼성서울병원","서울아산병원","분당서울대학교병원","삼성화재","DB손해보험","실손24","내보험찾아줌 · 상속인 조회 안내","e하늘 장사정보서비스"]}};
 export const resources=[
   {
     "id": "smc",
@@ -28,7 +28,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "공식 안내 내용 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [],
     "scopeSource": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000",
@@ -64,7 +64,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "공식 안내 내용 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [],
     "scopeSource": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000",
@@ -100,7 +100,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "공식 안내 내용 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "분당서울대병원"
@@ -132,7 +132,7 @@ export const resources=[
     "verification": "공식 안내 내용 확인",
     "origin": "기존 상황 안내 HTML의 공식 링크",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "nonlife",
     "aliases": [],
     "scopeSource": "https://direct.samsungfire.com/m/claim/MP040202_001.html?tab=1",
@@ -162,7 +162,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "공식 청구서·절차 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "nonlife",
     "aliases": [],
     "scopeSource": "https://www.idbins.com/FWCLAV1076.do",
@@ -259,7 +259,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [],
     "scopeSource": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000",
@@ -366,9 +366,9 @@ export const resources=[
       "신청 관계에 맞는 구비서류와 수령 방법을 병원 공식 안내에서 확인하세요."
     ],
     "checkedAt": "2026-10-10",
-    "verification": "상세 안내 확인 필요",
-    "reviewStatus": "check",
-    "urlLabel": "공식 안내 · 확인 필요",
+    "verification": "본문확인",
+    "reviewStatus": "detail",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "고려대 구로병원"
@@ -377,7 +377,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "공식 안내 페이지 검색 결과 확인. 로그인·신청·발급은 실행하지 않음.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "PC와 390px 모바일 화면에서 공식 안내 본문과 관련 서식 메뉴를 확인했습니다. 서식 파일 다운로드·신청은 진행하지 않았습니다.",
     "applicants": {
       "self": "환자 본인에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
       "family": "친족에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
@@ -403,9 +403,9 @@ export const resources=[
       "신청 관계에 맞는 구비서류와 수령 방법을 병원 공식 안내에서 확인하세요."
     ],
     "checkedAt": "2026-10-10",
-    "verification": "상세 안내 확인 필요",
-    "reviewStatus": "check",
-    "urlLabel": "공식 안내 · 확인 필요",
+    "verification": "본문확인",
+    "reviewStatus": "detail",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "서울대병원"
@@ -414,7 +414,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "공식 안내 페이지 검색 결과 확인. 로그인·신청·발급은 실행하지 않음.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "PC와 390px 모바일 화면에서 공식 안내 본문과 관련 서식 메뉴를 확인했습니다. 서식 파일 다운로드·신청은 진행하지 않았습니다.",
     "applicants": {
       "self": "환자 본인에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
       "family": "친족에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
@@ -442,7 +442,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [],
     "scopeSource": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000",
@@ -477,7 +477,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [],
     "scopeSource": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000",
@@ -621,7 +621,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "가톨릭대 서울성모병원",
@@ -771,7 +771,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "아주대병원"
@@ -808,7 +808,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "한림대성심병원"
@@ -845,7 +845,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "가톨릭대 인천성모병원",
@@ -883,7 +883,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "순천향대 부속 부천병원"
@@ -920,7 +920,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [],
     "scopeSource": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000",
@@ -990,7 +990,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [],
     "scopeSource": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000",
@@ -1025,7 +1025,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [],
     "scopeSource": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000",
@@ -1060,7 +1060,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "충북대병원"
@@ -1171,7 +1171,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "건양대병원"
@@ -1245,7 +1245,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "전북대병원"
@@ -1282,7 +1282,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "전남대병원"
@@ -1356,7 +1356,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "화순전남대병원"
@@ -1393,7 +1393,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "경북대병원"
@@ -1727,7 +1727,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "인제대 부산백병원"
@@ -1764,7 +1764,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "울산대병원"
@@ -1838,7 +1838,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "서류 발급 안내",
     "insuranceClass": null,
     "aliases": [
       "성균관대 삼성창원병원"
@@ -1926,16 +1926,16 @@ export const resources=[
       "청구 항목별 필요서류와 가능한 접수 방법을 해당 보험사에서 확인하세요."
     ],
     "checkedAt": "2026-10-10",
-    "verification": "상세 안내 확인 필요",
-    "reviewStatus": "check",
-    "urlLabel": "공식 안내 · 확인 필요",
+    "verification": "본문확인",
+    "reviewStatus": "detail",
+    "urlLabel": "청구서류 안내",
     "insuranceClass": "life",
     "aliases": [],
     "scopeSource": "https://www.samsunglife.com/individual/cs/guide/MDP-CURDO010100M",
     "importedVerification": "공식검색확인",
     "sourceNote": "보험 구비서류",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "PC와 390px 모바일 화면에서 공식 안내 본문과 관련 서식 메뉴를 확인했습니다. 서식 파일 다운로드·신청은 진행하지 않았습니다.",
     "regionGroup": "전국"
   },
   {
@@ -1955,7 +1955,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "life",
     "aliases": [],
     "scopeSource": "https://www.heungkuklife.co.kr/jsps/front/help/customer_require_tab.jsp",
@@ -1982,7 +1982,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "life",
     "aliases": [],
     "scopeSource": "https://www.kyobo.com/dgt/web/dti/insurance/accInq/intro",
@@ -2064,7 +2064,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "life",
     "aliases": [],
     "scopeSource": "https://www.kdblife.com/ajax.do?scrId=HCSCT002M14M",
@@ -2091,7 +2091,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "life",
     "aliases": [],
     "scopeSource": "https://www.idblife.com/support/guide/acbf_clm_doc",
@@ -2226,7 +2226,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "life",
     "aliases": [],
     "scopeSource": "https://www.chubblife.co.kr/front/ctmcenter/insurance/listDocuType.do",
@@ -2254,7 +2254,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "life",
     "aliases": [],
     "scopeSource": "https://www.hanalife.co.kr/csc/accidentInsuranceGuide/accidentInsurancePaymentPaymentDocumentSummaryGuide.do",
@@ -2363,7 +2363,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "life",
     "aliases": [],
     "scopeSource": "https://aiaplus.aia.co.kr/ko/claims/guide/claimsPaper.html",
@@ -2561,7 +2561,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "nonlife",
     "aliases": [],
     "scopeSource": "https://www.heungkukfire.co.kr/FRW/compensation/accidentDocInfo.do",
@@ -2615,7 +2615,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "nonlife",
     "aliases": [],
     "scopeSource": "https://www.kbinsure.co.kr/CG205020003.ec",
@@ -2670,7 +2670,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "nonlife",
     "aliases": [],
     "scopeSource": "https://www.hanainsure.co.kr/w/claim/healthReward/accidentReceipt",
@@ -2724,7 +2724,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "nonlife",
     "aliases": [
       "에이스손해보험",
@@ -2756,7 +2756,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "nonlife",
     "aliases": [],
     "scopeSource": "https://www.shinhanez.co.kr/static/cus/CUS50000M01.html?docInfoYn=Y",
@@ -2783,7 +2783,7 @@ export const resources=[
     "checkedAt": "2026-10-10",
     "verification": "안내 제목·본문 연결 확인",
     "reviewStatus": "detail",
-    "urlLabel": "상세 안내",
+    "urlLabel": "청구 안내",
     "insuranceClass": "nonlife",
     "aliases": [],
     "scopeSource": "https://www.nhfire.co.kr/customer/guide/insuranceClaimGuide.nhfire",
