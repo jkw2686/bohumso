@@ -1,7 +1,7 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
 ## 2026-10-10 총괄 지침 3단계 보완 (개발·검증 완료, 운영 미반영)
-- 로컬 구현 커밋 `9beeb30` 저장 완료. `git push -u origin codex/connection-review`는 자동 승인 검토에서 거절되어 원격에 전송하지 못했다. 사유: 변경 소스·SQL의 외부 저장소 전송에 대해 목적지/내용별 명시적 승인 필요. 우회·강제 push 금지. 사용자에게 https://github.com/jkw2686/bohumso 의 해당 개발 브랜치로 구현30파일과 이 인수인계 문서를 전송하는 승인 요청 필요. 이는 운영 DB·배포 승인과 별개다. 이 PC의 현재 브랜치에는 변경이 보존되어 있으므로 원격 main으로 덮어쓰지 말 것.
+- 구현 커밋 `9beeb30` 및 인수인계 `2f22251`을 `origin/codex/connection-review`에 전송 완료. 최초 자동 승인 검토가 목적지·내용에 대한 명시적 승인 부족으로 거절했으나 사용자 ‘개발 브랜치 전송 승인’을 받은 뒤 정상 push했다. 저장소 https://github.com/jkw2686/bohumso/tree/codex/connection-review . [skip netlify] 유지, main·운영 DB·배포는 변경하지 않음. 이 브랜치에서 이어받고 원격 main으로 덮어쓰지 말 것.
 - **최신 사용자 지침은 개발·검증만 승인. 운영 DB·배포·유료 서비스는 별도 승인 필요. 이전 배포 승인을 재사용하지 말 것.** 현재 branch `codex/connection-review`, 기준 `e08a4d5`. 기존 운영 배포 `fb04f34` / `6ac9fdf4ca4eb500092bc4a6` 유지. 상세 보고 `docs/connection-review.md`.
 - 1단계: `src/request-intent.js` 선택 항목 URL 허용 목록·24시간 동일 요청 식별자. member-access/office-request/expert-visits에서 인증 복귀·A/B 재선택·수동 제출·OFF 재선택·방문 방향·선택 시간 보존. 전화·주소·메모 URL 보존 안 함. workflow/account는 원래 일정과 새 제안 분리·상대방 수락·취소 상태·명확한 오류 안내. `053_connection_review.sql` 비공개 백업/스냅샷/제안 3테이블, 서버 대상·동일 요청·권한·일정 충돌 검사. **운영 미적용**, 새 일정 UI는 capability가 있어야 표시.
 - 2단계: 기존 선택형 프로필·미리보기·192px 사진·40자·최대3업무·경력값 보존 유지. optional-profile/expert-profile-card에서 실제 운영 보험소만 방문 업무 허용. office-slot 주 버튼 ‘상담 요청’ 및 상세 프로필 링크, directory 선택자 위치로 이동. `054_profile_office_scope.sql` 서버 운영자 조건·공개 표시 필터 및 비공개 함수 백업. 기존 저장값/Storage/정렬 유지. **운영 미적용**, 실제 운영자 임의 지정 없음.
