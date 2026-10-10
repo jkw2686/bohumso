@@ -42,6 +42,7 @@
 - 그림자: `--shadow:0 1px 2px rgba(16,24,40,.04), 0 4px 14px rgba(16,24,40,.06)` — 카드·버튼. 남용 금지.
 
 ## 5. 컴포넌트 (이것만 재사용 — `styles.css` 정의)
+- 홈 `.home-membership`: 기존 회원 카드 복구, 로그인 여부와 관계없이 표시. 공통 card/border/radius/spacing 토큰과 `.btn` 재사용. 모바일 가입/로그인 버튼은 줄바꿈 가능, 최소 44px. 로그인 회원에게도 명시적 가입 화면 보기 경로 제공.
 - 가입·로그인 공통 선택: `auth-entry.css`의 기존 `.btn` 확장. `--auth-width:440px`, `--auth-control-height:56px`, `--auth-pill:999px`, `--auth-icon:20px`. Google 공식 원본 G 이미지 사용, 공급자 버튼 전용 `--auth-stroke:#747775`, `--auth-ink:#1f1f1f`; 배경·간격은 공통 토큰. 카카오 준비 중은 비활성, 이메일 양식은 접힌 보조 메뉴로 보존.
 - **버튼 `.btn`**: min-height 50px, radius 13px. 주요=`--brand`+흰글자+`--shadow`, hover `--brand-dark`. 보조(ghost)=투명+`--brand` 글자+`--border` 테두리. 전폭은 width:100%.
 - **카드 `.card`**: `--card` 배경, 1px `--border`, radius 18, `--shadow`, padding 20~25.

@@ -58,11 +58,11 @@ async function start(){
  $("accountNotice").textContent=[config.operator&&"운영: "+config.operator,config.contact&&"문의: "+config.contact].filter(Boolean).join(" · ");
  if(mode==="directory"){$("accountContent").hidden=false;await renderDirectory(client);return;}
  if(mode==="signup"||mode==="login"){
- if(config.closedBeta)betaCode();const next=pendingAction();const state=await memberState(client);if(state.state!==MEMBER.anonymous&&(mode==='login'||state.membership?.member||(config.closedBeta&&betaCode()))){location.replace(config.closedBeta&&betaCode()?betaReturn():accountReturn(next));return;}
+ if(config.closedBeta)betaCode();const next=pendingAction();const state=await memberState(client);const showSignupOptions=mode==='signup'&&new URLSearchParams(location.search).get('view')==='options';if(state.state!==MEMBER.anonymous&&!showSignupOptions&&(mode==='login'||state.membership?.member||(config.closedBeta&&betaCode()))){location.replace(config.closedBeta&&betaCode()?betaReturn():accountReturn(next));return;}
  $("accountContent").hidden=false;document.querySelectorAll('a[href]').forEach(a=>{const path=new URL(a.href,location.href).pathname;if(/^\/(signup|login)(\.html)?$/.test(path))a.href=authURL(next,path.includes('login')?'login':'signup');});
  if(mode==="login"){document.getElementById("authMethods").innerHTML=authMethodsMarkup(mode);bindPhoneAuth({client,config,root:$("accountContent")});void configureSocialAuth(config,mode);}
  }
- if(mode==="signup"){if(config.earlyAccess)await renderPublicSignup({client,config,root:$("accountContent"),message});else await renderBetaSignup({client,root:$("accountContent"),message});return;}
+ if(mode==="signup"){if(config.earlyAccess)await renderPublicSignup({client,config,root:$("accountContent"),message});else await renderBetaSignup({client,root:$("accountContent"),message});if(new URLSearchParams(location.search).get('view')==='options'){const current=await memberState(client);if(current.state!==MEMBER.anonymous){$("accountNotice").textContent=current.membership?.member?'현재 로그인되어 있습니다. 기존 계정으로 계속 이용할 수 있어요.':'계정 인증이 완료됐습니다. 필수 동의로 가입을 마무리하세요.';const a=document.createElement('a');a.href=accountReturn();a.textContent=current.membership?.member?'내 정보로 돌아가기':'가입 마무리';$("accountNotice").append(' ',a);}}return;}
  if(mode==="login"){
  const oauth=provider=>action($("accountContent"),async()=>{if(location.origin!==PRODUCTION_ORIGIN){location.assign(PRODUCTION_ORIGIN+authURL(pendingAction(),"login"));return;}const {error}=await client.auth.signInWithOAuth({provider,options:{redirectTo:PRODUCTION_ORIGIN+accountReturn()}});fail(error);});
  for(const p of socialProviders)$(p.id+"Login")?.addEventListener("click",()=>oauth(p.provider));

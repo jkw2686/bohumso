@@ -15,6 +15,7 @@ try{
   const req=route.request(),u=new URL(req.url());
   if(u.origin===origin){
    if(u.pathname==='/api/config')return route.fulfill({json:{enabled:true,earlyAccess:true,signupEnabled:true,phoneVerificationEnabled:true,phoneSignupEnabled:ready,closedBeta:false,url:authOrigin,key:'fixture'}});
+   if(u.pathname==='/location.js')return route.fulfill({body:'window.startBohumsoLocation=()=>{};',contentType:'text/javascript'});
    const file=path.resolve('public','.'+u.pathname);if(!file.startsWith(path.resolve('public')+path.sep))return route.abort();
    try{return route.fulfill({body:await readFile(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.svg')?'image/svg+xml':file.endsWith('.png')?'image/png':file.endsWith('.woff2')?'font/woff2':'text/html'});}catch{return route.fulfill({status:404,body:''});}
   }
@@ -29,6 +30,7 @@ try{
     await f.db.exec('reset role');await f.db.query('update auth.users set phone_confirmed_at=now() where id=$1',[subject]);return route.fulfill({json:session});
    }
    if(u.pathname.endsWith('/user'))return route.fulfill({json:user});
+   if(u.pathname.endsWith('/office_catalog'))return route.fulfill({json:[]});
    try{await f.login(subject);return route.fulfill({json:await f.rpc(u.pathname.split('/').pop(),Object.values(body))});}catch(e){return route.fulfill({status:400,json:{message:e.message}});}
   });
  });
@@ -43,6 +45,8 @@ try{
   const measures=await page.locator('.auth-google').evaluate(el=>({height:el.getBoundingClientRect().height,radius:getComputedStyle(el).borderRadius,logo:el.querySelector('img').naturalWidth}));expect(measures.height).toBeGreaterThanOrEqual(56);expect(measures.radius).toBe('999px');expect(measures.logo).toBeGreaterThan(0);
   if(width===390)await page.screenshot({path:'artifacts/auth-'+mode+'-mobile.png',fullPage:true});
  }
+ for(const width of [320,360,390,768]){await page.setViewportSize({width,height:844});await page.goto(origin+'/index.html');await expect(page.locator('.home-membership')).toBeVisible();await expect(page.locator('[data-membership-account]')).toContainText('로그인');await expect(page.locator('[data-membership-link]')).toHaveAttribute('href','/signup.html?view=options');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);if(width===390)await page.screenshot({path:'artifacts/home-signup-entry-mobile.png'});}
+ await page.locator('[data-membership-link]').click();await expect(page.locator('#googleSignup')).toBeEnabled();
  await page.goto(origin+'/signup.html?next='+encodeURIComponent('/requests.html?purpose=claim'));
  await page.getByRole('button',{name:'Google 계정으로 계속하기'}).click();await page.waitForURL(authOrigin+'/auth/v1/authorize**');expect(new URL(page.url()).searchParams.get('redirect_to')).toBe(origin+'/account.html?next='+encodeURIComponent('/requests.html?purpose=claim'));
  await page.goto(origin+'/signup.html?next='+encodeURIComponent('/partner.html?roleIntent=expert'));
@@ -58,6 +62,7 @@ try{
  await expect(page.locator('#membershipState')).toContainText('계정 인증 완료');await expect(page.locator('#membershipForm')).toBeVisible();await expect(page.locator('[name=terms]')).not.toBeChecked();
  for(const field of ['age','terms','privacy'])await page.locator('#membershipForm [name='+field+']').check();await page.getByRole('button',{name:'동의하고 가입 완료'}).click();await expect(page.locator('#membershipState')).toContainText('회원 가입 완료');
  await serial(async()=>{await f.login(subject);expect((await f.rpc('my_membership')).member).toBe(true);expect((await f.rpc('member_rights',['list'])).consents).toHaveLength(3);});
+ await page.goto(origin+'/index.html');await expect(page.locator('[data-membership-description]')).toContainText('현재 로그인');await expect(page.getByRole('heading',{name:'무료 회원가입',exact:true})).toBeVisible();await page.locator('[data-membership-link]').click();await expect(page.locator('#googleSignup')).toBeEnabled();await expect(page.locator('#accountNotice')).toContainText('현재 로그인');expect(new URL(page.url()).pathname).toBe('/signup.html');await expect(page.getByRole('button',{name:'카카오로 계속하기 준비 중'})).toBeDisabled();await page.goto(origin+'/signup.html');await page.waitForURL(origin+'/account.html');
  expect(calls.filter(c=>c.path.endsWith('/verify')).every(c=>c.body.type==='sms')).toBe(true);expect(errors).toEqual([]);
  console.log('PASS 3 entry options, 4 mobile/desktop widths, Google callback, expert intent, invalid phone/OTP, cooldown, phone-only signup + explicit consent on real isolated DB. No live SMS/accounts.');
 }finally{await browser.close();await f.db.close();}
