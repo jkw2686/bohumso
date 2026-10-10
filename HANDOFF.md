@@ -1,21 +1,23 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
-## 2026-10-10 선택형 지도 프로필 (운영 DB 적용 완료, 화면 배포 준비)
+## 2026-10-10 선택형 지도 프로필 (운영 DB·공개 배포 완료)
+- d84ea7c → Netlify 6ac9e65fcfa4cf00082ca465, production ready/일치하는 commit_ref 확인, 2026-10-10 16:17 KST 공개. 기존 로그인 유지, 대표 partner의 선택 프로필 편집 UI 표시, 업무→자료실/검색, 소비자 암 안내의 전문가/보험소 CTA 및 서류 보조 메뉴 확인. 실제 김포 이충경 카드: 390px 화면에340px너비/283px높이, 가로넘침 없음, 메뉴·요청버튼 가림 없음. 활동지역 기준이며 GPS로 표시하지 않음. outputs/expert-profile-live-mobile.png, claim-resources-live-desktop.png(작업루트).
+- 운영 사진 API는 없는 버전에404/not_found/no-store 정상(503 또는 설정오류 아님). 실제 회원 사진 업로드·수정·삭제나 상담·SMS는 하지 않음. 사진 생명주기/ONOFF/운영자/권한은 격리DB·브라우저 테스트 통과이며 운영 실계정 변경 성공으로 보고하지 말 것. 실제 운영자 관계0으로 방문예약 별도버튼 숨김; 운영자 확인 후 연결 필요. 링크 재확인29는 확인 완료로 승격하지 않음.
 - 052_optional_expert_profile.sql: 기존 biography/photo_url/experience 재사용. 보험 취급구분/도움업무 배열 추가, office_locations.operator_user_id nullable로 실제 운영자만 연결(기존 운영자 임의 지정 없음). 경험 저장값 보존, 화면 제거. 기존 공개 조건 유지하는 catalog wrapper와 본인 선택항목 RPC. 기존 본인확인/승인/예약 불변.
 - 사진: 기존 이미지 준비 함수 재사용, 192px 중앙 정사각형 JPEG/128KB 상한·메타데이터 제외. 새 expert-photo 서버는 쓰기 본인 인증, 공개 읽기는 기존 승인 catalog, 본인 비공개 미리보기만 별도 허용. 비공개 expert-profile-photos, 브라우저 Storage 접근 차단, 자격자료 expert-documents와 분리. 운영 service-role 환경변수 재사용.
 - public/expert-profile-card.js, src/optional-profile.js/profile-editor.js, 지도/홈/목록 및 공통 CSS. 사진48px·최대340px·모바일16px여백·본문내부스크롤·하단 요청버튼. 취급구분은 본인선택 표시, 빈 옵션 숨김. 상담 OFF와 보험소 방문 상태 별도.
 - optional-profile.test.mjs / profile-photo-api.test.mjs PASS: 소유권·분류·40자·HTML거부·선택비우기·원복/재실행·기존경력/승인유지·공개조건·파일검증·공개정지·자격사진분리. optional-profile-browser 320/390/1440 긴 소속/40자/글자확대/ONOFF/운영자/사진등록변경삭제/새로고침/비우기 PASS. 앞선6개안내 로그인전후5폭/자료실5폭 및 방문격리DB 검사 PASS.
 -- 운영052+Storage 단일트랜잭션 적용 성공. 최초 SQL 편집기에 이전 조회 일부가 남아 syntax error로 실행되지 않았고, 전체 지운 뒤 검증된 실행본을 입력하여 성공 확인. 적용 전후 users4/members2/bookings0/planner_directory2, 공개2 동일. 기존회원 snapshot 및 소개/사진/경력 비교 모두 보존 true. 함수백업2/프로필백업2/구조·회원·건수snapshot3. 사진/기존자격 bucket 비공개 true, 익명 선택수정/일반회원 사진서버함수 권한 false, 직접 Storage 차단정책 존재. 운영자 연결0은 임의 지정하지 않음.
 -- artifacts/optional-profile-production.sql 실행본, supabase/rollback_optional_expert_profile.sql 원복, private.optional_profile_* 접근차단 백업. 원복 기존코드 b70ddb8. outputs/optional-profile-db-verification.png 증거(작업루트). SQL tab39는 읽기 검증문만 남음.
--- 홈/지도 회귀 및 전체 배포 build PASS. 다음: 커밋/main 정상FF배포, 실제페이지 확인·스크린샷. 현재 branch codex/expert-help-resources, 원격main b70ddb8 확인. 미추적deno.lock, 다른branch049/050 제외.
+- 홈/지도 회귀 및 전체 배포 build PASS. main 정상FF 배포 완료. 현재 branch codex/expert-help-resources. 원복은 d84ea7c revert + rollback_optional_expert_profile.sql을 검토 후 적용(신규자료 보존), 기존 배포6ac9cab016099a00086d2156 참조. 미추적deno.lock, 다른branch049/050 제외.
 
 ## 2026-10-10 전문가 직접 선택·청구지원 자료실 (구현·검증 완료)
-- branch codex/expert-help-resources, 원복 기준 b70ddb8. 아직 운영 배포하지 않음. 사용자 요청 순서: 이 작업 → 선택형 지도 프로필 개선 → 함께 배포.
+- branch codex/expert-help-resources, 원복 기준 b70ddb8. 사용자 요청 순서대로 자료실 → 선택형 지도 프로필 개선 → d84ea7c 함께 운영 배포 완료.
 - 6개 상황 안내는 전문가 직접 선택이 주 행동, 보험소 방문은 보조. 서류 자료는 접힌 보조 메뉴. 지도 선택 전문가·상황·지역과 요청 희망시간 유지, 방문 요청 뒤로가기 입력 유지(동의 재확인). 기존 인증/예약/운영 상태 유지.
 - public/claim-resources{.html,.css,.js,-data.js}: 전문가 업무 진입, 검색/신청자별 준비사항/보험사 비교/안내 복사·공유. 병원47, 개인청구 보험38, 연금1, 기타2, 공식 서비스3 = 91. 기존8자료 보존, 상세41/홈페이지21/재확인29. 미검증 링크를 상세 확인 완료로 표시하지 않음. 47병원은 2024~2026 상급종합 지정 목록 범위.
 - 첨부 national ZIP의 CODEX_INSTRUCTIONS.md/범위문서 반영, artifacts/national-links-input에 원본(배포/커밋 제외). scripts/audit-claim-links.mjs는 HTTP PC/모바일 UA 점검이며 실제 기기 전체 검증과 다름. DB 이전 상세 유지, AXA 404는 공식홈페이지로 대체. 분당서울대 실제 브라우저 상세 안내 확인.
 -- 자료실 320/360/390/768/1440 검색·별칭·분류·신청자·키보드·비교·복사/공유·가로넘침, 선택 전문가/18시 저장 복귀/요청 미확정 회귀 PASS. 전문가 방문 기존 격리DB+브라우저 PASS. 6상황 로그인 전후5폭 회귀 PASS. 실제 SMS/공유/상담 신청 없음.
--- 후속 선택형 프로필 구현 및 운영DB 적용 완료(위). deno.lock와 별도049/050 대기 작업 제외. 두 변경을 함께 배포 준비.
+- 후속 선택형 프로필 구현 및 운영DB 적용 완료(위). deno.lock와 별도049/050 대기 작업 제외. 두 변경 함께 운영 배포·실화면 확인 완료.
 
 ## 2026-10-10 6개 상황별 보험금 청구 도움 후속 화면
 - 사용자 첨부37093718, 앞선 이충경 노출 복구 운영 확인 후 시작. branch codex/claim-help-guides, 원복 기준7ee4f69. 홈 자체 디자인/로고/가입 방식/관리자/가격/운영 ON/OFF/위치/DB는 변경하지 않음.
