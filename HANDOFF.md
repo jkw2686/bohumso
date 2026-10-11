@@ -457,3 +457,14 @@
 - Supabase 편집기 입력은 파일 최종 변경보다 오래된 버전일 수 있음. 승인 후 반드시 024 파일을 다시 읽어 입력하고 실행. 025/024 이력은 private.schema_migrations(name)에 기록.
 
 
+
+## 2026-10-11 지도 빈 지역 안내 · 전문가 업무 첫 화면 · 약속 안내 장애 내성 (배포 완료)
+- 배포 3회. `bbf4a7d` 빈 지역 오픈 알림 신청 연결 → `7ca9e70` 그 안내가 접힌 시트에서 통째로 가려지던 결함 수정 → `a2f813a` 전문가 업무 첫 화면 순서 → `63e8161` 약속 안내 장애 내성. 운영 반영 확인 완료.
+- **빈 지역 가림 결함**: `map.css` 205행(`:not(.open) .list-body`)·209행(`≥900px .is-empty .list-body`)이 `.list-body` 를 숨기는데 안내를 그 안에 넣어 모바일·데스크톱 모두 높이 0 이었다. 기존 `#areaRequest` 까지 그 안으로 옮겨 함께 사라졌다. 안내를 시트 직계로 옮기고 `.is-empty` 140px 고정을 해제해 해결. 상세는 `docs/map-empty-waitlist-20261011.md` §7.
+  - 테스트가 못 잡은 이유: `pickRegion` 이 "사용자가 손잡이를 올린다"는 전제로 시트를 대신 펼쳐 줬다. 빈 상태에선 펼쳐도 본문이 안 보여 전제가 틀렸다. 이제 기본(접힌) 상태의 실제 높이·시트 내 포함을 360/390/1280 에서 측정한다.
+- **전문가 업무 첫 화면**: `/partner-work.html` 맨 위를 `지금 방문 ON/OFF → 청구지원 자료실` 로 고정. 자료실 카드에 `data-expert-resources` 표식을 달아 await 전에 먼저 옮긴다. 390x844 에서 스위치 버튼·자료실 링크 모두 첫 화면 안. `tests/expert-workspace-order-browser.mjs`.
+- **약속 안내(appointment_care) 장애 내성**: `careStatus` 는 미적용(PGRST202/42883)만 null 로 낮추고 나머지는 재던진다. 그 예외가 방문 내역 렌더를 중단시켜 '희망시간 수락' 버튼이 사라졌고, 더 큰 지점으로 `workflow.js:11` 이 상담·일정 목록 전체를 막고 있었다. `careStatusSafe`/`getCareSafe` 를 두고 화면에서만 사용. `tests/expert-visits-care-outage-browser.mjs` 로 회귀 포착 확인(제품 수정 되돌리고 재빌드하면 실패).
+- **운영 읽기 전용 확인 (2026-10-11 13:59 KST)**: 운영 `appointment_care` 는 **미적용**. 응답 `code: PGRST202`, HTTP 404, "Could not find the function public.appointment_care(operation, payload)". `serviceStage=PRODUCTION`, `earlyAccess=true`.
+  - 따라서 운영에서는 `careStatus` 가 이미 깨끗이 null 을 반환하고 있었다. **이번 수정은 운영 장애를 고친 것이 아니라, appointment_care 적용 이후 또는 일시 500·타임아웃 상황에 대비한 선제 보강이다.** 과장하지 말 것.
+- 미확인: `/partner-work.html` 운영 화면의 실제 카드 순서·방문 내역 로드. 승인된 전문가 로그인이 필요해 대표 계정으로 로그인하지 않았다. 실제 번들·실제 페이지·격리 DB 테스트로만 확인됨.
+- 테스트 하네스 교훈 2가지: (1) RPC 오류에서 `code` 를 버리면 미적용 판정이 깨진다. (2) 브라우저 테스트는 `public/assets/` 빌드 산출물을 로드하므로 `src/` 만 되돌려서는 회귀 재현이 안 된다. 반드시 재빌드 후 비교할 것.
