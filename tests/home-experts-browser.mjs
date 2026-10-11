@@ -28,11 +28,15 @@ try{
  for(const width of [320,360,390,1440]){
   await page.setViewportSize({width,height:844});await page.goto('https://fixture.test/index.html');
   await expect(page.locator('#homeExpertList')).toBeEmpty();await providers();
-  await expect(page.locator('.home-expert-pin')).toHaveCount(1);
+  // 3-6: 전문가 활동지역과 보험소가 같은 좌표라 처음에는 숫자 묶음 하나로 보인다.
+  await expect(page.locator('.spot-cluster')).toHaveCount(1);
+  await expect(page.locator('.spot-cluster')).toHaveText('3');  // 전문가 + 보험소 + 샘플 전문가
   await expect(page.locator('#homeExpertList .btn')).toHaveCount(2);
   await expect(page.getByText('예시 전문가',{exact:true})).toHaveCount(0);
   await expect(page.locator('#homeExpertList a')).toHaveAttribute('href','/map.html?view=experts&region='+encodeURIComponent('경기 하남시')+'&planner=no-point');
+  // 목록에서 전문가를 고르면 묶음이 펼쳐지고 그 핀으로 포커스가 간다.
   await page.getByRole('button',{name:'김포 전문가 · 경기 김포시 활동지역 보기',exact:true}).press('Enter');
+  await expect(page.locator('.home-expert-pin')).toHaveCount(1);
   await expect(page.locator('#homeMap .home-expert-pin')).toBeFocused();
   const popup=page.locator('#homeMap .leaflet-popup');
   await expect(popup).toContainText('김포 전문가');await expect(popup).toContainText('공개 소속');await expect(popup).toContainText('경기 김포시');
@@ -50,7 +54,15 @@ try{
   await page.locator('#homeMap .leaflet-popup-close-button').click();await expect(page.locator('#homeMap .leaflet-control-zoom')).toBeVisible();
   console.log('PASS home public experts: scheduled profile, shared coordinate, region link, keyboard, compact popup, width',width);
  }
- await page.goto('https://fixture.test/index.html');await providers({officeError:true});await expect(page.locator('.home-expert-pin')).toHaveCount(1);
- await page.goto('https://fixture.test/index.html');await providers({catalogError:true});await expect(page.locator('[title="공개 보험소 · 운영 중"]')).toHaveCount(1);await expect(page.locator('#homeExperts')).toBeHidden();
+ // 보험소 조회가 실패해도 전문가 핀은 남는다. 개설 예정 거점과 같은 좌표라 처음에는 묶여 보인다(3-6).
+ await page.goto('https://fixture.test/index.html');await providers({officeError:true});
+ await expect(page.locator('.spot-cluster')).toHaveText('2');
+ await page.getByRole('button',{name:'김포 전문가 · 경기 김포시 활동지역 보기',exact:true}).press('Enter');
+ await expect(page.locator('.home-expert-pin')).toHaveCount(1);
+ // 전문가 조회가 실패해도 보험소 핀은 남는다. 개설 예정 거점과 겹쳐 묶음으로 보이고, 누르면 펼쳐진다.
+ await page.goto('https://fixture.test/index.html');await providers({catalogError:true});
+ await expect(page.locator('.spot-cluster')).toHaveText('2');
+ await page.locator('.spot-cluster').click();
+ await expect(page.locator('[title="공개 보험소 · 운영 중"]')).toHaveCount(1);await expect(page.locator('#homeExperts')).toBeHidden();
  expect(errors).toEqual([]);console.log('PASS independent catalog failures, late service readiness, no duplicate pins. No live data changed.');
 }finally{await browser.close();}

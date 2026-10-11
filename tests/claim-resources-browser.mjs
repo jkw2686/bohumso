@@ -16,7 +16,11 @@ try{
   await expect(page.locator('#resourceList .resource-row')).toHaveCount(91);
   await expect(page.locator('input:visible')).toHaveCount(1);await expect(page.locator('select:visible')).toHaveCount(0);
   const categoryColors=await page.locator('#resourceCategories button').evaluateAll(buttons=>buttons.map(button=>getComputedStyle(button).backgroundColor));expect(categoryColors[0]).not.toBe(categoryColors[1]);
-  await expect(page.locator('#comparisonTools')).not.toHaveAttribute('open','');await expect(page.locator('#preparationTools')).not.toHaveAttribute('open','');
+  await expect(page.locator('#comparisonTools')).not.toHaveAttribute('open','');
+  // 3-2: '안내문 만들기' 는 삭제됐다. 패널·선택 체크박스·복사/공유 버튼이 남아 있으면 안 된다.
+  await expect(page.locator('#preparationTools')).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'선택한 안내문 보기',exact:true})).toHaveCount(0);
+  await expect(page.locator('main')).not.toContainText('안내문');
   if(width===390)await page.screenshot({path:'artifacts/resources-simple-mobile.png'});
   await page.getByLabel('병원·지역·보험사 검색',{exact:true}).fill('서울 삼성');await expect(page.locator('#resourceList .resource-row')).toHaveCount(2);
   await expect(page.locator('#resourceList h3').first()).toHaveText('삼성서울병원');
@@ -25,9 +29,9 @@ try{
   await page.locator('#resourceList .resource-detail-toggle').press('Enter');await expect(page.locator('#resourceList .resource-detail-toggle')).toHaveAttribute('aria-expanded','true');
   await page.getByRole('button',{name:'링크 복사',exact:true}).click();expect(await page.evaluate(()=>window.copiedText)).toBe(resources.find(r=>r.id==='snubh').url);await expect(page.getByRole('link',{name:'링크 오류 제보',exact:true})).toHaveAttribute('href','/support.html?resource=snubh');await expect(page.locator('#resourceList')).toContainText('원자료:');
   await page.getByLabel('분당서울대학교병원 기록 발급 신청자',{exact:true}).selectOption('family');await expect(page.locator('#resourceList')).toContainText('친족 신청');
-  await page.locator('#resourceList input[type=checkbox]').first().check();await page.getByRole('button',{name:'선택한 안내문 보기',exact:true}).click();
-  await expect(page.locator('#preparationText')).toHaveValue(/친족 신청/);await page.getByRole('button',{name:'안내 복사',exact:true}).click();expect(await page.evaluate(()=>window.copiedText)).toContain('www.snubh.org');
-  await page.getByRole('button',{name:'공유',exact:true}).click();expect((await page.evaluate(()=>window.sharedData)).text).toContain('친족 신청');
+  // 안내문 선택 체크박스는 없어졌다. 검색·공식 링크·준비사항 표시는 그대로여야 한다.
+  await expect(page.locator('#resourceList input[type=checkbox]')).toHaveCount(0);
+  await expect(page.locator('#resourceList')).toContainText('접수·발급 방법');
   await page.getByLabel('병원·지역·보험사 검색',{exact:true}).fill('부산 병원');await expect(page.locator('#resourceList .resource-row')).toHaveCount(5);
   await page.getByRole('button',{name:'병원',exact:true}).click();await expect(page.getByRole('button',{name:'병원',exact:true})).toHaveAttribute('aria-pressed','true');
   // A new search starts from all institutions, not a previous category.
@@ -44,9 +48,8 @@ try{
   for(const a of await page.locator('a[target=_blank]').all())expect(await a.getAttribute('rel')).toBe('noopener noreferrer');
   await page.getByRole('button',{name:'전체 목록',exact:true}).click();await page.getByLabel('병원·지역·보험사 검색',{exact:true}).fill('강남구');await expect(page.locator('#resourceList .resource-row')).toHaveCount(2);
   if(width===390)await page.screenshot({path:'artifacts/resources-simple-search-mobile.png'});
-  console.log('PASS one-field list, reordered search, categories, relation details, keyboard, copy/share and overflow',width);
+  console.log('PASS one-field list, reordered search, categories, relation details, keyboard, link copy, no guide-builder and overflow',width);
  }
- await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{value:{writeText:async()=>{throw Error('denied');}}}));await page.getByRole('button',{name:'안내 복사',exact:true}).click();await expect(page.locator('#preparationText')).toBeFocused();await expect(page.locator('#preparationStatus')).toContainText('안내문을 선택');
  await page.goto('https://fixture.test/claim-resources.html?view=consumer&purpose=claim&situation=death');await expect(page.locator('#resourceBack')).toHaveAttribute('href','/map.html?view=experts&purpose=claim&situation=death');
  await page.goto('https://fixture.test/wizard?planner=selected-expert&region='+encodeURIComponent('경기 김포시')+'&situation=cancer&purpose=claim&method=phone');await expect(page.locator('#wizard')).toContainText('암 진단');await expect(page.getByRole('button',{name:'지역 변경',exact:true})).toHaveCount(0);await page.getByRole('button',{name:/내일/}).click();await page.getByRole('button',{name:'18:00',exact:true}).click();const url=page.url();await page.reload();await expect(page.getByRole('button',{name:'18:00',exact:true})).toHaveAttribute('aria-pressed','true');expect(Object.fromEntries(new URL(page.url()).searchParams)).toEqual(Object.fromEntries(new URL(url).searchParams));await page.getByRole('button',{name:'이 시간으로 신청',exact:true}).click();await expect(page.locator('#wizard')).toContainText('전문가 수락');const commands=await page.evaluate(()=>window.commands);expect(commands).toHaveLength(1);expect(commands[0][1].planner_id).toBe('selected-expert');expect(commands[0][1].office_assignment).toBe(false);expect(commands[0][1].method).toBe('phone');expect(commands[0][1]).not.toHaveProperty('documents');expect(errors).toEqual([]);console.log('PASS selected expert, context, back/reload time retention and pending request. No real request or external share sent.');
 }finally{await browser.close();}

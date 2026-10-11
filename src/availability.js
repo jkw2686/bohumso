@@ -1,4 +1,6 @@
-export const availabilityLabels={now:'🟢 지금 가능',today:'🟡 오늘 가능',scheduled:'⚪ 예약 가능',unavailable:'🔴 상담 불가'};
+// 이모지 대신 CSS 점으로 상태를 보인다(3-6). 색만으로 구분하지 않도록 글자를 항상 함께 둔다.
+export const availabilityLabels={now:'지금 가능',today:'오늘 가능',scheduled:'예약 가능',unavailable:'상담 불가'};
+export const availabilityClass=status=>'avail-badge avail-'+status;
 export function availabilityOf(p,now=Date.now()){
  if(!p.available)return 'unavailable';
  if(['now','today'].includes(p.availability_status)&&Date.parse(p.availability_until)>now)return p.availability_status;

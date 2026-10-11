@@ -108,4 +108,9 @@ async function start(){
  if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
  $("accountContent").hidden=false;
 }
-start().catch(e=>{message(safeError(e));$("accountContent").hidden=true;$("accountNotice").textContent="회원 서비스 연결 상태를 확인할 수 없습니다.";});
+// 로딩 그림 자리(3-6)는 내용이 떴거나 오류 안내가 나오면 감춘다. 안 붙어 있는 화면도 있어 없으면 넘어간다.
+const loadingArt=document.querySelector('[data-art-slot="loading"]');
+if(loadingArt){const content=$("accountContent");
+ const settle=()=>{if(!content.hidden)loadingArt.hidden=true;};
+ new MutationObserver(settle).observe(content,{attributes:true,attributeFilter:["hidden"]});settle();}
+start().catch(e=>{message(safeError(e));$("accountContent").hidden=true;$("accountNotice").textContent="회원 서비스 연결 상태를 확인할 수 없습니다.";if(loadingArt)loadingArt.hidden=true;});

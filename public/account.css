@@ -161,3 +161,21 @@ body[data-account-page="partner"] #optionalProfileBody,
 body[data-account-page="partner"] #consultSettingsBody{margin-top:var(--space-3)}
 body[data-account-page="partner"] .profile-status:empty{display:none}
 body[data-account-page="partner"] .profile-status{margin:var(--space-2) 0 0;color:var(--muted);font-size:var(--type-small);line-height:1.6}
+
+/* 관리자 문의함(3-3) — ▶ 접힘 대신 제목 + 미처리 배지. admin 화면으로만 범위를 좁힌다. */
+body[data-account-page="admin"] .admin-rights-head{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-2)}
+body[data-account-page="admin"] .admin-rights-head h2{margin:0}
+body[data-account-page="admin"] .admin-badge{display:inline-block;padding:4px 10px;border-radius:999px;
+  background:var(--brand);color:var(--card);font-size:var(--type-small);font-weight:700;line-height:1.5;white-space:nowrap}
+body[data-account-page="admin"] .admin-open-summary{margin:0 0 var(--space-3);border-left:4px solid var(--brand);
+  font-weight:700;color:var(--text)}
+
+/* 전문가 화면 상단 고객센터 진입(3-1). 기존 nav 링크와 같은 크기를 쓰되 터치 44px 을 보장한다. */
+body:is([data-account-page="partner"],[data-account-page="requests"]) .nav [data-expert-support]{
+  display:inline-flex;align-items:center;min-height:44px;padding:0 var(--space-2)}
+
+/* 전문가 가입 실명 입력(3-5) — 규칙 안내와 즉시 피드백. */
+body[data-account-page="partner"] .field-hint{margin:var(--space-2) 0 0;color:var(--muted);font-size:var(--type-small);line-height:1.6}
+body[data-account-page="partner"] .field-error:empty{display:none}
+body[data-account-page="partner"] .field-error{margin:var(--space-2) 0 0;color:var(--danger-text);font-size:var(--type-small);line-height:1.6;font-weight:600}
+body[data-account-page="partner"] .name-change-request{display:inline-flex;align-items:center;min-height:44px;margin-inline-start:var(--space-2)}

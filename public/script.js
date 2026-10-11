@@ -207,7 +207,7 @@ function submitConsult(e) {
   e.preventDefault();
   const f = e.target.elements;
   const body =
-    '📩 상담 신청\n' +
+    '상담 신청\n' +
     '이름: ' + f['이름'].value + '\n' +
     '연락처: ' + f['연락처'].value + '\n' +
     '유형: ' + f['상담유형'].value + '\n' +
@@ -232,9 +232,9 @@ function popupHtml(o) {
   const telDigits = (o.tel || '').replace(/[^0-9]/g, '');
   return '<div class="mk-pop">' +
     '<div class="mk-name">' + o.name + (o.operator ? ' <span class="mk-op">(' + o.operator + ')</span>' : '') + '</div>' +
-    (o.addr ? '<div class="mk-row">📍 ' + o.addr + '</div>' : '') +
-    (o.hours ? '<div class="mk-row">🕘 ' + o.hours + '</div>' : '') +
-    (o.tel ? '<div class="mk-row">📞 ' + o.tel + '</div>' : '') +
+    (o.addr ? '<div class="mk-row">주소 · ' + o.addr + '</div>' : '') +
+    (o.hours ? '<div class="mk-row">운영 · ' + o.hours + '</div>' : '') +
+    (o.tel ? '<div class="mk-row">전화 · ' + o.tel + '</div>' : '') +
     '<button class="mk-btn" onclick="openBooking(\'' + o.id + '\')">예약하기</button>' +
     '</div>';
 }
@@ -277,9 +277,9 @@ function openBooking(id) {
   document.getElementById('bookMeta').textContent = o.meta;
   const telDigits = (o.tel || '').replace(/[^0-9]/g, '');
   document.getElementById('bookInfo').innerHTML =
-    (o.addr ? '<div class="bi-row">📍 ' + o.addr + '</div>' : '') +
-    (o.hours ? '<div class="bi-row">🕘 ' + o.hours + '</div>' : '') +
-    (o.tel ? '<div class="bi-row">📞 <a href="tel:' + telDigits + '">' + o.tel + '</a></div>' : '');
+    (o.addr ? '<div class="bi-row">주소 · ' + o.addr + '</div>' : '') +
+    (o.hours ? '<div class="bi-row">운영 · ' + o.hours + '</div>' : '') +
+    (o.tel ? '<div class="bi-row">전화 · <a href="tel:' + telDigits + '">' + o.tel + '</a></div>' : '');
   document.getElementById('bookOverlay').classList.add('show');
 }
 

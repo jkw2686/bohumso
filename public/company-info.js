@@ -7,4 +7,11 @@ export function renderCompanyInfo(root,info=COMPANY_INFO){
  root.replaceChildren();const labels={companyName:'운영사',representative:'대표자',businessNumber:'사업자등록번호',ecommerceNumber:'통신판매업 신고번호',address:'주소',phone:'대표 전화',supportEmail:'고객·개인정보 문의',privacyOfficer:'개인정보 문의 담당부서'};
  for(const [key,label]of Object.entries(labels)){const value=info[key];if(typeof value!=='string'||!value.trim())continue;const p=document.createElement('p');p.textContent=label+' · ';if(key==='supportEmail'&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)){const a=document.createElement('a');a.href='mailto:'+value;a.textContent=value;p.append(a);}else p.append(document.createTextNode(value));root.append(p);}root.hidden=!root.childElementCount;
 }
+// 문의 이메일은 COMPANY_INFO 한 곳에서만 읽는다. 화면에서는 [data-support-email] 로 표시한다.
+export function renderSupportEmail(node,info=COMPANY_INFO){
+ const value=(info.supportEmail||'').trim();node.replaceChildren();
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)){node.hidden=true;return;}
+ const a=document.createElement('a');a.href='mailto:'+value;a.textContent=value;node.append(a);node.hidden=false;
+}
 document.querySelectorAll('[data-company-info]').forEach(root=>renderCompanyInfo(root));
+document.querySelectorAll('[data-support-email]').forEach(node=>renderSupportEmail(node));

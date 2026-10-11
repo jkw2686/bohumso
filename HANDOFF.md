@@ -522,3 +522,9 @@
 - 인벤토리 정정: 실행 집합은 52가 아니라 **55개**. `admin-console.cjs` 는 파일명에 `browser` 가 없어 `tests/*browser*` 실행에서 빠진다. `expert-browser.mjs` 는 main 에서도 통과하므로 실패 목록에서 뺐고 `requests-browser-legacy.cjs` 를 넣었다.
 - 전/후 390 캡처: `artifacts/expert-profile-{before,after}-390-{top,full}.png`. `▶` 3개 → 0개, 지금 방문 카드가 첫 화면 맨 위.
 - 상세: `docs/expert-profile-page-20261011.md`. **main 병합·Netlify 배포는 하지 않았다 — 대표 승인 후.**
+
+### 2026-10-11 2단계 운영 배포 (main 5aa281f)
+- 병합 시각 10:09 UTC, main `5aa281f` (15개 파일, +806/−27). PR jkw2686/bohumso#1 merged 로 자동 종료.
+- **운영 실측(A-4 ⑨)은 하지 못했다.** 이 컨테이너의 네트워크 정책이 `bohumso.netlify.app` 을 막는다(`CONNECT tunnel failed, 403`). `login-brand-browser.mjs` 가 `ERR_TUNNEL_CONNECTION_FAILED` 로 실패하는 것과 같은 제약이다.
+- **Netlify 빌드·배포 성공 여부도 컨테이너에서 확인하지 못했다.** 확인한 것은 GitHub 에 커밋이 올라갔다는 것까지다. 배포 ID·운영 화면 캡처는 비어 있다.
+- 남은 확인(대표 또는 도메인 허용 후): `/partner.html` 승인 계정에서 ① 지금 방문 카드 맨 위 ② ▶ 0개 ③ 콘솔 오류 0, 360/390 캡처.
