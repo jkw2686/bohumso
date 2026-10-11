@@ -61,9 +61,20 @@ ROADMAP 2단계. 중단 지점(`fix/expert-profile-page` `16b0636`)을 인수해
 ④ 연락처 뒤 4자리·요약 갱신 · ⑤ 하단 링크·옛 링크 제거·승인 전 안내 ·
 ⑥ `▶` 0개(펼친 뒤에도)·Tab/Enter·포커스 이동 · ⑦ 4폭 넘침 0·버튼 48px·대비 6.68:1 · 콘솔 오류 0.
 
-### 전체 회귀
+### 전체 회귀 (제품 변경 이후 다시 돌린 결과)
 
-`npm test` 113/113, `node scripts/build.mjs` 통과, 브라우저 전체 재실행 결과는 §5.
+| 항목 | 결과 |
+|---|---|
+| `npm test` | **113 / 113 통과** |
+| `node scripts/build.mjs` | **통과** |
+| 브라우저 전체 55개 | **통과 35 / 실패 20** |
+| 실패 20건 | **사전에 main 대조로 확인한 '원래부터 실패' 20건과 정확히 일치.** 차집합 0 |
+
+→ **이번 변경으로 새로 깨진 테스트 0건.**
+
+컨테이너는 Edge 가 없어 Chromium 으로 돌렸다
+(`PLAYWRIGHT_CHANNEL='' PLAYWRIGHT_EXECUTABLE_PATH=/opt/pw-browsers/chromium`).
+`tests/playwright-launch.cjs` 기본값(msedge)은 그대로라 개발자 PC 동작은 바뀌지 않는다.
 
 ## 5. 브라우저 테스트 인벤토리 정정
 
