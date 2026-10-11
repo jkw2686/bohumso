@@ -95,7 +95,16 @@ async function start(){
  if(mode==="phone")await renderPhoneVerification({client,config,root:$("accountContent")});
  if(mode==="account")await renderAccount();
  if(mode==="partner"&&membership.beta_role==="EXPERT"){await renderBetaExpert(client,$("accountContent"));$("accountContent").hidden=false;return;}
- if(mode==="partner"){const applicationStatus=await renderPartner();if(membership.partner_status)await renderServiceArea(client,$("accountContent"));if(membership.profession==="planner"&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));}
+ if(mode==="partner"){const applicationStatus=await renderPartner();
+  // ① 지금 방문 상담 카드를 신청 정보 카드보다 위에 둔다. partner-work 와 같은 renderInstant 를
+  //    그대로 쓴다(새로 만들지 않는다). 승인 전에는 카드 대신 안내 한 줄만 보여준다.
+  const top=document.createElement('div');$("accountContent").prepend(top);
+  if(applicationStatus==='approved')await renderInstant(client,top);
+  else{const note=document.createElement('p');note.className='card';note.textContent='승인 후 지금 방문 상담을 켤 수 있어요';top.append(note);}
+  if(membership.partner_status)await renderServiceArea(client,$("accountContent"));
+  if(membership.profession==="planner"&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));
+  // ⑤ 다른 화면으로 가는 링크는 맨 아래에.
+  const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink)$("accountContent").append(workLink);}
  if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
  $("accountContent").hidden=false;
 }
