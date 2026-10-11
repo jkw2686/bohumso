@@ -209,6 +209,145 @@ test('11) planner_catalog 가 availability_until 을 내려주고 좌표는 비�
   await f.db.close();
 });
 
+test('12) 숨김 전에 받은 상담 요청: 수락·연락처·일정변경·완료가 모두 된다', async () => {
+  const f = await setup();
+  const when = f.slot(4);
+  await f.login(ids.customer);
+  const made = await f.cmd('request', {planner_id: ids.planner, purpose: 'claim', region: '경기 분당',
+    method: 'scheduled', request_key: crypto.randomUUID(), preferred_at: when});
+  await f.login(ids.planner);
+  await f.cmd('accept', {id: made.id, revision: (await f.row(made.id, 'partner')).revision});
+
+  // 전문가가 지도를 숨긴다.
+  const s = await settings(f, 'map', {enabled: false, confirmed: true, revision: (await state(f)).revision});
+  assert.equal(s.mapEnabled, false);
+
+  // 고객은 그대로 확정할 수 있다.
+  await f.login(ids.customer);
+  await f.cmd('confirm', {id: made.id, revision: (await f.row(made.id)).revision, name: '확인 고객', share_consent: true});
+  assert.equal((await f.row(made.id)).state, 'scheduled');
+
+  // 전문가 화면에서 고객 연락처가 보인다.
+  await f.login(ids.planner);
+  const seen = await f.row(made.id, 'partner');
+  assert.ok(seen.contact?.phone, '숨긴 뒤에도 확정된 예약의 연락처는 보여야 한다');
+
+  // 일정 변경(새 시각 제안)도 된다. 055 이후 propose 는 상대 확인용 제안 행을 만들고
+  // 예약 상태는 scheduled 로 유지한다.
+  const next = f.slot(6);
+  await f.cmd('propose', {id: made.id, revision: seen.revision, preferred_at: next});
+  await f.db.exec('reset role');
+  const proposed = await f.db.query(
+    "select count(*)::int n from private.consultation_schedule_proposals where consultation_id=$1 and state='pending'", [made.id]);
+  assert.equal(proposed.rows[0].n, 1, '숨긴 뒤에도 일정 재제안이 된다');
+  await f.db.close();
+});
+
+test('13) 관리자 정지는 노출·신규·방문을 모두 끄고, 재승인은 방문을 복원하지 않는다', async () => {
+  const f = await setup();
+  await f.login(ids.planner);
+  const before = await state(f);
+  assert.equal(before.visitEnabled, true);
+
+  await f.login(ids.admin);
+  await f.rpc('early_expert_review', ['suspend', {user_id: ids.planner, reason: '격리 테스트 정지 사유'}]);
+
+  await f.db.exec('reset role');
+  const row = await f.db.query('select enabled,latitude from private.instant_availability where user_id=$1', [ids.planner]);
+  assert.equal(row.rows[0].enabled, false, '정지 시 지금 방문이 즉시 꺼진다');
+  assert.equal(row.rows[0].latitude, null, '좌표도 지운다');
+
+  await f.login(ids.customer);
+  const list = await f.rpc('planner_catalog', ['', '']);
+  assert.equal(list.planners.some(p => p.id === ids.planner), false, '정지된 전문가는 목록에서 빠진다');
+  await assert.rejects(() => f.cmd('request', {planner_id: ids.planner, purpose: 'claim', region: '경기 분당',
+    method: 'scheduled', request_key: crypto.randomUUID(), preferred_at: f.slot(4)}),
+    /invalid_partner|expert_not_visible/, '정지된 전문가에게 신규 요청은 거부된다');
+
+  // 재승인해도 지금 방문은 꺼진 채로 둔다. 전문가가 직접 켜야 한다.
+  await f.login(ids.admin);
+  await f.rpc('early_expert_review', ['approve', {user_id: ids.planner, reason: '격리 테스트 재승인 사유', organization: '격리 테스트 소속', registration_reference: 'TEST-REF-001'}]);
+  await f.db.exec('reset role');
+  const after = await f.db.query('select enabled from private.instant_availability where user_id=$1', [ids.planner]);
+  assert.equal(after.rows[0].enabled, false, '재승인은 방문을 자동 복원하지 않는다');
+  await f.db.close();
+});
+
+test('14) 활동지역 저장은 승인 상태와 지도 노출을 바꾸지 않는다', async () => {
+  const f = await setup();
+  await f.db.exec('reset role');
+  const before = await f.db.query('select status,map_visible from private.expert_profiles where user_id=$1', [ids.planner]).then(r => r.rows[0]);
+
+  await f.login(ids.planner);
+  const s = await state(f);
+  await f.db.exec('reset role');
+  const areas = await f.db.query("select id from private.service_areas order by id limit 2").then(r => r.rows.map(x => x.id));
+  await settings(f, 'area', {primary: areas[0], secondary: areas.slice(1), revision: s.revision});
+  await f.db.exec('reset role');
+
+  await f.db.exec('reset role');
+  const after = await f.db.query('select status,map_visible from private.expert_profiles where user_id=$1', [ids.planner]).then(r => r.rows[0]);
+  // 058 의 save_areas 는 expert_profiles 를 update 하므로 034 로스터 트리거가 함께 돈다.
+  assert.equal(after.status, before.status, '활동지역 저장이 승인 상태를 바꾸면 안 된다');
+  assert.equal(after.map_visible, before.map_visible, '활동지역 저장이 지도 노출을 바꾸면 안 된다');
+  await f.db.close();
+});
+
+test('15) 보험소 운영시간이 바뀌어도 기존 예약은 원래 시각으로 확정된다 (059)', async () => {
+  const f = await setup();
+  await f.db.exec('reset role');
+  await f.db.exec(`insert into private.office_locations(id,name,region,status,address,latitude,longitude,weekdays)
+    values('hours-office','시간변경 보험소','경기 분당','active','테스트 사무실',37.3,127.1,array[0,1,2,3,4,5,6])`);
+  // 18:00 시작은 기본 last_start_hour=18 에서 허용된다.
+  const day = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
+  const when = day + 'T18:00:00+09:00';
+  await f.login(ids.customer);
+  const made = await f.cmd('request', {office_id: 'hours-office', office_assignment: true, purpose: 'claim',
+    region: '경기 분당', method: 'scheduled', request_key: crypto.randomUUID(), preferred_at: when});
+  await f.login(ids.admin);
+  await f.cmd('office_assign', {id: made.id, revision: (await f.row(made.id, 'admin')).revision, planner_id: ids.planner});
+  await f.login(ids.planner);
+  await f.cmd('accept', {id: made.id, revision: (await f.row(made.id, 'partner')).revision});
+
+  // 운영시간을 줄인다. 기존 예약 시각(18:00)이 새 운영시간 밖이 된다.
+  await f.db.exec('reset role');
+  await f.db.exec("update private.office_locations set last_start_hour=12 where id='hours-office'");
+
+  // 원래 시각 확정은 성공해야 한다.
+  await f.login(ids.customer);
+  await f.cmd('confirm', {id: made.id, revision: (await f.row(made.id)).revision, name: '확인 고객', share_consent: true});
+  assert.equal((await f.row(made.id)).state, 'scheduled', '원래 시각 확정은 운영시간 변경과 무관하게 된다');
+
+  // 새 시각 제안은 바뀐 운영시간으로 검사한다.
+  const rev = (await f.row(made.id)).revision;
+  await assert.rejects(() => f.cmd('propose', {id: made.id, revision: rev, preferred_at: day + 'T17:00:00+09:00'}),
+    /invalid_slot/, '새 시각은 바뀐 운영시간을 따른다');
+  await f.db.close();
+});
+
+test('16) 휴무일 지정은 기존 예약에도 오류를 유지한다 (059)', async () => {
+  const f = await setup();
+  await f.db.exec('reset role');
+  await f.db.exec(`insert into private.office_locations(id,name,region,status,address,latitude,longitude,weekdays)
+    values('closed-office','휴무 보험소','경기 분당','active','테스트 사무실',37.3,127.1,array[0,1,2,3,4,5,6])`);
+  const day = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
+  await f.login(ids.customer);
+  const made = await f.cmd('request', {office_id: 'closed-office', office_assignment: true, purpose: 'claim',
+    region: '경기 분당', method: 'scheduled', request_key: crypto.randomUUID(), preferred_at: day + 'T11:00:00+09:00'});
+  await f.login(ids.admin);
+  await f.cmd('office_assign', {id: made.id, revision: (await f.row(made.id, 'admin')).revision, planner_id: ids.planner});
+  await f.login(ids.planner);
+  await f.cmd('accept', {id: made.id, revision: (await f.row(made.id, 'partner')).revision});
+
+  await f.db.exec('reset role');
+  await f.db.query("insert into private.office_calendar_exceptions(office_id,day,closed) values('closed-office',$1,true)", [day]);
+  await f.login(ids.customer);
+  const rev = (await f.row(made.id)).revision;
+  await assert.rejects(() => f.cmd('confirm', {id: made.id, revision: rev, name: '확인 고객', share_consent: true}),
+    /invalid_slot/, '휴무일은 기존 예약에도 오류를 낸다 — 화면에서 일정 재제안을 안내한다');
+  await f.db.close();
+});
+
 test('8) 관리자 보험소 배정은 숨긴 전문가를 거부', async () => {
   const f = await setup();
   await f.login(ids.planner);
