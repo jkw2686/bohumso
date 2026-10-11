@@ -25,6 +25,7 @@
   var WAY_METHOD = { visit_office: 'scheduled', request_visit: 'nearby', call: 'phone', message: 'phone' };
 
   var GU = {}; (window.COVERAGE_AREAS||[]).forEach(function(o){(GU[o.region]||(GU[o.region]=[])).push(o.name);});
+  var applyRegionRef = null; // 지역 선택 폴백이 준비되면 아래에서 연결한다.
   var REGION_CENTER = { '서울': [37.5665, 126.9780], '경기': [37.4138, 127.5183], '인천': [37.4563, 126.7052] };
   var PURPOSE_LABELS = { claim: '보험금 청구', management: '가입한 보험 확인', coverage: '받을 보험금 확인', other: '필요한 도움' };
 
@@ -122,14 +123,75 @@
     return arr;
   }
 
-  function renderList() {
-    var body = $('listBody'); body.innerHTML = '';
+  // 지역 오픈 알림 신청은 '시 구' 형식일 때만 받는다. 서비스 지역·오픈 예정 보험소·방문 화면의
+  // 기존 신청과 같은 형식이어야 관리자 지역별 집계가 합쳐진다.
+  function waitlistRegion() {
+    var value = (selectedArea || '').trim();
+    if (!value) return '';
+    var parts = value.split(' ');
+    if (parts.length < 2) return '';
+    return (GU[parts[0]] || []).indexOf(parts.slice(1).join(' ')) >= 0 ? value : '';
+  }
+  // 지역 해제는 기존 적용 경로를 그대로 쓴다(지도 중심·저장 위치·재조회가 한 번에 맞춰진다).
+  function clearRegion() {
+    var city = $('regionCity'), gu = $('regionGu');
+    if (city) city.value = '';
+    if (gu) gu.innerHTML = '<option value="">구/군</option>';
+    if (applyRegionRef) applyRegionRef(); else reloadSpots('');
+  }
+  // public/map.js 는 모듈이 아니라 import 할 수 없다. member.js(module)가 늦게 준비될 수 있으므로
+  // 버튼은 항상 그리고, 누를 때 함수가 없으면 안내만 바꾼다. public/office-slot.js 와 같은 방식.
+  function waitlistButton(parent, region, role, label, className) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = className; b.textContent = label;
+    b.onclick = function () {
+      if (window.openRegionWaitlist) window.openRegionWaitlist({region: region, role: role});
+      else b.textContent = '잠시 후 다시 눌러 주세요.';
+    };
+    parent.appendChild(b);
+    return b;
+  }
+  function renderEmptyActions(body, areaLink) {
+    var box = document.createElement('div'); box.className = 'empty-actions'; body.appendChild(box);
+    var region = waitlistRegion();
+    if (region) {
+      waitlistButton(box, region, 'consumer', '오픈 알림 신청', 'btn');
+      waitlistButton(box, region, 'planner', '이 지역에서 활동하고 싶어요', 'btn ghost');
+    } else {
+      var hint = document.createElement('p');
+      hint.className = 'empty-actions-hint';
+      hint.textContent = '구를 선택하면 오픈 알림을 신청할 수 있어요.';
+      box.appendChild(hint);
+      var pick = document.createElement('button');
+      pick.type = 'button'; pick.className = 'btn'; pick.textContent = '구 선택하기';
+      pick.onclick = function () {
+        var picker = $('regionPicker'), gu = $('regionGu');
+        if (picker) picker.hidden = false;
+        if (gu) { gu.scrollIntoView({block: 'center'}); gu.focus(); }
+      };
+      box.appendChild(pick);
+    }
+    var all = document.createElement('button');
+    all.type = 'button'; all.className = 'btn ghost'; all.textContent = '전체 지역 전문가 보기';
+    all.onclick = clearRegion;
+    box.appendChild(all);
+    // 기존 링크는 유지하되 신청 버튼 아래로 옮긴다.
+    if (!areaLink.hidden) box.appendChild(areaLink);
+  }
 
-    var arr = sortedSpots(),sheet=$('listSheet'),areaLink=$('areaRequest');
+  function renderList() {
+    var body = $('listBody'), areaLink = $('areaRequest');
+    // 빈 안내에서 신청 버튼 아래로 옮겨둔 링크를 먼저 제자리로 되돌린다.
+    // 그대로 두면 아래 innerHTML 초기화에 함께 지워져 다음 렌더에서 null 이 된다.
+    if (areaLink && body.contains(areaLink)) body.parentNode.insertBefore(areaLink, body);
+    body.innerHTML = '';
+
+    var arr = sortedSpots(),sheet=$('listSheet');
     sheet.classList.toggle('is-empty',!arr.length);
     areaLink.hidden=showOffices;areaLink.href='/urgent.html?purpose='+encodeURIComponent(PURPOSE||'claim')+'&situation='+encodeURIComponent(SITUATION||'claim')+'&region='+encodeURIComponent(selectedArea||'');areaLink.textContent='이 지역 방문 가능한 전문가 찾기';
     if (!arr.length) {
-      $('listCount').textContent = showOffices?'이 지역에 등록된 보험소가 없습니다.':'이 지역에 등록된 전문가가 없습니다.';
+      $('listCount').textContent = showOffices?'아직 이 지역에 등록된 보험소가 없어요.':'아직 이 지역에 등록된 전문가가 없어요.';
+      renderEmptyActions(body, areaLink);
       return;
     }
     $('listCount').textContent = showOffices?'보험소 거점 '+arr.length+'곳':showExperts?'공개 활동지역 · 전문가 '+arr.length+'명':'전문가·보험소 '+arr.length+'곳';
@@ -286,6 +348,7 @@
       $('regionPicker').hidden = false;
       reloadSpots(city.value+(gu.value?' '+gu.value:''));
     }
+    applyRegionRef=applyRegion;
     $('regionApply').addEventListener('click',applyRegion);gu.addEventListener('change',applyRegion);
     if(!new URLSearchParams(location.search).has('region'))window.startBohumsoLocation(locate,function(saved){
       map.setView([saved.latitude,saved.longitude],saved.source==='DEVICE'?13:11);
