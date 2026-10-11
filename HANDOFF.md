@@ -1,9 +1,10 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
 ## 2026-10-11 — 전문가 첫 화면 자료실 진입 보완
+- 운영 반영 완료: main bab39787e44d6f4073ff9eaf38b550e4b84248e4, Netlify 6acb77fcb27b490008a27b4d, ready, 2026-10-11 20:50:32 KST. 실제 partner 첫 화면 버튼 → 자료실 검색·병원·보험사 분류 및 91곳 목록 → 전문가 첫 화면 복귀를 확인했다. https://bohumso.netlify.app/partner?roleIntent=expert
 - 사용자 지시: 자료실은 partner-work가 아니라 그 전 전문가 첫 화면(partner)에서 바로 보여야 한다.
 - public/partner.html 제목 바로 아래 ‘병원·보험사 자료실’ 링크를 추가하고 public/account.css에 이 링크만 적용되는 크기·아이콘 스타일을 추가했다. 기존 병원·보험사 목록과 검색, 가입·프로필·상담 저장 로직은 변경하지 않았다.
-- build 및 기존 expert-profile-page-browser 검사 통과. 360/390/430/1440 가로 넘침 없음, 390 첫 화면 상담 버튼 유지, 펼침·저장·요약·키보드·콘솔 오류 검사 통과. 배포 후 운영 링크를 추가 확인한다.
+- build 및 기존 expert-profile-page-browser 검사 통과. 360/390/430/1440 가로 넘침 없음, 390 첫 화면 상담 버튼 유지, 펼침·저장·요약·키보드·콘솔 오류 검사 통과. 추가 격리 화면 검사에서 4폭 자료실 버튼 48px·아이콘 20px·Enter 이동을 확인했다. 화면 docs/release-review-20261011-screens/expert-resource-entry.png는 인증 비활성 모의 화면이며 운영 오류가 아니다.
 - 앞선 fec525a의 전체 단위 123/123·관련 브라우저 7개와 이번 좁은 수정의 검증을 구분한다. DB 적용·문자 발송·실제 고객 요청 없음. ROADMAP 4단계 및 별도 WIP 보호 규칙 유지.
 
 ## 2026-10-11 20:38 KST — Codex main fec525a 검토·재배포 완료

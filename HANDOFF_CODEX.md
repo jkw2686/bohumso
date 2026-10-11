@@ -11,7 +11,7 @@
 ## 1. 지금 어디까지 왔나
 
 **최신 보완: 전문가 첫 화면(partner) 제목 아래 ‘병원·보험사 자료실’ 바로가기를 추가했다.**
-사용자가 partner-work 이전 화면에서 보여야 한다고 정정했다. partner.html/account.css만 변경하고 기존 프로필 4폭 검사를 통과했다. 배포·운영 확인 후 이 기록을 갱신한다. 자료 목록·검색·DB는 변경하지 않았다.
+사용자가 partner-work 이전 화면에서 보여야 한다고 정정했다. partner.html/account.css만 변경하고 기존 프로필 4폭 및 새 링크 4폭(48px·Enter 이동) 검사를 통과했다. main bab3978 / Netlify 6acb77fcb27b490008a27b4d / ready / 20:50:32 KST 배포 완료. 운영 첫 화면 버튼 → 91곳 자료실 → 복귀 확인. 자료 목록·검색·DB는 변경하지 않았다.
 
 **직전 확인: Codex가 main fec525a를 검토하고 20:38 KST에 재배포했다.**
 Netlify 6acb7510728c689eee310184 / production / ready / commit fec525a.
