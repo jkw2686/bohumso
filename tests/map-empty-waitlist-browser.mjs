@@ -48,14 +48,23 @@ async function pickRegion(page, city, gu) {
   if (gu) await page.selectOption('#regionGu', gu);
   else await page.click('#regionApply');
   await page.waitForTimeout(400);
-  // 목록 시트가 접혀 있으면 펼친다(실사용에서는 사용자가 손잡이를 올린다).
-  if (!await page.locator('#listBody').isVisible()) {
-    await page.click('#listGrip');
-    await page.waitForTimeout(300);
-  }
 }
 
-for (const [width, label] of [[360, '360'], [390, '390']]) {
+// 빈 안내는 기본(접힌) 상태에서 그대로 보여야 한다. .list-body 는 접힘·빈 상태에서 숨겨지므로
+// 시트를 대신 펼쳐주면 실제 화면과 다른 결과가 나온다. 실측으로 확인한다.
+async function visibleActions(page) {
+  return page.$$eval('#listSheet .empty-actions > *', nodes => {
+    const sheet = document.getElementById('listSheet').getBoundingClientRect();
+    return nodes.map(n => {
+      const r = n.getBoundingClientRect();
+      return {text: n.textContent.trim(), h: Math.round(r.height), w: Math.round(r.width),
+        inSheet: r.height > 0 && r.top >= sheet.top - 1 && r.bottom <= sheet.bottom + 1,
+        inView: r.top >= 0 && r.bottom <= window.innerHeight + 1};
+    });
+  });
+}
+
+for (const [width, label] of [[360, '360'], [390, '390'], [1280, '1280']]) {
   const page = await browser.newPage({viewport: {width, height: 780}});
   page.on('pageerror', e => { failed++; console.log('FAIL 콘솔 오류: ' + e.message); });
   await openMap(page);
@@ -64,46 +73,64 @@ for (const [width, label] of [[360, '360'], [390, '390']]) {
   await pickRegion(page, '서울', '종로구');
   const text = await page.textContent('#listSheet');
   check(text.includes('아직 이 지역에 등록된 전문가가 없어요'), `${label}px 빈 지역 문구`);
-  const labels = await page.$$eval('#listBody .empty-actions .btn', e => e.map(x => x.textContent.trim()));
+  const labels = await page.$$eval('#listSheet .empty-actions .btn', e => e.map(x => x.textContent.trim()));
   check(labels.length === 3 && labels[0] === '오픈 알림 신청' && labels[1] === '이 지역에서 활동하고 싶어요'
     && labels[2] === '전체 지역 전문가 보기', `${label}px 버튼 3개 (${labels.join(' / ')})`);
+  // 1-b) 접힌 기본 상태에서 세 버튼 + 기존 방문 링크가 모두 시트 안에 보인다
+  let vis = await visibleActions(page);
+  check(vis.length === 3 && vis.every(v => v.h >= 48 && v.inSheet && v.inView),
+    `${label}px 기본(접힌) 상태에서 안내 3개 모두 보임 (${vis.map(v => v.text + ':' + v.h + (v.inSheet ? '' : '/시트밖') + (v.inView ? '' : '/화면밖')).join(' | ')})`);
+  const areaBox = await page.$eval('#areaRequest', n => {
+    const r = n.getBoundingClientRect(), sheet = document.getElementById('listSheet').getBoundingClientRect();
+    return {h: Math.round(r.height), parent: n.parentElement.id,
+      inSheet: r.height > 0 && r.bottom <= sheet.bottom + 1, after: !!n.previousElementSibling &&
+        n.previousElementSibling.className.indexOf('empty-actions') >= 0};
+  });
+  check(areaBox.h >= 44 && areaBox.inSheet && areaBox.parent === 'listSheet' && areaBox.after,
+    `${label}px 기존 방문 링크 제자리·보임 (${JSON.stringify(areaBox)})`);
   await page.screenshot({path: `${out}/empty-${label}.png`, fullPage: false});
 
   // 8) 48px, 가로 스크롤
-  const heights = await page.$$eval('#listBody .empty-actions .btn', e => e.map(x => x.getBoundingClientRect().height));
+  const heights = await page.$$eval('#listSheet .empty-actions .btn', e => e.map(x => x.getBoundingClientRect().height));
   check(heights.every(h => h >= 48), `${label}px 버튼 48px 이상 (${heights.join(',')})`);
   check(!await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), `${label}px 가로 스크롤 없음`);
 
   // 2) 오픈 알림 신청 → consumer
-  await page.click('#listBody .empty-actions .btn >> nth=0');
+  await page.click('#listSheet .empty-actions .btn >> nth=0');
   let sent = await page.evaluate(() => window.__waitlist);
   check(sent && sent.region === '서울 종로구' && sent.role === 'consumer', `${label}px 신청 지역·role (${JSON.stringify(sent)})`);
 
   // 3) 활동 신청 → planner
   await page.evaluate(() => { window.__waitlist = null; });
-  await page.click('#listBody .empty-actions .btn >> nth=1');
+  await page.click('#listSheet .empty-actions .btn >> nth=1');
   sent = await page.evaluate(() => window.__waitlist);
   check(sent && sent.region === '서울 종로구' && sent.role === 'planner', `${label}px 활동 신청 role`);
 
   // 5) 지역 변경 → 새 지역으로 신청
   await page.evaluate(() => { window.__waitlist = null; });
   await pickRegion(page, '서울', '성동구');
-  await page.click('#listBody .empty-actions .btn >> nth=0');
+  await page.click('#listSheet .empty-actions .btn >> nth=0');
   sent = await page.evaluate(() => window.__waitlist);
   check(sent && sent.region === '서울 성동구', `${label}px 지역 변경 후 새 지역으로 신청 (${sent && sent.region})`);
 
   // 4) 시만 선택 → 구 선택 안내
   await pickRegion(page, '인천', '');
-  const hint = await page.textContent('#listBody');
+  const hint = await page.textContent('#listSheet');
   check(hint.includes('구를 선택하면 오픈 알림을 신청할 수 있어요'), `${label}px 시만 선택 시 구 선택 안내`);
-  const only = await page.$$eval('#listBody .empty-actions .btn', e => e.map(x => x.textContent.trim()));
+  const only = await page.$$eval('#listSheet .empty-actions .btn', e => e.map(x => x.textContent.trim()));
   check(!only.includes('오픈 알림 신청'), `${label}px 시만 선택이면 신청 버튼 없음`);
   await page.screenshot({path: `${out}/city-only-${label}.png`, fullPage: false});
 
   // 6) 전문가가 있는 지역 → 기존 목록 그대로
   await pickRegion(page, '서울', '마포구');
-  check(await page.$$eval('#listBody .empty-actions', e => e.length) === 0, `${label}px 전문가 있는 지역은 빈 안내 없음`);
+  check(await page.$$eval('#listSheet .empty-actions', e => e.length) === 0, `${label}px 전문가 있는 지역은 빈 안내 없음`);
   check((await page.textContent('#listCount')).indexOf('없어요') < 0, `${label}px 전문가 있는 지역 목록 문구 유지`);
+  const back = await page.$eval('#areaRequest', n => ({parent: n.parentElement.id,
+    prev: n.previousElementSibling && n.previousElementSibling.className,
+    next: n.nextElementSibling && n.nextElementSibling.className}));
+  check(back.parent === 'listSheet' && back.prev === 'list-head' && back.next === 'list-body',
+    `${label}px 방문 링크 원위치 (${JSON.stringify(back)})`);
+  check(await page.$$eval('#listSheet .spot', e => e.length) > 0, `${label}px 전문가 카드 렌더`);
   await page.screenshot({path: `${out}/with-expert-${label}.png`, fullPage: false});
   await page.close();
 }
@@ -115,8 +142,8 @@ for (const [width, label] of [[360, '360'], [390, '390']]) {
   page.on('pageerror', e => errors.push(e.message));
   await openMap(page, {withMember: false});
   await pickRegion(page, '서울', '종로구');
-  await page.click('#listBody .empty-actions .btn >> nth=0');
-  const after = await page.textContent('#listBody .empty-actions .btn >> nth=0');
+  await page.click('#listSheet .empty-actions .btn >> nth=0');
+  const after = await page.textContent('#listSheet .empty-actions .btn >> nth=0');
   check(after.includes('잠시 후 다시 눌러 주세요'), `member.js 미준비 시 안내 문구 (${after.trim()})`);
   check(errors.length === 0, `member.js 미준비 시 콘솔 오류 없음 (${errors.join('|') || '없음'})`);
   await page.close();
