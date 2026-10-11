@@ -47,7 +47,7 @@
 .resource-choices{display:flex;gap:var(--space-4);flex-wrap:wrap}
 .resource-choices .field{display:flex;flex-direction:column;flex:1;min-width:0}.resource-choices select{width:100%;min-width:0;min-height:var(--touch-target);font:inherit;background:var(--card);color:var(--ink-body);border:1px solid var(--border);border-radius:var(--radius-control);padding:var(--space-2)}
 .resources-page #moreResources{margin-top:var(--space-4)}.resources-page [hidden]{display:none!important}
-.resources-page :is(#compareTitle,#preparationTitle){scroll-margin-top:calc(var(--touch-target)*2)}
+.resources-page #compareTitle{scroll-margin-top:calc(var(--touch-target)*2)}
 .resources-page dl{margin:var(--space-3) 0}.resources-page dt{font-weight:700;font-size:var(--type-label);margin-top:var(--space-3)}.resources-page dd{margin:var(--space-2) 0;font-size:var(--type-label)}
 .resources-page :is(a,button,input,select,textarea,summary):focus-visible{outline:var(--focus-width) solid var(--brand);outline-offset:var(--focus-width)}
 @media(max-width:600px){.resource-filters,.resource-grid{grid-template-columns:1fr}.resource-actions .btn{flex:1}.resources-page .nav>a:last-child{font-size:var(--type-small)}

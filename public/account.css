@@ -169,3 +169,7 @@ body[data-account-page="admin"] .admin-badge{display:inline-block;padding:4px 10
   background:var(--brand);color:var(--card);font-size:var(--type-small);font-weight:700;line-height:1.5;white-space:nowrap}
 body[data-account-page="admin"] .admin-open-summary{margin:0 0 var(--space-3);border-left:4px solid var(--brand);
   font-weight:700;color:var(--text)}
+
+/* 전문가 화면 상단 고객센터 진입(3-1). 기존 nav 링크와 같은 크기를 쓰되 터치 44px 을 보장한다. */
+body:is([data-account-page="partner"],[data-account-page="requests"]) .nav [data-expert-support]{
+  display:inline-flex;align-items:center;min-height:44px;padding:0 var(--space-2)}
