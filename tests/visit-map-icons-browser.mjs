@@ -4,7 +4,9 @@ const b=await chromium.launch(PW_LAUNCH);try{const p=await b.newPage();const err
 await p.addInitScript(()=>{window.bohumsoCatalog=async()=>({planners:[{id:'fixture-pro',name:'검증용 전문가',region:'경기 김포시',area_latitude:37.615,area_longitude:126.716,specialties:['claim'],availability_status:'scheduled'}]});window.bohumsoOffices=async()=>[{id:'fixture-office',name:'검증용 보험소',region:'경기 김포시',status:'active',address:'격리 테스트 주소',latitude:37.615,longitude:126.716}];window.bohumsoSlots=async()=>['10:00'];});
 for(const width of [320,390,768,1440]){await p.setViewportSize({width,height:844});await p.goto('https://fixture.test/map.html?region='+encodeURIComponent('경기 김포시'));// 3-6: 같은 좌표의 전문가·보험소 핀은 숫자 묶음으로 보이고, 누르면 펼쳐진다.
 const cluster=p.locator('.spot-cluster');await expect(cluster).toHaveCount(1);await expect(cluster).toHaveText('2');
-await expect(cluster.locator('span')).toHaveAttribute('role','button');
+// 접근 이름은 Leaflet 마커가 붙이는 role=button + title 로 준다(안쪽 span 에 또 넣으면 버튼이 중첩된다).
+await expect(cluster).toHaveAttribute('title',/곳이 겹쳐 있어요/);
+await expect(cluster).toHaveAttribute('tabindex','0');
 await cluster.click();
 // 사진이 있는 전문가는 .expert-map-marker 로 그려진다(이 테스트가 원래부터 실패하던 이유).
 const EXPERT='.expert-map-marker, .professional-pin';
