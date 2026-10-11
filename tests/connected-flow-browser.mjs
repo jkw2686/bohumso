@@ -1,10 +1,11 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';
 import {startTestFlow} from '../scripts/test-flow.mjs';
 const app=await startTestFlow({port:0,memory:true,env:{}});
 const base='http://127.0.0.1:'+app.server.address().port;
 let browser;const errors=[];
 try{
- browser=await chromium.launch({channel:'msedge',headless:true});
+ browser=await chromium.launch(PW_LAUNCH);
  const customer=await browser.newPage({viewport:{width:360,height:850}}),expert=await browser.newPage({viewport:{width:360,height:850}}),admin=await browser.newPage({viewport:{width:1280,height:900}});
  for(const p of [customer,expert,admin]){p.setDefaultTimeout(10000);p.on('pageerror',e=>errors.push(e.message));}
  await admin.goto(base+'/admin');await admin.getByRole('button',{name:'관리자 테스트 계정으로 전환'}).click();await expect(admin.getByRole('heading',{name:'심사와 상담 접수'})).toBeVisible();

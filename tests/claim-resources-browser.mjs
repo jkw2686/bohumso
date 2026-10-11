@@ -1,8 +1,9 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';
 import {readFile,mkdir} from 'node:fs/promises';
 import path from 'node:path';
 import {resources,resourceScope} from '../public/claim-resources-data.js';
-const browser=await chromium.launch({channel:'msedge',headless:true}),errors=[];
+const browser=await chromium.launch(PW_LAUNCH),errors=[];
 await mkdir('artifacts',{recursive:true});
 try{
  const context=await browser.newContext();await context.route('**/*',async route=>{const u=new URL(route.request().url());if(u.hostname!=='fixture.test')return route.abort();if(u.pathname==='/wizard')return route.fulfill({contentType:'text/html',body:`<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/account.css"><link rel="stylesheet" href="/simple-ux.css"><link rel="stylesheet" href="/type-system.css"><main class="container"><form id="wizard"></form><div id="requestList"></div></main><script type="module">import {renderOfficeRequest} from '/src/office-request.js';window.commands=[];renderOfficeRequest({form:document.getElementById('wizard'),command:async(...args)=>commands.push(args),refresh:async()=>{},message:()=>{},selectedPlanner:{id:'selected-expert',name:'선택한 전문가',region:'경기 김포시'},availability:async()=>['10:00','18:00']});</script>`});try{const file=u.pathname.startsWith('/src/')?path.resolve('.'+u.pathname):path.resolve('public','.'+u.pathname);await route.fulfill({body:await readFile(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.woff2')?'font/woff2':file.endsWith('.svg')?'image/svg+xml':'text/html; charset=utf-8'});}catch{await route.fulfill({status:404,body:''});}});

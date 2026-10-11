@@ -1,3 +1,4 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 // /partner-work.html 첫 화면 순서 검증.
 // 전문가가 매일 쓰는 두 가지(지금 방문 ON/OFF, 청구지원 자료실)가 맨 위에 보여야 한다.
 // 실제 번들·실제 페이지 + 격리 DB. 외부 연결·운영 데이터 없음.
@@ -6,10 +7,8 @@ import {readFile} from 'node:fs/promises';
 import path from 'node:path';
 import {setupCare, ids} from './appointment-care-fixture.mjs';
 
-const channel = process.env.PLAYWRIGHT_CHANNEL ?? 'msedge';
-const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH || undefined;
 const f = await setupCare();
-const browser = await chromium.launch({headless: true, ...(channel ? {channel} : {}), ...(executablePath ? {executablePath} : {})});
+const browser = await chromium.launch(PW_LAUNCH);
 const origin = 'https://pages.fixture.test', auth = 'https://auth.fixture.test';
 const errors = [];
 try {

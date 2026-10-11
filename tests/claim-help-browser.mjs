@@ -1,7 +1,8 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';
 import {readFile,mkdir} from 'node:fs/promises';
 import path from 'node:path';
-const browser=await chromium.launch({channel:'msedge',headless:true});await mkdir('artifacts',{recursive:true});
+const browser=await chromium.launch(PW_LAUNCH);await mkdir('artifacts',{recursive:true});
 const routes=['death','cancer','hospitalization','accident','claim','coverage'];
 const titles=['가족이 돌아가셨어요','암 진단을 받았어요','입원·수술했어요','사고가 났어요','보험금 받을 수 있을까요?','내 보험이 궁금해요'];
 const banners=['사망보험금','암 진단','입원·수술','사고 보험금','받을 보험금','가입보험'];

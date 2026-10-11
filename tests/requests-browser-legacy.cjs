@@ -1,8 +1,9 @@
+const PW_LAUNCH=require('./playwright-launch.cjs');
 const {chromium,expect}=require(process.argv[2]||'@playwright/test');
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
 (async()=>{const root=path.resolve('public');const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname);if(!file.startsWith(root+path.sep)){res.writeHead(404).end();return;}try{res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html');res.end(fs.readFileSync(file));}catch{res.writeHead(404).end();}});await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;
 try{
- browser=await chromium.launch({channel:'msedge',headless:true});const page=await browser.newPage({viewport:{width:390,height:844}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ browser=await chromium.launch(PW_LAUNCH);const page=await browser.newPage({viewport:{width:390,height:844}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const base='http://127.0.0.1:'+server.address().port,uid='11111111-1111-4111-8111-111111111111',partner='22222222-2222-4222-8222-222222222222';let role='customer',rows=[],calls=[];
  const exp=Math.floor(Date.now()/1000)+3600;const jwt=Buffer.from(JSON.stringify({alg:'HS256',typ:'JWT'})).toString('base64url')+'.'+Buffer.from(JSON.stringify({sub:uid,exp,role:'authenticated'})).toString('base64url')+'.test';
  await page.addInitScript(({uid,exp,jwt})=>localStorage.setItem('woori-account',JSON.stringify({access_token:jwt,refresh_token:'mock',expires_at:exp,expires_in:3600,token_type:'bearer',user:{id:uid,email:'test@example.com'}})),{uid,exp,jwt});

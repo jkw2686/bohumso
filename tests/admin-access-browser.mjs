@@ -1,5 +1,6 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';import {readFile} from 'node:fs/promises';
-const browser=await chromium.launch({channel:'msedge',headless:true});
+const browser=await chromium.launch(PW_LAUNCH);
 try{const page=await browser.newPage({viewport:{width:390,height:844}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',async r=>{const u=new URL(r.request().url());if(u.pathname==='/admin-access.js')return r.fulfill({body:await readFile('src/admin-access.js','utf8'),contentType:'text/javascript'});return r.fulfill({contentType:'text/html',body:`<meta name="viewport" content="width=device-width, initial-scale=1"><main id="app"></main><script type="module">import {renderAdminAccess} from '/admin-access.js';let rows=[{email:'jkw2686@gmail.com',owner:true}];const client={rpc:async(name,{operation,payload})=>{if(location.search)return {error:{message:'owner_required'}};if(operation==='list')return {data:rows};if(operation==='add')rows.push({email:payload.email,owner:false});if(operation==='remove')rows=rows.filter(r=>r.email!==payload.email);return {data:{saved:true}}}};renderAdminAccess({client,host:document.getElementById('app')});</script>`});});
  await page.goto('https://fixture.test/');await page.getByText('관리자 계정 관리',{exact:true}).click();await expect(page.getByText('jkw2686@gmail.com · 대표자')).toBeVisible();await expect(page.getByRole('button',{name:'권한 해제'})).toHaveCount(0);

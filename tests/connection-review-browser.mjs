@@ -1,3 +1,4 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';
 import {readFile,mkdir} from 'node:fs/promises';import path from 'node:path';
 const origin='https://fixture.test',auth='https://auth.fixture.test',calls=[],errors=[];
@@ -5,7 +6,7 @@ const day=n=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new
 const user={id:'40000000-0000-4000-8000-000000000052',email:'customer@example.test',aud:'authenticated'};
 const session={access_token:Buffer.from('{"alg":"HS256"}').toString('base64url')+'.'+Buffer.from(JSON.stringify({sub:user.id,exp:Math.floor(Date.now()/1000)+3600})).toString('base64url')+'.fixture',refresh_token:'fixture',expires_in:3600,token_type:'bearer',user};
 let member=false,verified=false,unavailable=false,offline=false,failOnce=true,bookings=[];
-const browser=await chromium.launch({channel:'msedge',headless:true});await mkdir('artifacts',{recursive:true});
+const browser=await chromium.launch(PW_LAUNCH);await mkdir('artifacts',{recursive:true});
 try{
  const context=await browser.newContext();await context.route('**/*',async route=>{
   const req=route.request(),u=new URL(req.url()),body=req.postDataJSON()||{};

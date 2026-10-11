@@ -1,9 +1,10 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {build} from 'esbuild';
 import {chromium,expect} from '@playwright/test';
 import {readFile,mkdir} from 'node:fs/promises';
 const bundled=await build({entryPoints:['src/phone-signup-panel.js'],bundle:true,format:'esm',write:false});
 const origin='https://phone-ui.example.test';
-const browser=await chromium.launch({channel:'msedge',headless:true});
+const browser=await chromium.launch(PW_LAUNCH);
 try{
  const context=await browser.newContext();let sends=0,verified=false;
  await context.route('**/*',async route=>{

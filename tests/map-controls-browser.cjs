@@ -1,10 +1,11 @@
+const PW_LAUNCH=require('./playwright-launch.cjs');
 const {chromium,expect}=require('@playwright/test');
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
 (async()=>{
  const root=path.resolve('public');const server=http.createServer((req,res)=>{let name=new URL(req.url,'http://localhost').pathname;if(name==='/')name='/index.html';const file=path.resolve(root,'.'+name);if(!file.startsWith(root+path.sep)){res.writeHead(404).end();return;}try{res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.svg')?'image/svg+xml':'text/html');res.end(fs.readFileSync(file));}catch{res.writeHead(404).end();}});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;let browser;
  try{
-  browser=await chromium.launch({channel:'msedge',headless:true});const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  browser=await chromium.launch(PW_LAUNCH);const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/api/**',r=>r.fulfill({json:{enabled:false}}));
   await page.addInitScript(()=>{sessionStorage.setItem('bohumso-location-asked','1');window.geoCalls=[];Object.defineProperty(navigator,'geolocation',{configurable:true,value:{getCurrentPosition:(ok,fail,options)=>{window.geoCalls.push(options);if(!options.enableHighAccuracy)fail({code:3});else ok({coords:{latitude:37.8315,longitude:127.5095,accuracy:30}});}}});});
   for(const [width,height] of [[320,640],[390,844],[844,390],[1440,900]]){

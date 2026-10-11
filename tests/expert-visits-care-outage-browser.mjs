@@ -1,3 +1,4 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 // appointment_care(약속 안내)가 500 을 내도 방문 요청 '희망시간 수락' 버튼이 보이고 수락이 성공해야 한다.
 // 약속 안내는 부가 기능이므로 그 장애가 핵심 동선을 막으면 안 된다. 격리 DB·실제 번들.
 import {chromium, expect} from '@playwright/test';
@@ -6,10 +7,8 @@ import path from 'node:path';
 import {setupVisits} from './expert-visits-fixture.mjs';
 import {ids} from './commerce-fixture.mjs';
 
-const PW_CHANNEL = process.env.PLAYWRIGHT_CHANNEL ?? 'msedge';
-const PW_EXEC = process.env.PLAYWRIGHT_EXECUTABLE_PATH || undefined;
 const f = await setupVisits();
-const b = await chromium.launch({headless: true, ...(PW_CHANNEL ? {channel: PW_CHANNEL} : {}), ...(PW_EXEC ? {executablePath: PW_EXEC} : {})});
+const b = await chromium.launch(PW_LAUNCH);
 let queue = Promise.resolve();
 const serial = fn => { const next = queue.then(fn); queue = next.catch(() => {}); return next; };
 const errors = [], careCalls = [];

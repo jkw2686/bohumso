@@ -1,3 +1,4 @@
+const PW_LAUNCH=require('./playwright-launch.cjs');
 const {chromium,expect}=require(process.argv[2]||'@playwright/test');const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
 (async()=>{
  const {fixture,ids}=await import('./commerce-fixture.mjs');const f=await fixture();await f.db.exec('reset role;update private.planner_directory set is_sample=false;alter table auth.users add column phone text,add column phone_confirmed_at timestamptz;');await f.db.exec(fs.readFileSync('supabase/011_expert_onboarding.sql','utf8'));const root=path.resolve('public');let browser;let queue=Promise.resolve();const serial=fn=>{const next=queue.then(fn);queue=next.catch(()=>{});return next;};
@@ -14,7 +15,7 @@ const {chromium,expect}=require(process.argv[2]||'@playwright/test');const http=
    let data;if(u.pathname.includes('/rpc/'))data=await f.rpc(name,Object.values(body));else if(name==='partner_applications'){const rows=(await f.db.query('select * from public.partner_applications')).rows;data=u.searchParams.has('user_id')?rows[0]||null:rows;}else throw Error('Unhandled '+u.pathname);
    if(name==='planner_catalog')data.planners=data.planners.map(({latitude,longitude,...profile})=>({...profile,area_latitude:37.56,area_longitude:126.92})); // 024 public catalog exposes area centroids only.
    await route.fulfill({json:data});
-  }catch(e){await route.fulfill({status:400,json:{message:e.message}});}}));
+  }catch(e){await route.fulfill({status:400,json:{message:e.message,code:e.code}});}}));
   await page.route('**/api/payment',route=>serial(async()=>{try{const body=route.request().postDataJSON(),auth=route.request().headers().authorization.split(' ')[1],id=JSON.parse(Buffer.from(auth.split('.')[1],'base64url').toString()).sub;await f.login(id);let data;
    if(body.action==='checkout'){const order=await f.rpc('ad_checkout',[body.planId,body.slotId,body.requestKey,body.consent]);data={order,clientKey:'test_gck_fixture',successUrl:base+'/payment-result.html',failUrl:base+'/payment-result.html?failed=1',testOnly:true};}
    else if(body.action==='confirm'){const order=await f.rpc('ad_begin_confirm',[body.orderId,body.paymentKey,body.amount]);await f.login('','service_role');await f.rpc('ad_reconcile',[order.id,order.payment_key,order.amount,'DONE','https://dashboard.tosspayments.com/receipt','fixture-'+order.id]);data={status:'DONE'};}else if(body.action==='status'){const o=await f.rpc('ad_user_order',[body.orderId]);data={status:o.state};}else if(body.action==='refund'){const o=await f.rpc('ad_refund_request',[body.orderId,body.reason,body.platformFault]);await f.login('','service_role');await f.rpc('ad_reconcile',[o.id,o.payment_key,o.amount,'CANCELED',null,'fixture-refund']);data={status:'CANCELED'};}else throw Error('unhandled payment');await route.fulfill({json:data});
@@ -23,7 +24,7 @@ const {chromium,expect}=require(process.argv[2]||'@playwright/test');const http=
   await page.goto(base+'/login.html');await page.locator('[name=email]').fill(role+'@example.test');await page.locator('[name=password]').fill('fixture-password-1234');await page.locator('#loginForm button[type=submit],#loginForm button:not([type])').first().click();await page.waitForURL('**/account.html');await expect(page.locator('#membershipState')).toContainText('가입 완료');return page;
  }
  try{
-  browser=await chromium.launch({channel:'msedge',headless:true});const c=await pageFor('customer',360),p=await pageFor('planner',1280),a=await pageFor('admin',1280);
+  browser=await chromium.launch(PW_LAUNCH);const c=await pageFor('customer',360),p=await pageFor('planner',1280),a=await pageFor('admin',1280);
   await c.goto(base+'/find.html');await expect(c.locator('.planner-card')).toHaveCount(2);await expect(c.locator('#plannerMap .leaflet-marker-icon')).toHaveCount(2);await c.locator('[name=location_consent]').check();await c.locator('#locatePlanners').click();await expect(c.locator('#directoryNotice')).toContainText('지역 선택');
   await expect(c.locator('.planner-card a').filter({hasText:'상담 예약'}).first()).toHaveAttribute('href',/requests\.html\?planner=/);
   async function request(n){const id=await serial(async()=>{await f.login(ids.customer);return (await f.cmd('request',{planner_id:ids.planner,purpose:'claim',region:'서울 마포구',method:'scheduled',preferred_at:f.slot(n)})).id;});await c.goto(base+'/requests.html');await expect(c.locator('[data-booking-id="'+id+'"]')).toBeVisible();return id;}

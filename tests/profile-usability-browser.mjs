@@ -1,7 +1,8 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import path from 'node:path';
-const browser=await chromium.launch({channel:'msedge',headless:true});
+const browser=await chromium.launch(PW_LAUNCH);
 const context=await browser.newContext({viewport:{width:390,height:844}});await mkdir('artifacts',{recursive:true});
 const id='40000000-0000-4000-8000-000000000052',otherId='40000000-0000-4000-8000-000000000053';
 let profile={id,name:'박도움',organization:'함께 확인하는 보험회사',region:'경기 김포시',area_latitude:37.615,area_longitude:126.716,available:true,insurance_types:[],help_tasks:[],offices:[],biography:'',photo_url:''};

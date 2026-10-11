@@ -1,5 +1,6 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {startTestFlow} from '../scripts/test-flow.mjs';import{chromium}from'@playwright/test';import assert from'node:assert/strict';
-const app=await startTestFlow({port:3198,memory:true,env:{}});const browser=await chromium.launch({channel:'msedge',headless:true});const page=await browser.newPage({viewport:{width:360,height:800}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+const app=await startTestFlow({port:3198,memory:true,env:{}});const browser=await chromium.launch(PW_LAUNCH);const page=await browser.newPage({viewport:{width:360,height:800}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
 try{await page.goto('http://127.0.0.1:3198/signup.html');await page.getByRole('button',{name:'테스트 체험 시작',exact:true}).click();await page.waitForURL('**/claim?step=1');await page.goto('http://127.0.0.1:3198/signup.html');const next=page.locator('#signupNext');await next.waitFor();assert(await next.isDisabled());
 async function phone(){await page.locator('[name=phone]').fill('01012');assert(await next.isDisabled());await page.locator('[name=phone]').fill('010-0000-0000');assert(!await next.isDisabled());assert.equal(await page.getByRole('button',{name:'인증번호 받기'}).count(),0);await next.click();}
 await phone();await page.locator('[name=name]').fill('가상고객');await next.click();assert(!await next.isDisabled());await next.click();await page.waitForURL('**/claim?step=1');console.log('consumer complete');
