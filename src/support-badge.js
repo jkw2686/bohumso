@@ -16,3 +16,4 @@ async function refresh(force=false){
 }
 window.addEventListener('focus',()=>void refresh());document.addEventListener('visibilitychange',()=>void refresh());
 window.addEventListener('bohumso:support-read',()=>void refresh(true));void refresh();
+setInterval(()=>void refresh(),60000);

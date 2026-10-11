@@ -35,9 +35,29 @@ function refreshOnReturn(host,refresh){let last=Date.now(),running=false;
  return()=>{clearInterval(timer);window.removeEventListener('focus',tick);document.removeEventListener('visibilitychange',tick);};
 }
 
+const chatDate=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'long',day:'numeric',weekday:'long'});
+const chatTime=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'numeric',minute:'2-digit',hour12:true});
+function chatIcon(parent,symbol,label,action){const b=button(parent,symbol,action,true);b.classList.add('support-icon-button');b.setAttribute('aria-label',label);b.title=label;return b;}
+function composerInput(input){
+ input.rows=1;input.placeholder='메시지를 입력하세요';input.parentElement.classList.add('support-compose-field');
+ const label=el('span',input.parentElement.firstChild.textContent);label.className='support-visually-hidden';input.parentElement.firstChild.replaceWith(label);
+ const resize=()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight+input.offsetHeight-input.clientHeight,120)+'px';};input.addEventListener('input',resize);return resize;
+}
+function chatViewport(pane){
+ const viewport=window.visualViewport;
+ const fit=()=>{if(pane.hidden||!pane.isConnected)return;
+  // Let browser pinch zoom pan normally; only follow the visual viewport for the keyboard.
+  if(viewport&&Math.abs(viewport.scale-1)<.05){pane.style.setProperty('--support-height',viewport.height+'px');pane.style.setProperty('--support-top',viewport.offsetTop+'px');}
+  else{pane.style.removeProperty('--support-height');pane.style.removeProperty('--support-top');}
+ };
+ viewport?.addEventListener('resize',fit);viewport?.addEventListener('scroll',fit);window.addEventListener('resize',fit);fit();
+ return()=>{viewport?.removeEventListener('resize',fit);viewport?.removeEventListener('scroll',fit);window.removeEventListener('resize',fit);};
+}
+
 // Keep scroll position when the reader is looking at old messages. Read only a reply actually brought into view.
 function transcript(parent,client,admin=false,onRead=()=>{}){
  const fresh=button(parent,'새 메시지 보기',()=>{scroll.scrollTop=scroll.scrollHeight;list.lastElementChild?.scrollIntoView({block:'nearest'});fresh.hidden=true;},true);fresh.hidden=true;
+ fresh.classList.add('support-new-messages');
  const scroll=el('div',undefined,parent);scroll.className='support-scroll';scroll.tabIndex=0;scroll.setAttribute('aria-label','문의 대화');
  const list=el('ol',undefined,scroll);list.className='support-conversation';list.setAttribute('aria-label','문의 원문과 답변');
  let observer,signature='',lastRow,reading=false,seen=0;
@@ -50,9 +70,13 @@ function transcript(parent,client,admin=false,onRead=()=>{}){
   observer?.disconnect();list.replaceChildren();
   const messages=[...row.messages];if(!messages.some(m=>m.sender==='customer'&&m.body===row.detail))messages.unshift({sender:'customer',body:row.detail,created_at:row.created_at});
   if(row.response&&!messages.some(m=>m.sender==='operator'&&m.body===row.response))messages.push({sender:'operator',body:row.response,created_at:row.updated_at});
-  for(const m of messages){const li=el('li',undefined,list);li.className='support-message '+m.sender;if(m.id)li.dataset.messageId=m.id;
-   el('strong',({customer:admin?'문의자':'나',operator:'보험소 운영자',automatic:'자동 안내',note:'내부 메모 · 고객에게 보이지 않음'})[m.sender],li);
-   el('p',m.body,li);const stamp=el('small',kst(m.created_at),li);stamp.dataset.messageEnd='';
+  let previousDate='';
+  for(const m of messages){const date=chatDate.format(new Date(m.created_at));if(!admin&&date!==previousDate){el('li',date,list).className='support-date';previousDate=date;}
+   const li=el('li',undefined,list);li.className='support-message '+m.sender;if(m.id)li.dataset.messageId=m.id;
+   if(!admin&&m.sender==='operator'){const avatar=el('span','보',li);avatar.className='support-avatar';avatar.setAttribute('aria-hidden','true');}
+   const content=el('div',undefined,li);content.className='support-message-content';
+   el('strong',({customer:admin?'문의자':'나',operator:'보험소 운영자',automatic:'자동 안내',note:'내부 메모 · 고객에게 보이지 않음'})[m.sender],content);
+   el('p',m.body,content).className='support-bubble';const stamp=el('small',admin?kst(m.created_at):chatTime.format(new Date(m.created_at)),li);stamp.title=kst(m.created_at);stamp.dataset.messageEnd='';
   }
   if(first||atEnd){scroll.scrollTop=scroll.scrollHeight;fresh.hidden=true;}else{scroll.scrollTop=top;fresh.hidden=false;}
   const target=row.messages.filter(m=>m.sender===(admin?'customer':'operator')).at(-1);
@@ -67,61 +91,90 @@ export async function mountSupportChat({client,host,userId,initialKind='INQUIRY'
  el('p','보험소 이용 문의입니다. 보험사 청구 접수나 전문가 상담·예약 신청과는 별개예요.',host).className='support-context';
  const nav=el('div',undefined,host);nav.className='review-actions';
  const createPane=el('section',undefined,host),historyPane=el('section',undefined,host),detailPane=el('section',undefined,host);
- createPane.id='supportNew';historyPane.id='supportHistory';detailPane.id='supportThread';detailPane.hidden=true;createPane.hidden=true;
- const sync=announce(host),list=el('div',undefined,historyPane);let busy=false,selected=null,current=null,viewer=null,generation=0,pendingCreate=null;
- const drafts=new Map();const createAttempt=attemptKey('support:create:'+userId);
- const newButton=button(nav,'새 문의',()=>show('new'));const historyButton=button(nav,'문의 내역',()=>show('history'),true);
- const refreshButton=button(nav,'새로고침',async()=>{await refreshList();if(selected)await updateThread();},true);
+ createPane.id='supportNew';historyPane.id='supportHistory';detailPane.id='supportThread';createPane.className=detailPane.className='support-chat-room';detailPane.hidden=true;createPane.hidden=true;
+ const sync=announce(host),list=el('div',undefined,historyPane);sync.classList.add('support-sync');let busy=false,selected=null,current=null,viewer=null,generation=0,pendingCreate=null,stopViewport=null,syncFailed=false;
+ const screen=pane=>{stopViewport?.();stopViewport=null;document.body.classList.toggle('support-chat-open',Boolean(pane));if(pane)stopViewport=chatViewport(pane);};
+ const drafts=new Map(),offered=new Map();const createAttempt=attemptKey('support:create:'+userId);
+ const newButton=button(nav,'1:1 문의',()=>show('new'));const historyButton=button(nav,'문의 내역',()=>show('history'),true);
+ const refreshButton=button(nav,'새로고침',async()=>{const rows=await refreshList();if(selected)await updateThread();else await offerReply(rows);},true);
  newButton.setAttribute('aria-controls',createPane.id);historyButton.setAttribute('aria-controls',historyPane.id);
- el('h2','새 문의',createPane);const form=el('form',undefined,createPane);form.id='supportCreate';
- const topic=choice(form,'문의 유형 (선택)',{'':'선택 안 함',...topics});
- const special=el('details',undefined,form);el('summary','개인정보 열람·정정·삭제·탈퇴 요청',special);
+ const newHeader=el('header',undefined,createPane);newHeader.className='support-chat-header';chatIcon(newHeader,'‹','문의 내역으로 돌아가기',()=>show('history'));
+ const newIdentity=el('div',undefined,newHeader);const newTitle=el('h2','보험소 고객센터',newIdentity);newTitle.tabIndex=-1;el('p','1:1 문의',newIdentity);
+ chatIcon(newHeader,'×','대화창 닫기',()=>show('history'));
+ el('p','문의가 저장되면 대화창이 닫혀요.',createPane).className='support-chat-hint';
+ const welcome=el('div',undefined,createPane);welcome.className='support-chat-welcome';
+ el('span','보',welcome).className='support-avatar';el('h3','무엇을 도와드릴까요?',welcome);el('p',chatNotice,welcome);el('p',sensitiveNotice,welcome).id='supportNewSensitive';
+ el('small','보험소 이용 문의를 남겨 주세요. 전문가 상담·예약 신청과는 별개예요.',welcome);
+ const newFooter=el('div',undefined,createPane);newFooter.className='support-chat-footer';
+ const form=el('form',undefined,newFooter);form.id='supportCreate';
+ const options=el('details',undefined,form);options.className='support-chat-options';el('summary','문의 유형·개인정보 요청 (선택)',options);options.open=initialKind!=='INQUIRY';
+ const topic=choice(options,'문의 유형 (선택)',{'':'선택 안 함',...topics});
+ const special=el('details',undefined,options);el('summary','개인정보 열람·정정·삭제·탈퇴 요청',special);
  const kind=choice(special,'요청 종류',kinds,initialKind);special.open=initialKind!=='INQUIRY';
  const warning=el('p','삭제는 보관 의무와 처리 범위를 확인합니다. 탈퇴를 접수하면 회원 이용이 즉시 중지됩니다.',special);
  kind.onchange=()=>warning.hidden=!['WITHDRAW','DELETE'].includes(kind.value);kind.onchange();
- const text=field(form,'문의 내용');text.value=initialBody;
+ const text=field(form,'문의 내용');text.value=initialBody;text.setAttribute('aria-describedby','supportNewSensitive');const resizeNew=composerInput(text);
  const submit=button(form,'보내기');submit.type='submit';const notice=announce(form);
  const title=el('h2','문의 내역',historyPane);historyPane.prepend(title);title.tabIndex=-1;
- function show(pane,push=true){if(busy)return;generation++;viewer?.destroy();viewer=null;selected=null;current=null;detailPane.hidden=true;createPane.hidden=pane!=='new';historyPane.hidden=pane==='new';
+ function show(pane,push=true){if(busy)return;generation++;viewer?.destroy();viewer=null;selected=null;current=null;screen(false);host.append(sync);detailPane.hidden=true;createPane.hidden=pane!=='new';historyPane.hidden=pane==='new';
   newButton.setAttribute('aria-pressed',String(pane==='new'));historyButton.setAttribute('aria-pressed',String(pane!=='new'));
   if(push){const u=new URL(location.href);u.searchParams.delete('thread');history.pushState({},'',u);}
-  if(pane==='new')text.focus();else title.focus();
+  if(pane==='new'){newFooter.append(sync);screen(createPane);resizeNew();newTitle.focus({preventScroll:true});}else title.focus();
+ }
+ async function offerReply(rows){
+  if(!rows||document.hidden||busy||selected||!createPane.hidden||text.value.trim()||[...drafts.values()].some(x=>x.trim()))return;
+  const row=rows.find(r=>r.unread&&offered.get(r.id)!==r.last_id);if(row)await open(row.id);
  }
  async function refreshList(){refreshButton.disabled=true;try{const rows=await chatRPC(client,'mine');list.replaceChildren();if(!rows.length)el('p','아직 문의 내역이 없습니다. 새 문의를 남겨 주세요.',list);
   for(const row of rows){const b=button(list,'',()=>open(row.id),true);b.classList.add('support-ticket-link');b.dataset.inquiryId=row.id;
    el('strong',ticketTitle(row),b);el('span',chatStates[row.chat_state],b);el('small',kst(row.created_at),b);if(row.unread)el('span','새 답변',b).className='support-new';
-  }sync.textContent='';return rows;
- }catch{sync.textContent='문의 내역을 불러오지 못했습니다. 새로고침해 주세요. 작성 중인 내용은 유지됩니다.';}finally{refreshButton.disabled=false;}}
+  }if(syncFailed){sync.textContent='';syncFailed=false;}return rows;
+ }catch{syncFailed=true;sync.textContent='문의 내역을 불러오지 못했습니다. 새로고침해 주세요. 작성 중인 내용은 유지됩니다.';}finally{refreshButton.disabled=false;}}
  async function open(id,push=true){if(busy)return;const ticket=++generation;try{const row=await chatRPC(client,'detail',{id});if(ticket!==generation)return;
-  viewer?.destroy();selected=id;current=row;createPane.hidden=true;historyPane.hidden=true;detailPane.hidden=false;detailPane.replaceChildren();
+  viewer?.destroy();selected=id;current=row;offered.set(id,row.last_id);createPane.hidden=true;historyPane.hidden=true;detailPane.hidden=false;detailPane.replaceChildren();
   if(push){const u=new URL(location.href);u.searchParams.set('thread',id);history.pushState({},'',u);}
-  button(detailPane,'← 문의 내역',()=>show('history'),true);const h=el('h2',ticketTitle(row),detailPane);h.tabIndex=-1;
-  const state=el('p',chatStates[row.chat_state],detailPane);state.dataset.chatState='';
-  el('p','답변 완료는 해결 확정과 다릅니다. 내용을 확인한 뒤 해결 여부를 알려 주세요.',detailPane).className='support-context';
-  const transcriptHost=el('div',undefined,detailPane);viewer=transcript(transcriptHost,client,false,()=>void refreshList());viewer.draw(row);
-  const follow=el('form',undefined,detailPane);follow.id='supportFollow';const input=field(follow,'추가 메시지');input.value=drafts.get(id)||'';input.oninput=()=>drafts.set(id,input.value);
+  const header=el('header',undefined,detailPane);header.className='support-chat-header';
+  chatIcon(header,'‹','문의 내역으로 돌아가기',()=>show('history'));
+  const identity=el('div',undefined,header);const h=el('h2','보험소 고객센터',identity);h.tabIndex=-1;
+  const state=el('p',chatStates[row.chat_state],identity);state.dataset.chatState='';
+  const threadRefresh=chatIcon(header,'↻','새로고침',async()=>{threadRefresh.disabled=true;try{await refreshList();await updateThread();}finally{threadRefresh.disabled=false;}});
+  chatIcon(header,'×','대화창 닫기',()=>show('history'));
+  const guidance=el('details',undefined,detailPane);guidance.className='support-chat-guidance';el('summary','확인 후 답변드려요 · 이용 안내',guidance);
+  const guidanceBody=el('div',undefined,guidance);el('p',chatNotice,guidanceBody);el('p',sensitiveNotice,guidanceBody).id='supportThreadSensitive';
+  el('p','보험소 이용 문의입니다. 보험사 청구 접수나 전문가 상담·예약 신청과는 별개예요.',guidanceBody);
+  el('small','문의 번호 '+row.id+' · '+(topics[row.topic]||kinds[row.kind]||'문의'),guidanceBody);
+  const transcriptHost=el('div',undefined,detailPane);transcriptHost.className='support-chat-messages';viewer=transcript(transcriptHost,client,false,()=>void refreshList());
+  const footer=el('div',undefined,detailPane);footer.className='support-chat-footer';
+  const follow=el('form',undefined,footer);follow.id='supportFollow';const input=field(follow,'추가 메시지');input.setAttribute('aria-describedby','supportComposerNotice');input.value=drafts.get(id)||'';
+  const resizeInput=composerInput(input);input.oninput=()=>drafts.set(id,input.value);
   const send=button(follow,row.chat_state==='CLOSED'?'추가 문의하기':'보내기');send.type='submit';const info=announce(follow),attempt=attemptKey('support:message:'+userId+':'+id);let pending=null;
   const resolveAttempt=attemptKey('support:resolve:'+userId+':'+id);
-  const resolve=button(detailPane,'해결됐어요',async()=>{if(busy)return;busy=true;resolve.disabled=true;try{await sendChat(client,'resolve',await resolveAttempt.prepare({id,revision:current.revision}));resolveAttempt.clear();await updateThread();await refreshList();info.textContent='해결 확인을 저장했습니다.';}catch(e){if(e.message==='stale_request')resolveAttempt.clear();info.textContent=errorText(e);}finally{busy=false;resolve.disabled=false;}},true);resolve.dataset.chatResolve='';
+  const resolution=el('div',undefined,footer);resolution.className='support-resolution';footer.prepend(resolution);
+  el('span','답변이 도움이 되었나요?',resolution);
+  const resolve=button(resolution,'해결됐어요',async()=>{if(busy)return;busy=true;resolve.disabled=true;try{await sendChat(client,'resolve',await resolveAttempt.prepare({id,revision:current.revision}));resolveAttempt.clear();await updateThread();await refreshList();info.textContent='해결 확인을 저장했습니다.';}catch(e){if(e.message==='stale_request')resolveAttempt.clear();info.textContent=errorText(e);}finally{busy=false;resolve.disabled=false;}},true);resolve.dataset.chatResolve='';
   resolve.hidden=row.chat_state==='CLOSED'||!row.messages.some(m=>m.sender==='operator')&&!row.response;
+  resolution.hidden=resolve.hidden;
+  const composerNotice=el('p','민감한 정보는 보내지 마세요 · 실시간 상담이 아니에요',footer);composerNotice.id='supportComposerNotice';
+  footer.append(sync);
   follow.onsubmit=async e=>{e.preventDefault();if(busy||!follow.reportValidity())return;busy=true;send.disabled=true;input.readOnly=true;info.textContent='전송 중…';
-   try{pending||=await attempt.prepare({id,body:input.value.trim()});await sendChat(client,'message',pending);pending=null;attempt.clear();input.value='';drafts.delete(id);info.textContent='전송 완료';send.textContent='보내기';await updateThread();await refreshList();}
+   try{pending||=await attempt.prepare({id,body:input.value.trim()});await sendChat(client,'message',pending);pending=null;attempt.clear();input.value='';resizeInput();drafts.delete(id);send.textContent='보내기';await refreshList();busy=false;show('history');sync.textContent='메시지를 보냈어요. 답변이 오면 이곳에서 대화창이 열립니다.';}
    catch(e){if(!e.uncertain)pending=null;info.textContent=errorText(e);send.textContent='다시 보내기';}finally{busy=false;send.disabled=false;input.readOnly=Boolean(pending);}};
-  h.focus();sync.textContent='';
+  screen(detailPane);resizeInput();viewer.draw(row);h.focus({preventScroll:true});sync.textContent='';
  }catch(e){sync.textContent=errorText(e);}}
- async function updateThread(){if(!selected)return;const id=selected,epoch=generation;try{const row=await chatRPC(client,'detail',{id});if(id!==selected||epoch!==generation)return;current=row;viewer.draw(row);const send=detailPane.querySelector('#supportFollow button[type=submit]');if(send.textContent!=='다시 보내기')send.textContent=row.chat_state==='CLOSED'?'추가 문의하기':'보내기';detailPane.querySelector('[data-chat-state]').textContent=chatStates[row.chat_state];detailPane.querySelector('[data-chat-resolve]').hidden=row.chat_state==='CLOSED'||!row.messages.some(m=>m.sender==='operator')&&!row.response;}catch{sync.textContent='새 메시지를 확인하지 못했습니다. 기존 대화와 작성 내용은 유지됩니다.';}}
+ async function updateThread(){if(!selected)return;const id=selected,epoch=generation;try{const row=await chatRPC(client,'detail',{id});if(id!==selected||epoch!==generation)return;current=row;const send=detailPane.querySelector('#supportFollow button[type=submit]');if(send.textContent!=='다시 보내기')send.textContent=row.chat_state==='CLOSED'?'추가 문의하기':'보내기';detailPane.querySelector('[data-chat-state]').textContent=chatStates[row.chat_state];const resolve=detailPane.querySelector('[data-chat-resolve]');resolve.hidden=row.chat_state==='CLOSED'||!row.messages.some(m=>m.sender==='operator')&&!row.response;resolve.parentElement.hidden=resolve.hidden;viewer.draw(row);}catch{sync.textContent='새 메시지를 확인하지 못했습니다. 기존 대화와 작성 내용은 유지됩니다.';}}
  form.onsubmit=async e=>{e.preventDefault();if(busy||!form.reportValidity())return;if(kind.value==='WITHDRAW'&&!pendingCreate&&!confirm('회원 이용을 중지하고 탈퇴를 접수할까요?'))return;
   busy=true;submit.disabled=true;text.readOnly=true;topic.disabled=kind.disabled=true;notice.textContent='전송 중…';
   try{pendingCreate||=await createAttempt.prepare({kind:kind.value,body:text.value.trim(),topic:topic.value||null,confirmed:kind.value==='WITHDRAW'});
    const result=await sendChat(client,'create',pendingCreate),withdraw=kind.value==='WITHDRAW';pendingCreate=null;createAttempt.clear();text.value='';notice.textContent='전송 완료';submit.textContent='보내기';
-   if(withdraw){await client.auth.signOut({scope:'global'}).catch(()=>{});host.replaceChildren();el('p','탈퇴 요청을 접수하고 회원 이용을 중지했습니다. 이후 처리 결과는 운영팀에 문의해 주세요.',host);return;}
-   busy=false;await refreshList();await open(result.id);
+   if(withdraw){await client.auth.signOut({scope:'global'}).catch(()=>{});screen(false);host.replaceChildren();el('p','탈퇴 요청을 접수하고 회원 이용을 중지했습니다. 이후 처리 결과는 운영팀에 문의해 주세요.',host);return;}
+   topic.value='';kind.value=initialKind;await refreshList();busy=false;show('history');sync.textContent='문의를 보냈어요. 답변이 오면 이곳에서 대화창이 열립니다.';
   }catch(e){if(!e.uncertain)pendingCreate=null;notice.textContent=errorText(e);submit.textContent='다시 보내기';}finally{busy=false;submit.disabled=false;text.readOnly=Boolean(pendingCreate);topic.disabled=kind.disabled=Boolean(pendingCreate);}};
  const cleanup=warnUnsaved(host,()=>text.value.trim()||[...drafts.values()].some(x=>x.trim()));
- const stop=refreshOnReturn(host,async()=>{if(busy)return;await refreshList();await updateThread();});
+ const stop=refreshOnReturn(host,async()=>{if(busy)return;const rows=await refreshList();if(selected)await updateThread();else await offerReply(rows);});
  const pop=()=>{const id=new URLSearchParams(location.search).get('thread');if(id)void open(id,false);else show('history',false);};window.addEventListener('popstate',pop);
- await refreshList();const thread=new URLSearchParams(location.search).get('thread');if(thread)await open(thread,false);else if(initialBody||initialKind!=='INQUIRY')show('new',false);
- return()=>{cleanup();stop();viewer?.destroy();window.removeEventListener('popstate',pop);};
+ const escape=e=>{if(e.key==='Escape'&&!e.isComposing&&document.body.classList.contains('support-chat-open')){e.preventDefault();show('history');}};document.addEventListener('keydown',escape);
+ const initialRows=await refreshList();const thread=new URLSearchParams(location.search).get('thread');if(thread)await open(thread,false);else if(initialBody||initialKind!=='INQUIRY')show('new',false);else await offerReply(initialRows);
+ return()=>{cleanup();stop();viewer?.destroy();screen(false);window.removeEventListener('popstate',pop);document.removeEventListener('keydown',escape);};
 }
 
 export async function mountChatInbox({client,host,userId='admin'}){
