@@ -64,12 +64,45 @@
     // ── 지도 타일: 이 한 곳만 바꾸면 카카오맵 등으로 교체 가능 ──
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
     drawMarkers();
+    // 확대하면 묶음이 저절로 펼쳐지고, 다시 축소하면 묶인다(3-6).
+    var lastGrouped = map.getZoom() < EXPAND_ZOOM;
+    map.on('zoomend', function () {
+      var grouped = map.getZoom() < EXPAND_ZOOM;
+      if (grouped === lastGrouped) return;
+      lastGrouped = grouped;
+      if (grouped) expanded = {};
+      drawMarkers({ keepView: true });
+    });
     map.zoomControl.setPosition("topright");
     new ResizeObserver(function(){map.invalidateSize();}).observe($("mapStage"));
   }
 
+  // 이 배율 이상이면 묶지 않고 전부 펼쳐 보여 준다.
+  var EXPAND_ZOOM = 16;
+  // 사용자가 눌러서 펼친 묶음. 좌표 키 단위로 기억해 다시 그려도 펼친 상태가 유지된다.
+  var expanded = {};
+
+  // 숫자 묶음 핀 하나. 누르면 그 자리에서 펼친다(지도를 흔들지 않는다).
+  function clusterMarker(key, group) {
+    var count = group.length;
+    var icon = L.divIcon({
+      className: 'spot-cluster', html: '<span>' + count + '</span>',
+      iconSize: [40, 40], iconAnchor: [20, 20]
+    });
+    var marker = L.marker([group[0].lat, group[0].lng],
+      { icon: icon, title: count + '곳이 겹쳐 있어요 · 눌러서 펼치기', alt: count + '곳이 겹쳐 있어요 · 눌러서 펼치기' }).addTo(map);
+    var open = function () { expanded[key] = true; drawMarkers({ keepView: true }); };
+    marker.on('click', open);
+    var node = marker.getElement();
+    if (node) node.addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault(); event.stopPropagation(); open();
+    });
+    return marker;
+  }
+
   // 현재 SPOTS로 마커를 다시 그리고 지도 범위를 맞춘다(지역 재조회 시 재사용).
-  function drawMarkers() {
+  function drawMarkers(options) {
     spotMarkers.forEach(function (m) { map.removeLayer(m); });
     spotMarkers = [];
     var coords = [];
@@ -79,8 +112,15 @@
     visibleSpots.forEach(function (s) {
       if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) return; // 좌표 없으면 목록에만 표시
       coords.push([s.lat, s.lng]);
-      var icon=pinIcon(false,s.planned||s.office,s.planned,s), group=groups[s.lat.toFixed(4)+','+s.lng.toFixed(4)];
-      // Separate shared reference points visually without changing stored coordinates or distance calculations.
+      var key=s.lat.toFixed(4)+','+s.lng.toFixed(4), group=groups[key];
+      // 3-6: 겹치는 핀은 숫자 묶음 하나로 보이고, 누르거나 확대하면 펼친다.
+      // 펼친 상태는 기존 부채꼴 배치를 그대로 쓴다(저장된 좌표·거리 계산은 건드리지 않는다).
+      if(group.length>1&&!expanded[key]&&map.getZoom()<EXPAND_ZOOM){
+        if(group.indexOf(s)>0)return;           // 묶음은 그룹당 하나만 그린다
+        spotMarkers.push(clusterMarker(key,group));
+        return;
+      }
+      var icon=pinIcon(false,s.planned||s.office,s.planned,s);
       if(group.length>1){var index=group.indexOf(s),columns=Math.min(group.length,4),row=Math.floor(index/columns),rowCount=Math.ceil(group.length/columns);icon.options.iconAnchor=[icon.options.iconAnchor[0]-(index%columns-(Math.min(columns,group.length-row*columns)-1)/2)*56,icon.options.iconAnchor[1]-(row-(rowCount-1)/2)*56];}
       s._marker = L.marker([s.lat, s.lng], { icon: icon, title: s.name+(s.planned?' · 개설 예정 보험소':s.office?' · 보험소':' · 전문가 활동지역') }).addTo(map);
       s._marker.on('click', function () { openCard(s); });
@@ -88,6 +128,7 @@
       spotMarkers.push(s._marker);
     });
     // 전문가 위치에 맞춰 범위 자동 조정(위치 권한 허용 시 locate가 다시 내 위치로 이동)
+    if (options && options.keepView) return;
     if (coords.length > 1) map.fitBounds(L.latLngBounds(coords).pad(0.25));
     else if (coords.length === 1) map.setView(coords[0], 14);
   }
@@ -155,6 +196,8 @@
   // 그래서 안내 블록은 시트 직계에 두고, 기존 '방문 전문가 찾기' 링크는 제자리에 그대로 둔다.
   function renderEmptyActions(sheet, areaLink) {
     var box = document.createElement('div'); box.className = 'empty-actions';
+    // 그림 자리(3-6)는 안내 버튼 묶음 '밖' 위쪽에 둔다. 안에 넣으면 버튼 수 계산이 흔들린다.
+    if (window.artSlot) { var art = window.artSlot('pin'); art.dataset.artSlot = 'empty'; art.classList.add('empty-art'); sheet.insertBefore(art, areaLink); }
     sheet.insertBefore(box, areaLink);
     var region = waitlistRegion();
     if (region) {
@@ -185,6 +228,8 @@
     // 빈 안내 블록은 .list-body 밖에 있으므로 매 렌더마다 직접 지운다.
     var stale = sheet.querySelector('.empty-actions');
     if (stale) stale.remove();
+    var staleArt = sheet.querySelector('.empty-art');
+    if (staleArt) staleArt.remove();
     body.innerHTML = '';
 
     var arr = sortedSpots();

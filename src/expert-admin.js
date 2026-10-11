@@ -32,7 +32,7 @@ export async function renderExpertAdmin({client,host,message}){
   if(adminTestFilter==='real'&&row.is_test)continue;
   if(adminTestFilter==='test'&&!row.is_test)continue;
   const card=el('section',undefined,host);card.className='card expert-review-card'+(row.is_test?' is-test':'');
-  if(row.is_test)el('p','🧪 테스트 계정 · 소비자 화면·통계 제외',card).className='muted';
+  if(row.is_test)el('p','테스트 계정 · 소비자 화면·통계 제외',card).className='muted';
   el('h2',(PROFESSIONS[row.profession]?.name||row.profession)+' · '+row.full_name,card);
   el('p',row.region+' · 신청 '+kst(row.submitted_at),card);el('p',(labels[row.status]||row.status)+(row.sanction?' · '+labels[row.sanction]:'')+(row.sanction_until?' · '+kst(row.sanction_until)+'까지':''),card);
   if(row.legacy){el('p','이전 양식의 신청입니다. 기존 기록은 보존됩니다. 새 서류·서약 절차로 다시 신청한 뒤 심사하세요.',card);continue;}

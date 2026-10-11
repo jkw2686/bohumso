@@ -1005,3 +1005,47 @@ dialog.waitlist-overlay{margin:0;padding:var(--space-4);border:0;width:100%;heig
 .optional-profile textarea{display:block;width:100%;min-height:calc(var(--touch-target)*2);resize:vertical;box-sizing:border-box;font:inherit;font-size:var(--type-body);line-height:1.6;scroll-margin-block:calc(var(--space-5)*2)}
 .optional-profile textarea[aria-invalid=true]{border-color:var(--danger)}
 .optional-profile textarea:focus-visible{outline:var(--focus-width) solid var(--brand);outline-offset:var(--focus-width)}
+
+/* ───── 3-6 동작(애니메이션). 모든 화면이 styles.css 를 읽으므로 여기 한 곳에 둔다. ─────
+   prefers-reduced-motion 이면 이 파일 맨 아래에서 전부 끈다. 지도·목록 성능에 영향을 주지
+   않도록 transform/opacity 만 쓰고, 레이아웃을 다시 계산하는 속성은 쓰지 않는다. */
+.btn, button.btn { transition: background .1s ease, transform .1s ease; }
+.btn:active { transform: scale(0.985); }
+
+@keyframes bohumso-appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.appear { animation: bohumso-appear .18s ease-out both; }
+
+/* '지금 가능' 배지의 은은한 깜빡임. 색만으로 구분하지 않도록 글자는 항상 함께 보인다. */
+.avail-badge::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 6px;
+  border-radius: 50%; background: var(--muted); vertical-align: baseline; }
+.avail-now::before { background: var(--ok); animation: bohumso-pulse 2.4s ease-in-out infinite; }
+.avail-today::before { background: var(--warn); }
+.avail-scheduled::before { background: var(--border); border: 1px solid var(--muted); }
+.avail-unavailable::before { background: var(--danger); }
+@keyframes bohumso-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+
+/* 저장 완료 체크. 문구와 함께 쓰며 이것만으로 상태를 알리지 않는다. */
+@keyframes bohumso-check { from { stroke-dashoffset: 26; } to { stroke-dashoffset: 0; } }
+.saved-check { width: 18px; height: 18px; vertical-align: -3px; margin-right: 6px; color: var(--ok); }
+.saved-check path { stroke-dasharray: 26; animation: bohumso-check .22s ease-out both; }
+
+/* 그림 자리(3-6). 캐릭터는 넣지 않는다. 지금은 기존 ui-icons 아이콘만 보여 준다. */
+.art-slot { display: grid; place-items: center; width: 72px; height: 72px; margin: 0 auto var(--space-3);
+  border-radius: 50%; background: var(--brand-soft); color: var(--brand); }
+.art-slot .ui-icon { width: 34px; height: 34px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn, button.btn { transition: none; }
+  .btn:active { transform: none; }
+  .appear, .avail-now::before, .saved-check path { animation: none; }
+  .saved-check path { stroke-dashoffset: 0; }
+}
+
+/* 겹치는 핀 묶음(3-6). 지도 화면과 홈 지도가 함께 쓰므로 styles.css 에 둔다.
+   기본 스킨 대신 보험소 토큰으로 그린다. */
+.spot-cluster{cursor:pointer}
+.spot-cluster>span{display:grid;place-items:center;width:40px;height:40px;box-sizing:border-box;
+  border-radius:50%;background:var(--brand);color:var(--card);border:2px solid var(--card);
+  box-shadow:0 2px 8px rgba(16,24,40,.25);font-weight:700;font-size:14px}
+.spot-cluster>span:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
+.marker-cluster,.marker-cluster div{background:none;border:0}

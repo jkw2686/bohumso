@@ -64,9 +64,9 @@
 
 <div class="bottom-nav">
   <a href="index.html"><span class="icon" aria-hidden="true">⌂</span>홈</a>
-  <a href="dashboard.html"><span class="icon" aria-hidden="true">▤</span>내현황</a>
+  <a href="dashboard.html"><span class="icon" data-icon="document"></span>내현황</a>
     <a href="find.html"><span class="icon" aria-hidden="true">⌖</span>전문가찾기</a>
-  <a href="consult.html"><span class="icon" aria-hidden="true">☏</span>상담신청</a>
+  <a href="consult.html"><span class="icon" data-icon="send"></span>상담신청</a>
 </div>
 
 <script src="script.js"></script>
@@ -182,5 +182,5 @@ function toggleFull() {
   document.getElementById('today').textContent = new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'medium'}).format(d) + ' KST';
 })();
 </script>
-<script type="module" src="/assets/visit.js"></script></body>
+<script type="module" src="/assets/visit.js"></script><script src="/ui-icons.js"></script></body>
 </html>
