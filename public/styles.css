@@ -5,6 +5,8 @@
   --brand-dark: #123a99;
   --brand-soft: #eef2ff;
   --danger: #d64545;
+  /* --danger 는 흰 배경에서 4.38:1 이라 본문 글자에 못 쓴다. 글자용은 이 토큰을 쓴다(6.65:1). */
+  --danger-text: #b42318;
   --ok: #1a9c6d;
   --warn: #b45309;
   --bg: #f4f5f8;

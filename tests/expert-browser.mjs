@@ -2,10 +2,23 @@ import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';import {startExpertPreview} from '../scripts/expert-preview.mjs';
 const server=await startExpertPreview(0);let browser;const errors=[];
 try{browser=await chromium.launch(PW_LAUNCH);const page=await browser.newPage({viewport:{width:360,height:800}});page.on('pageerror',e=>errors.push(e.message));const base='http://127.0.0.1:'+server.address().port;
- await page.goto(base+'/?phone-off=1');await page.getByRole('button',{name:'설계사',exact:false}).click();await page.locator('#expertNext').click();await page.getByLabel('이름',{exact:true}).fill('가상 신청자');await page.getByLabel('휴대폰',{exact:true}).fill('01000000000');await expect(page.getByRole('button',{name:'인증번호 받기'})).toBeDisabled();await expect(page.getByRole('button',{name:'인증번호 확인'})).toBeDisabled();await expect(page.locator('#expertNext')).toBeDisabled();
+ await page.goto(base+'/?phone-off=1');await page.getByRole('button',{name:'설계사',exact:false}).click();await page.locator('#expertNext').click();
+ // 3-5 실명 화면 검사: 닉네임·회사명·직함·숫자가 들어가면 다음으로 못 간다.
+ const nameBox=page.getByLabel('실명 (설계사 등록증과 같은 이름)',{exact:true});
+ await expect(page.getByText('닉네임·회사명·직함은 쓸 수 없어요',{exact:false}).first()).toBeVisible();
+ for(const bad of ['설계사 홍길동','ABC보험','홍길동123','홍 길동']){
+  await nameBox.fill(bad);await nameBox.blur();
+  await expect(nameBox).toHaveAttribute('aria-invalid','true');
+  await expect(page.locator('#expertNext')).toBeDisabled();
+ }
+ for(const good of ['홍길동','Kim Minsu']){
+  await nameBox.fill(good);await nameBox.blur();
+  await expect(nameBox).toHaveAttribute('aria-invalid','false');
+ }
+ await nameBox.fill('김가상');await page.getByLabel('휴대폰',{exact:true}).fill('01000000000');await expect(page.getByRole('button',{name:'인증번호 받기'})).toBeDisabled();await expect(page.getByRole('button',{name:'인증번호 확인'})).toBeDisabled();await expect(page.locator('#expertNext')).toBeDisabled();
  for(const profession of ['설계사','손해사정사','변호사']){
   await page.goto(base,{waitUntil:'domcontentloaded'});await expect(page.locator('#expertNext')).toBeDisabled();await page.getByRole('button',{name:profession,exact:false}).click();if(profession==='설계사')await page.screenshot({path:'artifacts/expert-step1-mobile.png',fullPage:true});await page.locator('#expertNext').click();
-  await page.getByLabel('이름',{exact:true}).fill('가상 신청자');await page.getByLabel('휴대폰',{exact:true}).fill('01000000000');await expect(page.locator('#expertNext')).toBeDisabled();
+  await page.getByLabel('실명 (설계사 등록증과 같은 이름)',{exact:true}).fill('김가상');await page.getByLabel('휴대폰',{exact:true}).fill('01000000000');await expect(page.locator('#expertNext')).toBeDisabled();
   if(profession==='설계사'){await page.evaluate(()=>window.expertDemo.smsFailure=true);await page.getByRole('button',{name:'인증번호 받기'}).click();await expect(page.getByRole('alert').filter({hasText:'문자를 보내지 못했습니다'})).toBeVisible();await page.evaluate(()=>window.expertDemo.smsFailure=false);}
   await page.getByRole('button',{name:'인증번호 받기'}).click();await page.getByLabel('인증번호',{exact:true}).fill('123456');await page.getByRole('button',{name:'인증번호 확인'}).click();await expect(page.locator('#expertNext')).toBeEnabled();await page.locator('#expertNext').click();await page.getByLabel('활동 지역').fill('서울 마포구');await page.getByLabel('소속 회사').fill('테스트 소속');await page.locator('#expertNext').click();await expect(page.locator('#expertNext')).toBeDisabled();
   await page.getByLabel('불필요한 개인정보를 가린').check();await page.getByLabel('자격 심사를 위한 비공개').check();

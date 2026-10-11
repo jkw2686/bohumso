@@ -6,6 +6,20 @@ export const PLEDGES=[
 ];
 export const PROFESSIONS={planner:{name:'설계사',icon:'◈',qualification:'위촉증명서',registry:'보험모집 등록번호'},adjuster:{name:'손해사정사',icon:'▤',qualification:'손해사정사 자격증',registry:'금감원 등록번호'},lawyer:{name:'변호사',icon:'⚖',qualification:'변호사 등록증',registry:'변협 등록번호'}};
 export function validRegistration(value){return /^[A-Za-z0-9][A-Za-z0-9 -]{2,39}$/.test(value)&&!/[0-9]{6}[ -]?[1-8][0-9]{6}/.test(value);}
+// 실명 검사(3-5). 대표 확정 2026-10-11: 한글 이름은 2~4자·공백 없음, 영문 이름은 2~40자·공백 허용.
+// 닉네임·회사명·직함을 거르기 위한 화면 검사다. 이미 승인된 이름에는 소급하지 않는다.
+export const NAME_RULE_HINT='닉네임·회사명·직함은 쓸 수 없어요. 한글 이름은 2~4자, 영문 이름은 2~40자로 띄어쓰기까지 등록증과 같게 적어 주세요.';
+const NAME_BANNED_KO=['설계사','손해사정','변호사','팀장','지점장','본부장','실장','사무소','대리점','보험','지사','센터','대표님'];
+const NAME_BANNED_EN=['fc','ga','agent','manager'];
+export function validRealName(value){
+ const name=String(value||'').trim();
+ if(NAME_BANNED_KO.some(word=>name.includes(word)))return false;
+ if(NAME_BANNED_EN.some(word=>new RegExp('(^|[^a-z])'+word+'([^a-z]|$)','i').test(name)))return false;
+ if(/^[가-힣]{2,4}$/.test(name))return true;
+ // 영문 이름의 ' 와 - 는 허용한다(O'Brien, Smith-Jones). 지시서의 '특수문자 거부' 에서 이 둘만 뺀 것으로,
+ // 막으려는 대상은 닉네임·회사명·직함이지 실제 성씨가 아니기 때문이다. 되돌리려면 이 줄의 '\\- 만 지우면 된다.
+ return /^[A-Za-z][A-Za-z '\-]{0,38}[A-Za-z]$/.test(name)&&!/ {2,}/.test(name)&&!/['\-]{2,}/.test(name);
+}
 export function koreanPhone(value){const digits=value.replace(/[^0-9]/g,'');return /^010[0-9]{8}$/.test(digits)?'+82'+digits.slice(1):/^8210[0-9]{8}$/.test(digits)?'+'+digits:null;}
 export async function prepareDocument(file){
  if(!['image/jpeg','image/png','application/pdf'].includes(file.type)||file.size>10485760||file.size===0)throw Error('JPG·PNG·PDF, 10MB 이하 파일을 선택해 주세요.');
