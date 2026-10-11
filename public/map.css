@@ -223,3 +223,10 @@
 @media(min-width:900px){.map-page .card-sheet.expert-card-sheet{left:auto;right:calc(var(--touch-target) + var(--space-5));transform:none}}
 .map-page .expert-card-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
 .map-page .expert-card-actions .expert-office-action{grid-column:1/-1}
+
+/* 빈 지역 안내 — 오픈 알림 신청 연결. .list-body 안에서만 적용하고 전역 규칙은 건드리지 않는다.
+   버튼은 기존 .btn / .btn.ghost 를 그대로 쓰고 간격만 토큰으로 준다. */
+.map-page .list-body .empty-actions{display:flex;flex-direction:column;gap:var(--space-2);padding:var(--space-2) var(--space-3) var(--space-4)}
+.map-page .list-body .empty-actions .btn{width:100%;min-height:48px}
+.map-page .list-body .empty-actions .area-request{margin:0}
+.map-page .list-body .empty-actions-hint{margin:0 0 var(--space-2);color:var(--muted);font-size:var(--type-small)}
