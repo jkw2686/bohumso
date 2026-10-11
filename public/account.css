@@ -146,3 +146,18 @@ body[data-account-page] .review-document .btn{width:auto;margin:0}
 .appointment-policy p{margin-block:var(--space-2)}
 
 .review-feedback:empty{display:none}.review-feedback{padding:12px;border:1px solid var(--brand);border-radius:12px;background:var(--brand-soft);color:var(--text);font-weight:600}.form-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}.form-actions .btn{flex:1 1 160px;margin:0}
+
+/* 전문가 프로필 화면(partner.html) — ▶ 접힘 대신 '제목 + 요약 + 전체 폭 버튼' 카드.
+   partner 화면 안으로만 범위를 좁혀 전역 .card/.btn 규칙은 건드리지 않는다. */
+body[data-account-page="partner"] .profile-summary{display:grid;gap:var(--space-2);margin:0 0 var(--space-3)}
+body[data-account-page="partner"] .profile-summary p{margin:0;color:var(--muted);font-size:var(--type-small);line-height:1.6}
+body[data-account-page="partner"] .profile-summary-line{display:flex;align-items:center;gap:var(--space-3);min-width:0}
+body[data-account-page="partner"] .profile-summary-line .expert-avatar{flex:0 0 44px;width:44px;height:44px}
+body[data-account-page="partner"] .profile-summary-line p{flex:1;min-width:0;overflow-wrap:anywhere}
+body[data-account-page="partner"] .btn.profile-toggle{display:flex;align-items:center;justify-content:center;
+  width:100%;min-height:48px;box-sizing:border-box;margin:0;white-space:normal;word-break:keep-all}
+body[data-account-page="partner"] .card>h2{margin:0 0 var(--space-2)}
+body[data-account-page="partner"] #optionalProfileBody,
+body[data-account-page="partner"] #consultSettingsBody{margin-top:var(--space-3)}
+body[data-account-page="partner"] .profile-status:empty{display:none}
+body[data-account-page="partner"] .profile-status{margin:var(--space-2) 0 0;color:var(--muted);font-size:var(--type-small);line-height:1.6}

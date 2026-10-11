@@ -5,10 +5,18 @@ export {prepareProfilePhoto} from './profile-photo-crop.js';
 
 export async function renderOptionalProfile(client,parent){
  const result=await client.rpc('expert_optional_profile',{operation:'get'});if(result.error||!result.data)return;let p=result.data;
- const ui=window.BohumsoProfile,details=el('details',undefined,parent);details.className='card optional-profile';
- el('summary','지도 프로필 꾸미기 · 선택',details);
- el('p','사진·취급 구분·도움 업무·소개는 모두 선택입니다. 나중에 수정하거나 비울 수 있어요.',details);
- const form=el('form',undefined,details),fields=el('fieldset',undefined,form);fields.className='profile-editor-fields';el('legend','프로필 입력',fields).className='sr-only';
+ // ▶ 접힘 대신 '제목 + 한 줄 요약 + 전체 폭 버튼' 카드. 버튼을 누르면 같은 카드 안에서 폼이 펼쳐진다.
+ // 폼 내부·사진 처리·초안 보존·저장 로직은 그대로 두고 바깥 껍데기만 바꾼다.
+ const ui=window.BohumsoProfile,details=el('section',undefined,parent);details.className='card optional-profile';
+ el('h2','지도 프로필',details);
+ const summaryBox=el('div',undefined,details);summaryBox.className='profile-summary';
+ const toggle=el('button','프로필 입력',details);toggle.type='button';toggle.className='btn profile-toggle';
+ const body=el('div',undefined,details);body.id='optionalProfileBody';body.hidden=true;
+ // 저장 성공 시 폼을 닫으므로 확인 문구는 접히는 영역 밖에 둔다. 닫혀도 보인다.
+ const message=el('p','',details);message.className='profile-status';message.setAttribute('role','status');message.setAttribute('aria-live','polite');
+ toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls',body.id);
+ el('p','사진·취급 구분·도움 업무·소개는 모두 선택입니다. 나중에 수정하거나 비울 수 있어요.',body);
+ const form=el('form',undefined,body),fields=el('fieldset',undefined,form);fields.className='profile-editor-fields';el('legend','프로필 입력',fields).className='sr-only';
  let photo=null,removePhoto=false,previewURL='',ownPhotoURL='',busy=false,crop=null,cropping=false,photoLoading=false,introInitial='';
  const photoSection=el('section',undefined,fields);photoSection.className='profile-photo-edit';
  el('h3','사진 (선택)',photoSection);
@@ -24,9 +32,14 @@ export async function renderOptionalProfile(client,parent){
  const counter=el('p','',fields);counter.className='profile-editor-hint';counter.id='profileIntroCount';intro.setAttribute('aria-describedby',counter.id);
  const legacy=el('p','',fields);legacy.className='profile-editor-hint';legacy.hidden=Array.from(p.biography||'').length<=40;
  legacy.textContent='기존 소개는 그대로 보관됩니다. 소개를 새로 바꿀 때만 40자 이내로 작성해 주세요.';
- const previewBox=el('details',undefined,form);previewBox.className='profile-editor-preview';el('summary','지도에 보이는 프로필 미리보기',previewBox);const preview=el('div',undefined,previewBox);
+ // ▶ 접힘 대신 버튼(공통 규칙 §1 화면). 폼 안이지만 마지막으로 남아 있던 ▶ 라서 같이 맞춘다.
+ // 미리보기 내용 생성(draw 안의 preview.replaceChildren)은 그대로 둔다.
+ const previewBox=el('div',undefined,form);previewBox.className='profile-editor-preview';
+ const previewToggle=el('button','지도에 보이는 프로필 미리보기',previewBox);previewToggle.type='button';previewToggle.className='btn ghost';
+ const preview=el('div',undefined,previewBox);preview.id='profileEditorPreview';preview.hidden=true;
+ previewToggle.setAttribute('aria-expanded','false');previewToggle.setAttribute('aria-controls',preview.id);
+ previewToggle.onclick=()=>{preview.hidden=!preview.hidden;previewToggle.setAttribute('aria-expanded',String(!preview.hidden));previewToggle.textContent=preview.hidden?'지도에 보이는 프로필 미리보기':'미리보기 닫기';};
  const footer=el('div',undefined,form);footer.className='profile-editor-footer';
- const message=el('p','',footer);message.setAttribute('role','status');message.setAttribute('aria-live','polite');
  const actions=el('div',undefined,footer);actions.className='profile-editor-actions';
  const cancel=el('button','취소',actions);cancel.type='button';cancel.className='btn ghost';
  const save=el('button','저장하기',actions);save.type='submit';save.className='btn';
@@ -46,6 +59,26 @@ export async function renderOptionalProfile(client,parent){
   choose.disabled=busy||cropping||photoLoading;choose.textContent=imageURL()?'사진 변경':'사진 선택';
   fields.disabled=busy;form.setAttribute('aria-busy',busy?'true':'false');
  }
+ // 입력 전/후 요약. 사진은 인증이 필요해 loadOwnPhoto 가 받아온 URL 을 쓴다.
+ function filled(){return !!(p.photo_url||(p.biography||'').trim()||(p.insurance_types||[]).length||(p.help_tasks||[]).length);}
+ function drawSummary(){
+  summaryBox.replaceChildren();
+  if(filled()){
+   const line=el('div',undefined,summaryBox);line.className='profile-summary-line';
+   ui.setAvatar(ui.avatar(line,p),imageURL());
+   el('p',(p.biography||'').split('\n')[0].trim()||'소개는 아직 비어 있어요',line);
+  }else el('p','사진·소개를 넣으면 고객이 고르기 쉬워요 · 선택',summaryBox);
+  const open=!body.hidden;
+  toggle.textContent=open?'입력 닫기':filled()?'프로필 수정':'프로필 입력';
+  // 파란 버튼은 카드당 1개. 폼이 열려 있을 때의 주요 버튼은 '저장하기' 이므로 토글은 보조로 낮춘다.
+  toggle.className=open?'btn ghost profile-toggle':'btn profile-toggle';
+  toggle.setAttribute('aria-expanded',String(open));
+ }
+ toggle.onclick=()=>{
+  if(!body.hidden&&(dirty()||cropping)&&!confirm('입력한 내용을 두고 닫을까요? 저장하지 않은 변경은 다시 열면 그대로 있습니다.'))return;
+  body.hidden=!body.hidden;drawSummary();
+  if(!body.hidden)(form.querySelector('input,textarea,button')||body).focus({preventScroll:true});
+ };
  function revokePreview(){if(previewURL)URL.revokeObjectURL(previewURL);previewURL='';}
  function closeCrop(){crop?.dispose();crop=null;cropping=false;}
  async function loadOwnPhoto(){
@@ -85,7 +118,7 @@ export async function renderOptionalProfile(client,parent){
    photo=null;removePhoto=false;
    if(previewURL){if(ownPhotoURL)URL.revokeObjectURL(ownPhotoURL);ownPhotoURL=previewURL;previewURL='';}else if(!p.photo_url&&ownPhotoURL){URL.revokeObjectURL(ownPhotoURL);ownPhotoURL='';}
    message.textContent=cleanup?'저장했습니다. 이전 사진 파일 정리는 운영자가 확인합니다.':'저장했습니다. 지도 공개 여부와 상담 가능 상태는 기존 설정이 유지됩니다.';
-   notifySaved();
+   notifySaved();body.hidden=true;drawSummary();toggle.focus({preventScroll:true});
   }catch(e){if(textSaved)notifySaved();message.textContent=(textSaved?'소개·선택 항목은 저장했습니다. ':'')+(/[가-힣]/.test(e.message)?e.message:'저장하지 못했습니다. 입력은 유지되니 연결을 확인한 뒤 다시 시도해 주세요.');}
   finally{busy=false;draw();}
  };
@@ -96,5 +129,5 @@ export async function renderOptionalProfile(client,parent){
  function revealInput(){if(details.contains(document.activeElement)&&['INPUT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName))document.activeElement.scrollIntoView({block:'nearest'});}
  window.visualViewport?.addEventListener('resize',revealInput);
  window.addEventListener('pagehide',()=>window.visualViewport?.removeEventListener('resize',revealInput),{once:true});
- message.textContent='변경 사항이 없습니다.';draw();loadOwnPhoto();
+ message.textContent='변경 사항이 없습니다.';draw();drawSummary();loadOwnPhoto().then(drawSummary,()=>{});
 }

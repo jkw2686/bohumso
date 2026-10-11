@@ -34,7 +34,14 @@ export async function renderInstant(client,root){
   }
   el('p','브라우저를 닫으면 위치가 갱신되지 않습니다. 30분 이상 지난 위치는 검색에 사용하지 않아요. 끄더라도 접수한 상담은 유지됩니다.',card,'visit-hint');
   clearTimeout(timer);timer=setTimeout(()=>{if(card.isConnected&&document.visibilityState==='visible')load().catch(()=>{});},60000);
- };try{await load();}catch{status(card,'방문 가능 상태를 불러오지 못했어요.');button('다시 확인',card,load);}
+ };
+ // 지금 방문 카드는 partner.html·partner-work.html 양쪽에 있고, 다른 화면에서 상태를 바꾸고
+ // 돌아올 수 있다. 화면 복귀 시 서버값으로 다시 맞춘다. 중복 호출은 syncing 으로 막는다.
+ let syncing=false;
+ const resync=()=>{if(syncing||!card.isConnected||document.visibilityState!=='visible')return;syncing=true;load().catch(()=>{}).finally(()=>{syncing=false;});};
+ document.addEventListener('visibilitychange',resync);window.addEventListener('focus',resync);
+ window.addEventListener('pagehide',()=>{clearTimeout(timer);document.removeEventListener('visibilitychange',resync);window.removeEventListener('focus',resync);},{once:true});
+ try{await load();}catch{status(card,'방문 가능 상태를 불러오지 못했어요.');button('다시 확인',card,load);}
 }
 export async function renderUrgentWorkspace(client,root){
  const panel=el('section','',root,'card urgent-panel');el('h2','전문가 방문상담 내역',panel);const body=el('div','',panel);let busy=false;
