@@ -106,7 +106,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
  await refresh();
  const poll=setInterval(()=>{if(!document.hidden&&!editing())refresh(true).catch(()=>{});},30000);window.addEventListener('pagehide',()=>clearInterval(poll),{once:true});
  // Read-only access to requests created before the new workflow. No old completion or payment actions.
- const legacy=document.getElementById('legacyRequests');if(legacy){try{const rows=await rpc('list_service_requests',{workspace});for(const r of rows)el('p','이전 예약 · '+r.region+' · '+kst(r.requested_at)+' KST · '+r.status,legacy);}catch{el('p','이전 예약을 불러오지 못했습니다.',legacy);}}
+ const legacy=document.getElementById('legacyRequests');if(legacy){try{const rows=await rpc('list_service_requests',{workspace});for(const r of rows)el('p','이전 예약 · '+r.region+' · '+kst(r.requested_at)+' KST · '+(states[r.status]||'확인 중'),legacy);}catch{el('p','이전 예약을 불러오지 못했습니다.',legacy);}}
 }
 export async function renderPaymentResult(client,message){
  const query=new URLSearchParams(location.search);if(query.has('failed')){message('결제가 완료되지 않았습니다. 광고 구독 화면에서 결제 상태를 확인하고 다시 시도해 주세요.');return;}
