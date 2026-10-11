@@ -3,6 +3,7 @@
 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽는다. 최신 사용자 지시가 우선한다.
 
 ## 현재 범위와 진행
+- 구현·검수 0bb7a1a, origin/codex/mobile-ui-polish 전송 완료. main 병합·운영 배포 없음.
 - codex/mobile-ui-polish, 시작 기준 65580fd. 첫 홈은 유지하고 전문가·자료실·성장·프로필·계정·예약·고객센터를 정리했다.
 - 이번 지시는 UI 구현·격리 검수만 허용한다. 운영 DB/설정/배포/외부 발송/비용 집행 금지. 예전 배포 승인을 재사용하지 않는다.
 - 선택한 7페이지에 app-ui.css 적용. 기관 데이터·URL, index.html, 전역 styles.css/type-system.css, SQL, Netlify 설정은 그대로다.
