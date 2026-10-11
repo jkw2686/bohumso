@@ -151,8 +151,11 @@
     parent.appendChild(b);
     return b;
   }
-  function renderEmptyActions(body, areaLink) {
-    var box = document.createElement('div'); box.className = 'empty-actions'; body.appendChild(box);
+  // .list-body 는 시트가 접혀 있거나 빈 상태일 때 CSS 로 숨겨진다(map.css 205·209행).
+  // 그래서 안내 블록은 시트 직계에 두고, 기존 '방문 전문가 찾기' 링크는 제자리에 그대로 둔다.
+  function renderEmptyActions(sheet, areaLink) {
+    var box = document.createElement('div'); box.className = 'empty-actions';
+    sheet.insertBefore(box, areaLink);
     var region = waitlistRegion();
     if (region) {
       waitlistButton(box, region, 'consumer', '오픈 알림 신청', 'btn');
@@ -175,23 +178,21 @@
     all.type = 'button'; all.className = 'btn ghost'; all.textContent = '전체 지역 전문가 보기';
     all.onclick = clearRegion;
     box.appendChild(all);
-    // 기존 링크는 유지하되 신청 버튼 아래로 옮긴다.
-    if (!areaLink.hidden) box.appendChild(areaLink);
   }
 
   function renderList() {
-    var body = $('listBody'), areaLink = $('areaRequest');
-    // 빈 안내에서 신청 버튼 아래로 옮겨둔 링크를 먼저 제자리로 되돌린다.
-    // 그대로 두면 아래 innerHTML 초기화에 함께 지워져 다음 렌더에서 null 이 된다.
-    if (areaLink && body.contains(areaLink)) body.parentNode.insertBefore(areaLink, body);
+    var body = $('listBody'), areaLink = $('areaRequest'), sheet = $('listSheet');
+    // 빈 안내 블록은 .list-body 밖에 있으므로 매 렌더마다 직접 지운다.
+    var stale = sheet.querySelector('.empty-actions');
+    if (stale) stale.remove();
     body.innerHTML = '';
 
-    var arr = sortedSpots(),sheet=$('listSheet');
+    var arr = sortedSpots();
     sheet.classList.toggle('is-empty',!arr.length);
     areaLink.hidden=showOffices;areaLink.href='/urgent.html?purpose='+encodeURIComponent(PURPOSE||'claim')+'&situation='+encodeURIComponent(SITUATION||'claim')+'&region='+encodeURIComponent(selectedArea||'');areaLink.textContent='이 지역 방문 가능한 전문가 찾기';
     if (!arr.length) {
       $('listCount').textContent = showOffices?'아직 이 지역에 등록된 보험소가 없어요.':'아직 이 지역에 등록된 전문가가 없어요.';
-      renderEmptyActions(body, areaLink);
+      renderEmptyActions(sheet, areaLink);
       return;
     }
     $('listCount').textContent = showOffices?'보험소 거점 '+arr.length+'곳':showExperts?'공개 활동지역 · 전문가 '+arr.length+'명':'전문가·보험소 '+arr.length+'곳';

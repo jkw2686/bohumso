@@ -224,9 +224,13 @@
 .map-page .expert-card-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
 .map-page .expert-card-actions .expert-office-action{grid-column:1/-1}
 
-/* 빈 지역 안내 — 오픈 알림 신청 연결. .list-body 안에서만 적용하고 전역 규칙은 건드리지 않는다.
+/* 빈 지역 안내 — 오픈 알림 신청 연결.
+   .list-body 는 시트가 접혀 있을 때(205행)와 빈 상태일 때(209행) 숨겨지므로 안내 블록은
+   .list-body 밖, 기존 '방문 전문가 찾기' 링크와 같은 층(시트 직계)에 둔다.
    버튼은 기존 .btn / .btn.ghost 를 그대로 쓰고 간격만 토큰으로 준다. */
-.map-page .list-body .empty-actions{display:flex;flex-direction:column;gap:var(--space-2);padding:var(--space-2) var(--space-3) var(--space-4)}
-.map-page .list-body .empty-actions .btn{width:100%;min-height:48px}
-.map-page .list-body .empty-actions .area-request{margin:0}
-.map-page .list-body .empty-actions-hint{margin:0 0 var(--space-2);color:var(--muted);font-size:var(--type-small)}
+.map-page .list-sheet .empty-actions{display:flex;flex-direction:column;gap:var(--space-2);flex-shrink:0;padding:var(--space-2) var(--space-4) 0}
+.map-page .list-sheet .empty-actions .btn{width:100%;min-height:48px;box-sizing:border-box;white-space:normal}
+.map-page .list-sheet .empty-actions-hint{margin:0;color:var(--muted);font-size:var(--type-small);line-height:1.5}
+/* 빈 상태 시트를 140px 에 고정하면 안내 버튼이 잘린다. 내용 높이만큼만 늘리고 상한만 유지한다. */
+.map-page .list-sheet.is-empty,.map-page .list-sheet.is-empty.open{height:auto!important;max-height:calc(100% - 16px)!important}
+@media(min-width:900px){.map-page .list-sheet.is-empty,.map-page .list-sheet.is-empty.open{height:auto!important}}
