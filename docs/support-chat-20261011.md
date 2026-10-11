@@ -1,0 +1,96 @@
+# 앱 내 고객센터 채팅 — 개발 검수 기록
+
+기준: main `b9407a7`, 개발 브랜치 `codex/support-chat`. 사용자 최신 첨부 지시(2026-10-11)를 따른다. **운영 DB·설정·배포·외부 발송은 실행하지 않는다.**
+
+## 1. 구현·보완
+
+- 기존 `/support.html`에 새 문의·문의 내역·같은 문의의 후속 메시지를 추가했다. 소비자·설계사 모두 기존 로그인과 고객센터 진입 버튼을 사용한다.
+- 선택 문의 유형, 비실시간 응대 안내, 민감정보 입력 금지 안내를 표시한다. 개인정보 열람·정정·삭제·탈퇴, 이름 정정 및 자료실 오류 제보의 기존 진입도 유지했다. 첫 버전은 텍스트이며 기존 문의 화면에 첨부 기능은 없었다. 전문가 확인자료 업로드는 변경하지 않았다.
+- 첫 문의·본문·접수 안내를 한 트랜잭션으로 저장한다. 문의당 접수 안내는 한 번이다. 같은 요청 번호의 재전송은 저장 결과를 재사용하며 응답 유실 시 서버 접수증을 먼저 확인한다.
+- 입력 중복 전송 차단, 저장 중 표시, 성공 안내, 실패 입력 보존·재전송, 작성 중 페이지 이탈 경고를 추가했다. 입력 내용은 브라우저 영구 저장소에 저장하지 않는다. 요청 번호·내용 해시만 세션 저장소에 보관한다.
+- 답변 대기 / 확인 중 / 고객 답변 대기 / 답변 완료 / 종료를 구분한다. 목록 열람만으로 확인 중이 되지 않으며 운영자가 문의를 맡아야 한다. 답변 완료와 해결 확인을 분리하고 종료 뒤 추가 문의도 같은 대화에서 재개한다.
+- 고객센터 버튼·문의 목록의 새 답변 표시를 서버 읽음 위치로 유지한다. 실제 화면에 들어온 답변까지만 읽음 처리한다. 과거 메시지를 보는 중 새 메시지가 와도 스크롤을 강제로 내리지 않는다.
+- 기존 관리자 화면의 문의 영역을 확장했다. 오래된 미답변 우선 목록, 원문, 유형·역할·시각, 답변/추가 정보 요청, 명시적 종료/재개, 고객 답변과 별도 내부 메모를 제공한다.
+- 운영자가 답변을 작성하는 동안 들어온 새 고객 메시지는 자동 갱신만으로 확인한 것으로 취급하지 않는다. 이전 버전 답변 전송을 서버에서 거부하고 입력을 보존한다. 운영자가 최신 내용을 확인한 뒤 전송한다.
+- 자동 갱신이 답변 전송 성공 안내를 지우던 문제를 수정했다. 외부 문자·이메일·푸시 및 AI 연결은 추가하지 않았다. 자동 메시지는 접수 안내뿐이다.
+
+## 2. 파일과 충돌 범위
+
+| 범위 | 파일 |
+|---|---|
+| 고객·운영자 채팅 | `src/support-chat.js`, `src/support-ui.js`, `public/support.css` |
+| 기존 화면 연결 | `src/member-rights.js`, `src/early-operations-admin.js`, `public/support.html`, `public/admin.html` |
+| 앱 내 새 답변 표시 | `src/support-badge.js`, `public/ui-icons.js`, `public/styles.css`, `scripts/build.mjs`, `.gitignore` |
+| 검토용 SQL | `supabase/057_support_conversations.sql`, `supabase/057_support_conversations_rollback.sql`, `supabase/060_support_chat.sql`, `supabase/rollback_support_chat.sql` |
+| 격리 검증·미리보기 | `tests/support-integration-fixture.mjs`, `tests/support-integration.test.mjs`, `tests/support-chat.test.mjs`, `tests/support-chat-browser.mjs`, `scripts/support-chat-preview.mjs`, `package.json` |
+| 인수인계 | 이 문서, `HANDOFF.md`, `HANDOFF_CODEX.md`, `docs/ROADMAP-20261011.md` |
+
+057·support-ui 및 기존 통합 검증은 기존 커밋 `69e9e17`에서 재사용했다. 다른 작업본의 미커밋 파일을 복사하지 않았다. 별도 `bohumso-ui-release`의 `codex/interaction-settings` 미커밋 작업은 그대로 보존했다. Claude의 원격 브랜치는 `fec525a`, main은 `b9407a7`, interaction-settings 원격은 `a4890f7`임을 조회했다. **Claude Code 창의 실행 중·미커밋 작업은 직접 확인할 수 없다.**
+
+공통 파일 `styles.css`, `ui-icons.js`, `member-rights.js`, `early-operations-admin.js`, 빌드 설정, 화면 HTML, 인수인계 문서는 향후 병합 시 기능별 비교가 필요하다. 별도 브랜치를 만들었다고 병합 충돌까지 없다고 보장하지 않는다. 기존 프로필·활동·지도·예약 파일을 덮어쓰지 않았다.
+
+## 3. DB·접근권한 변경안
+
+**운영 미적용. 메모리 격리 DB에만 적용했다.** 기존 운영 문의 테이블을 기반으로 새 비공개 자료를 연결한다. Storage·회원가입·요금·상담 가능 정책은 변경하지 않는다.
+
+| 변경안 | 내용 |
+|---|---|
+| 057 새 테이블 | `private.support_threads`, `support_messages`, `support_receipts`, `support_ai_runs` |
+| 060 새 테이블 | `private.support_reads`(사용자별 읽음 위치), `support_chat_backup`(기존 함수 정의 원복용) |
+| 060 추가 컬럼 | threads: `chat_state`, `topic`, `requester_role`, `chat_initialized`; messages: `receipt_notice` |
+| 기존 데이터 | 과거 문의의 상태·역할을 처음 한 번 보완한다. 기존 본문·답변·회원·예약 삭제 및 컬럼 삭제·타입 변경 없음 |
+| 접수 안내 중복 방지 | `receipt_notice` 부분 유일 인덱스. 인증 사용자+요청 번호 접수증 유일키 |
+| RLS | 모든 신규 private 테이블 RLS 활성화, public/anon/authenticated/service_role 직접 접근 차단 |
+| API 권한 | `security definer` + 빈 search_path. `support_command`는 authenticated만 실행. auth.uid()와 기존 private.is_admin()으로 소유자·관리자 검사 |
+| 고객 API | 타인 문의 조회·수정 금지. 내부 메모·운영 검토 사유·연결 예약 상세를 고객 응답에서 제외. 목록은 원문·메시지 본문을 내려주지 않음 |
+| 자동 처리 | 기존 057의 AI 작업 시작을 060에서 차단하고 늦은 완료는 폐기. 유료 연결 없음 |
+| 동시 처리 | 사용자별 advisory lock, 문의 행 잠금, 답변의 revision 비교, 접수증 재사용. 읽음은 관찰한 메시지 ID까지만 단조 증가 |
+| 삭제 명령 | 데이터 DELETE/TRUNCATE 및 테이블·컬럼 DROP 없음. 057은 동명 동기화 트리거를 교체한다. 057 원복은 API 함수·트리거를 제거하지만 대화 데이터는 보존 |
+
+057, 060 각각 단일 트랜잭션이며 적용 순서는 **057 → 060**이다. 060 재실행·원복·재적용 시 대화·읽음 위치·상태를 보존하는 검증을 포함한다. 060 이후 057만 재실행하면 이전 API로 되돌아가므로 반드시 순서를 지킨다. 058·059는 이 채팅의 의존성이 아니다. 운영 배포 패키지는 별도 승인과 최신 스키마 비교·백업 후 결정한다.
+
+원복: 이전 프론트로 돌리고 `supabase/rollback_support_chat.sql`로 057 API 함수를 복원한다. 대화·읽음 위치·신규 컬럼은 삭제하지 않는다. 057 도입 자체를 취소하려면 별도 `057_support_conversations_rollback.sql`의 영향을 확인한다. 롤백 뒤 AI를 새로 연결하거나 활성화하지 않는다.
+
+새 프론트는 `support_command` version 2가 있을 때만 채팅을 표시한다. 아직 SQL이 없거나 version 1인 환경은 기존 문의 UI를 유지한다. 이는 운영 적용 완료를 뜻하지 않는다.
+
+## 4. 검수 결과
+
+환경: Windows / Node 24.18 / Edge Playwright, 실제 빌드 산출물 + PGlite 격리 DB + 소비자·설계사·운영자 가상 계정. 외부 요청은 차단하거나 로컬에서 처리했다.
+
+- 통과: 빌드. SQL·기존 통합 회귀 29/29. 역할별 접수, 원자 저장, 접수 안내 1회, 저장 실패·응답 유실·재시도, 내부 메모 비공개, 타인 조회·수정 및 일반 계정 관리자 접근 차단, 상태와 읽음 위치, 문의 종료/재개, 오래된 문의 우선, 함수 원복·재적용.
+- 통과: 실제 빌드 고객센터 브라우저 검사. 소비자·설계사 접수, 목록 조회 실패 시 작성 보존, 전송 전 실패/저장 후 응답 유실, 빠른 연속 제출, 운영자 답변 실패·재전송, 답변 작성 중 추가 메시지 충돌과 명시적 재확인, 종료/재개, 새 가상 로그인 세션, 타인 직접 URL·비관리자 관리자 페이지 거부, 기존 메시지를 읽는 중 스크롤 유지, 실제 보이는 답변까지만 읽음 처리.
+- 통과: 360·390·430·1440px 가로 넘침 없음, 터치 영역 44px 이상, Enter 진입, 텍스트 대비 6.68/6.68/9.32/9.66/14.75:1. 360×500 축소 뷰포트와 200% 루트 글자 크기 모의에서도 입력/보내기 접근 및 가로 넘침 확인. 페이지 예외 0건.
+- 통과: 기존 브라우저 회귀 4개를 순차 실행했다. `support-entry-browser`(5개 하단 탭·전문가 고객센터), `expert-profile-page-browser`(프로필 저장·요약·연락처·4폭), `home-experts-browser`(지도 묶음·전문가 선택·조회 실패), `booking-hardening-browser`(직접 선택·보험소 예약 동의·연락처·재선택·입력 보존·관리자 목록 조회). 기존 소비자/전문가 기능을 실제 운영 데이터 없이 확인했다.
+- 미확인: 실제 Supabase의 여러 DB 연결을 사용한 동시 실행 부하, 실제 Android/iOS 키보드·운영체제 글자 확대·화면 읽기 도구, 실제 Google 재로그인. PGlite의 직렬 연결과 메시지 도착 순서 검사, 새 가상 세션, 작은 뷰포트·글자 확대 모의를 이 항목의 통과로 대체하지 않는다.
+- 메모리 부담으로 동시에 실행한 브라우저 검사에서 Node 메모리 할당 실패·탐색 시간 초과가 발생했다. 미리보기 서버를 중지하고 무거운 검사를 순차 실행한다. 실패한 실행을 통과로 집계하지 않는다.
+- 전체 기존 브라우저 스위트나 실제 예약·결제·고객 알림 E2E를 전부 실행한 것은 아니다.
+
+## 5. 남은 결정
+
+- 기존 개인정보처리방침은 계정·예약·동의·심사 자료의 보관 기간을 정하지만 **고객센터 메시지·내부 메모·접수증의 구체적 보관/삭제 기간은 별도로 명시하지 않는다.** 운영 전 기간·삭제 요청 처리 범위와 고지 내용을 정해야 한다. 임의의 영구 보관 약속·자동 삭제를 구현하지 않았다.
+- 실제 단말 접근성·키보드 확인, 운영과 동등한 별도 Postgres 다중 연결 검증이 필요하다.
+- 운영자 처리 담당·응대 시간은 서비스에서 약속하지 않는다. 답변 확인과 해결 확인은 별도다. 집계에서 고객 확인·미해결·재개는 서버 기록으로 가능하지만 운영자의 실제 작업시간은 측정하지 않는다. AI 비용은 연결 자체가 없다.
+- 운영 DB 실행과 공개 배포는 이번 지침에서 승인되지 않았다. 해당 승인 전 main 병합·운영 SQL·환경변수·배포를 실행하지 않는다.
+
+## 6. 미리보기와 실행
+
+이 PC에서만 열리는 검수용 주소이며 공개 사이트가 아니다. 서버가 실행 중일 때만 사용 가능하다. 프로세스를 종료하면 가상 문의 데이터는 사라진다.
+
+- 소비자: http://127.0.0.1:8894/support.html
+- 운영자: http://127.0.0.1:8895/admin.html
+- 설계사: http://127.0.0.1:8896/support.html
+
+```powershell
+node scripts/build.mjs
+node --liftoff-only --no-wasm-tier-up --wasm-num-compilation-tasks=1 --test --test-concurrency=1 tests/support.test.mjs tests/support-integration.test.mjs tests/support-chat.test.mjs
+node --liftoff-only --no-wasm-tier-up --wasm-num-compilation-tasks=1 tests/support-chat-browser.mjs
+node --liftoff-only --no-wasm-tier-up --wasm-num-compilation-tasks=1 scripts/support-chat-preview.mjs
+```
+
+브라우저 테스트는 기존 `tests/playwright-launch.cjs` 설정을 따른다. Edge가 없는 환경에서는 기존 문서의 Chromium 경로 설정을 사용한다. 미리보기와 무거운 브라우저 검사를 동시에 띄우지 않는다. 새 패키지 설치 없음.
+
+변경 후 화면(모두 가상 계정): [고객 대화 모바일](support-chat-20261011-screens/customer-390.png), [운영자 답변 모바일](support-chat-20261011-screens/admin-390.png), [고객센터 미리보기](support-chat-20261011-screens/customer-preview.jpg), [운영자 입력 화면](support-chat-20261011-screens/admin-preview.jpg).
+
+## 7. 운영 반영
+
+**개발 브랜치 구현·검수용 준비 / 운영 DB 미적용 / 미배포.** 운영 사이트에는 앞서 배포한 전문가 첫 화면 자료실 진입 수정만 반영되어 있다. 이번 개발 커밋에는 `[skip netlify] [skip ci]`를 넣고 개발 브랜치에만 전송한다. 미리보기의 가상 인증·관리자 화면을 공개 호스팅에 배포하면 안 된다.

@@ -4,6 +4,9 @@
  // 공통 '그림 자리'(3-6). 캐릭터는 넣지 않고 지금은 기존 아이콘만 보여 준다.
  window.artSlot=function(name,parent){const n=document.createElement('div');n.className='art-slot';n.innerHTML=window.uiIcon(name);if(parent)parent.prepend(n);return n;};
  function init(){document.querySelectorAll('[data-icon]').forEach(el=>el.innerHTML=window.uiIcon(el.dataset.icon));const nav=document.querySelector('[data-customer-nav]');if(nav){document.body.classList.add('has-bottom-nav');const active=nav.dataset.customerNav;nav.innerHTML=[['home','홈','/'],['pin','지도','/map.html'],['calendar','예약','/requests.html'],['support','고객센터','/support.html'],['person','내 정보','/account.html']].map(([icon,label,url])=>'<a href="'+url+'"'+(active===icon?' aria-current="page"':'')+'>'+window.uiIcon(icon)+'<span>'+label+'</span></a>').join('');}}
+ // Read-only in-app answer count on existing support links. No external notifications.
+ function supportBadge(){if(!document.querySelector('a[href="/support.html"],a[href="/support"]')||document.querySelector('[data-support-badge-script]'))return;const s=document.createElement('script');s.type='module';s.src='/assets/support-badge.js';s.dataset.supportBadgeScript='';document.body.append(s);}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',supportBadge);else supportBadge();
  const adjust=()=>{const v=window.visualViewport;const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||'');document.body.classList.toggle('keyboard-open',Boolean(v&&typing&&window.innerHeight-v.height>120));};window.visualViewport?.addEventListener('resize',adjust);document.addEventListener('focusin',adjust);document.addEventListener('focusout',()=>setTimeout(adjust,0));
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

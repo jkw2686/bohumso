@@ -1,3 +1,4 @@
+import {chatAvailable,mountChatInbox} from './support-chat.js';
 import {statusLabel,kindLabel,isOpen} from './support-status.js';
 export async function renderEarlyOperations({client,host,message}){
  const el=(tag,text,parent=host)=>{const n=document.createElement(tag);n.textContent=text||'';parent.append(n);return n;};
@@ -6,6 +7,8 @@ export async function renderEarlyOperations({client,host,message}){
  const head=el('div',null,panel);head.className='admin-rights-head';
  el('h2','문의·개인정보 요청',head);
  const badge=el('span','',head);badge.className='admin-badge';badge.hidden=true;
+ const useChat=await chatAvailable(client).catch(()=>false);
+ if(useChat){head.hidden=true;panel.id='adminSupportChat';await mountChatInbox({client,host:panel});}else {
  const result=await client.rpc('admin_member_rights',{operation:'list'});if(result.error){el('p','요청함 연결을 확인하지 못했습니다.',panel);return;}
  const open=result.data.filter(r=>isOpen(r.status)).length;
  if(open){badge.textContent='미처리 '+open+'건';badge.hidden=false;
@@ -14,6 +17,7 @@ export async function renderEarlyOperations({client,host,message}){
   top.textContent='미처리 문의 '+open+'건';host.prepend(top);}
  if(!result.data.length)el('p','새 요청이 없습니다.',panel);
  for(const row of result.data){const form=el('form',null,panel);form.className='card';el('h3',kindLabel(row.kind),form);el('p',new Date(row.created_at).toLocaleString('ko-KR')+' · '+statusLabel(row.status),form);el('p',row.detail,form);const label=el('label','처리 상태',form);const status=el('select',null,label);for(const [v,t] of [['IN_PROGRESS',statusLabel('IN_PROGRESS')],['COMPLETED',statusLabel('COMPLETED')],['DECLINED',statusLabel('DECLINED')]]){const o=el('option',t,status);o.value=v;}status.value=row.status==='RECEIVED'?'IN_PROGRESS':row.status;const l=el('label','답변·처리 결과',form);const text=el('textarea',null,l);text.value=row.response;text.minLength=5;text.maxLength=2000;text.required=true;el('p','완료를 선택하기 전에 실제 처리 범위와 보관 사유를 확인하세요. 이 버튼으로 원본 데이터가 자동 삭제되지는 않습니다.',form);const save=el('button','답변 저장',form);save.type='submit';save.className='btn';form.onsubmit=async event=>{event.preventDefault();save.disabled=true;try{const r=await client.rpc('admin_member_rights',{operation:'respond',payload:{id:row.id,status:status.value,response:text.value}});if(r.error)throw r.error;message('답변을 저장했습니다. 요청자가 문의 화면에서 확인할 수 있습니다.');}catch{message('저장하지 못했습니다. 다시 확인해 주세요.');}finally{save.disabled=false;}};}
+ }
  // ▶ 접힘 대신 버튼(공통 규칙 §1). 목록이 길어 기본은 접어 둔다.
  const metrics=el('section');metrics.className='card';el('h2','오류·이용 단계 집계',metrics);
  const metricsToggle=el('button','집계 보기',metrics);metricsToggle.type='button';metricsToggle.className='btn ghost';

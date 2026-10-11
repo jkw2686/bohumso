@@ -12,7 +12,9 @@
     "smoke": "node scripts/smoke.mjs",
     "concurrency": "node scripts/concurrency-test.mjs",
     "dev:test-flow": "node scripts/test-flow.mjs",
-    "test:connected": "node --test tests/connected-flow.test.mjs && node tests/connected-flow-browser.mjs"
+    "test:connected": "node --test tests/connected-flow.test.mjs && node tests/connected-flow-browser.mjs",
+    "test:support-chat": "node --test tests/support-chat.test.mjs && node tests/support-chat-browser.mjs",
+    "preview:support-chat": "node scripts/support-chat-preview.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0"

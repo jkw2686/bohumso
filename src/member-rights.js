@@ -1,3 +1,4 @@
+import {chatAvailable,mountSupportChat} from './support-chat.js';
 import {memberService} from './member-access.js';
 import {resources} from '../public/claim-resources-data.js';
 import {statusLabel,kindLabel} from './support-status.js';
@@ -9,6 +10,11 @@ const nameChange=params.get('kind')==='CORRECT'&&params.get('topic')==='name';
 const loginNext=reportResource?'/support.html?resource='+encodeURIComponent(reportResource.id):nameChange?'/support.html?'+params:'';
 if(loginNext){const login=root.querySelector('a');if(login)login.href='/login.html?next='+encodeURIComponent(loginNext);}
 async function start(){const {client}=await memberService();const {data}=await client.auth.getUser();if(!data.user)return;
+ if(await chatAvailable(client)){
+  const body=nameChange?'현재: '+(params.get('current')||'')+'\n바꿀 이름: \n사유: ':reportResource?'공식 링크 오류 제보\n기관: '+reportResource.name+'\n주소: '+reportResource.url+'\n확인한 문제: ':'';
+  await mountSupportChat({client,host:root,userId:data.user.id,initialKind:nameChange?'CORRECT':reportResource?'REPORT':'INQUIRY',initialBody:body});return;
+ }
+
  root.innerHTML='<h2>내 정보와 문의</h2><form id="rightsForm"><label>요청 유형<select name="kind"><option value="INQUIRY">문의</option><option value="ACCESS">개인정보 열람</option><option value="CORRECT">개인정보 정정</option><option value="DELETE">개인정보 삭제</option><option value="REPORT">전문가·오류 신고</option><option value="WITHDRAW">회원탈퇴</option></select></label><label>내용<textarea name="detail" maxlength="2000" rows="4" placeholder="비밀번호·인증번호·건강 상세정보는 입력하지 마세요."></textarea></label><p>삭제는 보관 의무와 처리 범위를 확인한 뒤 결과를 안내합니다. 탈퇴하면 회원 기능 이용이 즉시 중지됩니다.</p><button class="btn">요청 접수</button></form><p id="rightsStatus" role="status"></p><div id="rightsHistory"></div>';
  const status=document.getElementById('rightsStatus'),history=document.getElementById('rightsHistory');
  if(nameChange){const form=document.getElementById('rightsForm');form.elements.kind.value='CORRECT';

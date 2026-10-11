@@ -1,0 +1,31 @@
+.support-workspace{color:var(--ink-body);min-width:0;overflow-wrap:anywhere}
+.support-workspace :is(h2,h3,h4,strong){color:var(--ink-heading)}
+.support-workspace :is(form,.field){display:grid;gap:var(--space-3)}
+.support-workspace :is(textarea,select){font:inherit;min-width:0;max-width:100%;color:var(--ink-body);border:1px solid var(--border);border-radius:var(--radius-control);padding:var(--space-3);box-sizing:border-box}
+.support-workspace textarea{resize:vertical;scroll-margin-block:calc(var(--space-5)*4)}
+.support-workspace .btn{min-height:48px;white-space:normal;margin:0;padding:var(--space-3) var(--space-4);width:auto;max-width:100%;box-sizing:border-box;box-shadow:none}
+.support-workspace .btn:not(.ghost){color:var(--card);background:var(--brand);border-color:var(--brand)}
+.support-workspace .btn.ghost{color:var(--brand);background:var(--card);border:1px solid var(--border)}
+.support-workspace button:disabled{cursor:default}
+.support-workspace :is(button,summary,textarea,select,[tabindex]):focus-visible{outline:var(--focus-width) solid var(--brand);outline-offset:var(--space-2)}
+.support-workspace summary{min-height:var(--touch-target);padding-block:var(--space-3);cursor:pointer;font-weight:650}
+.support-workspace :is([role=status],small,.support-context,.support-sensitive){color:var(--ink-body);font-size:var(--type-small)}
+.support-workspace [role=status]:empty{display:none}
+.support-workspace section{scroll-margin-block-start:calc(var(--space-5)*4)}
+.support-workspace .review-actions{gap:var(--space-2);margin-block:var(--space-4);align-items:center}
+.support-workspace .review-actions .btn{flex:1 1 auto}
+.support-workspace .support-ticket-link{display:grid;text-align:left;width:100%;gap:var(--space-2);margin-block:var(--space-3);justify-content:stretch}
+.support-workspace .support-new{color:var(--brand);font-weight:700}
+.support-scroll{max-height:50dvh;min-height:calc(var(--space-5)*8);overflow:auto;overscroll-behavior:contain;scroll-padding:var(--space-4);border:1px solid var(--border);border-radius:var(--radius);padding:var(--space-3);margin-block:var(--space-4)}
+.support-conversation{padding:0;margin:0;display:grid;gap:var(--space-3);list-style:none}
+.support-message{padding:var(--space-3);border:1px solid var(--border);border-radius:var(--radius-control);background:var(--bg);overflow-wrap:anywhere;min-width:0}
+.support-message p{white-space:pre-wrap;margin:var(--space-2) 0}
+.support-message.customer{margin-inline-start:var(--space-5)}
+.support-message.operator{background:var(--brand-soft);margin-inline-end:var(--space-5)}
+.support-message.automatic{background:var(--card);border-style:dashed}
+.support-message.note,.support-note{border-style:dashed;background:var(--bg)}
+.support-workspace :is(.support-reply,.support-note){padding:var(--space-4)}
+.support-workspace [aria-label="문의 처리"]:empty{display:none}
+.support-workspace [aria-label="문의 처리"]{padding-block:var(--space-4)}
+.support-workspace form{scroll-margin-block:calc(var(--space-5)*4);padding-bottom:env(safe-area-inset-bottom)}
+@media(max-width:600px){.support-workspace .review-actions{flex-wrap:wrap}.support-workspace .review-actions label{width:100%}.support-scroll{max-height:45dvh}.keyboard-open .support-scroll{max-height:30dvh}}
