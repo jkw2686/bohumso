@@ -34,14 +34,14 @@ await context.route('**/*',async route=>{
 await context.addInitScript(()=>{window.bohumsoCatalog=async()=>fetch('/catalog').then(r=>r.json());window.bohumsoOffices=async()=>[];window.startBohumsoLocation=()=>{};});
 const editor=await context.newPage(),map=await context.newPage();for(const p of [editor,map])p.on('pageerror',e=>errors.push(e.message));
 const save=()=>editor.getByRole('button',{name:'저장하기',exact:true});
-async function openEditor(){await editor.goto(base+'/profile-fixture');await editor.getByText('지도 프로필 꾸미기 · 선택',{exact:true}).click();}
+async function openEditor(){await editor.goto(base+'/profile-fixture');await editor.getByRole('button',{name:/^프로필 (입력|수정)$/}).click();}
 async function noOverflow(page){expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}
 async function choosePhoto(file){await editor.getByLabel('프로필 사진 선택',{exact:true}).setInputFiles(file);await expect(editor.getByLabel('사진 확대')).toBeVisible();}
 async function confirmPhoto(){await editor.getByRole('button',{name:'이 사진 사용',exact:true}).click();await expect(editor.getByRole('status')).toContainText('사진을 확인');}
 async function saved(){await save().click();await expect(editor.getByRole('status')).toContainText('저장했습니다.');await expect(save()).toBeDisabled();}
 try{
  console.log('CHECK editor');await openEditor();await expect(save()).toBeDisabled();await expect(editor.locator('.profile-photo-edit>.expert-avatar svg')).toBeVisible();await expect(editor.getByLabel('보험소 방문상담',{exact:true})).toHaveCount(0);
- await editor.getByLabel('생명보험',{exact:true}).check();await saved();await editor.reload();await editor.getByText('지도 프로필 꾸미기 · 선택',{exact:true}).click();await expect(editor.getByLabel('생명보험',{exact:true})).toBeChecked();
+ await editor.getByLabel('생명보험',{exact:true}).check();await saved();await editor.reload();await editor.getByRole('button',{name:/^프로필 (입력|수정)$/}).click();await expect(editor.getByLabel('생명보험',{exact:true})).toBeChecked();
  await editor.getByLabel('손해보험',{exact:true}).check();await editor.getByLabel('청구서류 안내',{exact:true}).check();await editor.getByLabel('소개 인사말 (선택 · 40자)').fill('가'.repeat(39)+'🙂');await expect(editor.locator('#profileIntroCount')).toContainText('40 / 40자');
  failSave=true;await save().click();await expect(editor.getByRole('status')).toContainText('입력은 유지');await expect(editor.getByLabel('소개 인사말 (선택 · 40자)')).toHaveValue('가'.repeat(39)+'🙂');
  failSave=false;slowSave=true;const initialSaves=saves;await save().click();await editor.locator('.optional-profile form').evaluate(f=>{f.requestSubmit();f.requestSubmit();});await expect(editor.getByRole('status')).toContainText('저장했습니다.');expect(saves-initialSaves).toBe(1);slowSave=false;
@@ -51,14 +51,14 @@ try{
  await editor.getByRole('button',{name:'90° 회전',exact:true}).click();await editor.getByRole('button',{name:'90° 회전',exact:true}).click();await editor.getByRole('button',{name:'90° 회전',exact:true}).click();await editor.getByRole('button',{name:'90° 회전',exact:true}).click();
  await editor.screenshot({path:'artifacts/profile-crop-390.png',fullPage:true});await confirmPhoto();await editor.getByLabel('소개 인사말 (선택 · 40자)').fill('필요한 내용을 함께 확인해 드려요.');failPhoto=true;await save().click();await expect(editor.getByRole('status')).toContainText('선택한 사진은 유지');await expect(editor.getByRole('status')).toContainText('소개·선택 항목은 저장했습니다.');expect(profile.biography).toBe('필요한 내용을 함께 확인해 드려요.');await expect(editor.locator('.profile-photo-edit img')).toBeVisible();failPhoto=false;await saved();
  expect(bytes.length).toBeLessThanOrEqual(131072);await writeFile('artifacts/profile-adjusted-thumbnail.jpg',bytes);
- await editor.reload();await editor.getByText('지도 프로필 꾸미기 · 선택',{exact:true}).click();await expect(editor.locator('.profile-photo-edit img')).toBeVisible();expect(await editor.locator('.profile-photo-edit img').evaluate(i=>[i.naturalWidth,i.naturalHeight])).toEqual([192,192]);await expect(editor.locator('.profile-photo-edit svg')).toHaveCount(0);
+ await editor.reload();await editor.getByRole('button',{name:/^프로필 (입력|수정)$/}).click();await expect(editor.locator('.profile-photo-edit img')).toBeVisible();expect(await editor.locator('.profile-photo-edit img').evaluate(i=>[i.naturalWidth,i.naturalHeight])).toEqual([192,192]);await expect(editor.locator('.profile-photo-edit svg')).toHaveCount(0);
  // Public map refreshes when a different tab saves a new version; no stale photo URL.
  console.log('CHECK saved photo');await map.goto(base+'/map.html?view=experts&region='+encodeURIComponent(profile.region)+'&planner='+id);await expect(map.locator('#cardBody h2')).toHaveText(profile.name);const oldPhoto=profile.photo_url;
  await choosePhoto(photoFile);await editor.getByLabel('사진 확대').fill('2');await confirmPhoto();await saved();expect(profile.photo_url).not.toBe(oldPhoto);
  await expect(map.locator('#cardBody .expert-avatar img')).toHaveAttribute('src',profile.photo_url);await expect(map.locator('.expert-map-marker img')).toHaveCount(1);await expect(map.locator('.expert-map-marker:has(img) svg')).toHaveCount(0);
  // Photo deletion cancellation, then deletion + reload, preserving all other optional data.
  await editor.getByRole('button',{name:'사진 삭제',exact:true}).click();editor.once('dialog',d=>d.accept());await editor.getByRole('button',{name:'취소',exact:true}).click();await expect(editor.locator('.profile-photo-edit img')).toBeVisible();
- await editor.getByRole('button',{name:'사진 삭제',exact:true}).click();await saved();await editor.reload();await editor.getByText('지도 프로필 꾸미기 · 선택',{exact:true}).click();await expect(editor.locator('.profile-photo-edit img')).toHaveCount(0);await expect(editor.locator('.profile-photo-edit svg')).toBeVisible();expect(deletes).toBe(1);
+ await editor.getByRole('button',{name:'사진 삭제',exact:true}).click();await saved();await editor.reload();await editor.getByRole('button',{name:/^프로필 (입력|수정)$/}).click();await expect(editor.locator('.profile-photo-edit img')).toHaveCount(0);await expect(editor.locator('.profile-photo-edit svg')).toBeVisible();expect(deletes).toBe(1);
  await choosePhoto(photoFile);await confirmPhoto();await saved();
  // Dirty form navigation and explicit cancellation preserve stored data.
  await editor.getByLabel('소개 인사말 (선택 · 40자)').fill('저장 전 문장');editor.once('dialog',d=>d.dismiss());await editor.getByRole('link',{name:'지도 보기',exact:true}).click();expect(editor.url()).toContain('/profile-fixture');await expect(editor.getByLabel('소개 인사말 (선택 · 40자)')).toHaveValue('저장 전 문장');editor.once('dialog',d=>d.accept());await editor.getByRole('button',{name:'취소',exact:true}).click();await expect(save()).toBeDisabled();
