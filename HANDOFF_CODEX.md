@@ -1,4 +1,4 @@
-# 인수인계 (Claude → Codex) — 2026-10-11
+# 인수인계 (Claude 작업 검토 후 Codex 갱신) — 2026-10-11
 
 우리곁에 보험소(bohumso) 풀앱. **이 문서는 2026-09-22판을 폐기하고 새로 쓴 것이다.**
 옛 판의 Netlify 크레딧 소진·카카오 KOE205·배포 일시정지 내용은 **지금 상태가 아니다.**
@@ -9,6 +9,17 @@
 ---
 
 ## 1. 지금 어디까지 왔나
+
+**최신 확인: Codex가 main fec525a를 검토하고 20:38 KST에 재배포했다.**
+Netlify 6acb7510728c689eee310184 / production / ready / commit fec525a.
+전체 단위 123/123, 관련 브라우저 7개, 운영 읽기 확인을 마쳤다.
+기능 코드 추가 변경과 운영 DB 적용은 없다. 상세는 [배포 검토 기록](docs/release-review-20261011.md).
+
+로컬 별도 작업본 bohumso-ui-release에는 이전 interaction-settings 미커밋 작업이 남아 있다.
+이 작업본 HEAD 204bed6과 원격 a4890f7을 동일하다고 가정하지 말 것.
+그 작업본의 docs/interaction-settings-handoff.md에 이번 중간 검증을 기록했다.
+main의 profile-editor/optional-profile/account/map과 중복되므로 단순 덮어쓰기 금지.
+
 
 작업 지시서 `docs/ROADMAP-20261011.md` 의 9단계를 순서대로 진행 중이다.
 
@@ -23,7 +34,7 @@
 | 6~8. 웹푸시 / 고객센터 채팅 / 상담 가능시간 | 미착수 | 개발까지만 |
 | 9. 2차 운영 적용 패키지 | **[멈춤 ②]** | — |
 
-- 작업 브랜치: `claude/epic-meitner-sv48gf` (main 과 동기화되어 있음)
+- Claude 구현 브랜치: `claude/epic-meitner-sv48gf` (fec525a 전달 시 main과 동기화). 이번 Codex 검토 기록 브랜치: `codex/review-fec525a`; 문서 기록만 main에 fast-forward 전송한다.
 - **4단계는 `codex/interaction-settings` 에서 한다.** origin/main 을 **merge**(rebase 금지)로 받아야 한다.
 
 ### 멈춤 지점 규칙 (어기면 안 됨)
@@ -109,13 +120,17 @@ node tests/<이름>-browser.mjs
    - 고치려면: `scrollIntoViewIfNeeded()` 뒤 **레이아웃이 멈출 때까지 기다렸다가** `boundingBox()` 를
      재고, `mouse.move` 단계를 늘린 뒤 `expect.poll` 로 캔버스 변화를 기다리면 된다.
 
-2. **운영 실측(배포 후 확인)을 2·3단계 모두 못 했다.**
-   이 컨테이너의 네트워크 정책이 `bohumso.netlify.app` 을 막는다(`CONNECT tunnel failed, 403`).
-   **Netlify 빌드 성공 여부조차 확인 못 했다.** 확인한 것은 GitHub 에 커밋이 올라간 것까지다.
-   - 풀려면: 클라우드 환경 설정 → Network access → Allowed domains 에 `bohumso.netlify.app`.
-   - 로컬 PC 에서 작업하는 Codex 는 이 제약이 없을 것이다. **대신 확인해 주면 좋겠다:**
-     `/partner.html` 승인 계정에서 ① 지금 방문 카드 맨 위 ② `▶` 0개 ③ 콘솔 오류 0,
-     `/` 에서 ④ 하단 탭 5개 ⑤ 겹친 핀이 숫자로 묶이는지.
+2. **운영 읽기 확인과 Netlify 성공은 Codex가 확인 완료했다.**
+   20:38 KST 재배포는 fec525a이며, 앞선 9b8c856 배포도 ready였다.
+   운영 partner 화면에서 기존 세션·상단 방문 카드·프로필 펼침·저장된 사진/소개를 확인했고,
+   홈 5탭·지도 공개 전문가/묶음 펼침·관리자 미처리 문의 건수와 한글 상태를 확인했다.
+   읽은 화면 콘솔 오류는 없었다. 저장·ON/OFF·예약·외부 알림은 운영에서 실행하지 않았다.
+   저장 기능은 격리 DB/가상 계정 테스트 결과와 구분한다.
+
+3. **전체 브라우저 회귀와 실기기는 이번에 재검증하지 않았다.**
+   선택한 7개 브라우저 검사는 모두 통과했고 visit-map-icons도 현재 버전에서 통과했다.
+   기존 실패 20건 기록을 이번 실행 결과로 오해하지 말 것. 사진 드래그의 비결정적 실패는 미확인.
+   실제 휴대전화 키보드·GPS와 새 OAuth 로그인, 운영 쓰기 E2E는 별도 검증으로 남는다.
 
 ---
 

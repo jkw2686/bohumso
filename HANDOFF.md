@@ -1,5 +1,14 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-11 20:38 KST — Codex main fec525a 검토·재배포 완료
+- 사용자 지시 ‘코드가 작업한거 확인하고 배포’, 대상 main fec525a에 따라 별도 작업본에서 검토했다. 앱 소스는 9b8c856과 동일하며 fec525a는 인수인계 문서 변경이다. 기능 코드를 추가 수정하지 않았다.
+- Netlify 운영 재배포 6acb7510728c689eee310184, production/main, commit fec525af7e9b94345465f4902f139f434e1ef7c0, ready, published_at 2026-10-11T11:38:04.221Z. https://bohumso.netlify.app/
+- build 통과, 전체 단위 123/123, 변경 관련 브라우저 7개 통과. 전문가 프로필 저장·실패·모바일 4폭, 고객센터 5탭, 아이콘·움직임 최소화, 자료실 검색, 지도 묶음·빈 지역 안내 검사. 상세: docs/release-review-20261011.md.
+- 운영 읽기 확인: 기존 로그인 세션 유지, 전문가 방문 카드 맨 위·프로필 폼 열림·저장된 사진/소개, 홈 5탭, 지도 두 전문가·묶음 펼침, 관리자 미처리 건수·한글 상태. 운영 저장/문의/예약/문자/결제 시험은 하지 않았다. 재배포 후 홈을 다시 열어 확인했다.
+- DB057/058/059 적용 없음. ROADMAP 4단계부터 남았고 GO 057-059 + Supabase 백업 확인 완료 조건은 그대로다. 이번 배포 승인은 새 DB 승인으로 해석하지 않는다.
+- 별도 bohumso-ui-release의 interaction-settings 미커밋 수정은 그대로 보존했고 해당 docs/interaction-settings-handoff.md의 체크포인트를 갱신했다. 원격 a4890f7/로컬 HEAD 204bed6 차이와 main의 공통 파일 충돌을 먼저 확인할 것. 그 작업본을 그대로 배포하거나 강제로 덮어쓰지 말 것.
+- 전체 브라우저 57개 재실행, 실제 휴대전화 키보드·GPS·신규 로그인·운영 쓰기 E2E는 이번 검증에서 제외. 기존 실패/비결정적 사진 드래그 테스트를 모두 해결했다고 보고하지 않는다.
+
 ## 2026-10-10 예약 점검 보완·공개 배포 완료
 - 사용자 최신 지시 ‘작업후 배포’로 프로필 개선 5ec8182와 이번 점검 보완 배포 승인. 이전 배포 금지 문서는 이 범위에 한해 갱신. 055 약속 제재 정책은 운영 적용하지 않음.
 - 이번 소스: account/consultation-ui/directory/office-request/profile-editor/workflow. 목적 전체·암·수술 검색, 방문 경로, 인증 연락처·동의 확정, 입력 보존, 재선택, 관리자 반복 조회 보완. 프로필·지도·상세 개발분 포함. 보고서 docs/booking-audit-release.md.
