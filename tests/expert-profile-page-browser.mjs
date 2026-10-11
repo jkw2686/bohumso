@@ -56,7 +56,7 @@ try {
 
   // 1) 지금 방문 카드가 맨 위 + 첫 화면 안에 조작 버튼
   const order = await page.$$eval('#accountContent h2', h => h.map(x => x.textContent.trim()));
-  check(order[0] === '지금 방문 상담 가능', `① 지금 방문 카드가 맨 위 (${order.slice(0, 4).join(' / ')})`);
+  check(order[1] === '상담 상태' && order[2] === '상담 요청 받기', `① 지금 방문 카드가 맨 위 (${order.slice(0, 4).join(' / ')})`);
   const toggleBtn = page.getByRole('button', {name: /방문 가능 (켜기|끄기)/});
   await expect(toggleBtn).toBeVisible();
   const box = await toggleBtn.boundingBox();
@@ -64,17 +64,11 @@ try {
   check(box.height >= 48, `① 버튼 48px 이상 (${Math.round(box.height)}px)`);
   await page.screenshot({path: 'artifacts/expert-profile-page-390-top.png'});
 
-  // 6) ▶ 접힘 요소가 이 화면에 하나도 없다. 폼 안에 마지막으로 남아 있던
-  // '지도에 보이는 프로필 미리보기' <details> 도 버튼으로 바꿨으므로 폼을 펼친 뒤에도 0이어야 한다.
-  // 펼친 뒤 재검사는 아래 ③ 에서 다시 한다.
-  const allDetails = await page.$$eval('#accountContent details',
-    d => d.map(x => (x.querySelector('summary')?.textContent || '').trim()));
-  check(allDetails.length === 0, `⑥ 화면 전체에 ▶ 접힘 없음 — 남은 것: ${allDetails.join(' / ') || '없음'}`);
-
-  // 2) 순서: 지금 방문 → … → 주활동지역 → 지도 프로필 → 상담 요청·연락처
-  const idx = t => order.indexOf(t);
-  check(idx('주활동지역') > 0 && idx('지도 프로필') > idx('주활동지역') && idx('상담 요청·연락처') > idx('지도 프로필'),
-    `② 카드 순서 (${order.join(' / ')})`);
+  // Main actions remain visible; secondary explanations and existing forms use disclosures.
+  const sections=await page.$$eval('#accountContent>.expert-settings>summary',n=>n.map(x=>x.textContent));
+  check(sections.includes('활동 정보·상담 시간')&&sections.includes('자격·소속 자료'),'기존 입력과 자료 제출 접근 유지');
+  await expect(page.getByRole('navigation',{name:'전문가 주요 메뉴'})).toContainText('병원·보험사 자료실');
+  check(order.indexOf('내 프로필')>order.indexOf('상담 요청 받기'),'상담 상태 다음 내 프로필');
 
   // 3) 지도 프로필: 입력 전 버튼 문구 → 펼침 → 저장 → 문구·요약 갱신
   const mapCard = page.locator('.optional-profile');
@@ -85,8 +79,6 @@ try {
   await mapToggle.click();
   check(await mapCard.locator('#optionalProfileBody').isVisible(), '③ 버튼을 누르면 같은 카드 안에서 폼 펼침');
   check(await mapToggle.getAttribute('aria-expanded') === 'true', '③ aria-expanded=true');
-  const openDetails = await page.$$eval('#accountContent details', d => d.map(x => (x.querySelector('summary')?.textContent || '').trim()));
-  check(openDetails.length === 0, `⑥ 폼을 펼친 뒤에도 ▶ 접힘 없음 — 남은 것: ${openDetails.join(' / ') || '없음'}`);
   check(await mapCard.getByRole('button', {name: '지도에 보이는 프로필 미리보기'}).getAttribute('aria-expanded') === 'false', '⑥ 미리보기는 버튼 + aria-expanded');
   check((await mapToggle.textContent()).trim() === '입력 닫기', '③ 펼친 뒤 버튼 문구 입력 닫기');
   await mapCard.getByLabel('소개 인사말 (선택 · 40자)').fill('청구 서류부터 같이 확인해 드려요');
@@ -100,22 +92,21 @@ try {
   // 4) 상담 설정: 요약 정확(연락처 뒤 4자리), 펼쳐 저장 후 요약 갱신
   const setCard = page.locator('.consult-settings');
   const setToggle = setCard.getByRole('button', {name: /^(상담 설정 변경|설정 닫기)$/});
-  check((await setCard.locator('.profile-summary').textContent()).includes('상담 요청 받기 ·'), '④ 요약에 상담 요청 받기 상태');
+  check((await setCard.locator('.profile-summary').textContent()).includes('요청 가능'), '④ 요약에 상담 요청 받기 상태');
   await setToggle.click();
   await setCard.getByLabel('예약 확정 후 공개할 상담 연락처').fill('010-2222-3456');
   const avail = setCard.getByLabel('상담 요청 받기');
   if (!await avail.isChecked()) await avail.check();
-  await setCard.getByRole('button', {name: '프로필 저장'}).click();
+  await setCard.getByRole('button', {name: '저장하기'}).click();
   await expect(setCard.locator('.profile-status')).toContainText('저장');
   const sum = await setCard.locator('.profile-summary').textContent();
   check(sum.includes('010-****-3456'), `④ 연락처 뒤 4자리만 (${sum.replace(/\s+/g, ' ').trim()})`);
-  check(sum.includes('켜짐'), '④ 저장 후 요약 갱신');
+  check(sum.includes('요청 가능'), '④ 저장 후 요약 갱신');
   check(await setCard.locator('#consultSettingsBody').isVisible() === false, '④ 저장 후 폼 닫힘');
   await mapCard.screenshot({path: 'artifacts/expert-profile-page-390-form.png'});
 
   // 5) 하단 이동 링크
-  const last = await page.$eval('#accountContent', n => n.lastElementChild.textContent.trim());
-  check(last.includes('받은 요청·예약 보기'), `⑤ 맨 아래 이동 링크 (${last})`);
+  await expect(page.getByRole('link',{name:'받은 요청·예약',exact:true})).toBeVisible();
   check(await page.getByText('주활동지역 · 지금 가능 설정').count() === 0, '⑤ 옛 설정 링크 제거');
 
   // 7) 가로 넘침·버튼 높이

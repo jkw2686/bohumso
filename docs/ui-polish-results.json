@@ -1,0 +1,181 @@
+{
+  "results": [
+    {
+      "route": "partner",
+      "width": 360,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "partner",
+      "width": 390,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "partner",
+      "width": 430,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "partner",
+      "width": 1440,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "claim-resources",
+      "width": 360,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "claim-resources",
+      "width": 390,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "claim-resources",
+      "width": 430,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "claim-resources",
+      "width": 1440,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "growth",
+      "width": 360,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "growth",
+      "width": 390,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "growth",
+      "width": 430,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "growth",
+      "width": 1440,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "account",
+      "width": 360,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "account",
+      "width": 390,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "account",
+      "width": 430,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "account",
+      "width": 1440,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "requests",
+      "width": 360,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "requests",
+      "width": 390,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "requests",
+      "width": 430,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "requests",
+      "width": 1440,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "support",
+      "width": 360,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "support",
+      "width": 390,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "support",
+      "width": 430,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "support",
+      "width": 1440,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "partner-work",
+      "width": 360,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "partner-work",
+      "width": 390,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "partner-work",
+      "width": 430,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "route": "partner-work",
+      "width": 1440,
+      "overflow": false,
+      "tiny": []
+    },
+    {
+      "check": "independent consultation/visit states, consent, save failure, reload",
+      "passed": true
+    },
+    {
+      "check": "profile failure/reload, document consent/failure/file retained",
+      "passed": true
+    }
+  ],
+  "pageErrors": []
+}

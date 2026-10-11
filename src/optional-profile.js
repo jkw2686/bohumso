@@ -4,11 +4,14 @@ import {createPhotoCrop} from './profile-photo-crop.js';
 export {prepareProfilePhoto} from './profile-photo-crop.js';
 
 export async function renderOptionalProfile(client,parent){
- const result=await client.rpc('expert_optional_profile',{operation:'get'});if(result.error||!result.data)return;let p=result.data;
+ const result=await client.rpc('expert_optional_profile',{operation:'get'});
+ if(result.error||!result.data){const box=el('section',undefined,parent);box.className='card optional-profile';el('h2','내 프로필',box);el('p','프로필을 불러오지 못했습니다. 다시 확인해 주세요.',box).setAttribute('role','alert');const retry=el('button','다시 확인',box);retry.type='button';retry.className='btn ghost';retry.onclick=()=>location.reload();return;}
+ let p=result.data;
  // ▶ 접힘 대신 '제목 + 한 줄 요약 + 전체 폭 버튼' 카드. 버튼을 누르면 같은 카드 안에서 폼이 펼쳐진다.
  // 폼 내부·사진 처리·초안 보존·저장 로직은 그대로 두고 바깥 껍데기만 바꾼다.
  const ui=window.BohumsoProfile,details=el('section',undefined,parent);details.className='card optional-profile';
- el('h2','지도 프로필',details);
+ el('h2','내 프로필',details);
+ el('p','사진과 소개를 선택해서 등록하세요.',details).className='profile-editor-hint';
  const summaryBox=el('div',undefined,details);summaryBox.className='profile-summary';
  const toggle=el('button','프로필 입력',details);toggle.type='button';toggle.className='btn profile-toggle';
  const body=el('div',undefined,details);body.id='optionalProfileBody';body.hidden=true;
@@ -66,12 +69,12 @@ export async function renderOptionalProfile(client,parent){
   if(filled()){
    const line=el('div',undefined,summaryBox);line.className='profile-summary-line';
    ui.setAvatar(ui.avatar(line,p),imageURL());
-   el('p',(p.biography||'').split('\n')[0].trim()||'소개는 아직 비어 있어요',line);
-  }else el('p','사진·소개를 넣으면 고객이 고르기 쉬워요 · 선택',summaryBox);
+   el('p',(p.biography||'').split('\n')[0].trim()||'선택한 프로필 정보가 저장되어 있어요',line);
+  }else el('p','추가 항목 없이도 이용할 수 있어요.',summaryBox);
   const open=!body.hidden;
   toggle.textContent=open?'입력 닫기':filled()?'프로필 수정':'프로필 입력';
   // 파란 버튼은 카드당 1개. 폼이 열려 있을 때의 주요 버튼은 '저장하기' 이므로 토글은 보조로 낮춘다.
-  toggle.className=open?'btn ghost profile-toggle':'btn profile-toggle';
+  toggle.className='btn ghost profile-toggle';
   toggle.setAttribute('aria-expanded',String(open));
  }
  toggle.onclick=()=>{

@@ -3,7 +3,7 @@ import {attemptKey,kinds,button,statusNode,messageField,supportError} from './su
 
 export const chatStates={WAITING:'답변 대기',REVIEWING:'확인 중',WAITING_CUSTOMER:'고객 답변 대기',ANSWERED:'답변 완료',CLOSED:'종료'};
 export const topics={usage:'이용 방법',booking:'예약·연결',profile:'프로필·지도',payment:'결제·이용권',error:'오류 신고',other:'기타'};
-export const chatNotice='문의를 남겨주시면 내용을 검토한 후 이 대화창으로 답변드립니다. 실시간 상담이 아니므로 답변까지 시간이 걸릴 수 있습니다.';
+export const chatNotice='검토 후 같은 대화창으로 답변드려요. 실시간 상담이 아니며 시간이 걸릴 수 있어요.';
 export const sensitiveNotice='주민등록번호, 계좌 비밀번호, 진단서 등 민감한 정보는 보내지 마세요.';
 const failedCopy='전송하지 못했습니다. 다시 시도해 주세요.';
 const writes=new Set(['create','message','reply','note','take','release','resolve','state','read','admin_read']);
@@ -87,8 +87,9 @@ function transcript(parent,client,admin=false,onRead=()=>{}){
 
 export async function mountSupportChat({client,host,userId,initialKind='INQUIRY',initialBody=''}){
  host.replaceChildren();host.classList.add('support-workspace');el('p',chatNotice,host);
- const privacy=el('p',sensitiveNotice,host);privacy.id='supportSensitiveNotice';privacy.className='support-sensitive';
- el('p','보험소 이용 문의입니다. 보험사 청구 접수나 전문가 상담·예약 신청과는 별개예요.',host).className='support-context';
+ const help=el('details',undefined,host);help.className='support-help';el('summary','문의 이용 안내',help);
+ const privacy=el('p',sensitiveNotice,help);privacy.id='supportSensitiveNotice';privacy.className='support-sensitive';
+ el('p','보험소 이용 문의입니다. 보험사 청구 접수나 전문가 상담·예약 신청과는 별개예요.',help).className='support-context';
  const nav=el('div',undefined,host);nav.className='review-actions';
  const createPane=el('section',undefined,host),historyPane=el('section',undefined,host),detailPane=el('section',undefined,host);
  createPane.id='supportNew';historyPane.id='supportHistory';detailPane.id='supportThread';createPane.className=detailPane.className='support-chat-room';detailPane.hidden=true;createPane.hidden=true;

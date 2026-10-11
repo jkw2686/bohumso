@@ -1,40 +1,46 @@
-# 현재 인수인계 — 고객센터·성장 실천 통합 배포 완료 (2026-10-11)
+# 현재 인수인계 — 출시 전 UI 개발 정리 (2026-10-12)
 
-PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽는다. 사용자 최신 직접 지시가 우선한다.
+PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽는다. 최신 사용자 지시가 우선한다.
 
-## 진행
-- branch codex/support-chat; 운영 main 942dcc7. 고객센터 b2f4661/22b9a10, 메신저 bd6a235, 성장598d334. 사용자 승인 후 DB 적용 및 통합 배포 완료.
-- 사용자가 “DB 적용 후 통합 배포” 승인. 비용 발생·첫 원고 공개는 승인하지 않은 범위.
-- 고객센터 전송 후 닫기·답변 열림·초안 보호, 성장 개인 실천/자료 4분류/관리자 검토/수정 재승인/예약 게시 구조. 실제 외부 AI/수집/스케줄러 없음.
-- 설명: docs/support-chat-20261011.md, docs/growth-practice-20261011.md. 원복: 22b9a10(메신저), bd6a235(성장 이전), 운영은 b9407a7.
-- Netlify 배포 6acb993f62318600085a5151, 2026-10-11 23:12 KST ready/published, main942dcc7 일치. 이전 운영 배포 6acb77fcb27b490008a27b4d. 실제 공개 https://bohumso.netlify.app/.
-- 기존 로그인 세션에서 전문가 첫 화면→성장, 고객센터 기존 문의1 및 새 대화창, 관리자 비공개 첫 원고 전체보기 확인. 운영 메시지/실천 저장·원고 공개는 실행하지 않음.
+## 현재 범위와 진행
+- codex/mobile-ui-polish, 시작 기준 65580fd. 첫 홈은 유지하고 전문가·자료실·성장·프로필·계정·예약·고객센터를 정리했다.
+- 이번 지시는 UI 구현·격리 검수만 허용한다. 운영 DB/설정/배포/외부 발송/비용 집행 금지. 예전 배포 승인을 재사용하지 않는다.
+- 선택한 7페이지에 app-ui.css 적용. 기관 데이터·URL, index.html, 전역 styles.css/type-system.css, SQL, Netlify 설정은 그대로다.
+- 전문가 홈: 이름 → 상담 상태 → 받은 요청·예약 → 내 프로필/자료실/성장/고객센터. 기존 폼과 저장 구조를 재사용한다.
+- 자료실: 검색·분류·기관 목록 우선, 공식 안내/상세보기 구분. 성장: 바로 입력, 날짜·메모 선택 펼침, 나의 실천/읽을거리 구분.
+- 프로필·상담 조회 실패에 재시도, 상담 저장 중 입력 잠금, 자료 제출에 파일명·처리 상태. 예약은 상대방·시간·방식·상태 순서.
 
-## 검증
-- build, SQL 성장11 + 고객센터11, 두 기능 브라우저, expert-profile-page-browser, support-entry-browser 통과.
-- 최종 성장 SQL 11건 통과(검토 대기 원고 포함 패키지 두 번 실행). 실제 단말/OS 키보드/다중 Postgres/운영 로그인 및 저장은 별개 미검증.
+## 검증과 결과
 - node scripts/build.mjs
-- node --liftoff-only --no-wasm-tier-up --wasm-num-compilation-tasks=1 --test --test-concurrency=1 tests/growth.test.mjs tests/support-chat.test.mjs
-- node --liftoff-only --no-wasm-tier-up --wasm-num-compilation-tasks=1 tests/growth-browser.mjs
-- node tests/expert-profile-page-browser.mjs / tests/support-entry-browser.mjs
+- node tests/ui-polish-browser.mjs after
+- node tests/expert-profile-page-browser.mjs
+- node tests/claim-resources-browser.mjs
+- node tests/growth-browser.mjs
+- node tests/profile-usability-browser.mjs
+- node tests/requests-page-browser.mjs
+- node tests/appointment-care-browser.mjs
+- node tests/support-chat-browser.mjs
+- 위 검사는 메모리 문제를 피하도록 하나씩 순차 실행한다. 가상 계정·격리 PGlite/응답을 사용하고 외부 요청은 차단한다.
+- 7페이지 360/390/430/1440px·글자 200%, 프로필/사진 저장·실패, 상담 상태 독립성, 실천 CRUD·재접속, 검색·공식 링크·상세, 예약·문의 회귀 통과.
+- 최종 확대 검사에서는 프로필·실천 선택 입력·자료 상세·새 문의 입력을 펼쳤다. 문의는 짧은 500px 화면에서 입력창과 보내기 버튼 접근도 확인했다.
+- 상세 보고: docs/ui-polish-20261012.md. 전후 390px 화면: docs/ui-polish-screens/. 원시 결과: docs/ui-polish-results.json.
+- 수정 전 이미지는 첫 변경 빌드 전에 기준 65580fd의 파일·번들로 캡처했다. 이후 before 검사를 재실행해 새 번들과 섞지 않는다.
 
-## 다음
-1. 운영 DB 057→060→061 + 첫 원고 검토 대기, 2026-10-11 23:08 KST 적용 완료. 회원2·문의1·예약0 전후 지문 일치. 신규10테이블 RLS/직접 접근 차단, 원고 비공개1, 실천0, 자동게시 OFF 확인.
-2. artifacts/support-growth-before.json/fingerprints.json/after.json은 비공개 백업·증거, Git 미포함.
-3. 배포 후 확인 완료. 다음 작업은 실제 단말 키보드/접근성 검수(30~60분), 보관 기간·탈퇴 후 삭제 시점 결정(운영자 결정 필요).
-4. 외부 수집/AI/스케줄러는 미연결. 공급자·모델·월 상한 제시 및 비용 승인 이후 별도 구현/검증(예상 2~4시간, 공급자 범위에 따라 변동). 원고 공개도 별도 검토·승인이 필요.
-5. 기존 ROADMAP4~9는 완료 처리하지 않음. 다음 담당자는 해당 단계와 기존 멈춤 조건을 먼저 확인.
+## 미확인·충돌 가능
+- 실단말 키보드·카카오 브라우저·OS 글자 확대 미확인. 짧은 브라우저 화면/루트 폰트 확대와 구분한다.
+- 운영 OAuth/SMS/실계정 저장·비공개 Storage 업로드는 실행하지 않았다. 자료 제출의 동의 차단·오류 입력 보존만 격리 확인했다.
+- 별도 지도 공개 스위치는 현재 기준에 없어 만들지 않았다. 상담 수신을 지도 공개로 표시하지 않는다.
+- ../bohumso-ui-release는 기존 dirty 작업본이다. account.js/optional-profile.js/profile-editor.js, 관련 HTML/design-system/profile tests 충돌 가능. 그 작업본과 058 SQL을 가져오거나 수정하지 않았다.
+- Claude Code 실행 중 변경은 직접 확인하지 못했다. 통합할 때 실제 diff로 비교해야 한다.
 
-## 미리보기
-node --liftoff-only --no-wasm-tier-up --wasm-num-compilation-tasks=1 scripts/growth-preview.mjs
-- http://127.0.0.1:8894/support.html
-- http://127.0.0.1:8895/admin.html#growthAdmin (첫 원고 검토 대기)
-- http://127.0.0.1:8896/growth.html
-가상 문의4개 artifacts/support-preview-backup.json에서 복원. 원고 첫 미리보기 캡처 docs/growth-practice-screens/first-draft-preview.png. 미리보기와 무거운 테스트 동시 실행하면 6GB PC 메모리 부족 가능.
-현재 통합 미리보기 프로세스 실행 중(session3863). 새 원고 ID는 재실행 시 바뀌지만 기존 문의 링크4개는 백업에서 복원한다.
+## 다음 순서와 예상 시간
+1. 총괄 검수: 보고서의 전후 캡처와 기능 근거 확인.
+2. 실단말 키보드/확대/인앱 확인 30~60분.
+3. 다른 작업본과 비교·필요한 통합 30~90분. 공통 파일을 통째로 덮어쓰지 않는다.
+4. 운영 반영은 별도 지시 후 진행. 이번 작업에서 main 병합/DB 실행/배포 금지.
 
-## 주의
-- 다른 bohumso-ui-release 작업본 미커밋은 건드리지 않는다. Claude 실행 창은 확인 못 함. main 로컬은 다른 포인터이므로 origin/main 기준으로 확인.
-- 공통 충돌 후보: account.js, member-access.js, build.mjs, admin.html, 인수인계. 기존 예약/지도/노출/요금 파일 변경 없음.
-- 실제 개인정보·비밀값을 Git/일반 로그에 넣지 않는다. 새 원고를 자동 승인하지 않는다. 개인 실천과 대화 보관기간/탈퇴 후 삭제시점은 미확정.
-- 4~9단계 ROADMAP 전체가 끝난 것은 아니다. 완료 주장 금지.
+## 되돌리기·전송
+- 기준 65580fd와 개발 브랜치 변경만 비교해 되돌린다. 타 작업이나 기존 데이터는 되돌리지 않는다.
+- 개발 브랜치에만 저장·전송하고 [skip netlify] [skip ci]를 붙인다. 강제 push 금지.
+- 이번 작업용 상시 미리보기는 실행 중이지 않다. 화면·검수 결과는 보고서에서 확인한다.
+- 이전 운영 이력: main942dcc7 / Netlify6acb993f62318600085a5151, 2026-10-11 통합 배포. 이번 변경의 운영 반영을 뜻하지 않는다.

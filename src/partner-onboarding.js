@@ -3,12 +3,13 @@ import {PhoneVerificationProvider} from './phone-verification.js';
 import {el,kst} from './consultation-ui.js';
 import {AGREEMENT_VERSION,PLEDGES,PROFESSIONS,validRegistration,validRealName,NAME_RULE_HINT,koreanPhone,prepareDocument,documentRequest} from './expert-shared.js';
 const STATES={pending:'심사 대기',approved:'승인 완료',needs_changes:'보완 요청',rejected:'거절',withdrawn:'철회'};
-export async function renderPartnerApplication({client,user,membership,message,config={}}){
- if(config.earlyAccess)return renderEarlyExpert({client,config,message});
+export async function renderPartnerApplication({client,user,membership,message,config={},onSummary}){
+ if(config.earlyAccess)return renderEarlyExpert({client,config,message,onSummary});
  const phoneProvider=new PhoneVerificationProvider(client,config);
  const form=document.getElementById('partnerForm'),state=document.getElementById('partnerState'),details=document.getElementById('partnerDetails');
  if(!membership.member){state.textContent='내 계정에서 필수 가입 동의를 먼저 완료해 주세요.';return;}
  const result=await client.rpc('expert_workspace');if(result.error){state.textContent='새 전문가 가입 절차를 준비 중입니다. 실제 서류는 아직 올리지 마세요.';return;}
+ onSummary?.({name:result.data.application?.full_name,area:result.data.application?.region});
  let application=result.data.application,documents=result.data.documents||[],step=1,infoPage=1,busy=false,phoneVerified=null,previewUrls=[];
  const values={profession:application?.profession||'',full_name:application?.full_name||'',phone:application?.phone||'',region:application?.region||'',organization:application?.organization||'',registration_number:application?.registration_number||''};
  let agreements=[false,false,false],documentConsent=false,redacted=false;

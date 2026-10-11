@@ -51,9 +51,9 @@ function details(parent,r){
 function row(parent,r){
  const tr=el('tr','',parent,'resource-row');tr.dataset.resourceId=r.id;
  const title=el('td','',tr,'resource-name');el('h3',r.name,title);
- const toggle=el('button','준비사항·확인정보',title,'resource-detail-toggle');toggle.type='button';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','resource-info-'+r.id);
+ const toggle=el('button','상세보기',null,'resource-detail-toggle');toggle.type='button';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','resource-info-'+r.id);toggle.setAttribute('aria-label',r.name+' 준비사항·확인정보');
  const meta=el('td','',tr,'resource-place');el('span',r.region,meta);el('span',typeLabel(r),meta);
- const links=el('td','',tr,'resource-links');official(links,r.urlLabel,r.url).className='btn ghost';
+ const links=el('td','',tr,'resource-links');official(links,r.urlLabel,r.url).className='btn ghost';links.append(toggle);
  if(r.reviewStatus==='check')el('span','세부 안내 재확인',links,'resource-meta');
  const info=el('tr','',parent,'resource-info');info.hidden=true;info.id='resource-info-'+r.id;
  const cell=el('td','',info);cell.colSpan=3;let built=false;

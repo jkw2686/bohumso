@@ -2,12 +2,13 @@ import {renderEarlyDocuments} from './early-documents.js';
 import {renderPhoneSignupPanel} from './phone-signup-panel.js';
 const names={claim:'보험금 청구',death:'사망',critical:'암·중대질병',surgery:'입원·수술',medical:'실손',accident:'사고',coverage:'보장 점검',corporate:'기업보험'};
 const states={DRAFT:'작성 중',PROFILE_COMPLETE_VERIFICATION_REQUIRED:'프로필 저장 완료 · 자격 확인 필요',VERIFICATION_PENDING:'확인자료 검토 중',APPROVED:'승인 완료',SUSPENDED:'활동 정지',REJECTED:'승인되지 않음'};
-export async function renderEarlyExpert({client,config,message}){
+export async function renderEarlyExpert({client,config,message,onSummary}){
  const form=document.getElementById('partnerForm'),state=document.getElementById('partnerState');
  if(!config.expertApplicationsEnabled){state.textContent='전문가 신청을 준비 중입니다.';return;}
  const [workspace,catalog]=await Promise.all([client.rpc('expert_profile_command',{operation:'get'}),client.rpc('service_area_catalog')]);
  if(workspace.error||catalog.error){state.textContent='프로필 저장 연결을 확인하고 있습니다. 잠시 후 다시 열어주세요.';return;}
  let profile=workspace.data.profile,step=1;
+ onSummary?.({name:profile?.display_name,area:profile?.primary_area});
  const values={display_name:profile?.display_name||'',primary_area:profile?.primary_area||'',secondary_areas:profile?.secondary_areas||[],specialties:profile?.specialties||[],weekdays:profile?.weekdays||[1,2,3,4,5],start_hour:profile?.start_hour??9,end_hour:profile?.end_hour??18,firstMeetingConfirmed:false,consent:!!profile};
  state.textContent=states[profile?.status]||'보험설계사 프로필 · 약 2분';form.hidden=false;
  await renderPhoneSignupPanel({client,config,before:form});

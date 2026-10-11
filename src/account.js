@@ -1,3 +1,4 @@
+import {arrangeExpertHome} from './expert-home.js';
 import {mountGrowthAdmin} from './growth-admin.js';
 import {renderWaitlistCounts} from './region-waitlist.js';
 import {renderCareAdmin,renderCareCases,careErrors} from './appointment-care.js';
@@ -17,7 +18,7 @@ import {renderDirectory} from "./directory.js";
 import {renderProfileEditor} from "./profile-editor.js";
 import {memberService,memberState,MEMBER,pendingAction,rememberAction,clearAction,authURL,accountReturn} from "./member-access.js";
 const $=id=>document.getElementById(id);const mode=document.body.dataset.accountPage;
-let client,config,user,membership;
+let client,config,user,membership,expertSummary;
 const status={pending:"심사 대기",approved:"승인 완료",rejected:"반려",suspended:"활동 정지",withdrawn:"신청 철회"};
 const jobs={planner:"보험설계사",adjuster:"손해사정사",lawyer:"변호사",corporate:"기업보험 컨설턴트",tax:"세무사",office:"거점 운영자"};
 function message(text){$("accountMessage").textContent=text;}
@@ -47,7 +48,7 @@ async function renderAccount(){
  onForm("membershipForm",async d=>{for(const name of ['age','terms','privacy'])if(!checked(d,name))return flagInvalid($("membershipForm").elements[name],'필수약관에 동의해 주세요.');const {error}=await client.rpc("complete_membership",{terms_accepted:checked(d,"terms"),privacy_accepted:checked(d,"privacy"),age_accepted:checked(d,"age"),marketing_accepted:checked(d,"marketing")});fail(error);message("가입이 완료됐어요. 선택하신 도움을 이어서 확인할게요.");await refreshMembership();await renderAccount();});
  $("logout").onclick=async()=>{const {error}=await client.auth.signOut();if(error){message("로그아웃하지 못했습니다. 다시 시도해 주세요.");return}location.replace("/login.html");};
 }
-async function renderPartner(){return renderPartnerApplication({client,user,membership,message,action,config});}
+async function renderPartner(){return renderPartnerApplication({client,user,membership,message,action,config,onSummary:value=>{expertSummary=value;}});}
 async function renderAdmin(){if(!membership.admin)throw {message:'admin_required'};await (config.earlyAccess?renderEarlyExpertAdmin:renderExpertAdmin)({client,host:$('applications'),message});await renderCareAdmin(client,$('accountContent'));document.getElementById('growthAdmin')?.remove();try{await mountGrowthAdmin({client,host:$('accountContent')});}catch(e){if(!['PGRST202','42883'].includes(e.code)){const p=document.createElement('p');p.textContent='성장·실천 자료 운영을 불러오지 못했습니다.';$('accountContent').append(p);}}}
 async function start(){
  // 백엔드(Functions) 미배포·미설정 시 에러 대신 '준비 중'으로 degrade. 정적 공유 배포에서도 화면이 깨지지 않는다.
@@ -104,10 +105,10 @@ async function start(){
   else{const note=document.createElement('p');note.className='card';note.textContent='승인 후 지금 방문 상담을 켤 수 있어요';top.append(note);}
   if(membership.partner_status)await renderServiceArea(client,$("accountContent"));
   if(membership.profession==="planner"&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));
-  // ⑤ 다른 화면으로 가는 링크는 맨 아래에.
-  const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink)$("accountContent").append(workLink);}
+  // 기존 입력과 메뉴를 전문가 홈 순서로 배치한다.
+  const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink)$("accountContent").append(workLink);arrangeExpertHome($("accountContent"),{summary:expertSummary,status:applicationStatus});}
  if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
- if((mode==='partner'||document.body.dataset.workspace==='partner')&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='✦ 성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('a[href="/claim-resources.html"]')?.closest('section');if(resources)resources.append(entry);else $('accountContent').prepend(entry);}
+ if(document.body.dataset.workspace==='partner'&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='✦ 성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('a[href="/claim-resources.html"]')?.closest('section');if(resources)resources.append(entry);else $('accountContent').prepend(entry);}
  $("accountContent").hidden=false;
 }
 // 로딩 그림 자리(3-6)는 내용이 떴거나 오류 안내가 나오면 감춘다. 안 붙어 있는 화면도 있어 없으면 넘어간다.
