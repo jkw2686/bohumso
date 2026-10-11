@@ -179,3 +179,8 @@ body[data-account-page="partner"] .field-hint{margin:var(--space-2) 0 0;color:va
 body[data-account-page="partner"] .field-error:empty{display:none}
 body[data-account-page="partner"] .field-error{margin:var(--space-2) 0 0;color:var(--danger-text);font-size:var(--type-small);line-height:1.6;font-weight:600}
 body[data-account-page="partner"] .name-change-request{display:inline-flex;align-items:center;min-height:44px;margin-inline-start:var(--space-2)}
+
+body[data-account-page="partner"] .expert-resource-entry{display:flex;width:100%;min-height:48px;box-sizing:border-box;gap:var(--space-3);margin-block:var(--space-3) var(--space-4);text-align:left;white-space:normal}
+body[data-account-page="partner"] .expert-resource-entry>span:nth-child(2){flex:1;min-width:0;word-break:keep-all;overflow-wrap:anywhere}
+body[data-account-page="partner"] .expert-resource-entry>span[data-icon]{display:flex;flex:none}
+body[data-account-page="partner"] .expert-resource-entry .ui-icon{width:var(--space-5);height:var(--space-5)}

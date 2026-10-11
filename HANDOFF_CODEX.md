@@ -10,7 +10,10 @@
 
 ## 1. 지금 어디까지 왔나
 
-**최신 확인: Codex가 main fec525a를 검토하고 20:38 KST에 재배포했다.**
+**최신 보완: 전문가 첫 화면(partner) 제목 아래 ‘병원·보험사 자료실’ 바로가기를 추가했다.**
+사용자가 partner-work 이전 화면에서 보여야 한다고 정정했다. partner.html/account.css만 변경하고 기존 프로필 4폭 검사를 통과했다. 배포·운영 확인 후 이 기록을 갱신한다. 자료 목록·검색·DB는 변경하지 않았다.
+
+**직전 확인: Codex가 main fec525a를 검토하고 20:38 KST에 재배포했다.**
 Netlify 6acb7510728c689eee310184 / production / ready / commit fec525a.
 전체 단위 123/123, 관련 브라우저 7개, 운영 읽기 확인을 마쳤다.
 기능 코드 추가 변경과 운영 DB 적용은 없다. 상세는 [배포 검토 기록](docs/release-review-20261011.md).
@@ -34,7 +37,7 @@ main의 profile-editor/optional-profile/account/map과 중복되므로 단순 �
 | 6~8. 웹푸시 / 고객센터 채팅 / 상담 가능시간 | 미착수 | 개발까지만 |
 | 9. 2차 운영 적용 패키지 | **[멈춤 ②]** | — |
 
-- Claude 구현 브랜치: `claude/epic-meitner-sv48gf` (fec525a 전달 시 main과 동기화). 이번 Codex 검토 기록 브랜치: `codex/review-fec525a`; 문서 기록만 main에 fast-forward 전송한다.
+- Claude 구현 브랜치: `claude/epic-meitner-sv48gf` (fec525a 전달 시 main과 동기화). 이번 Codex 검토·자료실 진입 보완 브랜치: `codex/review-fec525a`; main에 fast-forward 전송한다.
 - **4단계는 `codex/interaction-settings` 에서 한다.** origin/main 을 **merge**(rebase 금지)로 받아야 한다.
 
 ### 멈춤 지점 규칙 (어기면 안 됨)

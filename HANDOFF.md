@@ -1,5 +1,11 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-11 — 전문가 첫 화면 자료실 진입 보완
+- 사용자 지시: 자료실은 partner-work가 아니라 그 전 전문가 첫 화면(partner)에서 바로 보여야 한다.
+- public/partner.html 제목 바로 아래 ‘병원·보험사 자료실’ 링크를 추가하고 public/account.css에 이 링크만 적용되는 크기·아이콘 스타일을 추가했다. 기존 병원·보험사 목록과 검색, 가입·프로필·상담 저장 로직은 변경하지 않았다.
+- build 및 기존 expert-profile-page-browser 검사 통과. 360/390/430/1440 가로 넘침 없음, 390 첫 화면 상담 버튼 유지, 펼침·저장·요약·키보드·콘솔 오류 검사 통과. 배포 후 운영 링크를 추가 확인한다.
+- 앞선 fec525a의 전체 단위 123/123·관련 브라우저 7개와 이번 좁은 수정의 검증을 구분한다. DB 적용·문자 발송·실제 고객 요청 없음. ROADMAP 4단계 및 별도 WIP 보호 규칙 유지.
+
 ## 2026-10-11 20:38 KST — Codex main fec525a 검토·재배포 완료
 - 사용자 지시 ‘코드가 작업한거 확인하고 배포’, 대상 main fec525a에 따라 별도 작업본에서 검토했다. 앱 소스는 9b8c856과 동일하며 fec525a는 인수인계 문서 변경이다. 기능 코드를 추가 수정하지 않았다.
 - Netlify 운영 재배포 6acb7510728c689eee310184, production/main, commit fec525af7e9b94345465f4902f139f434e1ef7c0, ready, published_at 2026-10-11T11:38:04.221Z. https://bohumso.netlify.app/
