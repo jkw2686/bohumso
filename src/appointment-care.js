@@ -10,6 +10,11 @@ export async function careRpc(client,operation,payload={}){const {data,error}=aw
 const capabilities=new WeakMap();
 export async function careStatus(client){if(!capabilities.has(client))capabilities.set(client,careRpc(client,'status').then(x=>x?.enabled?x:null).catch(e=>{capabilities.delete(client);if(e.code==='PGRST202'||e.code==='42883')return null;throw e;}));return capabilities.get(client);}
 export async function getCare(client,kind,id){return await careStatus(client)?careRpc(client,'get',{kind,id}):null;}
+// 약속 안내(appointment_care)는 부가 기능이다. 조회가 실패해도 수락·확정 같은 핵심 버튼이
+// 사라져서는 안 되므로 화면에서는 아래 안전 래퍼를 쓴다. 기능 미적용(PGRST202/42883)과
+// 일시 오류를 모두 '안내 없음'으로 낮춘다. careStatus/getCare 원본은 그대로 둔다.
+export function careStatusSafe(client){return careStatus(client).then(x=>x,()=>null);}
+export function getCareSafe(client,kind,id){return getCare(client,kind,id).then(x=>x,()=>null);}
 export function carePolicy(root,role,data){
  const d=el('details',null,root,'appointment-policy');el('summary',role==='expert'?'고객과의 약속을 지켜주세요':'서로의 시간을 지켜주세요',d);
  el('p','참석이 어렵다면 미리 변경·취소해 주세요.',d);
@@ -85,11 +90,11 @@ export function renderCare({client,root,data:a,refresh=()=>{},admin=false}){
  }
  link(section,'운영자 문의','/support.html');return section;
 }
-export async function renderCareAdmin(client,host){if(!await careStatus(client))return;let section=host.querySelector('[data-care-admin]');if(!section){section=el('section',null,host,'appointment-care');section.dataset.careAdmin='';}
+export async function renderCareAdmin(client,host){if(!await careStatusSafe(client))return;let section=host.querySelector('[data-care-admin]');if(!section){section=el('section',null,host,'appointment-care');section.dataset.careAdmin='';}
  const load=async()=>{const rows=await careRpc(client,'admin_list');section.replaceChildren();el('h2','약속 문제 확인',section);el('p','신고 접수와 예약 상태는 별도입니다. 사실 확인만으로 일정이 취소되지는 않습니다.',section);if(!rows.length)el('p','확인할 신고가 없습니다.',section);for(const a of rows){const d=el('details',null,section,'card');el('summary',(a.case?.outcome?outcomes[a.case.outcome]:a.case?'불참 확인 중':'취소 기록 · 별도 검토')+' · '+stamp(a.terms.at)+(a.case?.appeal_pending?' · 이의제기':''),d);renderCare({client,root:d,data:a,refresh:load,admin:true});}};await load();
 }
 export async function renderCareCases(client,host,workspace){
- if(!await careStatus(client))return;const section=el('section',null,host);
+ if(!await careStatusSafe(client))return;const section=el('section',null,host);
  const load=async()=>{section.replaceChildren();const rows=await careRpc(client,'my_cases',{workspace});for(const a of rows){if(document.querySelector('[data-appointment-id="'+a.id+'"]'))continue;const card=el('article',null,section,'card');el('h2','지난 약속 · 사실 확인',card);renderCare({client,root:card,data:a,refresh:load});}};await load();
 }
-export async function renderCareInbox(client,host){if(!await careStatus(client))return;const d=el('details',null,host,'appointment-care'),title=el('summary','내 알림',d),list=el('div',null,d);const load=async()=>{const rows=await careRpc(client,'inbox');list.replaceChildren();title.textContent='내 알림'+(rows.some(n=>!n.read_at)?' · 새 알림':'');if(!rows.length)el('p','새로운 알림이 없습니다.',list);for(const n of rows){const c=el('article',null,list,'card');el('strong',n.title,c);el('p',n.body,c);const safe=/^\/(requests|partner-work)\.html\?request=[0-9a-f-]{36}$/.test(n.deep_link)?n.deep_link:'/requests.html';link(c,'예약 확인 · 늦어요 · 변경·취소',safe);const b=el('button','읽음 표시',c,'btn ghost');b.type='button';b.disabled=!!n.read_at;b.onclick=async()=>{await careRpc(client,'read',{id:n.id});await load();};}};await load();const timer=setInterval(()=>{if(!host.isConnected){clearInterval(timer);return;}if(!document.hidden&&!document.activeElement?.closest('form'))load().catch(()=>{});},60000);}
+export async function renderCareInbox(client,host){if(!await careStatusSafe(client))return;const d=el('details',null,host,'appointment-care'),title=el('summary','내 알림',d),list=el('div',null,d);const load=async()=>{const rows=await careRpc(client,'inbox');list.replaceChildren();title.textContent='내 알림'+(rows.some(n=>!n.read_at)?' · 새 알림':'');if(!rows.length)el('p','새로운 알림이 없습니다.',list);for(const n of rows){const c=el('article',null,list,'card');el('strong',n.title,c);el('p',n.body,c);const safe=/^\/(requests|partner-work)\.html\?request=[0-9a-f-]{36}$/.test(n.deep_link)?n.deep_link:'/requests.html';link(c,'예약 확인 · 늦어요 · 변경·취소',safe);const b=el('button','읽음 표시',c,'btn ghost');b.type='button';b.disabled=!!n.read_at;b.onclick=async()=>{await careRpc(client,'read',{id:n.id});await load();};}};await load();const timer=setInterval(()=>{if(!host.isConnected){clearInterval(timer);return;}if(!document.hidden&&!document.activeElement?.closest('form'))load().catch(()=>{});},60000);}

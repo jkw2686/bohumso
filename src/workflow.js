@@ -1,5 +1,5 @@
 import {trackEvent} from './member-access.js';
-import {careStatus,getCare,carePolicy,renderCare,renderCareInbox,renderCareAdmin} from './appointment-care.js';
+import {careStatusSafe,getCareSafe,carePolicy,renderCare,renderCareInbox,renderCareAdmin} from './appointment-care.js';
 import {renderAdminBookingMap} from './admin-booking-map.js';
 import {renderOfficeRequest,renderTimeline} from './office-request.js';
 import {renderAds} from './ad-subscription.js';
@@ -8,7 +8,8 @@ export async function renderWorkflow({client,membership,workspace,message,action
  const host=document.getElementById('requestList'),content=document.getElementById('accountContent');let snapshot,refreshVersion=0;const dirtyForms=new Set();
  host.addEventListener('input',e=>{const form=e.target.closest('form');if(form)dirtyForms.add(form);});host.addEventListener('change',e=>{const form=e.target.closest('form');if(form)dirtyForms.add(form);});
  function editing(){return [...dirtyForms].some(f=>f.isConnected)||!!host.querySelector('details[open] form')||!!document.activeElement?.closest('#requestList form');}
- const careCapability=await careStatus(client);
+ // 약속 안내 조회 실패가 상담·일정 목록 전체를 막지 않게 한다.
+ const careCapability=await careStatusSafe(client);
  if(!membership.member||(workspace==='admin'&&!membership.admin)||(workspace==='partner'&&membership.partner_status!=='approved')){content.hidden=true;message('가입 완료 또는 관리자 권한이 필요합니다.');return;}
  const rpc=async(name,args)=>{const {data,error}=await client.rpc(name,args);if(error)throw error;return data;};
  const command=async(operation,payload)=>{if(operation==='request')trackEvent('reservation_started');try{const result=await rpc('consultation_command',{operation,payload});const event={request:'reservation_created',confirm:'reservation_confirmed',office_confirm:'reservation_confirmed',complete_confirm:'consultation_completed'}[operation];if(event)trackEvent(event);return result;}catch(e){if(e.message==='slot_unavailable')e.message=['propose','schedule_accept'].includes(operation)?'schedule_slot_unavailable':'reservation_slot_taken';trackEvent(['slot_unavailable','reservation_slot_taken','schedule_slot_unavailable'].includes(e.message)||e.code==='23505'?'duplicate_reservation':e.code==='42501'?'rls_denied':'reservation_failed');throw e;}};
@@ -35,7 +36,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
   if(!rows.length){const empty=el('section',undefined,host);empty.className='card booking-empty';const filtered=filterData&&[...filterData.values()].some(Boolean);el('h2',filtered?'조건에 맞는 예약이 없어요':'아직 예약 내역이 없어요',empty);el('p',filtered?'검색 조건을 바꾸고 다시 확인해 주세요.':'접수한 상담과 방문 일정이 여기에 표시돼요.',empty);if(workspace==='customer'&&!filtered){const browse=link(empty,'주변 전문가 둘러보기','/map.html?view=experts');}}
   const assignmentCatalog=workspace==='admin'&&rows.some(row=>row.allocation_mode==='office'&&['requested','coordinating'].includes(row.state))?await rpc('planner_catalog',{area:'',wanted:''}):null;
   for(const row of rows){
-   const care=careCapability?await getCare(client,'consultation',row.id):null;
+   const care=careCapability?await getCareSafe(client,'consultation',row.id):null;
    const card=el('article',undefined,host);card.className='card booking-card';card.dataset.bookingId=row.id;
    if(row.is_beta)el('small','비공개 베타 예약',card);
    el('h2',purposes[row.purpose]+' · '+row.region,card);el('p',workspace==='customer'&&row.allocation_mode==='office'?({requested:row.planner_id?'전문가가 확인하고 있어요.':'보험소에서 담당자를 배정하고 있어요.',scheduled:'예약이 확정됐어요.',completed:'상담이 잘 마무리됐어요.'}[row.state]||states[row.state]):states[row.state],card).className='request-status';if(workspace==='customer')renderTimeline(card,row);
