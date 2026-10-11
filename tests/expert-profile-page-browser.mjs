@@ -64,17 +64,12 @@ try {
   check(box.height >= 48, `① 버튼 48px 이상 (${Math.round(box.height)}px)`);
   await page.screenshot({path: 'artifacts/expert-profile-page-390-top.png'});
 
-  // 6) ▶ 접힘 요소가 이 화면에 없다 (미리보기용 내부 details 는 폼 안이므로 펼치기 전에 확인)
-  // 카드 레벨 ▶ 는 모두 없애는 것이 이번 변경이다.
-  // 폼 안의 '지도에 보이는 프로필 미리보기' 는 optional-profile 폼 내부라 수정 금지 범위이고,
-  // 폼을 열기 전에는 보이지도 않는다. 그 하나만 예외로 허용하고 나머지는 0이어야 한다.
-  const cardLevel = await page.$$eval('#accountContent details',
-    d => d.filter(x => !x.closest('#optionalProfileBody,#consultSettingsBody'))
-          .map(x => (x.querySelector('summary')?.textContent || '').trim()));
-  check(cardLevel.length === 0, `⑥ 카드 레벨 ▶ 접힘 없음 — 남은 것: ${cardLevel.join(' / ') || '없음'}`);
-  const visibleDetails = await page.$$eval('#accountContent details',
-    d => d.filter(x => x.getBoundingClientRect().height > 0).map(x => (x.querySelector('summary')?.textContent || '').trim()));
-  check(visibleDetails.length === 0, `⑥ 첫 화면에 보이는 ▶ 없음 — 남은 것: ${visibleDetails.join(' / ') || '없음'}`);
+  // 6) ▶ 접힘 요소가 이 화면에 하나도 없다. 폼 안에 마지막으로 남아 있던
+  // '지도에 보이는 프로필 미리보기' <details> 도 버튼으로 바꿨으므로 폼을 펼친 뒤에도 0이어야 한다.
+  // 펼친 뒤 재검사는 아래 ③ 에서 다시 한다.
+  const allDetails = await page.$$eval('#accountContent details',
+    d => d.map(x => (x.querySelector('summary')?.textContent || '').trim()));
+  check(allDetails.length === 0, `⑥ 화면 전체에 ▶ 접힘 없음 — 남은 것: ${allDetails.join(' / ') || '없음'}`);
 
   // 2) 순서: 지금 방문 → … → 주활동지역 → 지도 프로필 → 상담 요청·연락처
   const idx = t => order.indexOf(t);
@@ -90,6 +85,9 @@ try {
   await mapToggle.click();
   check(await mapCard.locator('#optionalProfileBody').isVisible(), '③ 버튼을 누르면 같은 카드 안에서 폼 펼침');
   check(await mapToggle.getAttribute('aria-expanded') === 'true', '③ aria-expanded=true');
+  const openDetails = await page.$$eval('#accountContent details', d => d.map(x => (x.querySelector('summary')?.textContent || '').trim()));
+  check(openDetails.length === 0, `⑥ 폼을 펼친 뒤에도 ▶ 접힘 없음 — 남은 것: ${openDetails.join(' / ') || '없음'}`);
+  check(await mapCard.getByRole('button', {name: '지도에 보이는 프로필 미리보기'}).getAttribute('aria-expanded') === 'false', '⑥ 미리보기는 버튼 + aria-expanded');
   check((await mapToggle.textContent()).trim() === '입력 닫기', '③ 펼친 뒤 버튼 문구 입력 닫기');
   await mapCard.getByLabel('소개 인사말 (선택 · 40자)').fill('청구 서류부터 같이 확인해 드려요');
   await mapCard.getByRole('button', {name: '저장하기'}).click();
@@ -128,6 +126,14 @@ try {
   await page.setViewportSize({width: 390, height: 844});
   const heights = await page.$$eval('#accountContent .btn.profile-toggle', b => b.map(x => Math.round(x.getBoundingClientRect().height)));
   check(heights.length === 2 && heights.every(h => h >= 48), `⑦ 카드 버튼 48px 이상 (${heights.join(',')})`);
+  // 4장 자가검사 ⑤: 버튼 글자가 배경에 잘 보이는가. 실제 계산값으로 대비를 잰다.
+  const contrast = await page.$$eval('#accountContent .btn.profile-toggle', bs => {
+    const lin = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+    const lum = rgb => { const [r, g, b] = rgb.match(/\d+/g).map(Number); return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b); };
+    return bs.map(b => { const st = getComputedStyle(b); const a = lum(st.color) + 0.05, c = lum(st.backgroundColor) + 0.05;
+      return {bg: st.backgroundColor, fg: st.color, ratio: Math.round((Math.max(a, c) / Math.min(a, c)) * 100) / 100}; });
+  });
+  check(contrast.every(c => c.ratio >= 4.5), `⑦ 버튼 대비 4.5:1 이상 (${contrast.map(c => c.bg + ' / ' + c.fg + ' = ' + c.ratio).join(' | ')})`);
 
   // 6) 키보드: Tab 으로 닿고 Enter 로 펼쳐진다
   await setToggle.focus();

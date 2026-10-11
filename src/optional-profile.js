@@ -32,7 +32,13 @@ export async function renderOptionalProfile(client,parent){
  const counter=el('p','',fields);counter.className='profile-editor-hint';counter.id='profileIntroCount';intro.setAttribute('aria-describedby',counter.id);
  const legacy=el('p','',fields);legacy.className='profile-editor-hint';legacy.hidden=Array.from(p.biography||'').length<=40;
  legacy.textContent='기존 소개는 그대로 보관됩니다. 소개를 새로 바꿀 때만 40자 이내로 작성해 주세요.';
- const previewBox=el('details',undefined,form);previewBox.className='profile-editor-preview';el('summary','지도에 보이는 프로필 미리보기',previewBox);const preview=el('div',undefined,previewBox);
+ // ▶ 접힘 대신 버튼(공통 규칙 §1 화면). 폼 안이지만 마지막으로 남아 있던 ▶ 라서 같이 맞춘다.
+ // 미리보기 내용 생성(draw 안의 preview.replaceChildren)은 그대로 둔다.
+ const previewBox=el('div',undefined,form);previewBox.className='profile-editor-preview';
+ const previewToggle=el('button','지도에 보이는 프로필 미리보기',previewBox);previewToggle.type='button';previewToggle.className='btn ghost';
+ const preview=el('div',undefined,previewBox);preview.id='profileEditorPreview';preview.hidden=true;
+ previewToggle.setAttribute('aria-expanded','false');previewToggle.setAttribute('aria-controls',preview.id);
+ previewToggle.onclick=()=>{preview.hidden=!preview.hidden;previewToggle.setAttribute('aria-expanded',String(!preview.hidden));previewToggle.textContent=preview.hidden?'지도에 보이는 프로필 미리보기':'미리보기 닫기';};
  const footer=el('div',undefined,form);footer.className='profile-editor-footer';
  const actions=el('div',undefined,footer);actions.className='profile-editor-actions';
  const cancel=el('button','취소',actions);cancel.type='button';cancel.className='btn ghost';

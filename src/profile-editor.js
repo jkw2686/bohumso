@@ -20,7 +20,9 @@ export async function renderProfileEditor(client,parent){
  el('p',p.verified_at?(p.is_sample?'샘플 프로필 · 운영 검증을 의미하지 않습니다.':'관리자 등록 확인 이력이 있습니다.'):'프로필 저장만으로 상담을 수락할 수 없습니다. 관리자 확인이 필요합니다.',form);
  const button=el('button','프로필 저장',form);button.type='submit';button.className='btn';const message=el('p','',details);message.className='profile-status';message.setAttribute('role','status');message.setAttribute('aria-live','polite');
  // 요약은 서버에 저장된 값(p)만 보여준다. 연락처는 뒤 4자리만.
- const masked=v=>{const d=String(v||'').replace(/[^0-9]/g,'');return d.length>=4?'010-****-'+d.slice(-4):'아직 등록하지 않았어요';};
+ // 뒤 4자리만. 휴대전화가 아닌 번호에 '010-' 을 붙여 잘못 보여주지 않도록 접두사는 실제 값에서 가져온다.
+ const masked=v=>{const d=String(v||'').replace(/[^0-9]/g,'');if(d.length<4)return '아직 등록하지 않았어요';
+  return (d.length===11?d.slice(0,3)+'-':'')+'****-'+d.slice(-4);};
  function drawSummary(){
   summaryBox.replaceChildren();
   el('p','상담 요청 받기 · '+(p.available?'켜짐':'꺼짐'),summaryBox);
