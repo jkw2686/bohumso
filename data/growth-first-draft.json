@@ -1,0 +1,16 @@
+{
+  "source_key": "bohumso-after-meeting-five-minutes-v1",
+  "content": {
+    "title": "상담 후 약속을 놓치지 않는 5분 정리",
+    "category": "tools",
+    "body": "상담이 끝나면 고객에게 어떤 안내를 드리기로 했는지 잠깐 정리해 보세요.\n\n1. 약속한 일을 확인합니다.\n공식 서류 안내, 일정 확인 등 내가 하기로 한 일을 적습니다.\n\n2. 다음 행동을 하나 정합니다.\n무엇을 먼저 확인하고 전달할지 정리합니다.\n\n3. 가능한 날짜를 정합니다.\n실제로 처리할 수 있는 날짜를 선택하고, 끝나면 완료 표시를 남깁니다.\n\n이곳에는 고객의 개인정보 대신 해야 할 일만 기록해 주세요.",
+    "practice": "오늘 고객에게 약속한 안내 확인하기",
+    "origin": "bohumso",
+    "method": "operator",
+    "sources": [],
+    "checked_date": null,
+    "base_date": null,
+    "evidence": "pending",
+    "advertising": false
+  }
+}

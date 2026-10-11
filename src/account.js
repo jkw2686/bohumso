@@ -1,3 +1,4 @@
+import {mountGrowthAdmin} from './growth-admin.js';
 import {renderWaitlistCounts} from './region-waitlist.js';
 import {renderCareAdmin,renderCareCases,careErrors} from './appointment-care.js';
 import {renderEarlyExpertAdmin} from './early-expert-admin.js';
@@ -47,7 +48,7 @@ async function renderAccount(){
  $("logout").onclick=async()=>{const {error}=await client.auth.signOut();if(error){message("로그아웃하지 못했습니다. 다시 시도해 주세요.");return}location.replace("/login.html");};
 }
 async function renderPartner(){return renderPartnerApplication({client,user,membership,message,action,config});}
-async function renderAdmin(){if(!membership.admin)throw {message:'admin_required'};await (config.earlyAccess?renderEarlyExpertAdmin:renderExpertAdmin)({client,host:$('applications'),message});await renderCareAdmin(client,$('accountContent'));}
+async function renderAdmin(){if(!membership.admin)throw {message:'admin_required'};await (config.earlyAccess?renderEarlyExpertAdmin:renderExpertAdmin)({client,host:$('applications'),message});await renderCareAdmin(client,$('accountContent'));document.getElementById('growthAdmin')?.remove();try{await mountGrowthAdmin({client,host:$('accountContent')});}catch(e){if(!['PGRST202','42883'].includes(e.code)){const p=document.createElement('p');p.textContent='성장·실천 자료 운영을 불러오지 못했습니다.';$('accountContent').append(p);}}}
 async function start(){
  // 백엔드(Functions) 미배포·미설정 시 에러 대신 '준비 중'으로 degrade. 정적 공유 배포에서도 화면이 깨지지 않는다.
  const response=await fetch("/api/config",{cache:"no-store"}).catch(()=>null);config=response&&response.ok?await response.json():{enabled:false};
@@ -106,6 +107,7 @@ async function start(){
   // ⑤ 다른 화면으로 가는 링크는 맨 아래에.
   const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink)$("accountContent").append(workLink);}
  if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
+ if((mode==='partner'||document.body.dataset.workspace==='partner')&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='✦ 성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('a[href="/claim-resources.html"]')?.closest('section');if(resources)resources.append(entry);else $('accountContent').prepend(entry);}
  $("accountContent").hidden=false;
 }
 // 로딩 그림 자리(3-6)는 내용이 떴거나 오류 안내가 나오면 감춘다. 안 붙어 있는 화면도 있어 없으면 넘어간다.
