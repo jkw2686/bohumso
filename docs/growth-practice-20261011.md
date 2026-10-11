@@ -1,5 +1,17 @@
 # 전문가 성장·실천 및 고객센터 통합 적용 검토
 
+## 운영 반영 완료 — 2026-10-11 23:12 KST
+
+- 사용자 “DB 적용 후 통합 배포” 승인에 따라 057·060·061 적용 후 main `942dcc7`을 한 번 배포했다. 성장 구현 `598d334`, 메신저 `bd6a235`.
+- Netlify Production `6acb993f62318600085a5151`, ready/published, commit `942dcc73fd9893dbdc97f515d1ba713ec6dbdc2b`. 공개 주소 [보험소](https://bohumso.netlify.app/).
+- [고객센터](https://bohumso.netlify.app/support.html): 기존 로그인 세션에서 문의 1건 표시와 새 1:1 문의창 열림 확인. 실제 고객 문의를 보내거나 답변하지 않았다.
+- [전문가 성장·실천](https://bohumso.netlify.app/growth.html): 전문가 첫 화면 진입 링크, 본인 빈 실천 목록, 비공개 원고가 목록에 나오지 않는 것 확인.
+- [관리자 첫 원고](https://bohumso.netlify.app/admin.html#growthAdmin): 검토 대기·비공개 원고 1건과 전체 본문 미리보기 확인. 공개 승인·게시 버튼은 누르지 않았다.
+- 세 운영 화면에서 수집된 콘솔 오류 없음. 기존 로그인 세션 유지 확인이며, 새 로그인·운영 저장·실단말 키보드 검증을 대신하지 않는다.
+- 운영 화면: [성장·실천](growth-practice-screens/production-growth.png), [고객센터 대화창](growth-practice-screens/production-support-chat.png), [첫 원고 미리보기](growth-practice-screens/production-first-draft.png), [DB 사후 확인](growth-practice-screens/operating-db-validation.png).
+- 원복 대상 이전 배포 `6acb77fcb27b490008a27b4d`(화면 소스 bab3978, 이전 main 문서 포함 b9407a7). DB는 아래 원복 SQL로 신규 API를 내리고 데이터는 보존한다.
+- 자동 수집·유료 AI·주기 실행은 미연결/미활성. 첫 원고 등록 완료와 공개 게시 완료를 구분한다. 보관 기간 결정과 실제 단말 검증은 남아 있다.
+
 ## 현재 범위
 
 사용자의 2026-10-11 직접 지시는 고객센터와 첨부한 성장·실천 작업을 마치고 함께 배포하는 것이다. 첨부의 초안 공개·유료 연동·자동화 제한은 유지한다. 현재 개발 브랜치 `codex/support-chat`, 기반 main `b9407a7`. 고객센터 메신저는 `bd6a235`까지 개발 원격에 저장했다. Claude의 실행 중 작업이나 미커밋 파일은 직접 확인하지 않았다. 다른 작업본은 변경하지 않았다.

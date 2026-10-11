@@ -598,3 +598,11 @@
 - 기존 문의 대화1, 실천0, 첫 원고 검토 대기·비공개1, 자동게시 OFF. 고객 메시지/외부 알림/유료 AI/자동 수집 실행 없음.
 - 증거 artifacts/support-growth-after.json(비공개) 및 docs/growth-practice-screens/operating-db-validation.png. 최종 격리 SQL11건 재실행 통과.
 - 다음: 개발 브랜치 저장·origin/main 조상 확인 후 통합 1회 배포, 운영 화면·배포 커밋 확인. 기존 원격 main b9407a7과 다른 작업본은 보존.
+
+## 2026-10-11 23:16 — 고객센터·성장 실천 통합 배포 완료
+- 성장598d334 및 고객센터bd6a235를 승인된 main942dcc7로 반영. 강제 push 없음. Netlify Production6acb993f62318600085a5151, 23:12 KST ready/published 및 commit942dcc73fd9893dbdc97f515d1ba713ec6dbdc2b 일치.
+- 실제 로그인 세션으로 전문가 첫 화면→성장 진입, 실천 빈 목록, 고객센터 기존 문의1건과 1:1 문의창, 관리자 첫 원고 검토 대기·비공개·전체 미리보기 확인. 콘솔 오류 없음. 실제 고객에게 문의/답변/알림을 만들지 않음.
+- 첫 원고 공개·유료AI·자동수집·스케줄러는 활성화하지 않음. 개인 실천의 저장·재접속·실패·권한/고객센터 응답 흐름은 격리 검증 결과이며 운영 쓰기 검사로 주장하지 않음.
+- 운영 증거 docs/growth-practice-screens/production-*.png, 상세 docs/growth-practice-20261011.md. 기존 데이터 지문 불변과 신규 권한 확인 기록 포함.
+- 원복: 이전배포6acb77fcb27b490008a27b4d + rollback_expert_growth.sql / rollback_support_chat.sql / 필요시057_support_conversations_rollback.sql. 테이블 데이터 보존.
+- 로컬 가상 문의4개 복원한 통합 미리보기8894/8895/8896 실행(session3863). 실제 단말 검증·보관기간 결정·외부 자동화 연결은 남음. 기존 ROADMAP4~9 전체 완료가 아님.
