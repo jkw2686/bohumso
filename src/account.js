@@ -81,10 +81,17 @@ async function start(){
  if(document.body.dataset.workspace==='partner'&&membership.partner_status!=='approved'){message('승인된 전문가만 이용할 수 있습니다.');return;}
  if(mode==="reset"){$("accountContent").hidden=false;onForm("passwordForm",async d=>{const {error}=await client.auth.updateUser({password:String(d.get("password"))});fail(error);message("비밀번호를 변경했습니다. 내 계정에서 계속 이용할 수 있습니다.");});return;}
  await refreshMembership();
- if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config});if(document.body.dataset.workspace==='partner'){const tools=document.createElement('div');$("accountContent").prepend(tools);
-  // 상태 → 지역 → 진행 중 요청 순서. 지도·지금 방문 스위치는 renderExpertSettings 한 곳에서만 다룬다.
+ if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config});if(document.body.dataset.workspace==='partner'){
+  // 상태 → 자료실 → 지역 → 진행 중 요청 순서. 전문가가 매일 쓰는 두 가지(지도·지금 방문 스위치,
+  // 청구지원 자료실)를 화면 맨 위에 둔다. 자료실은 정적 카드라 await 전에 먼저 옮겨야 깜빡이지 않는다.
+  // 지도·지금 방문 스위치는 renderExpertSettings 한 곳에서만 다룬다.
   // renderInstant 는 같은 상태를 중복 조작하므로 이 화면에서 걷어냈다(함수 자체는 보존).
-  await renderExpertSettings(client,tools);await renderServiceArea(client,tools);await renderUrgentWorkspace(client,tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
+  const tools=document.createElement('div'),quick=document.createElement('div');
+  $("accountContent").prepend(tools);$("accountContent").prepend(quick);
+  const resources=$("accountContent").querySelector('[data-expert-resources]');
+  if(resources)quick.after(resources);
+  await renderExpertSettings(client,quick);
+  await renderServiceArea(client,tools);await renderUrgentWorkspace(client,tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
  if(mode==='requests'&&document.body.dataset.workspace==='admin')await renderWaitlistCounts(client,document.getElementById('regionWaitlistHost'));
  if(mode==='requests'&&document.body.dataset.workspace!=='admin')await renderCareCases(client,$('accountContent'),document.body.dataset.workspace);
  if(mode==="payment")await renderPaymentResult(client,message);
