@@ -1,7 +1,8 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {build} from 'esbuild';
 import {chromium,expect} from '@playwright/test';import {readFile,mkdir} from 'node:fs/promises';import path from 'node:path';
 await build({entryPoints:['src/workflow.js'],bundle:true,format:'esm',outfile:'artifacts/booking-workflow-fixture.js'});
-const base='https://audit.fixture.test',browser=await chromium.launch({channel:'msedge',headless:true});await mkdir('artifacts',{recursive:true});
+const base='https://audit.fixture.test',browser=await chromium.launch(PW_LAUNCH);await mkdir('artifacts',{recursive:true});
 const html=`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/public/styles.css"><link rel="stylesheet" href="/public/type-system.css"><main id="accountContent"><form id="requestForm"></form><button id="refreshRequests">새로고침</button><div id="workflowSummary"></div><div id="requestList"></div></main><p id="message"></p><script type="module">
 import {renderWorkflow} from '/artifacts/booking-workflow-fixture.js';
 window.calls=[];window.rows=[{id:'office-request',purpose:'claim',region:'경기 분당',planner_id:'p1',planner_name:'확인 전문가',organization:'확인 소속',allocation_mode:'office',office_id:'office',office_name:'확인 보험소',state:'coordinating',planner_ok:true,method:'scheduled',preferred_at:new Date(Date.now()+86400000).toISOString(),revision:1},{id:'closed-request',purpose:'claim',region:'경기 분당',state:'unmatched',preferred_at:new Date().toISOString(),method:'phone'}];

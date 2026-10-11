@@ -1,3 +1,4 @@
+const PW_LAUNCH=require('./playwright-launch.cjs');
 const {chromium,expect}=require(process.argv[2]||'@playwright/test');const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
 (async()=>{
  const {fixture,ids}=await import('./commerce-fixture.mjs');const f=await fixture();await f.db.exec('reset role;alter table auth.users add column phone text,add column phone_confirmed_at timestamptz;');await f.db.exec(fs.readFileSync('supabase/011_expert_onboarding.sql','utf8'));await f.db.exec(fs.readFileSync('supabase/020_office_allocation.sql','utf8'));await f.db.exec('update private.planner_directory set is_sample=false');const root=path.resolve('public');let browser;let queue=Promise.resolve();const serial=fn=>{const next=queue.then(fn);queue=next.catch(()=>{});return next;};
@@ -13,7 +14,7 @@ const {chromium,expect}=require(process.argv[2]||'@playwright/test');const http=
    await f.login(id);const name=u.pathname.split('/').pop();
    let data;if(u.pathname.includes('/rpc/'))data=await f.rpc(name,Object.values(body));else if(name==='partner_applications'){const rows=(await f.db.query('select * from public.partner_applications')).rows;data=u.searchParams.has('user_id')?rows[0]||null:rows;}else throw Error('Unhandled '+u.pathname);
    await route.fulfill({json:data});
-  }catch(e){await route.fulfill({status:400,json:{message:e.message}});}}));
+  }catch(e){await route.fulfill({status:400,json:{message:e.message,code:e.code}});}}));
   await page.route('**/api/payment',route=>serial(async()=>{try{const body=route.request().postDataJSON(),auth=route.request().headers().authorization.split(' ')[1],id=JSON.parse(Buffer.from(auth.split('.')[1],'base64url').toString()).sub;await f.login(id);let data;
    if(body.action==='checkout'){const order=await f.rpc('ad_checkout',[body.planId,body.slotId,body.requestKey,body.consent]);data={order,clientKey:'test_gck_fixture',successUrl:base+'/payment-result.html',failUrl:base+'/payment-result.html?failed=1',testOnly:true};}
    else if(body.action==='confirm'){const order=await f.rpc('ad_begin_confirm',[body.orderId,body.paymentKey,body.amount]);await f.login('','service_role');await f.rpc('ad_reconcile',[order.id,order.payment_key,order.amount,'DONE','https://dashboard.tosspayments.com/receipt','fixture-'+order.id]);data={status:'DONE'};}else if(body.action==='status'){const o=await f.rpc('ad_user_order',[body.orderId]);data={status:o.state};}else if(body.action==='refund'){const o=await f.rpc('ad_refund_request',[body.orderId,body.reason,body.platformFault]);await f.login('','service_role');await f.rpc('ad_reconcile',[o.id,o.payment_key,o.amount,'CANCELED',null,'fixture-refund']);data={status:'CANCELED'};}else throw Error('unhandled payment');await route.fulfill({json:data});
@@ -22,7 +23,7 @@ const {chromium,expect}=require(process.argv[2]||'@playwright/test');const http=
   await page.goto(base+'/login.html');await page.locator('[name=email]').fill(role+'@example.test');await page.locator('[name=password]').fill('fixture-password-1234');await page.locator('#loginForm button[type=submit],#loginForm button:not([type])').first().click();await page.waitForURL('**/account.html');await expect(page.locator('#membershipState')).toContainText('가입 완료');return page;
  }
  try{
- browser=await chromium.launch({channel:'msedge',headless:true});
+ browser=await chromium.launch(PW_LAUNCH);
  const c=await pageFor('customer',390),p=await pageFor('planner',1280),a=await pageFor('admin',1280);
  for(const width of [390,1440]){await c.setViewportSize({width,height:900});await c.goto(base+'/');await expect(c.locator('.situation-cards a')).toHaveCount(6);await c.screenshot({path:'artifacts/ux-home-'+width+'.png',fullPage:true});if(await c.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))throw Error('home overflow '+width);}
  await c.setViewportSize({width:390,height:900});await c.locator('.situation-cards a').first().click();await expect(c.locator('.spot')).not.toHaveCount(0);

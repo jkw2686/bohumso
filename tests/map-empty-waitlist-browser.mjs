@@ -1,18 +1,16 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 // 빈 지역 화면의 오픈 알림 신청 연결 검증 + 360/390 캡처.
 // 지도 데이터와 openRegionWaitlist 는 가로채고, 운영 신청 데이터를 만들지 않는다.
-// 기본은 msedge. Edge 가 없는 환경은 PLAYWRIGHT_CHANNEL='' + PLAYWRIGHT_EXECUTABLE_PATH 로 실행한다.
 import {chromium} from '@playwright/test';
 import {mkdir} from 'node:fs/promises';
 import path from 'node:path';
 
 const out = 'artifacts/map-empty-waitlist';
 const root = path.resolve('public');
-const channel = process.env.PLAYWRIGHT_CHANNEL ?? 'msedge';
-const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH || undefined;
 let failed = 0;
 const check = (ok, label) => { if (!ok) { failed++; console.log('FAIL ' + label); } else console.log('CHECK ' + label); };
 
-const browser = await chromium.launch({headless: true, ...(channel ? {channel} : {}), ...(executablePath ? {executablePath} : {})});
+const browser = await chromium.launch(PW_LAUNCH);
 await mkdir(out, {recursive: true});
 
 async function openMap(page, {withMember = true} = {}) {

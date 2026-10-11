@@ -1,7 +1,8 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';
 import {readFile,mkdir} from 'node:fs/promises';import path from 'node:path';
 import {setupCare,ids,day} from './appointment-care-fixture.mjs';
-const origin='https://appointment.fixture.test';const f=await setupCare();const browser=await chromium.launch({channel:'msedge',headless:true});
+const origin='https://appointment.fixture.test';const f=await setupCare();const browser=await chromium.launch(PW_LAUNCH);
 let actor=ids.customer;const errors=[],calls=[];
 try{
  const id=await f.booking();await f.act('propose',id,{at:day(3)+'T16:00:00+09:00',place:'전화상담',method:'phone'});

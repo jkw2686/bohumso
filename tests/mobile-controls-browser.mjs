@@ -1,3 +1,4 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';
 import {build} from 'esbuild';
 import {readFile,writeFile} from 'node:fs/promises';
@@ -6,7 +7,7 @@ const bundle=(await build({stdin:{contents:`import {renderEarlyExpertAdmin} from
 window.calls=[];const row={user_id:'fixture',display_name:'시험 전문가',primary_area:'경기 분당',status:'APPROVED',phoneVerified:true,documents:[]};
 const client={rpc:async(name,args)=>{window.calls.push({name,args});if(args?.operation==='approve'&&args.payload.reason==='전화 미확인 시험')return {error:{message:'phone_verification_required'}};if(name==='admin_access_command')return {error:{message:'owner_required'}};return {data:name==='early_expert_review'&&args.operation==='list'?[row]:[]};}};
 document.querySelector('#accountContent').hidden=false;document.querySelector('#accountNotice').textContent='';renderEarlyExpertAdmin({client,host:document.querySelector('#applications'),message:t=>document.querySelector('#accountMessage').textContent=t});`,resolveDir:process.cwd()},bundle:true,format:'esm',write:false})).outputFiles[0].text;
-const browser=await chromium.launch({channel:'msedge',headless:true});const report=[];
+const browser=await chromium.launch(PW_LAUNCH);const report=[];
 try{
  const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',async r=>{const u=new URL(r.request().url());if(u.pathname==='/assets/account.js')return r.fulfill({body:bundle,contentType:'text/javascript; charset=utf-8'});if(u.origin!=='https://fixture.test')return r.abort();try{return r.fulfill({body:await readFile(path.resolve('public','.'+u.pathname)),contentType:u.pathname.endsWith('.woff2')?'font/woff2':u.pathname.endsWith('.css')?'text/css':u.pathname.endsWith('.svg')?'image/svg+xml':'text/html; charset=utf-8'});}catch{return r.fulfill({status:404,body:''});}});

@@ -1,3 +1,4 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';import {readFile,mkdir} from 'node:fs/promises';import path from 'node:path';
 import {setupUrgent} from './urgent-fixture.mjs';
 const f=await setupUrgent(false);await f.db.exec('reset role');
@@ -9,7 +10,7 @@ await f.db.query('insert into auth.users(id,phone) values($1,$2)',[subject,'8210
 const user={id:subject,phone:'821000000000',phone_confirmed_at:new Date().toISOString(),aud:'authenticated'};
 const session={access_token:Buffer.from('{"alg":"HS256"}').toString('base64url')+'.'+Buffer.from(JSON.stringify({sub:subject,exp:Math.floor(Date.now()/1000)+3600})).toString('base64url')+'.fixture',refresh_token:'fixture',expires_in:3600,token_type:'bearer',user};
 let ready=true,queue=Promise.resolve();const serial=fn=>{const p=queue.then(fn);queue=p.catch(()=>{});return p;};
-const browser=await chromium.launch({channel:'msedge',headless:true});await mkdir('artifacts',{recursive:true});
+const browser=await chromium.launch(PW_LAUNCH);await mkdir('artifacts',{recursive:true});
 try{
  const context=await browser.newContext();await context.route('**/*',async route=>{
   const req=route.request(),u=new URL(req.url());
@@ -31,7 +32,7 @@ try{
    }
    if(u.pathname.endsWith('/user'))return route.fulfill({json:user});
    if(u.pathname.endsWith('/office_catalog'))return route.fulfill({json:[]});
-   try{await f.login(subject);return route.fulfill({json:await f.rpc(u.pathname.split('/').pop(),Object.values(body))});}catch(e){return route.fulfill({status:400,json:{message:e.message}});}
+   try{await f.login(subject);return route.fulfill({json:await f.rpc(u.pathname.split('/').pop(),Object.values(body))});}catch(e){return route.fulfill({status:400,json:{message:e.message,code:e.code}});}
   });
  });
  const page=await context.newPage();page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));

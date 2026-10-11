@@ -1,5 +1,6 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';import {readFile} from 'node:fs/promises';import path from 'node:path';
-const browser=await chromium.launch({channel:'msedge',headless:true});try{
+const browser=await chromium.launch(PW_LAUNCH);try{
  const page=await browser.newPage();page.setDefaultTimeout(10000);await page.route('**/*',async route=>{const u=new URL(route.request().url());if(u.origin!=='https://fixture.test')return route.abort();if(u.pathname==='/crop')return route.fulfill({contentType:'text/html',body:'<!doctype html><meta charset="utf-8"><div id="host"></div>'});try{return route.fulfill({body:await readFile(path.resolve('.'+u.pathname)),contentType:'text/javascript'});}catch{return route.fulfill({status:404,body:''});}});await page.goto('https://fixture.test/crop');
  const results=await page.evaluate(async()=>{
   const {prepareDocument}=await import('/src/expert-shared.js'),{createPhotoCrop,prepareProfilePhoto}=await import('/src/profile-photo-crop.js');

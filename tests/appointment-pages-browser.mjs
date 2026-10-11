@@ -1,9 +1,6 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';import {readFile} from 'node:fs/promises';import path from 'node:path';
 import {setupCare,ids} from './appointment-care-fixture.mjs';
-// 기본은 기존과 동일한 msedge. Edge 가 없는 컨테이너·CI 는
-// PLAYWRIGHT_CHANNEL='' + PLAYWRIGHT_EXECUTABLE_PATH 로 다른 Chromium 을 지정한다.
-const PW_CHANNEL=process.env.PLAYWRIGHT_CHANNEL??'msedge',PW_EXEC=process.env.PLAYWRIGHT_EXECUTABLE_PATH||undefined;
-const PW_LAUNCH={headless:true,...(PW_CHANNEL?{channel:PW_CHANNEL}:{}),...(PW_EXEC?{executablePath:PW_EXEC}:{})};
 const f=await setupCare(),browser=await chromium.launch(PW_LAUNCH);const origin='https://pages.fixture.test',auth='https://auth.fixture.test';const errors=[];
 try{
  const id=await f.booking();

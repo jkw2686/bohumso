@@ -1,6 +1,7 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';
 import {readFile} from 'node:fs/promises';import path from 'node:path';
-const b=await chromium.launch({channel:'msedge',headless:true});
+const b=await chromium.launch(PW_LAUNCH);
 try{
  const p=await b.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message));
  await p.addInitScript(()=>{window.waitlistCalls=[];window.openRegionWaitlist=args=>window.waitlistCalls.push(args);});

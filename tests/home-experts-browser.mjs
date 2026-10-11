@@ -1,8 +1,9 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';
 import {readFile,mkdir} from 'node:fs/promises';
 import path from 'node:path';
 
-const browser=await chromium.launch({channel:'msedge',headless:true});
+const browser=await chromium.launch(PW_LAUNCH);
 await mkdir('artifacts',{recursive:true});
 try{
  const page=await browser.newPage(),errors=[];

@@ -1,8 +1,5 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';import {readFile} from 'node:fs/promises';import path from 'node:path';import {setupVisits} from './expert-visits-fixture.mjs';import {ids} from './commerce-fixture.mjs';
-// 기본은 기존과 동일한 msedge. Edge 가 없는 컨테이너·CI 는
-// PLAYWRIGHT_CHANNEL='' + PLAYWRIGHT_EXECUTABLE_PATH 로 다른 Chromium 을 지정한다.
-const PW_CHANNEL=process.env.PLAYWRIGHT_CHANNEL??'msedge',PW_EXEC=process.env.PLAYWRIGHT_EXECUTABLE_PATH||undefined;
-const PW_LAUNCH={headless:true,...(PW_CHANNEL?{channel:PW_CHANNEL}:{}),...(PW_EXEC?{executablePath:PW_EXEC}:{})};
 const f=await setupVisits(),b=await chromium.launch(PW_LAUNCH);let queue=Promise.resolve();const errors=[];
 const serial=fn=>{const next=queue.then(fn);queue=next.catch(()=>{});return next;};
 const harness='<meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/account.css"><link rel="stylesheet" href="/urgent.css"><link rel="stylesheet" href="/type-system.css"><main id="root" class="container"></main><script type="module">import{renderInstant,renderUrgentWorkspace}from"/assets/urgent.js";const client={rpc:async(name,args)=>{const r=await fetch("https://test.supabase.co/rest/v1/rpc/"+name,{method:"POST",body:JSON.stringify(args||{})});const data=await r.json();return r.ok?{data}:{error:data};}};await renderInstant(client,root);await renderUrgentWorkspace(client,root);</script>';

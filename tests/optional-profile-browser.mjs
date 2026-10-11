@@ -1,5 +1,6 @@
+import PW_LAUNCH from './playwright-launch.cjs';
 import {chromium,expect} from '@playwright/test';import {readFile,mkdir,writeFile} from 'node:fs/promises';import path from 'node:path';
-const b=await chromium.launch({channel:'msedge',headless:true}),errors=[];await mkdir('artifacts',{recursive:true});
+const b=await chromium.launch(PW_LAUNCH),errors=[];await mkdir('artifacts',{recursive:true});
 const id='40000000-0000-4000-8000-000000000052';let profile={id,name:'선택한 전문가',organization:'고객과 함께하는 긴 이름의 보험회사 지역상담 사무소',region:'경기 김포시',area_latitude:37.615,area_longitude:126.716,available:true,insurance_types:[],help_tasks:[],offices:[],biography:'',photo_url:''},photoBytes=null,uploaded=0,removed=0;
 try{const page=await b.newPage();page.on('pageerror',e=>errors.push(e.message));
 await page.route('**/*',async route=>{const u=new URL(route.request().url());if(u.pathname==='/api/expert-photo'){

@@ -1,3 +1,4 @@
+const PW_LAUNCH=require('./playwright-launch.cjs');
 const {chromium,expect}=require('@playwright/test');
 const fs=require('node:fs'),http=require('node:http'),path=require('node:path');
 (async()=>{
@@ -14,8 +15,8 @@ const fs=require('node:fs'),http=require('node:http'),path=require('node:path');
  if(u.pathname.endsWith('/token'))return r.fulfill({json:session(u.searchParams.get('grant_type')==='pkce'||body.email?.startsWith('other')?ids.other:body.email?.startsWith('admin')?ids.admin:body.email?.startsWith('planner')?ids.planner:ids.customer)});
  const id=actor(req);if(u.pathname.endsWith('/user'))return r.fulfill(id?{json:session(id).user}:{status:401,json:{message:'not logged in'}});
  await f.login(id,id?'authenticated':'anon');await r.fulfill({json:await f.rpc(u.pathname.split('/').pop(),Object.values(body))});
- }catch(e){await r.fulfill({status:400,json:{message:e.message}});}}));await p.addInitScript(()=>{Object.defineProperty(navigator,'geolocation',{value:{getCurrentPosition:(_,fail)=>fail({code:1})},configurable:true});});return p;}
- try{browser=await chromium.launch({channel:'msedge',headless:true});const p=await page(),next='/map.html?purpose=claim&situation=death';
+ }catch(e){await r.fulfill({status:400,json:{message:e.message,code:e.code}});}}));await p.addInitScript(()=>{Object.defineProperty(navigator,'geolocation',{value:{getCurrentPosition:(_,fail)=>fail({code:1})},configurable:true});});return p;}
+ try{browser=await chromium.launch(PW_LAUNCH);const p=await page(),next='/map.html?purpose=claim&situation=death';
  await p.goto(base+'/signup.html?next='+encodeURIComponent(next));await expect(p.getByRole('button',{name:'Google로 계속하기',exact:true})).toBeVisible();await expect(p.getByRole('link',{name:'이메일로 로그인',exact:true})).toBeVisible();await expect(p.getByRole('button',{name:'카카오 로그인 · 준비중'})).toBeDisabled();
  for(const width of [320,390,1440]){await p.setViewportSize({width,height:844});expect(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);await p.screenshot({path:'artifacts/beta-signup-'+width+'.png',fullPage:true});}
  await p.getByLabel('초대코드',{exact:true}).fill('f'.repeat(64));await p.getByRole('button',{name:'초대코드로 베타 가입'}).click();await expect(p.locator('[role=alert]').filter({hasText:'초대 링크를 사용할 수 없습니다.'})).toBeVisible();await expect(p.locator('#inviteSignup')).toBeHidden();
