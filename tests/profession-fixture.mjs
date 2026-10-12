@@ -5,6 +5,11 @@ export async function setupProfessions(){
  const f=await setupCare();await f.db.exec('reset role');
  await f.db.exec('create table private.phone_contacts(user_id uuid primary key,phone_e164 text,phone_verification_status text,phone_verified_at timestamptz)');
  for(const file of ['043_auth_phone_status_bridge.sql','051_phone_signup.sql','056_booking_hardening.sql'])await f.db.exec(await readFile('supabase/'+file,'utf8'));
+ if(process.env.PROFESSION_BASELINE_FUNCTIONS){
+  const baseline=JSON.parse(await readFile(process.env.PROFESSION_BASELINE_FUNCTIONS,'utf8'));
+  // Owner-specific wrappers are checked separately; this fixture has no real owner identity.
+  for(const row of baseline)if(!['early_expert_review(text,jsonb)','private.planner_eligible(uuid)'].includes(row.name))await f.db.exec(row.definition);
+ }
  await f.login(ids.customer);f.previous=await f.cmd('request',{planner_id:ids.next,purpose:'claim',region:'경기 분당',method:'phone',preferred_at:day(2)+'T18:00:00+09:00',request_key:crypto.randomUUID()});
  await f.db.exec('reset role');f.previousRow=(await f.db.query('select to_jsonb(c) value from private.consultations c where id=$1',[f.previous.id])).rows[0].value;
  for(const file of ['066_profession_registration.sql','066_profession_registration.sql']){

@@ -1,6 +1,6 @@
 # 직군별 가입 연결 — 개발 검수
 
-2026-10-12 · 개발 브랜치 codex/profession-registration. 운영 DB 및 공개 배포 미적용.
+2026-10-12 · codex/profession-registration. 사용자 승인 후 066 운영 DB 적용 완료, 공개 배포 진행 중. 아래 초기 개발 검수 기록과 마지막 운영 적용 기록을 구분한다.
 기준 코드 23b885b, 기존 별도 전체 메뉴와 회색·흰색·파란색 토큰을 유지했다.
 
 ## 범위와 구현
@@ -99,3 +99,13 @@
 [세무사 입력 390px](profession-registration-screens/tax-info-390.png) · [보험소 운영자 입력 390px](profession-registration-screens/office-info-390.png) · [지도 직군 선택 390px](profession-registration-screens/map-tax-390.png) · [PC 입력](profession-registration-screens/tax-info-1440.png)
 
 사진은 격리 검수 데이터이며 운영 가입자가 아니다. 실제 지도 배경 요청은 차단한 캡처다.
+
+## 2026-10-12 운영 적용
+
+- 사용자 직접 승인: “066 DB 적용 후 배포 승인”.
+- Supabase xyexphhspykwwlhfokfl: 변경 전 비공개 백업(대상 함수26개, 전체 함수128개·컬럼569개·제약·권한·기존 회원1건), 이후 066 전체 BEGIN/COMMIT 실행.
+- 기존 회원3건·전문가 프로필2건·예약0건의 내용 지문 일치, 동의8건 유지. 기존 컬럼 삭제/타입 변경0, 기존 정책 동일. 새 비공개5테이블 RLS/직접 권한 차단, expert-documents 비공개 및 service_role 자료 경로 확인.
+- 운영 함수와 격리 기준 사이 차이를 확인했다. 예약/확인연락처 등 운영 함수24개를 격리 DB에 재현한 추가 통합 검사 통과. 대표자 전용2개 함수는 실계정 데이터를 재현하지 않고 기존 함수 위임과 원문 보존을 확인했다.
+- `PROFESSION_BASELINE_FUNCTIONS=artifacts/profession-production/functions-before.json`으로 추가 격리 검사 재실행 가능. 백업은 Git 비포함 artifacts 및 private.profession_release_backup / private.profession_release_snapshot에 보관.
+- 원복 SQL은 supabase/rollback_profession_registration.sql. 실제 회원 가입·SMS·파일 업로드·실예약은 운영에서 시험하지 않았다.
+- 공개 배포 결과와 실제 화면 검증은 이어서 기록한다.
