@@ -626,3 +626,5 @@
 - docs/profession-registration-20261012.md와 docs/profession-registration-screens 참고. 운영 OAuth·SMS·Storage 바이너리·실단말 키보드는 미확인. 보관기간 집행과 법률 검토도 별도 운영 확인 필요.
 - 066 운영 DB 적용 및 배포 승인 질문 제시. 답변 전 운영 실행하지 않는다. 과거 057/060/061 승인과 혼동하지 않는다.
 - 별도 작업본 062~065 및 Claude 변경 병합 안 함. 작업 종료 시 로컬/원격 저장 상태는 HANDOFF_CODEX.md 확인.
+
+- 개발 저장 완료: 구현 커밋 5e0da47, origin/codex/profession-registration 전송 완료. main/운영 DB/배포 변경 없음.

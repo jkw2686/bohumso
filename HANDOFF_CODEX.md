@@ -3,6 +3,7 @@
 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 읽고 최신 직접 사용자 지시를 우선한다.
 
 ## 현재 상태
+- 구현 커밋 5e0da47, origin/codex/profession-registration 전송 완료. 문서 후속 커밋도 같은 개발 브랜치에 저장한다.
 - 브랜치 codex/profession-registration. 기준 로컬0ece098/배포 코드23b885b. 변경은 개발 검수 단계이며 운영 DB/배포 미적용.
 - 최신 사용자 요청: 보험설계사/세무사/보험소 운영자 가입 첫 단계 및 기존 기능 연결. 기존 메뉴/홈/UI 유지. 새 직군 플랫폼 요금·과금·외부 발송 금지.
 - 구현: shared/professions.json 공통 정의, 공개 가입 next 직군 전달, 기존 partner 화면 5단계, 자료/관리자 심사/선택 프로필/지도 유형/세무 상담료/예약 연결. 세무·거점 자료는 별도 비공개 저장. 기존 개인 계정+거점 운영 분리.
