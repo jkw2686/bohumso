@@ -628,3 +628,11 @@
 - 별도 작업본 062~065 및 Claude 변경 병합 안 함. 작업 종료 시 로컬/원격 저장 상태는 HANDOFF_CODEX.md 확인.
 
 - 개발 저장 완료: 구현 커밋 5e0da47, origin/codex/profession-registration 전송 완료. main/운영 DB/배포 변경 없음.
+
+## 2026-10-12 17:01 — 직군별 가입 066 승인 적용·배포 완료
+- 사용자 “066 DB 적용 후 배포 승인” 수신. 대상26함수·전체128함수/569컬럼/정책/회원1건 비공개 사전 백업 후 Supabase066 단일 transaction 적용. 기존 데이터 지문 보존 확인. 컬럼 삭제/타입 변경0, 새5테이블 RLS·직접권한 차단 및 Storage 비공개 확인.
+- main/codex/profession-registration 코드 fb970b4. Netlify6acc93b70f2a87c5160f7e22, 17:01:15 KST ready/published. https://bohumso.netlify.app/ 및 고정 버전 링크는 상세 보고서 참조. 기존 운영 함수24개를 사용한 추가 격리 검사 통과. 대표 전용2함수는 실제 신원 재현 대신 원문 보존·위임 확인.
+- 실제 공개 화면: 세 직군 선택/next 유지, 세무 전용·거점 입력, 360/390/430/1440px, 기존 전문가2명 지도·상담 연결, 09~17시 정각 슬롯, 약관 버전, 홈 문구 확인. 운영 파일 해시 일치 및 자료 익명 조회401. 일정 변경 UI의 예전30분 안내를 1시간으로 보완하고 빌드 재검증.
+- 운영 시험 가입·심사·문서 업로드·예약·외부 발송·과금 없음. 이들 쓰기 검사는 격리 결과. 실단말/실제 OAuth·SMS·보관기간 집행/유료 노출 법률 검토 미확인.
+- 원복 supabase/rollback_profession_registration.sql + 이전 프런트23b885b, 추가 데이터 보존. 비공개 백업 artifacts/profession-production 및 private.profession_release_backup/snapshot.
+- 보고서 docs/profession-registration-20261012.md. 별도062~065·Claude 작업 병합/변경 안 함. 다음은 미확인 운영 절차/실단말 검사, 별도 로드맵 승인 범위 구분.
