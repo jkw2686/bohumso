@@ -4,7 +4,7 @@ PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽는다. �
 
 ## 상태와 범위
 
-- 개발 브랜치 codex/expert-integration, 기준 7acb6b7. 이 문서와 구현·검수를 함께 저장한다.
+- 개발 브랜치 codex/expert-integration, 기준 7acb6b7. 구현·검수·화면 커밋 8e556d8 전송 완료: https://github.com/jkw2686/bohumso/commit/8e556d8 . 이 문서 보완은 별도 문서 커밋이다.
 - 이전 UI 정리 0bb7a1a / 7acb6b7 유지. main 병합·운영 DB·배포·설정·외부 발송·비용 집행 없음.
 - 최신 첨부 4e00c207의 후속 통합만 적용. 이전 운영 승인을 새 배포 승인으로 해석하지 않는다.
 - 정적 HTML/CSS/JS + esbuild, Supabase RPC, 기존 문서/사진 처리 재사용. 새 패키지 없음.

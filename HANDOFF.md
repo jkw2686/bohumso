@@ -1,6 +1,7 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
 ## 2026-10-12 — 전문가 통합 후속 (개발 검수, 운영 미적용)
+- 구현·검수·화면 커밋 8e556d8을 origin/codex/expert-integration에 전송했다. 배포 건너뛰기 표시를 사용했으며 main은 변경하지 않았다.
 - 최신 첨부 4e00c207 지시 반영. 기존 UI 유지, 홈 문장 교체, 설계사 원칙·버전 동의, 세무사 가입·등록자료·심사·선택 프로필, 지도 구분·선택 전문가/장소·60분 요청·비용 확인을 연결했다.
 - 깨끗한 codex/mobile-ui-polish 7acb6b7에서 codex/expert-integration 분리. 기존 UI 개발 0bb7a1a/7acb6b7 포함, main 병합 없음. 다른 dirty 작업본/058 계열은 가져오지 않았다.
 - 062~064와 원복은 개발 후보, 새 설정 기본 OFF. 기존 예약 18시 시작과 새 통합 09~17시 시작을 구분한다. 세무사가 기존 즉시 방문 API로 시간·비용 확인을 우회하지 못하도록 제한했다.
