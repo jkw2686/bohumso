@@ -14,16 +14,16 @@ try{
   if(url.pathname.startsWith('/assets/')||url.pathname==='/location.js')return route.fulfill({body:url.pathname==='/location.js'?'window.startBohumsoLocation=()=>{};':'',contentType:'text/javascript'});
   try{return route.fulfill({body:await readFile(path.resolve('public','.'+url.pathname)),contentType:url.pathname.endsWith('.css')?'text/css':url.pathname.endsWith('.js')?'text/javascript':url.pathname.endsWith('.woff2')?'font/woff2':url.pathname.endsWith('.svg')?'image/svg+xml':'text/html; charset=utf-8'});}catch{return route.fulfill({status:404,body:''});}
  });
- async function providers({officeError=false,catalogError=false}={}){
-  await page.evaluate(({officeError,catalogError})=>{
+ async function providers({officeError=false,catalogError=false,tax=false}={}){
+  await page.evaluate(({officeError,catalogError,tax})=>{
    window.bohumsoOffices=async()=>{if(officeError)throw new Error('Unavailable');return [{id:'office',name:'공개 보험소',region:'경기 김포시',status:'active',latitude:37.615,longitude:126.716}];};
    window.bohumsoCatalog=async()=>{if(catalogError)throw new Error('Unavailable');return {planners:[
-    {id:'expert',name:'김포 전문가',region:'경기 김포시',organization:'공개 소속',area_latitude:37.615,area_longitude:126.716,availability_status:'scheduled'},
+    {id:'expert',name:'김포 전문가',region:'경기 김포시',organization:'공개 소속',area_latitude:37.615,area_longitude:126.716,availability_status:'scheduled',available:true,profession:tax?'tax':'planner',consultation_options:tax?{modes:['expert_office'],fee:{status:'check'},revision:1}:null},
     {id:'no-point',name:'지역 전문가',region:'경기 하남시',area_latitude:null,area_longitude:null},
     {id:'excluded',name:'예시 전문가',region:'경기 김포시',area_latitude:37.615,area_longitude:126.716,is_sample:true}
    ]};};
    window.dispatchEvent(new Event('bohumso-member-ready'));window.dispatchEvent(new Event('bohumso-member-ready'));
-  },{officeError,catalogError});
+  },{officeError,catalogError,tax});
  }
  for(const width of [320,360,390,1440]){
   await page.setViewportSize({width,height:844});await page.goto('https://fixture.test/index.html');
@@ -64,5 +64,12 @@ try{
  await expect(page.locator('.spot-cluster')).toHaveText('2');
  await page.locator('.spot-cluster').click();
  await expect(page.locator('[title="공개 보험소 · 운영 중"]')).toHaveCount(1);await expect(page.locator('#homeExperts')).toBeHidden();
- expect(errors).toEqual([]);console.log('PASS independent catalog failures, late service readiness, no duplicate pins. No live data changed.');
+ await page.setViewportSize({width:390,height:844});await page.goto('https://fixture.test/index.html');await providers({tax:true});
+ await page.getByRole('button',{name:'김포 전문가 · 경기 김포시 활동지역 보기',exact:true}).press('Enter');
+ await expect(page.locator('#homeMap .expert-marker-kind')).toHaveText('세무사');
+ await expect(page.locator('#homeMap .leaflet-popup')).toContainText('세무 상담료 · 사전 확인 필요');
+ await page.locator('#homeMap .leaflet-popup').getByRole('link',{name:'프로필 보기',exact:true}).click();
+ await expect(page.getByRole('dialog')).toContainText('세무사');
+ await expect(page.getByRole('dialog').getByRole('link',{name:'상담 요청',exact:true})).toHaveAttribute('href',/integration=1/);
+ expect(errors).toEqual([]);console.log('PASS independent catalog failures, late service readiness, no duplicate pins, tax identity and request context. No live data changed.');
 }finally{await browser.close();}

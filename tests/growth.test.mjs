@@ -28,7 +28,7 @@ test('private task and reviewed content lifecycle with real isolated SQL',async 
    await f.publish(first.id);row=(await f.cmd('admin_list'))[0];assert.equal(row.published_revision,2);
    await f.owner('insert into private.admin_memberships(user_id) values($1)',[ids.other]);await f.login(ids.other);await assert.rejects(f.write('admin_approve',{id:first.id,revision:2}),/owner_required/);
    await f.login(ids.admin);await f.write('admin_save',{id:first.id,revision:2,content:{...row.draft,practice:'수정된 실천 제안'}});row=(await f.cmd('admin_list'))[0];assert.equal(row.review_state,'review');assert.equal(row.approved_revision,null);assert.equal(row.draft.checked_date,dayKST());
-   await f.login(ids.planner);assert.equal((await f.cmd('content',{id:first.id})).practice,'오늘 고객에게 약속한 안내 확인하기');
+   await f.login(ids.planner);assert.equal((await f.cmd('content',{id:first.id})).practice,'상담 마무리 확인사항 정리하기');
   });
   let task;
   await t.test('save, retry dedupe, explicit duplicate, edit, complete/undo and owner isolation',async()=>{

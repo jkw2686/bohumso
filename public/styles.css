@@ -961,6 +961,8 @@ dialog.waitlist-overlay{margin:0;padding:var(--space-4);border:0;width:100%;heig
 .expert-profile p.expert-introduction{white-space:pre-wrap;font-size:var(--type-body);overflow-wrap:anywhere;word-break:normal}
 .expert-introduction.is-summary{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .expert-avatar img{display:block;max-width:none;max-height:none;object-fit:cover;z-index:auto}
+.expert-marker-kind{display:block;text-align:center;background:var(--card);color:var(--text);border-radius:var(--radius);font-size:var(--type-small);font-weight:600;white-space:nowrap}
+.expert-fee{color:var(--text);overflow-wrap:anywhere;word-break:keep-all;font-weight:500}
 .expert-map-marker{background:none;border:0;box-shadow:none}
 .expert-map-marker .expert-avatar{border-radius:50%;box-sizing:border-box;border:2px solid var(--card);outline:2px solid var(--brand-dark);box-shadow:var(--shadow)}
 .expert-map-marker.is-selected .expert-avatar,.expert-map-marker:focus-visible .expert-avatar{outline:var(--focus-width) solid var(--brand);outline-offset:var(--focus-width)}

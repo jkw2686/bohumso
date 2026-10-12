@@ -1,0 +1,19 @@
+{
+  "checks": [
+    "planner-principles mobile/PC",
+    "prohibition contrast 5.97:1, bold sanctions",
+    "new planner consent required and saved",
+    "tax signup / specific evidence / reload",
+    "tax rejected/resubmission state after reload",
+    "tax-profile mobile/PC",
+    "tax optional profile and fee failure retained/saved",
+    "tax-map mobile/PC",
+    "tax-request mobile/PC",
+    "map person/details/context/fee/time/request remains unconfirmed",
+    "first-content-admin mobile/PC",
+    "first-content-reader mobile/PC",
+    "first content preview/save/approve/publish/read/practice/unpublish"
+  ],
+  "errors": [],
+  "docCalls": 0
+}

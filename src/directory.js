@@ -19,11 +19,12 @@ export async function renderDirectory(client){
    el('p',(p.specialties||[]).map(s=>specialties[s]||s).join(' · '),card);
    if(Number.isFinite(p.completed_count)&&p.completed_count>0)el('p','완료 상담 '+p.completed_count+'건',card);
    el('p',(p.is_sample?'샘플 상태 · ': '')+availabilityLabels[availabilityOf(p)],card).className='availability-status '+availabilityClass(availabilityOf(p));el('p','전문가가 설정한 상태입니다. 실제 통화·만남은 응답 후 확정됩니다.',card);el('p',p.hours||'상담가능 시간 확인 필요',card);el('p',p.rating?('평점 '+p.rating+' / 5 · 공개 후기 '+(p.reviews||[]).length+'건'):'아직 공개 후기가 없어요',card);for(const r of p.reviews||[]){el('blockquote',r.rating+'점 · '+r.body,card);}
-   for(const [method,label]of [['phone','전화상담 요청'],['scheduled','상담 예약']]){
+   if(p.consultation_options?.modes?.length||p.profession==='tax')window.BohumsoProfile.requestActions(card,p,{purpose:purpose.value,situation:params.get('situation')});
+   else {for(const [method,label]of [['phone','전화상담 요청'],['scheduled','상담 예약']]){
     const a=link(card,label,'/requests.html?planner='+encodeURIComponent(p.id)+'&purpose='+encodeURIComponent(purpose.value||'')+'&method='+method+'&region='+encodeURIComponent(p.region)+(params.get('situation')?'&situation='+encodeURIComponent(params.get('situation')):''));a.className='btn ghost';
     if(!client||p.is_sample||p.id.startsWith('sample-')||!p.available){a.removeAttribute('href');a.setAttribute('aria-disabled','true');a.textContent=label+(!p.available?' · 현재 요청 중지':' · 샘플');}
    }
-   const visit=link(card,'이 전문가의 방문 가능 여부','/urgent.html?'+new URLSearchParams({planner:p.id,region:p.region,purpose:purpose.value||'claim',situation:params.get('situation')||''}));visit.className='btn ghost';
+   const visit=link(card,'이 전문가의 방문 가능 여부','/urgent.html?'+new URLSearchParams({planner:p.id,region:p.region,purpose:purpose.value||'claim',situation:params.get('situation')||''}));visit.className='btn ghost';}
    if(p.is_sample&&client&&!p.id.startsWith('sample-'))el('p','테스트 계정의 가상 예약만 가능합니다.',card);
   }
   if(window.L){

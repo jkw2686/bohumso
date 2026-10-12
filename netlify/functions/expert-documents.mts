@@ -19,7 +19,7 @@ export default async(request:Request)=>{
    const reader=request.body?.getReader();if(!reader)throw Error('invalid_document');let length=0;const chunks:ArrayBuffer[]=[];
    while(true){const r=await reader.read();if(r.done)break;length+=r.value.byteLength;if(length>DOCUMENT_LIMIT+65536){await reader.cancel();return reply({error:'file_too_large'},413);}chunks.push(new Uint8Array(r.value).buffer);}
    const form=await new Response(new Blob(chunks),{headers:{'Content-Type':contentType}}).formData();
-   const file=form.get('file'),kind=String(form.get('kind')),profession=String(form.get('profession'));if(!(file instanceof File)||!(early?['registration','appointment']:['identity','qualification']).includes(kind)||!['planner','adjuster','lawyer'].includes(profession)||form.get('consent')!=='true'||form.get('redacted')!=='true')throw Error('invalid_document');
+   const file=form.get('file'),kind=String(form.get('kind')),profession=String(form.get('profession'));if(!(file instanceof File)||!(early?['registration','appointment']:['identity','qualification']).includes(kind)||!(early?['planner','adjuster','lawyer','tax']:['planner','adjuster','lawyer']).includes(profession)||form.get('consent')!=='true'||form.get('redacted')!=='true')throw Error('invalid_document');
    const bytes=new Uint8Array(await file.arrayBuffer()),mime=documentType(bytes);if(bytes.byteLength>4*1024*1024)return reply({error:'file_too_large'},413);if(file.type!==mime)throw Error('invalid_document');
    const objectPath=subject+'/'+crypto.randomUUID()+({ 'image/jpeg':'.jpg','image/png':'.png','application/pdf':'.pdf'}[mime]);
    const upload=await store.upload(objectPath,bytes,{contentType:mime,upsert:false});if(upload.error)throw Error('storage_unavailable');

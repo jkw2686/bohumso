@@ -29,8 +29,8 @@ export async function renderOptionalProfile(client,parent){
  const remove=el('button','사진 삭제',photoActions);remove.type='button';remove.className='btn ghost';
  const cropHost=el('div',undefined,photoSection);
  function choices(title,name,values,selected){const set=el('fieldset',undefined,fields);el('legend',title,set);for(const [key,label]of Object.entries(values)){if(key==='office_consultation'&&!p.offices?.some(o=>o.available===true))continue;const c=input(set,label,name,'checkbox');c.value=key;c.checked=(selected||[]).includes(key);}}
- choices('보험 취급 구분 (선택)','insurance_types',ui.types,p.insurance_types);el('p','직접 선택한 정보이며 자격 인증 표시가 아닙니다.',fields).className='profile-editor-hint';
- choices('도움 가능한 업무 (선택 · 최대 3개)','help_tasks',ui.tasks,p.help_tasks);
+ if(p.profession!=='tax'){choices('보험 취급 구분 (선택)','insurance_types',ui.types,p.insurance_types);el('p','직접 선택한 정보이며 자격 인증 표시가 아닙니다.',fields).className='profile-editor-hint';}
+ choices('도움 가능한 업무 (선택 · 최대 3개)','help_tasks',p.profession==='tax'?ui.taxTasks:ui.tasks,p.help_tasks);
  const introLabel=el('label','소개 인사말 (선택 · 40자)',fields),intro=el('textarea',undefined,introLabel);intro.name='biography';intro.rows=3;intro.value=p.biography||'';introInitial=intro.value;
  const counter=el('p','',fields);counter.className='profile-editor-hint';counter.id='profileIntroCount';intro.setAttribute('aria-describedby',counter.id);
  const legacy=el('p','',fields);legacy.className='profile-editor-hint';legacy.hidden=Array.from(p.biography||'').length<=40;

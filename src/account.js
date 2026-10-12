@@ -1,3 +1,4 @@
+import {renderConsultationOptions} from './consultation-options.js';
 import {arrangeExpertHome} from './expert-home.js';
 import {mountGrowthAdmin} from './growth-admin.js';
 import {renderWaitlistCounts} from './region-waitlist.js';
@@ -101,10 +102,11 @@ async function start(){
   // ① 지금 방문 상담 카드를 신청 정보 카드보다 위에 둔다. partner-work 와 같은 renderInstant 를
   //    그대로 쓴다(새로 만들지 않는다). 승인 전에는 카드 대신 안내 한 줄만 보여준다.
   const top=document.createElement('div');$("accountContent").prepend(top);
-  if(applicationStatus==='approved')await renderInstant(client,top);
-  else{const note=document.createElement('p');note.className='card';note.textContent='승인 후 지금 방문 상담을 켤 수 있어요';top.append(note);}
+  if(applicationStatus==='approved'&&membership.profession!=='tax')await renderInstant(client,top);
+  else if(applicationStatus!=='approved'){const note=document.createElement('p');note.className='card';note.textContent='승인 후 상담 요청을 받을 수 있어요';top.append(note);}
   if(membership.partner_status)await renderServiceArea(client,$("accountContent"));
-  if(membership.profession==="planner"&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));
+  if(["planner","tax"].includes(membership.profession)&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));
+  if(applicationStatus==='approved')await renderConsultationOptions(client,$("accountContent"));
   // 기존 입력과 메뉴를 전문가 홈 순서로 배치한다.
   const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink)$("accountContent").append(workLink);arrangeExpertHome($("accountContent"),{summary:expertSummary,status:applicationStatus});}
  if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}

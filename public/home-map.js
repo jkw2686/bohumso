@@ -86,7 +86,7 @@
     if(expertLoading||!window.bohumsoCatalog)return;expertLoading=true;
     try{
       var catalog=await window.bohumsoCatalog('','');
-      experts=(catalog.planners||[]).filter(function(p){return !p.is_sample;}).map(function(p){return {id:p.id,name:p.name,region:p.region,organization:p.organization,photo_url:p.photo_url,biography:p.biography,insurance_types:p.insurance_types,help_tasks:p.help_tasks,offices:p.offices,available:!!p.available,newRequestsRestricted:!!p.newRequestsRestricted,latitude:p.area_latitude,longitude:p.area_longitude,expert:true};});
+      experts=(catalog.planners||[]).filter(function(p){return !p.is_sample;}).map(function(p){return {id:p.id,name:p.name,region:p.region,organization:p.organization,photo_url:p.photo_url,biography:p.biography,insurance_types:p.insurance_types,help_tasks:p.help_tasks,profession:p.profession,consultation_options:p.consultation_options,offices:p.offices,available:!!p.available,newRequestsRestricted:!!p.newRequestsRestricted,latitude:p.area_latitude,longitude:p.area_longitude,expert:true};});
       var openId;expertMarkers.forEach(function(marker,id){if(marker.isPopupOpen())openId=id;});drawMarkers();renderExperts();if(openId)expertMarkers.get(openId)?.openPopup();window.BohumsoProfile.refreshDetail(experts);
     }catch{}finally{expertLoading=false;}
   }

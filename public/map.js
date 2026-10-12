@@ -20,7 +20,7 @@
   var PLANNED = (window.COVERAGE_AREAS || []).map(function(o,i){return {id:'planned-'+i,name:officeName(o.name),job:'오픈 예정 보험소',specialty:'지역 상담 거점',region:o.region+' '+o.name,lat:o.lat,lng:o.lng,rating:0,planned:true};});
   var AVAIL = { now: '지금 상담 가능', today: '오늘 상담 가능', scheduled: '예약 상담', unavailable: '상담 요청 중지' };
   // 전문분야 코드→한글 (consultation-ui.js와 동일)
-  var SPECIALTY = { death: '사망보험금', illness: '암·질병', medical: '실손보험', claim: '보험금 청구', accident: '자동차·상해', life: '생명보험', nonlife: '손해보험', corporate: '법인보험', remodel: '보험 리모델링', management: '기존 보험 관리', coverage: '보장 점검', new: '신규 가입', other: '기타 문의' };
+  var SPECIALTY = { tax_consultation:'세무 상담',inheritance_tax:'상속·증여 세무 상담',business_tax:'사업 관련 세무 상담', death: '사망보험금', illness: '암·질병', medical: '실손보험', claim: '보험금 청구', accident: '자동차·상해', life: '생명보험', nonlife: '손해보험', corporate: '법인보험', remodel: '보험 리모델링', management: '기존 보험 관리', coverage: '보장 점검', new: '신규 가입', other: '기타 문의' };
   // 지도 방식 → 기존 요청 흐름의 method 값 매핑(전화 통화 / 바로 만나기 / 시간 예약)
   var WAY_METHOD = { visit_office: 'scheduled', request_visit: 'nearby', call: 'phone', message: 'phone' };
 
@@ -50,7 +50,7 @@
 
   function pinIcon(me,office,planned,profile) {
     if(office)return L.divIcon({html:'<span class="planned-pin'+(planned?' is-planned':'')+'">'+(window.uiIcon?.('home')||'')+'</span>',className:'',iconSize:[32,32],iconAnchor:[16,16]});
-    if(!me)return window.BohumsoProfile.markerIcon({photo_url:profile?.photo});
+    if(!me)return window.BohumsoProfile.markerIcon({photo_url:profile?.photo,profession:profile?.profession});
     // 색은 토큰으로. presentation attribute(fill=)는 var()를 못 받으므로 style로 지정한다.
     var color = me ? 'var(--accent)' : 'var(--brand)';
     var html = '<svg class="' + (me ? 'pin-me' : 'pin-marker') + '" width="34" height="42" viewBox="0 0 34 42" xmlns="http://www.w3.org/2000/svg">' +
@@ -263,7 +263,7 @@
   function openCard(s,preserveView) {
     if(!s.planned&&!s.office)window.bohumsoTrack?.('expert_viewed');
     current = s;spotMarkers.forEach(function(m){m.getElement()?.classList.toggle('is-selected',m===s._marker);m.setZIndexOffset(m===s._marker?900:0);});var context=new URLSearchParams(location.search);if(!s.planned&&!s.office)context.set('planner',s.id);else context.delete('planner');history.replaceState(history.state,'',location.pathname+'?'+context);
-    window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned&&!s.office,purpose:PURPOSE,situation:SITUATION,newRequestsRestricted:s.newRequestsRestricted,available:s.available,organization:s.job,specialty:s.specialty,photo_url:s.photo,biography:s.biography,insurance_types:s.insurance_types,help_tasks:s.help_tasks,offices:s.offices});
+    window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned&&!s.office,purpose:PURPOSE,situation:SITUATION,newRequestsRestricted:s.newRequestsRestricted,available:s.available,organization:s.job,specialty:s.specialty,photo_url:s.photo,profession:s.profession,consultation_options:s.consultation_options,biography:s.biography,insurance_types:s.insurance_types,help_tasks:s.help_tasks,offices:s.offices});
     $('cardSheet').classList.toggle('expert-card-sheet',!s.planned&&!s.office);if(!preserveView)showCard();
   }
   function showCard(){
@@ -331,7 +331,7 @@
           lat: Number.isFinite(p.area_latitude) ? p.area_latitude : null, lng: Number.isFinite(p.area_longitude) ? p.area_longitude : null,
           rating: p.rating || 0, pledge: !!p.verified,
           hours: p.hours || '', completed: p.completed_count || 0, reviews: Array.isArray(p.reviews) ? p.reviews.length : 0,
-          biography:p.biography,insurance_types:p.insurance_types,help_tasks:p.help_tasks,offices:p.offices,newRequestsRestricted:!!p.newRequestsRestricted,available: !!p.available, photo: p.photo_url || '', availability: !p.available?'unavailable':p.availability_status || 'scheduled'
+          profession:p.profession,consultation_options:p.consultation_options,biography:p.biography,insurance_types:p.insurance_types,help_tasks:p.help_tasks,offices:p.offices,newRequestsRestricted:!!p.newRequestsRestricted,available: !!p.available, photo: p.photo_url || '', availability: !p.available?'unavailable':p.availability_status || 'scheduled'
         };
       });
       if(window.bohumsoOffices){const offices=await window.bohumsoOffices();const active=offices.filter(o=>o.status==='active'&&Number.isFinite(o.latitude)&&Number.isFinite(o.longitude));PLANNED=PLANNED.filter(p=>!active.some(o=>o.region===p.region));spots=spots.concat(active.filter(o=>!area||o.region.indexOf(area)===0).map(o=>({id:o.id,name:o.name,region:o.region,job:'보험소',specialty:o.address,lat:o.latitude,lng:o.longitude,rating:0,planned:false,office:true})));}

@@ -1,0 +1,67 @@
+import {chromium,expect} from '@playwright/test';
+import {readFile,mkdir,writeFile} from 'node:fs/promises';
+import path from 'node:path';
+import launch from './playwright-launch.cjs';
+import {setupIntegration,ids,taxId,day} from './expert-integration-fixture.mjs';
+const f=await setupIntegration();await f.approvedTax();
+const newTaxId='20000000-0000-4000-8000-000000000004';
+await f.owner("insert into auth.users(id,email_confirmed_at,phone_confirmed_at,phone) values($1,now(),now(),'+821000000004')",[newTaxId]);await f.login(newTaxId);await f.rpc('complete_membership',[true,true,true,false]);
+const browser=await chromium.launch(launch),origin='https://integration.fixture.test',auth='https://auth.fixture.test';
+const checks=[],errors=[];let queue=Promise.resolve(),fail='',docCalls=0;
+const serial=fn=>{const p=queue.then(fn);queue=p.catch(()=>{});return p;};
+await mkdir('artifacts/expert-integration',{recursive:true});
+async function open(uid){
+ const ctx=await browser.newContext({viewport:{width:390,height:844}}),user={id:uid,email:'fixture@example.test',aud:'authenticated',phone_confirmed_at:new Date().toISOString(),phone:'+82100000000'+(uid===taxId?'3':uid===newTaxId?'4':'1')},exp=Math.floor(Date.now()/1000)+3600;
+ const session={user,access_token:Buffer.from('{"alg":"HS256"}').toString('base64url')+'.'+Buffer.from(JSON.stringify({sub:uid,exp})).toString('base64url')+'.fixture',refresh_token:'fixture',expires_at:exp,expires_in:3600};
+ await ctx.addInitScript(s=>localStorage.setItem('woori-account',JSON.stringify(s)),session);
+ await ctx.route('**/*',async route=>{
+  const u=new URL(route.request().url());
+  if(u.origin===origin){
+   if(u.pathname==='/api/config')return route.fulfill({json:{enabled:true,earlyAccess:true,expertApplicationsEnabled:true,signupEnabled:true,documentsEnabled:true,paymentsEnabled:false,url:auth,key:'fixture'}});
+   if(u.pathname==='/api/expert-documents'){docCalls++;return route.fulfill({status:503,json:{error:'fixture_unavailable'}});}
+   try{const file=path.resolve('public','.'+(u.pathname==='/'?'/index.html':u.pathname)),body=await readFile(file);return route.fulfill({body,contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.svg')?'image/svg+xml':file.endsWith('.png')?'image/png':file.endsWith('.woff2')?'font/woff2':'text/html; charset=utf-8'});}catch{return route.fulfill({status:404,body:''});}
+  }
+  if(u.origin!==auth)return route.abort();
+  if(u.pathname.endsWith('/user'))return route.fulfill({json:user});
+  if(u.pathname.endsWith('/token'))return route.fulfill({json:session});
+  const name=u.pathname.split('/').pop(),args=route.request().postDataJSON()||{};
+  if(fail===name){fail='';return route.fulfill({status:503,json:{message:'fixture_unavailable'}});}
+  try{return route.fulfill({json:await serial(async()=>{await f.login(uid);if(!/^[a-z_]+$/.test(name)||Object.keys(args).some(k=>!/^[a-z_]+$/.test(k)))throw Error('invalid fixture RPC');return (await f.db.query('select public.'+name+'('+Object.keys(args).map((k,i)=>k+'=> $'+(i+1)).join(',')+') result',Object.values(args))).rows[0].result;})});}
+  catch(e){return route.fulfill({status:400,json:{message:e.message,code:e.code||'P0001'}});}
+ });
+ const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));return page;
+}
+async function capture(page,name){
+ await page.evaluate(()=>document.fonts.ready);
+ async function bounds(){
+  await expect.poll(()=>page.evaluate(()=>[...document.querySelectorAll('#cardSheet:not([hidden]),dialog[open]')].every(n=>{const r=n.getBoundingClientRect();return r.left>=-1&&r.right<=innerWidth+1;}))).toBe(true);
+  if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))throw Error(name+' overflow');
+ }
+ for(const width of [360,390,430,1440]){await page.setViewportSize({width,height:844});await page.evaluate(()=>scrollTo(0,0));await bounds();await page.screenshot({path:`artifacts/expert-integration/${name}-${width}.png`,fullPage:true,animations:'disabled'});}
+ await page.setViewportSize({width:360,height:844});await page.evaluate(()=>document.documentElement.style.fontSize='200%');await bounds();await page.screenshot({path:`artifacts/expert-integration/${name}-200.png`,fullPage:true,animations:'disabled'});await page.evaluate(()=>document.documentElement.style.fontSize='');
+ checks.push(name+' mobile/PC');
+}
+try{
+ const p=await open(ids.other);await p.goto(origin+'/partner.html');await expect(p.getByLabel('전문가 유형')).toBeVisible();
+ await p.getByLabel('이름',{exact:true}).fill('새 설계사');await p.getByLabel('주활동지역',{exact:true}).selectOption('경기 분당');await p.getByRole('button',{name:'다음',exact:true}).click();await p.getByLabel('보험금 청구',{exact:true}).check();await p.getByRole('button',{name:'다음',exact:true}).click();await p.getByRole('button',{name:'다음',exact:true}).click();
+ const policy=p.locator('.expert-meeting-notice'),consent=policy.getByRole('checkbox');await expect(consent).not.toBeChecked();await p.getByRole('button',{name:'다음',exact:true}).click();await expect(policy).toBeVisible();await capture(p,'planner-principles');
+ const contrast=await policy.evaluate(n=>{const c=document.createElement('canvas').getContext('2d'),rgb=value=>{c.clearRect(0,0,1,1);c.fillStyle=value;c.fillRect(0,0,1,1);return [...c.getImageData(0,0,1,1).data].slice(0,3);},luminance=values=>values.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0),style=getComputedStyle(n.querySelector('.operating-prohibition')),bg=getComputedStyle(n).backgroundColor,a=luminance(rgb(style.color)),b=luminance(rgb(bg));return {ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05),weight:style.fontWeight,sanctionWeight:getComputedStyle(n.querySelector('li')).fontWeight};});if(contrast.ratio<4.5||Number(contrast.weight)<700||Number(contrast.sanctionWeight)<700)throw Error(JSON.stringify(contrast));checks.push('prohibition contrast '+contrast.ratio.toFixed(2)+':1, bold sanctions');
+ await policy.locator('label').click();await expect(consent).toBeChecked();await p.getByRole('button',{name:'다음',exact:true}).click();await p.getByLabel('전문가 이용약관에 동의합니다 (필수)').check();await p.getByRole('button',{name:'저장하고 자료는 나중에'}).click();await expect(p.getByRole('heading',{name:'프로필을 저장했어요'})).toBeVisible();checks.push('new planner consent required and saved');
+ const joinTax=await open(newTaxId);await joinTax.goto(origin+'/partner.html');await joinTax.getByLabel('전문가 유형').selectOption('tax');await joinTax.getByLabel('이름',{exact:true}).fill('이세무');await joinTax.getByLabel('소속 사무소').fill('격리 세무 사무소');await joinTax.getByLabel('세무사 등록번호',{exact:true}).fill('FIXTURE-TAX-02');await joinTax.getByLabel('주활동지역',{exact:true}).selectOption('경기 분당');await joinTax.getByRole('button',{name:'다음',exact:true}).click();await joinTax.getByLabel('상속·증여 세무 상담',{exact:true}).check();await joinTax.getByRole('button',{name:'다음',exact:true}).click();await joinTax.getByRole('button',{name:'다음',exact:true}).click();await expect(joinTax.locator('.expert-meeting-notice')).not.toContainText('영구 제명');await joinTax.locator('.expert-meeting-notice').getByRole('checkbox').check();await joinTax.getByRole('button',{name:'다음',exact:true}).click();await joinTax.getByLabel('전문가 이용약관에 동의합니다 (필수)').check();await joinTax.getByRole('button',{name:'저장하고 자료는 나중에'}).click();await expect(joinTax.getByLabel('세무사 등록증',{exact:true})).toBeVisible();await expect(joinTax.getByLabel('위촉·소속 증명서',{exact:true})).toHaveCount(0);await joinTax.reload();await expect(joinTax.getByLabel('전문가 유형')).toHaveValue('tax');checks.push('tax signup / specific evidence / reload');
+ for(const [decision,label] of [['REJECTED','확인자료 반려'],['NEEDS_RESUBMISSION','확인자료 보완 요청']]){
+  await serial(async()=>{await f.login(ids.admin);await f.rpc('early_expert_review',['verify',{user_id:newTaxId,kind:'registration',decision,reason:'격리 자료 상태 안내 확인'}]);});
+  await joinTax.reload();await expect(joinTax.locator('#partnerState')).toHaveText(label);
+ }
+ checks.push('tax rejected/resubmission state after reload');
+ const tax=await open(taxId);await tax.goto(origin+'/partner.html');await expect(tax.locator('.optional-profile')).toBeVisible();await tax.getByRole('button',{name:'내 프로필',exact:true}).click();await expect(tax.locator('.optional-profile').getByText('생명보험',{exact:true})).toHaveCount(0);
+ await tax.getByLabel('소개 인사말 (선택 · 40자)').fill('세무 상담을 차분히 함께 확인합니다 😊');await tax.locator('.optional-profile').getByRole('button',{name:'저장하기',exact:true}).click();await expect(tax.locator('.optional-profile .profile-status')).toContainText('저장했습니다');await capture(tax,'tax-profile');
+ await tax.getByText('만남 방식·상담 조건',{exact:true}).click();const settings=tax.locator('.expert-settings');await expect(settings.getByLabel('비용 안내')).toHaveValue('paid');await settings.getByLabel('포함 범위').fill('상속세 관련 초기 상담');fail='expert_consultation_settings';await settings.getByRole('button',{name:'저장하기'}).click();await expect(settings.getByRole('status')).toContainText('저장 실패');await expect(settings.getByLabel('포함 범위')).toHaveValue('상속세 관련 초기 상담');await settings.getByRole('button',{name:'저장하기'}).click();await expect(settings.getByRole('status')).toContainText('저장 완료');checks.push('tax optional profile and fee failure retained/saved');
+ const c=await open(ids.customer);await c.goto(origin+'/map.html?view=experts&planner='+taxId);await expect(c.locator('#cardBody')).toContainText('김세무');await expect(c.locator('#cardBody')).toContainText('세무사');await expect(c.locator('#cardBody')).toContainText('50,000원');await expect(c.locator('.expert-marker-kind').first()).toHaveText('세무사');await capture(c,'tax-map');
+ await c.locator('#cardBody').getByRole('link',{name:'프로필 보기',exact:true}).click();await expect(c.getByRole('dialog')).toContainText('세무 상담을 차분히 함께 확인합니다 😊');await c.getByRole('dialog').getByRole('link',{name:'상담 요청',exact:true}).click();
+ await expect(c.getByLabel('만남 방식')).toBeVisible();await c.getByLabel('만남 방식').selectOption('expert_office');await c.getByRole('button',{name:'날짜·시간 선택'}).click();await c.getByText('다른 날짜',{exact:true}).click();await c.getByLabel('희망 날짜',{exact:true}).fill(day(5));await expect(c.getByRole('button',{name:'17:00',exact:true})).toBeEnabled();await expect(c.getByRole('button',{name:'18:00',exact:true})).toHaveCount(0);await c.getByRole('button',{name:'17:00',exact:true}).click();await c.getByRole('button',{name:'이 시간으로 신청'}).click();await expect(c.locator('.request-wizard')).toContainText('상담 비용 조건을 확인해 주세요.');await capture(c,'tax-request');await c.locator('.request-wizard').getByRole('checkbox').check();await c.getByRole('button',{name:'이 시간으로 신청'}).click();await expect(c.getByRole('heading',{name:'상담 요청이 접수되었습니다.'})).toBeVisible();await expect(c.locator('#requestList')).toContainText('신청 당시 조건');checks.push('map person/details/context/fee/time/request remains unconfirmed');
+ const admin=await open(ids.admin);await admin.goto(origin+'/admin.html');await expect(admin.getByRole('button',{name:'첫 원고 준비'})).toBeVisible();await admin.getByRole('button',{name:'첫 원고 준비'}).click();await expect(admin.getByLabel('자료 제목',{exact:true})).toHaveValue('청구 상담을 마칠 때 확인할 세 가지');await admin.getByRole('button',{name:'화면 미리보기'}).click();await expect(admin.getByRole('dialog')).toContainText('오늘 확인한 내용과 다음 행동');await admin.getByRole('dialog').getByRole('button',{name:'닫기',exact:true}).click();
+ await admin.getByLabel('운영자 확인일',{exact:true}).fill(day(0));await admin.getByLabel('본문·실천 제안·출처를 검토함',{exact:true}).check();fail='growth_command';await admin.getByRole('button',{name:'원고 저장',exact:true}).click();await expect(admin.getByLabel('자료 제목',{exact:true})).toHaveValue('청구 상담을 마칠 때 확인할 세 가지');await admin.getByRole('button',{name:'원고 저장',exact:true}).click();const draft=admin.locator('[data-content-id]').filter({hasText:'청구 상담을 마칠 때 확인할 세 가지'});await expect(draft).toHaveCount(1);await draft.getByRole('button',{name:'승인',exact:true}).click();await expect(draft).toContainText('승인 완료');admin.on('dialog',d=>d.accept());await draft.getByRole('button',{name:'지금 게시',exact:true}).click();await expect(draft).toContainText('공개 버전');await capture(admin,'first-content-admin');
+ await tax.goto(origin+'/growth.html');await tax.getByRole('button',{name:'상담 도구',exact:true}).click();await expect(tax.locator('.growth-library')).toContainText('청구 상담을 마칠 때 확인할 세 가지');await tax.getByRole('button',{name:'자료 읽기',exact:true}).click();await expect(tax.getByRole('dialog')).toContainText('고객이 요청하지 않은 가입 상담');await capture(tax,'first-content-reader');await tax.getByRole('button',{name:'＋ 내 실천에 추가'}).click();await expect(tax.getByLabel('할 일',{exact:true})).toHaveValue('상담 마무리 확인사항 정리하기');await tax.getByRole('button',{name:'저장하기',exact:true}).click();await expect(tax.locator('.growth-task')).toHaveCount(1);
+ await draft.getByRole('button',{name:'게시 중단'}).click();await expect(draft).toContainText('비공개');await tax.reload();await tax.getByRole('button',{name:'상담 도구',exact:true}).click();await expect(tax.locator('.growth-library')).toContainText('공개된 자료가 아직 없습니다');await expect(tax.locator('.growth-task')).toContainText('현재 공개되지 않음');checks.push('first content preview/save/approve/publish/read/practice/unpublish');
+ if(errors.length)throw Error(errors.join('\n'));console.log(checks.join('\n'));await writeFile('artifacts/expert-integration/browser-results.json',JSON.stringify({checks,errors,docCalls},null,2));
+}finally{await browser.close();await f.db.close();}

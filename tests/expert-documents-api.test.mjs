@@ -11,3 +11,34 @@ test('Document endpoint is disabled by default, validates origin/auth, stores pr
   form.set('file',new File(['%PDF-1.7 fake test document'],'test.pdf',{type:'application/pdf'}));const upload=await handler(new Request('http://localhost:3190/api/expert-documents',{method:'POST',headers:{Origin:env.APP_ORIGIN,Authorization:'Bearer fake-token'},body:form}));assert.equal(upload.status,200);assert.equal((await upload.json()).id,'doc');
  }finally{globalThis.fetch=native;delete globalThis.Netlify;}
 });
+test('tax registration document uses the existing private early-access gateway',async()=>{
+ const env={APP_ORIGIN:'http://localhost:3190',SUPABASE_URL:'https://fake.example.test',SUPABASE_SERVICE_ROLE_KEY:'fake-test-only',EXPERT_DOCUMENTS_ENABLED:'true'};
+ globalThis.Netlify={env:{get:k=>env[k]}};
+ const native=globalThis.fetch,calls=[];let authorized=true;
+ globalThis.fetch=async(input,init={})=>{
+  const url=String(input);calls.push(url);
+  if(url.includes('/auth/v1/user'))return Response.json({id:'tax-fixture',aud:'authenticated'});
+  if(url.includes('/rest/v1/rpc/release_status'))return Response.json({serviceStage:'EARLY_ACCESS'});
+  if(url.includes('/rest/v1/rpc/early_document_service')){
+   const request=JSON.parse(init.body);assert.equal(request.subject,'tax-fixture');
+   if(!authorized)return Response.json({message:'request_forbidden',code:'P0001'},{status:400});
+   assert.equal(request.operation,'save');assert.equal(request.payload.profession,'tax');assert.equal(request.payload.kind,'registration');
+   assert.ok(request.payload.path.startsWith('tax-fixture/'));
+   return Response.json({document:{id:'tax-document',kind:'registration'},previous_path:null});
+  }
+  if(url.includes('/storage/v1/object/expert-documents/'))return Response.json({Key:'private'});
+  if(url.endsWith('/storage/v1/object/expert-documents')&&init.method==='DELETE')return Response.json([]);
+  throw Error('Unexpected network '+url);
+ };
+ const upload=()=>{
+  const form=new FormData();form.set('file',new File(['%PDF-1.7 isolated registration'],'registration.pdf',{type:'application/pdf'}));
+  form.set('profession','tax');form.set('kind','registration');form.set('consent','true');form.set('redacted','true');
+  return new Request(env.APP_ORIGIN+'/api/expert-documents',{method:'POST',headers:{Origin:env.APP_ORIGIN,Authorization:'Bearer fixture'},body:form});
+ };
+ try{
+  const result=await handler(upload());assert.equal(result.status,200);assert.equal((await result.json()).id,'tax-document');
+  assert.ok(calls.every(url=>!url.includes('/object/public/')));
+  authorized=false;assert.equal((await handler(upload())).status,400);
+  assert.ok(calls.some(url=>url.endsWith('/storage/v1/object/expert-documents')));
+ }finally{globalThis.fetch=native;delete globalThis.Netlify;}
+});

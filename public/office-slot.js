@@ -13,9 +13,7 @@
       else add('p',office.newRequestsRestricted?'현재 새 상담 요청을 받을 수 없습니다.':'현재 상담 요청을 받지 않습니다. 다른 전문가나 보험소를 확인해 주세요.',content);
       var actions=add('div');actions.className='expert-card-actions';
       var profile=window.BohumsoProfile.profileLink(actions,office,office,'프로필 보기');profile.classList.add('btn','ghost');
-      if(office.available){var request=add('a','상담 요청',actions);request.className='btn';request.href='/requests.html?'+vq+'&method=phone';}
-      (office.offices||[]).forEach(function(o){if(o.available){var a=add('a','보험소 방문예약 · '+o.name,actions);a.className='btn ghost expert-office-action';a.href='/requests.html?'+new URLSearchParams({office:o.id,region:o.region,purpose:office.purpose||'claim',situation:office.situation||'',method:'scheduled'});}else add('p',o.name+' · 방문예약 중지',content);});
-      var visit=add('a','이 전문가의 방문 가능 여부',content);visit.className='expert-visit-link';visit.href='/urgent.html?'+vq;
+      window.BohumsoProfile.requestActions(host,office,office,actions);
       return;
     }
     if(office.planned){
