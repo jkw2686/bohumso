@@ -1,0 +1,76 @@
+/* 전체 메뉴에만 적용하는 색상과 크기. 다른 화면의 토큰은 유지한다. */
+.menu-page {
+  --bg: #F6F7F9;
+  --card: #FFFFFF;
+  --text: #17212F;
+  --muted: #596579;
+  --brand: #3157C8;
+  --brand-soft: #EEF2FA;
+  --menu-icon: #526176;
+  --border: #E5E9F0;
+  --ink-heading: var(--text);
+  --ink-body: var(--text);
+  --ink-muted: var(--muted);
+  --menu-touch: 48px;
+  --menu-row: 64px;
+  --menu-avatar: 56px;
+  --menu-icon-size: 24px;
+  --menu-width: 960px;
+  --menu-bottom-space: 100px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-bottom: 0;
+}
+.menu-page *, .menu-page *::before, .menu-page *::after { box-sizing: border-box; }
+.menu-page .nav { background: var(--card); border-bottom: 1px solid var(--border); box-shadow: none; }
+.menu-page .menu-container {
+  max-width: var(--menu-width);
+  margin: 0 auto;
+  padding: var(--space-5, 20px) var(--space-4, 16px) calc(var(--menu-bottom-space) + var(--space-5, 20px));
+}
+.menu-page h1 { font-size: 1.5rem; font-weight: 700; margin: 0 0 var(--space-5, 20px); line-height: 1.4; }
+.menu-page h2 { font-size: 1rem; font-weight: 600; margin: 0; color: var(--muted); line-height: 1.5; }
+.menu-page a { color: var(--text); text-decoration: none; }
+.menu-page :is(a, button):focus-visible { outline: var(--focus-width, 3px) solid var(--brand); outline-offset: 2px; }
+.menu-page .menu-identity { background: var(--card); border-radius: var(--radius); padding: var(--space-5, 20px); }
+.menu-page .menu-profile-row { display: flex; align-items: center; gap: var(--space-3, 12px); min-width: 0; }
+.menu-page .expert-avatar {
+  flex: 0 0 var(--menu-avatar); width: var(--menu-avatar); height: var(--menu-avatar);
+  display: grid; place-items: center; overflow: hidden; border-radius: 50%;
+  color: var(--menu-icon); background: var(--brand-soft);
+}
+.menu-page .expert-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.menu-page .expert-avatar svg { width: var(--menu-icon-size); height: var(--menu-icon-size); }
+.menu-page .menu-profile-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.menu-page .menu-name { display: block; font-size: 1.125rem; font-weight: 600; }
+.menu-page .menu-role { margin: var(--space-2, 8px) 0 0; font-size: .875rem; color: var(--muted); }
+.menu-page .menu-settings { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 var(--menu-touch); min-width: var(--menu-touch); min-height: var(--menu-touch); color: var(--menu-icon); border-radius: var(--radius); }
+.menu-page .menu-profile-action { margin-top: var(--space-4, 16px); }
+.menu-page .menu-profile-action .menu-row { border-top: 1px solid var(--border); padding: var(--space-3, 12px) 0 0; min-height: var(--menu-touch); color: var(--brand); font-weight: 600; }
+.menu-page .menu-groups { display: grid; align-items: start; gap: var(--space-5, 20px); margin-top: var(--space-5, 20px); }
+.menu-page .menu-group { min-width: 0; background: var(--card); border-radius: var(--radius); padding: var(--space-5, 20px) var(--space-4, 16px) var(--space-2, 8px); }
+.menu-page .menu-group h2 { margin: 0 var(--space-2, 8px) var(--space-2, 8px); }
+.menu-page .menu-group ul { margin: 0; padding: 0; list-style: none; }
+.menu-page .menu-row { display: flex; align-items: center; gap: var(--space-3, 12px); min-height: var(--menu-row); padding: var(--space-2, 8px); border-radius: var(--space-2, 8px); }
+.menu-page .menu-row:hover, .menu-page .menu-settings:hover { background: var(--brand-soft); }
+.menu-page .menu-row-icon { display: grid; place-items: center; width: var(--menu-touch); height: var(--menu-touch); flex: 0 0 var(--menu-touch); color: var(--menu-icon); background: var(--brand-soft); border-radius: var(--space-3, 12px); }
+.menu-page .ui-icon { width: var(--menu-icon-size); height: var(--menu-icon-size); flex-shrink: 0; }
+.menu-page .menu-row-label { flex: 1; min-width: 0; font-size: 1rem; font-weight: 600; overflow-wrap: anywhere; word-break: keep-all; }
+.menu-page .menu-chevron { color: var(--menu-icon); }
+.menu-page .menu-notice:has(p:empty):has(button[hidden]) { display: none; }
+.menu-page .menu-notice { color: var(--muted); font-size: .875rem; }
+.menu-page .menu-notice p:empty { display: none; }
+.menu-page .btn { min-height: var(--menu-touch); font: inherit; font-weight: 600; box-shadow: none; }
+.menu-page .menu-login-actions { display: flex; gap: var(--space-3, 12px); flex-wrap: wrap; margin-top: var(--space-4, 16px); }
+.menu-page .menu-login-actions a { flex: 1 1 auto; text-align: center; }
+.menu-page .menu-login-actions .btn:not(.ghost) { color: var(--card); }
+.menu-page .menu-skip { position: fixed; top: 0; left: var(--space-4, 16px); z-index: 100; transform: translateY(-150%); padding: var(--space-3, 12px); background: var(--card); }
+.menu-page .menu-skip:focus { transform: translateY(0); }
+.menu-page .customer-nav { background: var(--card); border-color: var(--border); box-shadow: none; }
+body.menu-page.has-bottom-nav .customer-nav { height: auto; min-height: var(--bottom-nav-height, 64px); }
+body.menu-page.has-bottom-nav .customer-nav a { min-height: var(--menu-touch); color: var(--menu-icon); height: auto; white-space: normal; overflow-wrap: anywhere; }
+body.menu-page.has-bottom-nav .customer-nav a[aria-current="page"] { color: var(--brand); background: var(--brand-soft); }
+@media (min-width: 760px) { .menu-page .menu-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

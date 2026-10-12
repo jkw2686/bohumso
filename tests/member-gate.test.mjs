@@ -3,6 +3,8 @@ import {fixture,ids} from './commerce-fixture.mjs';import {safeNext} from '../sr
 test('return path rejects external, encoded, normalized and auth-loop destinations',()=>{
  for(const value of ['https://evil.test','//evil.test','/\\evil.test','/%2f%2fevil.test','/x/..//evil.test','/login.html?next=/','/signup','/\n/evil'])assert.equal(safeNext(value),'/account.html');
  assert.equal(safeNext('/map.html?purpose=claim&situation=death'),'/map.html?purpose=claim&situation=death');
+ assert.equal(safeNext('/menu.html'),'/menu.html');
+ assert.equal(safeNext('/menu?redirect=https://evil.test'),'/menu');
 });
 test('active membership enforced at RPC, planned office rejected, private bookings isolated',async()=>{
  const f=await fixture();try{await f.db.exec('reset role');for(const file of ['020_office_allocation.sql','023_active_member_gate.sql'])await f.db.exec(await readFile('supabase/'+file,'utf8'));

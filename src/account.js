@@ -15,6 +15,7 @@ import {renderPartnerApplication} from "./partner-onboarding.js";
 import {renderWorkflow as renderRequests,renderPaymentResult} from "./workflow.js";
 import {renderDirectory} from "./directory.js";
 import {renderProfileEditor} from "./profile-editor.js";
+import {openMenuDestination} from './menu-destinations.js';
 import {memberService,memberState,MEMBER,pendingAction,rememberAction,clearAction,authURL,accountReturn} from "./member-access.js";
 const $=id=>document.getElementById(id);const mode=document.body.dataset.accountPage;
 let client,config,user,membership;
@@ -109,6 +110,7 @@ async function start(){
  if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
  if((mode==='partner'||document.body.dataset.workspace==='partner')&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='✦ 성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('a[href="/claim-resources.html"]')?.closest('section');if(resources)resources.append(entry);else $('accountContent').prepend(entry);}
  $("accountContent").hidden=false;
+ openMenuDestination();
 }
 // 로딩 그림 자리(3-6)는 내용이 떴거나 오류 안내가 나오면 감춘다. 안 붙어 있는 화면도 있어 없으면 넘어간다.
 const loadingArt=document.querySelector('[data-art-slot="loading"]');

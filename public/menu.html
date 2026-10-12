@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <title>전체 메뉴 - 우리곁에 보험소</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/brand.css">
+  <link rel="stylesheet" href="/simple-ux.css">
+  <link rel="stylesheet" href="/type-system.css">
+  <link rel="stylesheet" href="/menu.css">
+  <link rel="icon" href="/brand/favicon-32.png">
+</head>
+<body class="menu-page">
+  <a class="menu-skip" href="#menuContent">메뉴로 건너뛰기</a>
+  <header class="nav">
+    <a class="logo" href="/"><img class="brand-logo" src="/brand/logo-horizontal-transparent.svg" alt="우리곁에 보험소" width="224" height="60"></a>
+  </header>
+  <main class="menu-container">
+    <h1>전체 메뉴</h1>
+    <section class="menu-identity" aria-label="내 프로필" id="menuIdentity">
+      <p>내 정보를 확인하고 있어요.</p>
+    </section>
+    <div class="menu-notice" role="status"><p id="menuStatus"></p><button class="btn ghost" type="button" id="menuRetry" hidden>다시 확인</button></div>
+    <div id="menuContent" class="menu-groups" aria-busy="true"></div>
+    <noscript><p>메뉴를 보려면 자바스크립트를 켜 주세요.</p><a href="/account.html">내 계정</a> · <a href="/support.html">고객센터</a></noscript>
+  </main>
+  <nav class="customer-nav" data-customer-nav="menu" aria-label="주 메뉴"></nav>
+  <script src="/ui-icons.js"></script>
+  <script type="module" src="/assets/menu.js"></script>
+</body>
+</html>

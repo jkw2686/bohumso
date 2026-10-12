@@ -1,4 +1,5 @@
 import {memberService,authURL} from './member-access.js';
+import {openMenuDestination} from './menu-destinations.js';
 import {el} from './consultation-ui.js';
 import {button,statusNode,attemptKey} from './support-ui.js';
 import {categories,privacyReminder,dayKST,weekEnd,taskGroup,safeSource,growthRPC,growthError} from './growth-model.mjs';
@@ -19,7 +20,7 @@ export function contentBody(host,doc){
 
 export async function mountGrowth({client,host,userId}){
  host.classList.add('growth-workspace');host.replaceChildren();let tasks=[],docs=[],activeCategory='weekly',busy=false,dirty=false,editing=null,source=null;
- const notice=statusNode(host);notice.id='growthStatus';const main=el('section',undefined,host);main.className='card';
+ const notice=statusNode(host);notice.id='growthStatus';const main=el('section',undefined,host);main.className='card';main.id='growthPractice';
  const heading=el('div',undefined,main);heading.className='growth-heading';el('h2','나의 실천',heading);button(heading,'＋ 직접 추가',()=>edit());
  el('p','내가 정한 일과 날짜를 챙기는 개인 공간이에요.',main);const groups=el('div',undefined,main);
  const editor=el('section',undefined,main);editor.className='growth-editor';editor.hidden=true;const editHeading=el('h3','실천 추가',editor);
@@ -44,7 +45,7 @@ export async function mountGrowth({client,host,userId}){
   }
  }
  async function refreshTasks(){try{tasks=await growthRPC(client,'mine');drawTasks();}catch{notice.textContent='저장된 실천을 불러오지 못했습니다. 새로고침해 주세요.';}}
- const library=el('section',undefined,host);library.className='card';el('h2','나를 위한 자료',library);const nav=el('div',undefined,library);nav.className='growth-categories';nav.setAttribute('aria-label','자료 분류');const cards=el('div',undefined,library);cards.className='growth-library';
+ const library=el('section',undefined,host);library.className='card';library.id='growthLibrary';el('h2','나를 위한 자료',library);const nav=el('div',undefined,library);nav.className='growth-categories';nav.setAttribute('aria-label','자료 분류');const cards=el('div',undefined,library);cards.className='growth-library';
  for(const [key,label] of Object.entries(categories)){const b=button(nav,label,()=>{activeCategory=key;drawLibrary();},true);b.dataset.category=key;}
  const dialog=el('dialog',undefined,host);dialog.className='growth-dialog card';const close=button(dialog,'닫기',()=>dialog.close(),true);close.className+=' growth-close';const body=el('div',undefined,dialog);dialog.setAttribute('aria-label','자료 상세');
  async function openContent(id){try{const doc=await growthRPC(client,'content',{id});body.replaceChildren();contentBody(body,doc);button(body,'＋ 내 실천에 추가',()=>{dialog.close();edit(null,doc);});dialog.showModal();close.focus();}catch(e){notice.textContent=growthError(e);}}
@@ -52,7 +53,7 @@ export async function mountGrowth({client,host,userId}){
  button(host,'새로고침',async()=>{if(busy||dirty&&!confirm('입력 내용을 유지한 채 목록을 새로고침할까요?'))return;await load();},true);
  const unload=e=>{if(dirty&&host.isConnected){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',unload);
  async function load(){await refreshTasks();try{docs=await growthRPC(client,'library');drawLibrary();}catch{cards.textContent='자료를 불러오지 못했습니다. 새로고침해 주세요.';}}
- await load();const id=new URLSearchParams(location.search).get('content');if(id)await openContent(id);
+ await load();const id=new URLSearchParams(location.search).get('content');if(id)await openContent(id);else openMenuDestination();
  return ()=>window.removeEventListener('beforeunload',unload);
 }
 

@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "five existing positions; last tab opens separate menu",
+    "all expert menu destinations exist",
+    "requested scoped background applied",
+    "#17212F on #FFFFFF contrast >= 4.5:1",
+    "#596579 on #FFFFFF contrast >= 4.5:1",
+    "#3157C8 on #EEF2FA contrast >= 4.5:1",
+    "#526176 on #EEF2FA contrast >= 4.5:1",
+    "existing profile and consultation settings expand; back returns to menu",
+    "area and instant-visit entries focus existing settings",
+    "consultation requests open existing requested filter",
+    "growth and material links focus existing content",
+    "partial failure preserves main actions, retry recovers",
+    "guest/consumer/admin see only appropriate menus; login returns to menu",
+    "membership failure does not grant roles; recovery loads server roles",
+    "no browser exceptions: "
+  ],
+  "errors": [],
+  "productionWrites": false
+}

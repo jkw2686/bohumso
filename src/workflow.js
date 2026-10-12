@@ -103,6 +103,8 @@ export async function renderWorkflow({client,membership,workspace,message,action
   }
  }
  document.getElementById('workflowFilters')?.addEventListener('submit',e=>{e.preventDefault();action(content,manualRefresh);});
+ const menuQuery=new URLSearchParams(location.search);
+ if(workspace==='partner'&&menuQuery.get('from')==='menu'&&menuQuery.get('state')==='requested')document.getElementById('workflowFilters').elements.state.value='requested';
  await refresh();
  const poll=setInterval(()=>{if(!document.hidden&&!editing())refresh(true).catch(()=>{});},30000);window.addEventListener('pagehide',()=>clearInterval(poll),{once:true});
  // Read-only access to requests created before the new workflow. No old completion or payment actions.
