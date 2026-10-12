@@ -1,3 +1,4 @@
+import {getMeetingFeedback,renderMeetingFeedback} from './meeting-feedback.js';
 import {memberService,memberState,requireActiveMember,MEMBER} from './member-access.js';
 import {stableRequestKey} from './request-intent.js';
 import {getCareSafe,careStatusSafe,carePolicy,renderCare,careErrors} from './appointment-care.js';
@@ -46,8 +47,8 @@ export async function renderInstant(client,root){
  try{await load();}catch{status(card,'방문 가능 상태를 불러오지 못했어요.');button('다시 확인',card,load);}
 }
 export async function renderUrgentWorkspace(client,root){
- const panel=el('section','',root,'card urgent-panel');el('h2','전문가 방문상담 내역',panel);const body=el('div','',panel);let busy=false;
- const load=async()=>{if(busy)return;busy=true;try{const rows=await rpc(client,'workspace');body.replaceChildren();if(!rows.length)el('p','접수한 방문상담이 없습니다.',body);
+ const panel=el('section','',root,'card urgent-panel');el('h2','전문가 방문상담 내역',panel);const body=el('div','',panel);let busy=false;const edited=new Set();body.addEventListener('input',e=>{const form=e.target.closest('.meeting-feedback form');if(form)edited.add(form);});body.addEventListener('change',e=>{const form=e.target.closest('.meeting-feedback form');if(form)edited.add(form);});const isEditing=()=>[...edited].some(f=>f.isConnected);
+ const load=async()=>{if(busy)return;busy=true;try{const rows=await rpc(client,'workspace');if(isEditing())return;body.replaceChildren();if(!rows.length)el('p','접수한 방문상담이 없습니다.',body);
   for(const r of rows){const care=r.mine||r.assigned?await getCareSafe(client,'visit',r.id):null;const c=el('article','',body,'urgent-request');c.dataset.bookingId=r.id;el('h3',(purposes[r.purpose]||'보험 상담')+' · 전문가 방문',c);
    el('strong',r.rejected?labels.REJECTED:r.confirmed&&r.state==='ACCEPTED'?labels.CONFIRMED:labels[r.state],c);
    el('p',r.region+(r.distanceKm!=null?' · 검색 기준 '+distance(r.distanceKm):''),c);if(r.expertName)el('p',r.expertName+' 전문가',c);
@@ -61,9 +62,10 @@ export async function renderUrgentWorkspace(client,root){
    if(r.assigned&&r.confirmed){if(['ACCEPTED','PREPARING'].includes(r.state))act('출발 알리기','trip',{state:'DEPARTED'});if(['DEPARTED','EN_ROUTE'].includes(r.state))act('도착 알리기','trip',{state:'ARRIVED'});if(r.state==='ARRIVED')act('상담 완료','trip',{state:'COMPLETED'});}
    if(care)renderCare({client,root:c,data:care,refresh:load});
    else if((r.mine||r.assigned)&&!['COMPLETED','CANCELLED','EXPIRED'].includes(r.state))button('요청 취소',c,async()=>{if(!confirm('이 방문상담 요청을 취소할까요?'))return;await rpc(client,'cancel',{id:r.id});await load();});
+   if(r.state==='COMPLETED'&&(r.mine||r.assigned)){const data=await getMeetingFeedback(client,'visit',r.id);renderMeetingFeedback({client,root:c,data,afterSave:f=>edited.delete(f),onProblem:()=>{const d=[...c.querySelectorAll('.appointment-care details')].find(n=>n.querySelector('summary')?.textContent==='약속 문제 신고');if(d){d.open=true;d.querySelector('textarea,input')?.focus();}else location.href='/support.html';}});}
   }
  }finally{busy=false;}};
- button('내역 새로고침',panel,load,true);try{await load();}catch{status(panel,'내역을 불러오지 못했어요. 새로고침해 주세요.');}
+ button('내역 새로고침',panel,async()=>{if(isEditing()&&!confirm('작성 중인 답변을 닫고 새로고침할까요?'))return;edited.clear();await load();},true);try{await load();}catch{status(panel,'내역을 불러오지 못했어요. 새로고침해 주세요.');}
  const timer=setInterval(()=>{if(!panel.isConnected){clearInterval(timer);return;}if(document.visibilityState==='visible'&&!document.querySelector('dialog[open]')&&!document.activeElement?.closest('form'))load().catch(()=>{});},30000);
 }
 async function customerPage(client,root){

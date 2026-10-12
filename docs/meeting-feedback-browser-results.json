@@ -1,0 +1,16 @@
+{
+  "checks": [
+    "consumer 360/390/430/1440, 200%, touch targets",
+    "consumer optional public consent, failure retention, keyboard stars, save/reload",
+    "expert 360/390/430/1440, 200%, touch targets",
+    "expert independent answers, no public consumer rating",
+    "admin 360/390/430/1440, 200%, touch targets",
+    "admin compares both answers; high rating does not clear case",
+    "profile 360/390/430/1440, 200%, touch targets",
+    "profile aggregate only, tags, no booking date/name/private answers",
+    "visit completion needs consumer confirmation; optional rating saves and reloads in existing requests page",
+    "double submit blocked; not-met opens existing issue; private-only submission; hidden timing cleared; admin memo retained after failure and clock tick"
+  ],
+  "errors": [],
+  "saves": 7
+}

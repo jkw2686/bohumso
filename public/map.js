@@ -158,7 +158,7 @@
 
   function sortedSpots() {
     var arr = SPOTS.filter(function(s){return showOffices?(s.office||s.planned):!showExperts||(!s.planned&&!s.office);});
-    if (sortBy === 'rating') arr.sort(function (a, b) { return b.rating - a.rating; });
+    if (sortBy === 'rating') arr.sort(function (a, b) { return a.legacy_rating_order!=null||b.legacy_rating_order!=null ? (a.legacy_rating_order??Infinity)-(b.legacy_rating_order??Infinity) : b.rating-a.rating; });
     else if (sortBy === 'specialty') arr.sort(function (a, b) { return a.specialty.localeCompare(b.specialty, 'ko'); });
     else arr.sort(function (a, b) { return spotDist(a) - spotDist(b); });
     return arr;
@@ -263,7 +263,7 @@
   function openCard(s,preserveView) {
     if(!s.planned&&!s.office)window.bohumsoTrack?.('expert_viewed');
     current = s;spotMarkers.forEach(function(m){m.getElement()?.classList.toggle('is-selected',m===s._marker);m.setZIndexOffset(m===s._marker?900:0);});var context=new URLSearchParams(location.search);if(!s.planned&&!s.office)context.set('planner',s.id);else context.delete('planner');history.replaceState(history.state,'',location.pathname+'?'+context);
-    window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned&&!s.office,purpose:PURPOSE,situation:SITUATION,newRequestsRestricted:s.newRequestsRestricted,available:s.available,organization:s.job,specialty:s.specialty,photo_url:s.photo,profession:s.profession,consultation_options:s.consultation_options,biography:s.biography,insurance_types:s.insurance_types,help_tasks:s.help_tasks,offices:s.offices});
+    window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned&&!s.office,purpose:PURPOSE,situation:SITUATION,newRequestsRestricted:s.newRequestsRestricted,available:s.available,organization:s.job,specialty:s.specialty,photo_url:s.photo,profession:s.profession,consultation_options:s.consultation_options,feedback_summary:s.feedback_summary,biography:s.biography,insurance_types:s.insurance_types,help_tasks:s.help_tasks,offices:s.offices});
     $('cardSheet').classList.toggle('expert-card-sheet',!s.planned&&!s.office);if(!preserveView)showCard();
   }
   function showCard(){
@@ -329,9 +329,9 @@
           specialty: (Array.isArray(p.specialties) && p.specialties.length ? p.specialties.map(function (x) { return SPECIALTY[x] || x; }).join('·') : '상담'),
           region: p.region || '',
           lat: Number.isFinite(p.area_latitude) ? p.area_latitude : null, lng: Number.isFinite(p.area_longitude) ? p.area_longitude : null,
-          rating: p.rating || 0, pledge: !!p.verified,
+          rating: p.rating || 0, legacy_rating_order:p.legacy_rating_order, pledge: !!p.verified,
           hours: p.hours || '', completed: p.completed_count || 0, reviews: Array.isArray(p.reviews) ? p.reviews.length : 0,
-          profession:p.profession,consultation_options:p.consultation_options,biography:p.biography,insurance_types:p.insurance_types,help_tasks:p.help_tasks,offices:p.offices,newRequestsRestricted:!!p.newRequestsRestricted,available: !!p.available, photo: p.photo_url || '', availability: !p.available?'unavailable':p.availability_status || 'scheduled'
+          profession:p.profession,consultation_options:p.consultation_options,feedback_summary:p.feedback_summary,biography:p.biography,insurance_types:p.insurance_types,help_tasks:p.help_tasks,offices:p.offices,newRequestsRestricted:!!p.newRequestsRestricted,available: !!p.available, photo: p.photo_url || '', availability: !p.available?'unavailable':p.availability_status || 'scheduled'
         };
       });
       if(window.bohumsoOffices){const offices=await window.bohumsoOffices();const active=offices.filter(o=>o.status==='active'&&Number.isFinite(o.latitude)&&Number.isFinite(o.longitude));PLANNED=PLANNED.filter(p=>!active.some(o=>o.region===p.region));spots=spots.concat(active.filter(o=>!area||o.region.indexOf(area)===0).map(o=>({id:o.id,name:o.name,region:o.region,job:'보험소',specialty:o.address,lat:o.latitude,lng:o.longitude,rating:0,planned:false,office:true})));}

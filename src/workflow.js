@@ -1,3 +1,4 @@
+import {renderMeetingFeedback,renderFeedbackAdmin} from './meeting-feedback.js';
 import {renderUnifiedRequest} from './unified-request.js';
 import {feeText,MEETING_MODES} from './consultation-options.js';
 import {trackEvent} from './member-access.js';
@@ -8,8 +9,9 @@ import {renderAds} from './ad-subscription.js';
 import {purposes,states,kst,won,el,input,select,link} from './consultation-ui.js';
 export async function renderWorkflow({client,membership,workspace,message,action,config}){
  const host=document.getElementById('requestList'),content=document.getElementById('accountContent');let snapshot,refreshVersion=0;const dirtyForms=new Set();
- host.addEventListener('input',e=>{const form=e.target.closest('form');if(form)dirtyForms.add(form);});host.addEventListener('change',e=>{const form=e.target.closest('form');if(form)dirtyForms.add(form);});
- function editing(){return [...dirtyForms].some(f=>f.isConnected)||!!host.querySelector('details[open] form')||!!document.activeElement?.closest('#requestList form');}
+ function markEditing(e){const form=e.target.closest('#requestList form,#meetingFeedbackAdmin form');if(form)dirtyForms.add(form);}
+ content.addEventListener('input',markEditing);content.addEventListener('change',markEditing);
+ function editing(){return [...dirtyForms].some(f=>f.isConnected)||!!host.querySelector('details[open] form')||!!document.activeElement?.closest('#requestList form,#meetingFeedbackAdmin form');}
  // 약속 안내 조회 실패가 상담·일정 목록 전체를 막지 않게 한다.
  const careCapability=await careStatusSafe(client);
  if(!membership.member||(workspace==='admin'&&!membership.admin)||(workspace==='partner'&&membership.partner_status!=='approved')){content.hidden=true;message('가입 완료 또는 관리자 권한이 필요합니다.');return;}
@@ -23,6 +25,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
   const version=++refreshVersion,next=await rpc('consultation_workspace',{workspace});if(version!==refreshVersion||(preserveInput&&editing()))return;snapshot=next;host.replaceChildren();const summary=document.getElementById('workflowSummary');summary.replaceChildren();
   if(['partner','admin'].includes(workspace)&&config?.paymentsEnabled!==false){const ads=el('section',undefined,summary);await renderAds({client,workspace,host:ads,message,action});}
   if(workspace==='admin'){
+   const feedbackHost=document.getElementById('meetingFeedbackAdmin');if(feedbackHost){feedbackHost.replaceChildren();if(snapshot.meetingFeedbackEnabled)await renderFeedbackAdmin(client,feedbackHost,f=>dirtyForms.delete(f));}
    if(config?.betaInvitesEnabled)link(summary,'베타 초대·전화 확인·심사','/admin.html#betaInvites');
    const counts={};snapshot.bookings.forEach(b=>counts[b.state]=(counts[b.state]||0)+1);
    const metrics=await rpc('consultation_metrics',{});el('p','오늘 방문 세션 '+metrics.visit_sessions+' · 오늘 요청 '+metrics.today_requests+' · 활성 설계사 '+metrics.active_planners+' · 신규 설계사 '+metrics.new_planners,summary);el('p','방문은 익명 세션 기준이며 사람 수와 다를 수 있습니다. 집계 설정이 꺼져 있으면 수집하지 않습니다. 테스트 승인 합계 '+won(metrics.test_paid_won)+' (실매출 아님)',summary);
@@ -76,8 +79,9 @@ export async function renderWorkflow({client,membership,workspace,message,action
    if(workspace==='partner'&&row.state==='scheduled'&&row.method!=='phone'&&row.journey_state!=='arrived')btn(controls,row.journey_state==='departed'?'도착 알리기':'출발 알리기',()=>command('journey',{id:row.id,revision:row.revision,state:row.journey_state==='departed'?'arrived':'departed'}));
    if(workspace==='partner'&&row.state==='scheduled'&&new Date(row.preferred_at)<=new Date())btn(controls,'미팅 완료 확인 요청',()=>run('complete_request'));
    if(workspace==='customer'&&row.state==='awaiting_completion'){el('p','보험 가입 여부와 관계없이 실제 미팅이 이루어졌을 때만 확인해 주세요.',card);btn(controls,'실제 미팅 완료 확인',()=>run('complete_confirm'));}
-   if(workspace==='customer'&&row.state==='completed'&&!row.review){const form=el('form',undefined,card);el('h3','완료한 미팅 후기',form);select(form,'평점','rating',{'5':'5점','4':'4점','3':'3점','2':'2점','1':'1점'});const body=input(form,'후기 (병명·개인정보·보험계약 내용 입력 금지)','body');body.minLength=2;body.maxLength=500;body.required=true;check(form,'후기와 평점 공개에 동의합니다. 검토 후 공개됩니다.','public_consent').required=true;el('button','후기 제출',form).type='submit';submit(form,d=>command('review',{id:row.id,revision:row.revision,rating:Number(d.get('rating')),body:d.get('body'),public_consent:d.get('public_consent')==='on'}));}
-   if(row.review){el('p','후기 '+row.review.rating+'점 · '+row.review.body+' · '+(row.review.visible?'공개':'검토 대기'),card);if(workspace==='admin'){const form=el('form',undefined,card);const reason=input(form,'개인정보·민감정보 검토 결과','reason');reason.minLength=5;reason.required=true;const visible=check(form,'후기 공개','visible');visible.checked=row.review.visible;el('button','후기 검토 저장',form).type='submit';submit(form,d=>command('publish_review',{id:row.id,revision:row.revision,reason:d.get('reason'),visible:d.get('visible')==='on'}));}}
+   if(!snapshot.meetingFeedbackEnabled&&workspace==='customer'&&row.state==='completed'&&!row.review){const form=el('form',undefined,card);el('h3','완료한 미팅 후기',form);select(form,'평점','rating',{'':'선택 안 함','5':'5점','4':'4점','3':'3점','2':'2점','1':'1점'}).required=true;const body=input(form,'후기 (병명·개인정보·보험계약 내용 입력 금지)','body');body.minLength=2;body.maxLength=500;body.required=true;check(form,'후기와 평점 공개에 동의합니다. 검토 후 공개됩니다.','public_consent').required=true;el('button','후기 제출',form).type='submit';submit(form,d=>command('review',{id:row.id,revision:row.revision,rating:Number(d.get('rating')),body:d.get('body'),public_consent:d.get('public_consent')==='on'}));}
+   if(!snapshot.meetingFeedbackEnabled&&row.review)el('p','후기 '+row.review.rating+'점 · '+row.review.body+' · '+(row.review.visible?'공개':'검토 대기'),card);
+   if(workspace==='admin'&&row.review){const legacy=el('details',undefined,card);el('summary','이전 공개 후기 검토',legacy);el('p',row.review.body,legacy);const f=el('form',undefined,legacy);select(f,'내용 검토 사유','moderation_category',{privacy:'개인정보 포함',abuse:'욕설·부적절한 내용',not_actual_meeting:'실제 만남이 아님을 확인'});const reason=input(f,'확인한 근거 · 낮은 별점만으로 숨기지 않습니다','reason');reason.required=true;reason.minLength=5;const visible=check(f,'이전 후기 내용 공개','visible');visible.checked=row.review.visible;el('button','검토 기록 저장',f).type='submit';submit(f,d=>command('publish_review',{id:row.id,revision:row.revision,reason:d.get('reason'),moderation_category:d.get('moderation_category'),visible:d.get('visible')==='on'}));}
    if(row.state==='completed'&&workspace!=='admin'){
     const f=el('form',undefined,card);el('h3',row.integration_details?.profession==='tax'?'후속 상담 · 추가 상담료는 전문가와 먼저 확인하세요.':'같은 상담의 후속 미팅 · 추가 과금 없음',f);input(f,'후속 날짜 (KST)','date','date').required=true;const t=input(f,'후속 시간 (KST)','time','time');t.step=row.integration_details?3600:1800;if(row.integration_details){t.min='09:00';t.max='17:00';}t.required=true;el('button','후속 일정 제안',f).type='submit';submit(f,d=>command('followup_propose',{id:row.id,revision:row.revision,preferred_at:new Date(d.get('date')+'T'+d.get('time')+':00+09:00').toISOString()}));
    }
@@ -91,6 +95,9 @@ export async function renderWorkflow({client,membership,workspace,message,action
    }
    const issue=el('details',undefined,card);el('summary','기타 문의·문제 신고',issue);const issueForm=el('form',undefined,issue);select(issueForm,'종류','category',{question:'문의',...(!care?{no_show:'노쇼 신고'}:{}),dispute:'분쟁 신고',refund:'환불 문의'});const reason=input(issueForm,'내용 (병명·증권번호·건강정보·주민등록번호는 적지 마세요)','reason');reason.required=true;reason.minLength=3;reason.maxLength=1000;el('button','접수',issueForm).type='submit';submit(issueForm,d=>command('issue',{id:row.id,...Object.fromEntries(d)}));
    for(const i of row.issues||[])el('p',(i.resolved?'처리 완료: ':'확인 중: ')+i.reason+(i.resolution?' / '+i.resolution:''),issue);
+   const openProblem=()=>{const target=[...card.querySelectorAll('.appointment-care details')].find(n=>n.querySelector('summary')?.textContent==='약속 문제 신고')||issue;target.open=true;target.scrollIntoView({block:'center'});target.querySelector('textarea,input')?.focus();};
+   if(workspace==='customer'&&row.state==='awaiting_completion'){const problemButton=el('button','실제로 만나지 않았어요 · 예약 문제 확인',controls);problemButton.type='button';problemButton.onclick=openProblem;}
+   if(snapshot.meetingFeedbackEnabled&&workspace!=='admin')renderMeetingFeedback({client,root:card,data:row.meeting_feedback,onProblem:openProblem,afterSave:f=>dirtyForms.delete(f)});
    if(workspace==='admin'&&['dispute','no_show'].includes(row.state)){const form=el('form',undefined,card);select(form,'확인 결과','outcome',{cancelled:'미완료 취소',scheduled:'미팅 재개 (고객 완료 확인 필요)'});const reason=input(form,'확인 근거·사유','reason');reason.required=true;reason.minLength=5;el('button','예외 처리 기록',form).type='submit';submit(form,d=>command('resolve_issue',{id:row.id,...Object.fromEntries(d)}));}
    if(workspace==='admin'){const audit=el('details',undefined,card);el('summary','처리 이력·확인 근거',audit);for(const e of row.events||[])el('p',kst(e.created_at)+' KST · '+e.event+' · 담당자 '+(e.actor||'시스템')+(e.reason?' · '+e.reason:''),audit);}
   }

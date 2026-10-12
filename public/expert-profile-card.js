@@ -30,7 +30,8 @@
   var taskNames=p.profession==='tax'?taxTasks:tasks;var help=(p.help_tasks||[]).filter(function(k){return taskNames[k]&&(k!=='office_consultation'||p.offices?.some(function(o){return o.available===true;}));}).slice(0,3);
   if(help.length){var jobs=node('div','',root,'expert-help-tasks');jobs.setAttribute('aria-label','도움 가능한 업무');help.forEach(function(k){node('span',taskNames[k],jobs);});}
   if(p.profession==='tax'){var fee=p.consultation_options?.fee;node('p',feeText(fee),root,'expert-fee');}
-  if(p.biography)node('p',p.biography,root,'expert-introduction'+(options.summary?' is-summary':''));return root;
+  if(p.biography)node('p',p.biography,root,'expert-introduction'+(options.summary?' is-summary':''));
+  if(!options.summary&&p.feedback_summary){var f=p.feedback_summary,section=node('section','',root,'expert-feedback-summary');node('h3','만남 도움 경험',section);node('p',f.state==='ready'?'평균 '+f.average+'점 · 평가 '+f.count+'건':f.count?'평가 모으는 중 · 평가 '+f.count+'건':'아직 평가가 없어요',section);var names={kind:'친절해요',clear:'설명이 쉬워요',helpful:'도움이 됐어요',punctual:'약속을 잘 지켜요'};Object.keys(names).forEach(function(k){if(f.tags?.[k])node('p',names[k]+' · '+f.tags[k]+'건',section);});node('p','도움 경험에 대한 평가이며 자격·실력 인증을 의미하지 않습니다.',section,'expert-profile-note');}return root;
  }
  function feeText(fee){return ['세무 상담료 · '+(fee?.status==='free'?'무료':fee?.status==='paid'?Number(fee.amount).toLocaleString('ko-KR')+'원':'사전 확인 필요'),'60분',fee?.scope,fee?.extra&&'추가 비용 조건: '+fee.extra,fee?.tax_note].filter(Boolean).join(' · ');}
  function requestActions(parent,p,context,existing){

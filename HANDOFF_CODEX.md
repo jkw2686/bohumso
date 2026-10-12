@@ -1,68 +1,51 @@
-# 현재 인수인계 — 전문가 통합 후속 개발 (2026-10-12)
+# 현재 인수인계 — 미팅 후 평점·양방향 확인 (2026-10-12)
 
 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽는다. 최신 사용자 지시가 우선한다.
 
-## 상태와 범위
+## 현재 상태
 
-- 개발 브랜치 codex/expert-integration, 기준 7acb6b7. 구현·검수·화면 커밋 8e556d8 전송 완료: https://github.com/jkw2686/bohumso/commit/8e556d8 . 이 문서 보완은 별도 문서 커밋이다.
-- 이전 UI 정리 0bb7a1a / 7acb6b7 유지. main 병합·운영 DB·배포·설정·외부 발송·비용 집행 없음.
-- 최신 첨부 4e00c207의 후속 통합만 적용. 이전 운영 승인을 새 배포 승인으로 해석하지 않는다.
-- 정적 HTML/CSS/JS + esbuild, Supabase RPC, 기존 문서/사진 처리 재사용. 새 패키지 없음.
-
-| 단계 | 상태 |
-|---|---|
-| 홈 문장 교체 | 완료. 구조·버튼 유지. 홈 지도는 직역·상담 조건 데이터 전달만 보완 |
-| 설계사 필수 원칙·동의 | 개발 완료. 새 가입 서버 차단·버전 이력, 기존 회원 소급 동의 없음 |
-| 세무사 가입·증빙·심사·프로필 | 개발 완료. 기존 비공개 구조 재사용, 기본 개방 OFF |
-| 지도·예약·비용 | 개발 완료. 새 통합만 60분·09~17시 시작, 기존 예약 유지 |
-| 약관·제재 차이 | 보고 완료. 법률 검토·실제 집행 완성은 남음 |
-| 첫 원고·대표 게시 | 격리 실제 흐름 완료, 운영 게시 안 함 |
-| 운영 반영 | 금지 상태 유지, 새 승인·준비 확인 필요 |
+- 브랜치 codex/meeting-feedback, 시작점 08e2d6f. 이전 UI·전문가 통합 완료분을 유지한 후 이번 평가 기능을 이어서 개발했다.
+- 소비자 선택 별점/태그/공개 동의, 설계사 독립 비공개 답변, 조건부 시점, 기존 예약 문제 확인을 구현·격리 검수했다.
+- 관리자 원문 비교·선제안·불일치·메모·확인 상태, 프로필 집계, 기존 지도 정렬 보존을 구현·격리 검수했다. 자동 제재 없음.
+- 065 후보: private 5개 테이블, 고객 방문 완료 확인 시각, 기존 함수 3개 백업/wrapper. 데이터 삭제·컬럼 삭제·타입/Storage 변경 없음.
+- 운영 DB·설정·배포·main·실제 고객 설문·외부 발송·비용 실행 없음. 과거 승인을 새 운영 승인으로 재사용하지 않는다.
 
 ## 검증 재현
 
-```text
-node scripts/build.mjs
-node scripts/build-expert-integration-candidate.mjs
-node --test --test-concurrency=1 tests/expert-integration.test.mjs tests/growth.test.mjs tests/booking-hardening.test.mjs tests/expert-documents-api.test.mjs
-node tests/expert-integration-browser.mjs
-node tests/profile-usability-browser.mjs
-node tests/requests-page-browser.mjs
-node tests/growth-browser.mjs
-node tests/home-experts-browser.mjs
-```
+    node scripts/build.mjs
+    node scripts/test-meeting-feedback.mjs
+    node --test tests/feedback-ordering.test.mjs
+    node --liftoff-only --no-wasm-tier-up tests/meeting-feedback-browser.mjs
+    node tests/requests-page-browser.mjs
+    node tests/profile-usability-browser.mjs
 
-큰 브라우저/메모리 DB 검사는 하나씩 실행한다. 가상 계정·격리 데이터이며 외부 연결은 막는다.
-- 필수 미동의·구버전 차단, 기존 동의 보존, 세무사 심사/권한, 요일/시간/휴무 교집합, 중복·재전송, 비용 조건 보존, 원복 검증.
-- 새 6화면 360·390·430·1440px, 루트 폰트 200%, 카드 좌우 경계, 빨간 원칙 문구 대비 5.97:1.
-- 기존 프로필·사진·예약 목록·실천 CRUD/재접속·홈 지도 회귀 통과.
-- 보고: docs/expert-integration-20261012.md / docs/expert-terms-integration-review.md.
-- 화면: docs/expert-integration-screens/, 결과: docs/expert-integration-browser-results.json.
+빌드, SQL 3개 시나리오, 정렬 단위 1개, 새 브라우저 및 기존 예약/프로필 회귀 통과. 메모리 제약으로 무거운 검사는 하나씩 실행한다. 실제 고객/운영 연결은 사용하지 않는다.
+- 360/390/430/1440px, 루트 글자 200%, 터치, 실패/재시도/재조회, 중복 제출, 방문 실제 만남 확인, 관리자 메모 보존 확인.
+- 보고·화면: docs/meeting-feedback-20261012.md, docs/meeting-feedback-screens/.
+- 원시 브라우저 결과: docs/meeting-feedback-browser-results.json.
+- 상시 미리보기 서버나 공개된 새 버전 URL 없음. 캡처는 가상 자료다.
 
-## 판단과 원복
+## 판단·원복
 
-- 새 개방 진실값은 private.expert_integration_settings.tax_enabled/unified_booking, 기본 false. 기존 service_features·예약/본인확인 gate·HTTP 자료 설정은 별도 유지.
-- 동의 버전 planner-protection-2026-10-12-v2 / tax-service-2026-10-12-v1. 일반 기존 프로필 수정에 강제 재동의 없음.
-- 062 직역/원칙, 063 통합 요청/비용, 064 요약·관리자 전용 첫 문안. 기존 회원/예약 삭제·컬럼 삭제·타입 변경 없음.
-- 생성기 → ignored artifacts/expert-integration-candidate.sql 한 트랜잭션. 운영 스키마 전체 비교와 백업은 운영 적용 승인 이후 별도.
-- supabase/rollback_expert_integration.sql: 진행 중 통합 예약이 있으면 중단. 함수 선택 복원, 추가 컬럼·동의·예약·원고 보존. 코드도 7acb6b7 기준 호환 버전과 함께 복귀해야 한다.
-- 첫 원고 source_key는 bohumso-after-meeting-five-minutes-v1 유지. 새 제목은 ‘청구 상담을 마칠 때 확인할 세 가지’. 관리자 RPC로 로드하며 일반 번들에 비공개 문안을 넣지 않는다.
-- 기존 비공개 첫 원고는 같은 행 편집, 이미 게시된 원고는 자동 교체하지 않는다.
+- 기존 필수 본문·평점·공개 동의 후기 구조를 삭제하지 않고 비공개 응답을 추가 저장한다. 같은 만남의 새 답변이 기존 후기보다 우선하며 이중 집계하지 않는다. 공개 동의 철회 후 옛 점수가 살아나지 않는다.
+- 신규 평균/건수/태그만 프로필에 표시. 기존 후기 기반 순서값을 유지하며 새 평균을 지도 순위에 쓰지 않는다. 요금·반경·노출·제재 정책 변경 없음.
+- 평균 공개 기준 private.feedback_policy.minimum_public_count는 NULL. 5건 제안만 했고 적용하지 않았다. 테스트의 2건은 가상 DB 전용.
+- 한쪽의 설계사 선제안은 시점이 도움 이후여도 확인 대상. 미응답/모름/낮은 점수로 위반을 확정하지 않는다.
+- supabase/rollback_meeting_feedback.sql은 함수 복원·새 RPC 중단·데이터 보존. 기존 후기와 겹친 새 응답이 있으면 공개 동의 보호 검토 없이 원복하지 못하게 중단한다.
+- 코드 원복 기준 08e2d6f. 전체 reset으로 다른 변경을 덮지 않는다.
 
-## 아직 깨끗하지 않은 것
+## 아직 확인하지 않은 것·충돌
 
-- 소비자 보호 위반의 1·2·3회 집행은 기존 warning/suspended/banned·임의 종료일과 다르다. 사실 확인·사유·이의 신청·기존 예약 보호·만료 복귀를 완성했다고 말하지 않는다.
-- 운영 전체 스키마와 062~064 번호·함수 차이는 이번에 비교하지 않았다. 격리 fixture가 운영 전체 동일성을 보장하지 않는다.
-- 실제 Storage 업로드·Google/SMS 왕복·실단말 키보드/카카오/OS 글자 확대 미확인. HTTP 파일 전송은 모의 응답, 메타데이터/권한은 실제 PGlite SQL.
-- 이전 UI와 이번 개발을 현재 운영 화면에 반영했다고 말하지 않는다.
-- ../bohumso-ui-release 204bed6/codex/interaction-settings의 dirty 변경은 유지. 계정·프로필·공통 스타일·지도·예약·058 계열 충돌 가능. Claude Code의 현재 작업은 직접 확인하지 못했다.
-- 상시 로컬 미리보기 서버 없음. 캡처와 재현 명령은 검토용이며 공개 배포 링크가 아니다.
+- 실제 휴대전화 키보드/카카오/OS 확대/화면 읽기, 운영 PostgreSQL 다중 연결 경합, 실제 OAuth/SMS 왕복 및 운영 전후 데이터 비교는 미확인.
+- 평균 공개 건수와 추가 운영 답변·이력의 보관/삭제 정책 결정 필요.
+- 065는 이 브랜치 062~064 이후 검증했다. 운영 스키마·migration 번호 비교·운영 백업은 미실시. 이전 전문직 약관·설정 결정도 남아 있다(docs/expert-integration-20261012.md).
+- 다른 bohumso-ui-release dirty 작업본을 수정하지 않았다. Claude Code 현재 실행 작업은 직접 확인하지 못했다. account.css, workflow, consultation-ui, map/home-map, expert-profile-card, RPC wrapper, 인수인계 문서 병합 충돌 가능.
+- 기존 전체 로드맵의 운영 검증·제재 집행 완료를 의미하지 않는다.
 
-## 다음 순서와 예상 시간
+## 다음 순서·예상 시간
 
-1. 총괄의 화면·기능·약관/제재 차이 검수.
-2. 실단말 키보드·확대·인앱 확인 30~60분.
-3. 다른 작업 diff 비교·통합 30~90분. 공통 파일 전체를 덮어쓰지 않는다.
-4. 운영 스키마 비교·백업 계획·최종 DB 리허설 45~90분. 명시적 새 승인 전 실행 금지.
-5. 직역 개방·요금/무료기간/세금·최종 약관/재동의·제재 집행·자료 보관·첫 원고 게시 결정. 운영/법률 검토 시간은 별도.
-6. 별도 지시 후 main·DB·배포 계획. 이번 지시만으로 운영 계정·예약·제재·설정·실제 알림·결제·유료 AI·자료 게시를 변경하지 않는다.
+1. 총괄 화면/기능 검수 및 평균 공개 기준·보관 정책 결정.
+2. 실제 단말 검수 30~60분 예상.
+3. 다른 브랜치 diff·SQL 번호 비교/통합 30~90분 예상.
+4. 별도 운영 승인 후 스키마/권한 비교·백업·원복 계획·적용 리허설 30~60분 예상. 차이가 있으면 추가 확인.
+5. 승인 범위에서 운영 적용·배포·확인. 이번 지침으로 실행하지 않는다.
