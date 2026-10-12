@@ -4,6 +4,8 @@ PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽는다. �
 
 ## 현재 상태
 
+- 구현·검수·화면 커밋 54c2f0d 전송 완료: https://github.com/jkw2686/bohumso/commit/54c2f0d . 이 상태 기록은 후속 문서 커밋이다.
+
 - 브랜치 codex/meeting-feedback, 시작점 08e2d6f. 이전 UI·전문가 통합 완료분을 유지한 후 이번 평가 기능을 이어서 개발했다.
 - 소비자 선택 별점/태그/공개 동의, 설계사 독립 비공개 답변, 조건부 시점, 기존 예약 문제 확인을 구현·격리 검수했다.
 - 관리자 원문 비교·선제안·불일치·메모·확인 상태, 프로필 집계, 기존 지도 정렬 보존을 구현·격리 검수했다. 자동 제재 없음.
