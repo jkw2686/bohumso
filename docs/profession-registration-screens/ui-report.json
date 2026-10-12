@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-12T06:51:36.187Z",
+  "mode": "UI with simulated responses",
+  "checks": [
+    "three active professions only",
+    "360px no horizontal overflow",
+    "390px no horizontal overflow",
+    "430px no horizontal overflow",
+    "1440px no horizontal overflow",
+    "tax has common terms only",
+    "failed save retry with no duplicate success",
+    "saved profession and input survive reload",
+    "same account enters separate office application",
+    "collapsed map action is not clipped",
+    "map profession filter has no horizontal overflow",
+    "phone signup retains chosen profession",
+    "Google signup retains chosen profession without external authentication",
+    "no page JavaScript errors"
+  ],
+  "errors": [],
+  "production": false
+}

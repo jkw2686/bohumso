@@ -15,7 +15,7 @@ export async function renderOptionalProfile(client,parent){
  // 저장 성공 시 폼을 닫으므로 확인 문구는 접히는 영역 밖에 둔다. 닫혀도 보인다.
  const message=el('p','',details);message.className='profile-status';message.setAttribute('role','status');message.setAttribute('aria-live','polite');
  toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls',body.id);
- el('p','사진·취급 구분·도움 업무·소개는 모두 선택입니다. 나중에 수정하거나 비울 수 있어요.',body);
+ el('p',p.profession==='tax'?'사진·소개는 선택입니다. 상담 분야는 상담 설정에서 수정하거나 비울 수 있어요.':'사진·취급 구분·도움 업무·소개는 모두 선택입니다. 나중에 수정하거나 비울 수 있어요.',body);
  const form=el('form',undefined,body),fields=el('fieldset',undefined,form);fields.className='profile-editor-fields';el('legend','프로필 입력',fields).className='sr-only';
  let photo=null,removePhoto=false,previewURL='',ownPhotoURL='',busy=false,crop=null,cropping=false,photoLoading=false,introInitial='';
  const photoSection=el('section',undefined,fields);photoSection.className='profile-photo-edit';
@@ -26,8 +26,8 @@ export async function renderOptionalProfile(client,parent){
  const remove=el('button','사진 삭제',photoActions);remove.type='button';remove.className='btn ghost';
  const cropHost=el('div',undefined,photoSection);
  function choices(title,name,values,selected){const set=el('fieldset',undefined,fields);el('legend',title,set);for(const [key,label]of Object.entries(values)){if(key==='office_consultation'&&!p.offices?.some(o=>o.available===true))continue;const c=input(set,label,name,'checkbox');c.value=key;c.checked=(selected||[]).includes(key);}}
- choices('보험 취급 구분 (선택)','insurance_types',ui.types,p.insurance_types);el('p','직접 선택한 정보이며 자격 인증 표시가 아닙니다.',fields).className='profile-editor-hint';
- choices('도움 가능한 업무 (선택 · 최대 3개)','help_tasks',ui.tasks,p.help_tasks);
+ if(p.profession!=='tax')choices('보험 취급 구분 (선택)','insurance_types',ui.types,p.insurance_types);el('p','직접 선택한 정보이며 자격 인증 표시가 아닙니다.',fields).className='profile-editor-hint';
+ if(p.profession!=='tax')choices('도움 가능한 업무 (선택 · 최대 3개)','help_tasks',ui.tasks,p.help_tasks);
  const introLabel=el('label','소개 인사말 (선택 · 40자)',fields),intro=el('textarea',undefined,introLabel);intro.name='biography';intro.rows=3;intro.value=p.biography||'';introInitial=intro.value;
  const counter=el('p','',fields);counter.className='profile-editor-hint';counter.id='profileIntroCount';intro.setAttribute('aria-describedby',counter.id);
  const legacy=el('p','',fields);legacy.className='profile-editor-hint';legacy.hidden=Array.from(p.biography||'').length<=40;

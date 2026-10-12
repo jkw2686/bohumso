@@ -1,5 +1,6 @@
 import {createClient} from '@supabase/supabase-js';
 import {documentType,safeFilename,DOCUMENT_LIMIT} from './_shared/expert-documents.mjs';
+import professions from '../../shared/professions.json' with {type:'json'};
 const reply=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 export default async(request:Request)=>{
  if(request.method!=='POST')return reply({error:'method_not_allowed'},405);
@@ -19,7 +20,10 @@ export default async(request:Request)=>{
    const reader=request.body?.getReader();if(!reader)throw Error('invalid_document');let length=0;const chunks:ArrayBuffer[]=[];
    while(true){const r=await reader.read();if(r.done)break;length+=r.value.byteLength;if(length>DOCUMENT_LIMIT+65536){await reader.cancel();return reply({error:'file_too_large'},413);}chunks.push(new Uint8Array(r.value).buffer);}
    const form=await new Response(new Blob(chunks),{headers:{'Content-Type':contentType}}).formData();
-   const file=form.get('file'),kind=String(form.get('kind')),profession=String(form.get('profession'));if(!(file instanceof File)||!(early?['registration','appointment']:['identity','qualification']).includes(kind)||!['planner','adjuster','lawyer'].includes(profession)||form.get('consent')!=='true'||form.get('redacted')!=='true')throw Error('invalid_document');
+   const file=form.get('file'),kind=String(form.get('kind')),profession=String(form.get('profession'));
+   const rules=professions.professions[profession as keyof typeof professions.professions];
+   const supported=early?!!rules?.intake&&'documents' in rules&&Object.hasOwn(rules.documents,kind):['planner','tax'].includes(profession)&&['identity','qualification'].includes(kind);
+   if(!(file instanceof File)||!supported||form.get('consent')!=='true'||form.get('redacted')!=='true')throw Error('invalid_document');
    const bytes=new Uint8Array(await file.arrayBuffer()),mime=documentType(bytes);if(bytes.byteLength>4*1024*1024)return reply({error:'file_too_large'},413);if(file.type!==mime)throw Error('invalid_document');
    const objectPath=subject+'/'+crypto.randomUUID()+({ 'image/jpeg':'.jpg','image/png':'.png','application/pdf':'.pdf'}[mime]);
    const upload=await store.upload(objectPath,bytes,{contentType:mime,upsert:false});if(upload.error)throw Error('storage_unavailable');

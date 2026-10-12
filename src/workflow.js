@@ -39,7 +39,7 @@ export async function renderWorkflow({client,membership,workspace,message,action
    const care=careCapability?await getCareSafe(client,'consultation',row.id):null;
    const card=el('article',undefined,host);card.className='card booking-card';card.dataset.bookingId=row.id;
    if(row.is_beta)el('small','비공개 베타 예약',card);
-   el('h2',purposes[row.purpose]+' · '+row.region,card);el('p',workspace==='customer'&&row.allocation_mode==='office'?({requested:row.planner_id?'전문가가 확인하고 있어요.':'보험소에서 담당자를 배정하고 있어요.',scheduled:'예약이 확정됐어요.',completed:'상담이 잘 마무리됐어요.'}[row.state]||states[row.state]):states[row.state],card).className='request-status';if(workspace==='customer')renderTimeline(card,row);
+   el('h2',purposes[row.purpose]+' · '+row.region,card);el('p',workspace==='customer'&&row.allocation_mode==='office'?({requested:row.planner_id?'전문가가 확인하고 있어요.':'보험소에서 담당자를 배정하고 있어요.',scheduled:'예약이 확정됐어요.',completed:'상담이 잘 마무리됐어요.'}[row.state]||states[row.state]):states[row.state],card).className='request-status';if(workspace==='customer')renderTimeline(card,row);if(row.fee_notice)el('p',row.fee_notice,card);
    if(!care){const fixed=['confirmed','scheduled','awaiting_completion','completed'].includes(row.state);el('p',(fixed?'확정시간 · ':'희망시간 · ')+kst(row.preferred_at)+' KST',card);
    el('p',row.office_id?'고객이 보험소에 방문 · '+(row.office_name||'선택한 보험소')+(row.office_address?' · '+row.office_address:''):({phone:'전화상담',nearby:'전문가가 고객에게 방문 · 장소·일정 조율',scheduled:'전문가와 상담 장소·일정 조율'}[row.method]),card);}
    el('p',row.planner_name?(row.planner_sample?'테스트 설계사: ':'담당 전문가: ')+row.planner_name+' · '+row.organization:(row.allocation_mode==='office'?'선택한 보험소에서 요청 확인 중':'전문가를 다시 선택해 주세요'),card);

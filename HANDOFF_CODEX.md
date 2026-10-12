@@ -1,33 +1,35 @@
-# 현재 인수인계 — 별도 전체 메뉴 (2026-10-12)
+# 현재 인수인계 — 직군별 가입 (2026-10-12)
 
-PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽는다. 사용자 최신 직접 지시가 우선한다.
+PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 읽고 최신 직접 사용자 지시를 우선한다.
 
 ## 현재 상태
-- codex/expert-navigation, 운영 main 1900e5d에서 격리. 별도 menu.html 구현·검수·배포 완료. 원격 main 23b885ba63e9271203464d897a82bdde4647c7eb.
-- Netlify 6acc5a47f394f70008b11015, 2026-10-12 12:56:05 KST ready/published. https://bohumso.netlify.app/menu.html.
-- 실제 사이트 현재 로그인은 일반 회원이어서 소비자 메뉴 확인. 360/390/430/1440px DOM 치수·색상·행64px 확인, 390px 화면 캡처 확인. 전문가·관리자는 격리 계정 검증이며 운영 로그인 미확인.
-- 홈 새 문구 및 홈↔메뉴 실제 이동 확인. 운영 쓰기 없음. PC 전체 캡처는 도구 오류로 미확보, 로컬 PC 캡처는 있음. 브라우저 viewport 복원, 사용자용 메뉴 탭16 유지.
-- 배포 후 인수인계 기록만 로컬 추가 보존. 원격에는 코드와 배포 직전 검수자료까지 반영됨.
-- 하단 홈/지도/예약/고객센터 위치 유지, 마지막 탭만 메뉴로 연결. 기존 계정 페이지는 계정 설정으로 유지.
-- 사용자 지정 회색·흰색·차분한 파랑은 .menu-page 범위. 기존 홈의 새 문구와 지도·예약 CSS 유지.
-- 상세: docs/full-menu-20261012.md. 캡처/결과 docs/full-menu-screens. 기존 내 계정 본문은 그대로이고 별도 메뉴 화면을 추가한 것.
-- 프로필·상담 설정 펼침/활동 지역/방문 설정/예약 요청 필터/성장 자료·실천은 기존 코드에 짧은 이동 연결만 추가. 저장 코드·DB·정책 변경 없음.
+- 브랜치 codex/profession-registration. 기준 로컬0ece098/배포 코드23b885b. 변경은 개발 검수 단계이며 운영 DB/배포 미적용.
+- 최신 사용자 요청: 보험설계사/세무사/보험소 운영자 가입 첫 단계 및 기존 기능 연결. 기존 메뉴/홈/UI 유지. 새 직군 플랫폼 요금·과금·외부 발송 금지.
+- 구현: shared/professions.json 공통 정의, 공개 가입 next 직군 전달, 기존 partner 화면 5단계, 자료/관리자 심사/선택 프로필/지도 유형/세무 상담료/예약 연결. 세무·거점 자료는 별도 비공개 저장. 기존 개인 계정+거점 운영 분리.
+- 066 SQL 단일 transaction, 재실행 가능, 백업/보존 원복 포함. 신규5테이블+직군·상담료 안내 컬럼. 기존 데이터 삭제 없음.
+- 마지막 확인한 기존 운영 버전: Netlify6acc5a47f394f70008b11015 / main23b885ba63e9271203464d897a82bdde4647c7eb / 2026-10-12 12:56 KST. 이번 배포번호가 아님.
 
-## 검증
-- node scripts/build.mjs — 성공. 기존 node_modules 연결, 새 설치 없음.
-- node --test --test-name-pattern='return path' tests/member-gate.test.mjs
-- node --liftoff-only --no-wasm-tier-up --wasm-num-compilation-tasks=1 tests/menu-browser.mjs --flows-only — 격리 DB 연결 검사 15항목 통과.
-- --flows-only 제외하면 전체 화면 캡처도 수행. 360/390/430/1440, 360px 긴 이름·200% 본문, 48px 터치, 가로 넘침·탭 가림 없음. 색 대비 >=4.5:1.
-- PC 검증 브라우저가 간헐 종료/캡처 실패해 화면과 이동 검증을 분리했다. 캡처 자체 실패는 기능 성공으로 표시하지 않았다.
-- 미확인: 실제 휴대전화 키보드/OS 글자 확대, 운영 계정 저장. 격리 fixture의 전화 확인 RPC/구버전 예약 이력은 미지원으로 기존 실패 처리만 확인.
+## 검증/실행
+- node scripts/profession-catalog.mjs --check
+- node scripts/build.mjs
+- node --liftoff-only --no-wasm-tier-up --wasm-num-compilation-tasks=1 --test tests/profession-registration.test.mjs
+- node --test tests/expert-documents-api.test.mjs tests/profile-photo-api.test.mjs
+- node tests/profession-browser.mjs --ui-only
+- node --liftoff-only --no-wasm-tier-up --wasm-num-compilation-tasks=1 tests/profession-browser.mjs
+- DB 검증은 PGlite 임시 DB. 운영 URL/키/회원 데이터를 쓰지 않는다. UI는 인증/RPC 격리. 외부 SMS/OAuth/지도 타일 요청 차단.
+- PC 메모리가 부족해 초기 실행 실패했지만 이후 위 테스트 실행 가능해짐. 필요 시 로컬 격리 실행에 sandbox escalation. 64MB 초기 메모리 시도는 최소128MB 때문에 불가했고 해당 임시 코드는 제거했다.
+- artifacts/profession-browser-ui-report.json / profession-browser-database-report.json. 캡처는 docs/profession-registration-screens.
 
-## 손대지 않은 것 / 충돌
-- bohumso-fec525a의 codex/meeting-feedback, bohumso-ui-release, 기존 dirty 작업과 운영 DB 미적용 변경을 병합하지 않았다. Claude 작업을 직접 확인했다고 주장하지 않는다.
-- home-copy 작업본 bcb0b5b 문서 커밋은 이번 반영에 포함하지 않는다.
-- 공통 ui-icons.js 마지막 탭·아이콘만 변경. account.js/growth.js/workflow.js의 기존 기능과 충돌 가능성은 후속 병합 시 확인.
-- 지도 공개 전용 스위치·보험소 관리·공지사항 목록은 현행 운영 코드에 없어 가짜 메뉴를 만들지 않았다. 새 기능이 필요하면 별도 범위.
+## 아직 남은 것
+- request_user_input_async로 066 DB 적용+배포 승인 질문 제출. 응답이 없으면 운영 변경 금지. 공개 권한/직군 약관 변경이 과거 migration 승인에 포함되지 않는다고 설명했다.
+- 실제 운영 스키마와 SQL 적용 직전 비교·백업, 사용자 승인 후 적용/배포 (약40~60분). Netlify deploy skill 및 기존 절차를 읽고 진행.
+- 실제 외부 OAuth/SMS·Storage 업로드, 실단말 키보드·OS글자확대는 미확인 (약20~40분, 지정 계정·격리 데이터와 별도 허용 범위 확인).
+- 약관은 요청한 공통/직군 원칙을 개발 반영한 초안. 세무사 등록/명칭은 공식 근거 확인, 유료 노출 법률 판단은 미완료. 가격/결제 개방 금지.
+- 기존 원본30일/기록1년 보관 문구를 변경하지 않음. 자동 파기 연결은 미확인. 운영 절차 확인 필요.
+- 거점 좌표는 관리자 실주소 확인 후 입력. 별도 거점 운영 대시보드는 현행에 없어 새로 만들지 않았다. 새 세무/거점 자기 심사 불가.
 
-## 다음 단계
-1. 전문가 또는 관리자 세션이 있는 환경에서 운영 메뉴 추가 읽기 확인 (약 5~10분). 현재 일반 회원 세션의 역할을 임의로 바꾸지 않는다.
-2. 실단말 키보드·접근성은 별도 20~30분. 이번 메뉴에는 입력 폼 없음.
-3. 원복 기준 1900e5d. 이번 메뉴 커밋을 revert하여 Git 배포한다. 홈 새 문구 유지, DB 원복 없음.
+## 보호/원복
+- bohumso-fec525a의 codex/meeting-feedback(062~065), bohumso-ui-release 및 다른 작업본 수정/병합 안 함. Claude 작업을 직접 확인한 것으로 보고하지 않는다.
+- 충돌 가능: src/account.js, menu.js, workflow.js, profile-editor.js와 SQL의 consultation/urgent/profile 함수. 원격main을 작업본에 덮어쓰지 않는다.
+- 원복: 이전 프런트엔드 + supabase/rollback_profession_registration.sql. 추가 데이터/컬럼 보존, 신규 거점 접수 중지. 재적용 시 거점 재공개는 재심사 필요.
+- 상세 변경안/법적 참고/미확인: docs/profession-registration-20261012.md.

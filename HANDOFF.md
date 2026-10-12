@@ -617,3 +617,12 @@
 - 운영 증거 docs/growth-practice-screens/production-*.png, 상세 docs/growth-practice-20261011.md. 기존 데이터 지문 불변과 신규 권한 확인 기록 포함.
 - 원복: 이전배포6acb77fcb27b490008a27b4d + rollback_expert_growth.sql / rollback_support_chat.sql / 필요시057_support_conversations_rollback.sql. 테이블 데이터 보존.
 - 로컬 가상 문의4개 복원한 통합 미리보기8894/8895/8896 실행(session3863). 실제 단말 검증·보관기간 결정·외부 자동화 연결은 남음. 기존 ROADMAP4~9 전체 완료가 아님.
+
+
+## 2026-10-12 — 직군별 전문가 가입 개발 검수 (운영 미적용)
+- codex/profession-registration, 기준 코드 23b885b. 기존 별도 전체 메뉴 UI 유지. 직군별 가입/서류/심사/프로필/지도/상담료/예약 연결. 손해사정사·변호사 신규 접수 차단.
+- 공통 정의 shared/professions.json, Migration066과 데이터 보존 원복 SQL 준비. 기존 회원·예약·경력 삭제 없음, 유료 결제·외부 발송 없음.
+- 격리 SQL 반복 적용·원복·직군/권한/60분 예약/중복 차단 검사 통과. 실제 빌드 페이지를 격리 DB에 연결하여 저장·재접속·실패 재시도 확인. 360/390/430/1440px 모의 화면, Google/휴대전화 직군 전달 검사 통과.
+- docs/profession-registration-20261012.md와 docs/profession-registration-screens 참고. 운영 OAuth·SMS·Storage 바이너리·실단말 키보드는 미확인. 보관기간 집행과 법률 검토도 별도 운영 확인 필요.
+- 066 운영 DB 적용 및 배포 승인 질문 제시. 답변 전 운영 실행하지 않는다. 과거 057/060/061 승인과 혼동하지 않는다.
+- 별도 작업본 062~065 및 Claude 변경 병합 안 함. 작업 종료 시 로컬/원격 저장 상태는 HANDOFF_CODEX.md 확인.

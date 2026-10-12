@@ -81,6 +81,7 @@
   border:0; border-radius:999px; background:var(--border); cursor:grab;
 }
 .list-head{padding:2px 16px 10px;border-bottom:1px solid var(--border)}
+.profession-filter{display:flex;align-items:center;gap:var(--space-2);font-size:var(--type-label);color:var(--text);flex:1 1 auto;min-width:0}.profession-filter select{min-height:var(--touch-target);min-width:0;max-width:100%;flex:1;padding:var(--space-2);background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-control);font:inherit}
 .list-head strong{display:block;font-size:15px;margin-bottom:8px}
 .sort-tabs{display:flex;gap:6px}
 .sort-tabs button{
@@ -196,7 +197,7 @@
 .map-page{height:100vh;height:100dvh;min-height:0}.map-page.has-bottom-nav .customer-nav{height:calc(var(--bottom-nav-height) + env(safe-area-inset-bottom,0px));flex:0 0 calc(var(--bottom-nav-height) + env(safe-area-inset-bottom,0px));padding:4px 8px calc(4px + env(safe-area-inset-bottom,0px));box-sizing:border-box}.map-page .card-sheet-body{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}.map-page .notification-bell{top:auto;bottom:auto}
 
 /* Compact result panel. The map stage already excludes the navigation safe area. */
-.map-page .list-sheet{height:140px;max-height:calc(100% - 16px);bottom:16px;display:flex;flex-direction:column;overflow:hidden}
+.map-page .list-sheet{height:auto;max-height:calc(100% - 16px);bottom:16px;display:flex;flex-direction:column;overflow:hidden}
 .map-page .list-sheet.open{height:min(52dvh,520px);max-height:min(52dvh,520px,calc(100% - 16px))}
 .map-page .list-sheet .sheet-toolbar{height:44px;min-height:44px;padding:0 8px;border:0}
 .map-page .list-sheet .sheet-toolbar button{height:44px;min-height:44px;padding:0 12px;min-width:44px}

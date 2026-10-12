@@ -79,7 +79,7 @@ async function start(){
  const auth=await memberState(client);if(auth.state===MEMBER.anonymous){const next=rememberAction(location.pathname+location.search+location.hash);location.replace(authURL(next,'login'));return;}user=auth.user;membership=auth.membership;
  if(auth.state===MEMBER.incomplete&&!['account','reset'].includes(mode)){const next=rememberAction(location.pathname+location.search+location.hash);location.replace(accountReturn(next));return;}
  if((mode==='admin'||document.body.dataset.workspace==='admin')&&!membership.admin){message('관리자 권한이 필요합니다.');return;}
- if(document.body.dataset.workspace==='partner'&&membership.partner_status!=='approved'){message('승인된 전문가만 이용할 수 있습니다.');return;}
+ if(document.body.dataset.workspace==='partner'&&(membership.partner_status!=='approved'||membership.profession==='office')){message('승인된 전문가만 이용할 수 있습니다.');return;}
  if(mode==="reset"){$("accountContent").hidden=false;onForm("passwordForm",async d=>{const {error}=await client.auth.updateUser({password:String(d.get("password"))});fail(error);message("비밀번호를 변경했습니다. 내 계정에서 계속 이용할 수 있습니다.");});return;}
  await refreshMembership();
  if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config});if(document.body.dataset.workspace==='partner'){
@@ -102,13 +102,13 @@ async function start(){
   //    그대로 쓴다(새로 만들지 않는다). 승인 전에는 카드 대신 안내 한 줄만 보여준다.
   const top=document.createElement('div');$("accountContent").prepend(top);
   if(applicationStatus==='approved')await renderInstant(client,top);
-  else{const note=document.createElement('p');note.className='card';note.textContent='승인 후 지금 방문 상담을 켤 수 있어요';top.append(note);}
-  if(membership.partner_status)await renderServiceArea(client,$("accountContent"));
-  if(membership.profession==="planner"&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));
+  else if(applicationStatus!=='office'){const note=document.createElement('p');note.className='card';note.textContent='승인 후 지금 방문 상담을 켤 수 있어요';top.append(note);}
+  if(membership.partner_status&&membership.profession!=='office')await renderServiceArea(client,$("accountContent"));
+  if(["planner","tax"].includes(membership.profession)&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));
   // ⑤ 다른 화면으로 가는 링크는 맨 아래에.
-  const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink)$("accountContent").append(workLink);}
+  const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink){workLink.hidden=membership.profession==='office'||applicationStatus==='office'&&membership.partner_status!=='approved';$("accountContent").append(workLink);}}
  if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
- if((mode==='partner'||document.body.dataset.workspace==='partner')&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='✦ 성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('a[href="/claim-resources.html"]')?.closest('section');if(resources)resources.append(entry);else $('accountContent').prepend(entry);}
+ if((mode==='partner'||document.body.dataset.workspace==='partner')&&membership.profession!=='office'&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='✦ 성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('a[href="/claim-resources.html"]')?.closest('section');if(resources)resources.append(entry);else $('accountContent').prepend(entry);}
  $("accountContent").hidden=false;
  openMenuDestination();
 }

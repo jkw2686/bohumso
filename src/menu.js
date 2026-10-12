@@ -91,8 +91,8 @@ async function load() {
     retry.hidden = true;
     if (auth.state === MEMBER.anonymous) { guest(); return; }
     const {membership: member, user} = auth;
-    const approved = member.member && member.partner_status === 'approved';
-    const planner = approved && member.profession === 'planner';
+    const approved = member.member && member.partner_status === 'approved' && member.profession !== 'office';
+    const planner = approved && ['planner','tax'].includes(member.profession);
     const results = await Promise.all([
       planner ? client.rpc('expert_optional_profile', {operation: 'get'}) : null,
       approved ? client.rpc('growth_command', {operation: 'capabilities', payload: {}}) : null,
@@ -131,6 +131,7 @@ async function load() {
       publicMenus();
       group('내 활동', [[member.partner_status ? '전문가 신청 현황' : '전문가로 활동하기', destination('partner'), 'person']]);
     }
+    if(member.office_operator_status)group('보험소 운영', [['거점 신청·심사', '/partner.html?profession=office', 'home']]);
     if (!member.member) row(node('div', '', identity, 'menu-profile-action'), '가입 마무리', account);
     if (member.admin) group('운영 관리', [
       ['관리자 화면', destination('admin'), 'shield'],

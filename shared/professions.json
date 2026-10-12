@@ -1,0 +1,29 @@
+{
+  "version": "expert-professions-2026-10-12-v1",
+  "professions": {
+    "planner": {
+      "name": "보험설계사", "purpose": "보험금 청구 도움", "icon": "person", "intake": true,
+      "documents": {"registration": "설계사 등록증", "appointment": "위촉·소속 확인자료"},
+      "documentRule": "any", "documentHint": "설계사 등록증 또는 위촉·소속 확인자료 중 하나를 제출하세요.",
+      "registryLabel": "보험모집 등록번호 (선택)",
+      "specialties": {"claim": "청구서류 안내", "coverage": "가입보험 확인", "death": "사망보험금", "critical": "암·중대질병", "medical": "실손", "surgery": "입원·수술", "accident": "사고", "corporate": "기업보험"},
+      "pledges": ["첫 미팅에서는 보험 가입을 권유하지 않습니다.", "청구 도움 이후에도 고객이 먼저 명시적으로 요청한 경우에만 신규 가입 상담을 진행합니다."]
+    },
+    "tax": {
+      "name": "세무사", "purpose": "세무 상담", "icon": "document", "intake": true,
+      "documents": {"registration": "세무사 등록 확인자료", "appointment": "사무소 확인자료"},
+      "documentRule": "all", "documentHint": "세무사 등록증과 현재 사무소 정보를 확인할 자료를 제출하세요. 자격증만으로 개업 등록 확인을 대신하지 않습니다.",
+      "registryLabel": "세무사 등록번호",
+      "specialties": {"tax_income": "소득세", "tax_inheritance": "상속·증여세", "tax_property": "양도·부동산 세무"},
+      "pledges": []
+    },
+    "office": {
+      "name": "보험소 운영자", "purpose": "상담 공간 운영", "icon": "home", "intake": true,
+      "documents": {"registration": "상담 공간 확인자료", "appointment": "공간 운영 권한 확인자료"},
+      "documentRule": "all", "documentHint": "상담 공간과 사용·운영 권한을 확인할 자료를 제출하세요. 개인 전문가 자격 신청과 별도로 검토합니다.",
+      "registryLabel": "", "specialties": {}, "pledges": []
+    },
+    "adjuster": {"name": "손해사정사", "intake": false},
+    "lawyer": {"name": "변호사", "intake": false}
+  }
+}

@@ -1,4 +1,4 @@
-import {renderEarlyExpert} from './expert-early-access.js';
+import {renderProfessionApplication as renderEarlyExpert} from './profession-onboarding.js';
 import {PhoneVerificationProvider} from './phone-verification.js';
 import {el,kst} from './consultation-ui.js';
 import {AGREEMENT_VERSION,PLEDGES,PROFESSIONS,validRegistration,validRealName,NAME_RULE_HINT,koreanPhone,prepareDocument,documentRequest} from './expert-shared.js';

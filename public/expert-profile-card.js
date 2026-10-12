@@ -7,14 +7,14 @@
  function setAvatar(box,url){
   if(box.dataset.photo===String(url||'')&&box.childNodes.length)return;box.dataset.photo=String(url||'');
   box.replaceChildren();box.classList.remove('has-photo');
-  function fallback(){box.classList.remove('has-photo');box.innerHTML=person;}
+  function fallback(){box.classList.remove('has-photo');box.innerHTML=box.dataset.profession==='tax'?(window.uiIcon?.('document')||person):person;}
   if(!url){fallback();return;}
   var img=node('img','',box);img.alt='';img.width=img.height=192;img.decoding='async';img.referrerPolicy='no-referrer';
   img.onload=function(){if(img.parentNode===box)box.classList.add('has-photo');};
   img.onerror=function(){if(img.parentNode===box)fallback();};img.src=url;
  }
- function avatar(parent,p){var box=node('span','',parent,'expert-avatar');box.setAttribute('aria-hidden','true');setAvatar(box,photoURL(p.photo_url));return box;}
- function query(p,context){return new URLSearchParams({planner:p.id,region:p.region||'',purpose:context?.purpose||'claim',situation:context?.situation||''});}
+ function avatar(parent,p){var box=node('span','',parent,'expert-avatar');box.setAttribute('aria-hidden','true');box.dataset.profession=p.profession||'';setAvatar(box,photoURL(p.photo_url));return box;}
+ function query(p,context){return new URLSearchParams({planner:p.id,region:p.region||'',purpose:p.profession==='tax'?'other':context?.purpose||'claim',situation:context?.situation||''});}
  function profileLink(parent,p,context,text){var a=node('a',text,parent,'expert-profile-link');a.href='/find.html?'+query(p,context)+'#profile-'+encodeURIComponent(p.id);a.addEventListener('click',function(e){if(e.button||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;e.preventDefault();openDetail(p,context);});return a;}
  function identity(parent,p,options){
   options=options||{};var root=node('div','',parent,'expert-profile'),head=node('div','',root,'expert-profile-head');
@@ -22,6 +22,7 @@
   if(options.interactive)photoParent.setAttribute('aria-label',(p.name||'전문가')+' 프로필 사진·상세보기');avatar(photoParent,p);
   var text=node('div','',head),title=node('h2','',text);
   if(options.interactive)profileLink(title,p,options.context,p.name||'전문가');else title.textContent=p.name||'전문가';
+  if(p.profession_name||p.profession==='tax')node('p',p.profession_name||'세무사',text,'expert-profession');if(p.fee_notice)node('p',p.fee_notice,root,'expert-profile-note');
   if(p.organization)node('p',p.organization,text,'expert-organization');
   var chosen=(p.insurance_types||[]).filter(function(k){return types[k];});
   if(chosen.length){var badges=node('div','',root,'expert-badges');badges.setAttribute('aria-label','보험 취급 구분 · 본인 선택');chosen.forEach(function(k){node('span',types[k],badges);});node('p','보험 취급 구분 · 본인 선택',root,'expert-profile-note');}
@@ -61,6 +62,6 @@
   window.addEventListener('pageshow',check);document.addEventListener('visibilitychange',function(){if(!document.hidden)check();});window.addEventListener('bohumso-profile-updated',check);
  }
  function refreshDetail(profiles){if(activeDetail){var p=profiles.find(function(p){return p.id===activeDetail.id;});if(p)activeDetail.replace(p);}}
- function markerIcon(p){var box=node('div');avatar(box,p);return window.L.divIcon({html:box.firstChild,className:'expert-map-marker',iconSize:[48,48],iconAnchor:[24,24],popupAnchor:[0,-28]});}
+ function markerIcon(p){var box=node('div');var face=avatar(box,p);if(p.profession==='tax'&&!p.photo_url)face.innerHTML=window.uiIcon?.('document')||person;box.title=p.profession_name||'전문가';return window.L.divIcon({html:box.firstChild,className:'expert-map-marker',iconSize:[48,48],iconAnchor:[24,24],popupAnchor:[0,-28]});}
  window.BohumsoProfile={types:types,tasks:tasks,identity:identity,avatar:avatar,setAvatar:setAvatar,photoURL:photoURL,profileLink:profileLink,openDetail:openDetail,markerIcon:markerIcon,onChange:onChange,refreshDetail:refreshDetail};
 })();
