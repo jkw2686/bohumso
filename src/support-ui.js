@@ -1,7 +1,8 @@
 import {el,kst,states as bookingStates} from './consultation-ui.js';
+import {CONVERSATION_STATUS} from './support-status.js';
 
 export const kinds={INQUIRY:'이용 문의',REPORT:'오류·전문가 신고',ACCESS:'개인정보 열람',CORRECT:'개인정보 정정',DELETE:'개인정보 삭제',WITHDRAW:'회원탈퇴'};
-const states={RECEIVED:'운영자 확인 대기',IN_PROGRESS:'대화 진행 중',COMPLETED:'처리 완료',DECLINED:'처리 사유 안내'};
+const states=CONVERSATION_STATUS;
 const errorCopy={request_forbidden:'이 문의를 확인할 권한이 없습니다.',admin_required:'관리자 계정만 이용할 수 있습니다.',stale_request:'새 메시지나 변경이 있습니다. 대화를 새로고침한 뒤 다시 확인해 주세요.',request_limit:'잠시 후 새 문의를 접수해 주세요. 기존 문의에는 내용을 이어서 남길 수 있습니다.',invalid_support_message:'내용을 2~2,000자로 입력해 주세요.',support_take_required:'문의 맡기를 누른 뒤 답변해 주세요.',support_already_taken:'다른 운영자가 맡고 있는 문의입니다.',support_answer_required:'답변을 확인한 뒤 해결 여부를 알려 주세요.',request_key_conflict:'이전 전송 결과를 먼저 확인해 주세요. 같은 전송 번호로 다른 내용을 보낼 수 없습니다.'};
 export function supportError(e){return errorCopy[e?.message]||'저장 여부를 확인하지 못했습니다. 입력을 유지했으니 새로고침으로 이력을 확인하거나 같은 내용으로 다시 전송해 주세요.';}
 export async function callSupport(client,operation,payload={}){const r=await client.rpc('support_command',{operation,payload});if(r.error)throw r.error;if(['create','message','resolve','take','release','reply','note'].includes(operation)&&(!r.data?.saved||!r.data.id))throw Error('missing_receipt');return r.data;}
