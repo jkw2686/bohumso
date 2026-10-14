@@ -1,4 +1,4 @@
-export const claimDocumentSource="https://direct.samsungfire.com/claim/PP040202_001.html?pcMode=true";
+export const claimDocumentSource="https://www.samsungfire.com/v2/html/customer/13/G_030_010_010.html";
 export const helpGuides=[
   {
     "slug": "death",

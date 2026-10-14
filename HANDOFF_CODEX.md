@@ -43,3 +43,10 @@ PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 읽고 최신 직�
 - 원복: supabase/rollback_profession_registration.sql + 이전 프런트23b885b. 추가 테이블/컬럼/신청은 보존, 신규거점 접수중지. 이후 생긴 실제 데이터/승인범위를 확인하고 실행. 무단 rollback 금지.
 - 비공개 백업 private.profession_release_backup / private.profession_release_snapshot, artifacts/profession-production. 회원/함수 전체 백업을 Git에 넣지 않는다.
 - 이번 작업 완료. 별도 ROADMAP4~9단계/062~065 완료로 표시하지 않는다.
+
+## 최신 후속 작업 — 2026-10-14 삼성화재 링크
+- 삼성화재 링크 최소 수정 개발 저장, 미배포. 상세 검수 docs/samsungfire-link-20261014.md.
+- 수정7파일 외 기능 코드 변경 없음. 원자료2026-10-10 보존, 현검수2026-10-14.
+- 남은 확인: 외부 새 창 본문 추적/모바일 실기기/운영 적용. 기존 통합 테스트의18시·가상전문가 fixture 실패는 수정 범위 밖.
+- 다음 예상: 배포 승인 확인 및 운영 재검수 약15~30분; 실기기는 장치 제공 필요.
+- 이전 직군별 운영 배포 상태와 별도 미적용 작업은 위 기록 그대로 유지.

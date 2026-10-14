@@ -636,3 +636,8 @@
 - 운영 시험 가입·심사·문서 업로드·예약·외부 발송·과금 없음. 이들 쓰기 검사는 격리 결과. 실단말/실제 OAuth·SMS·보관기간 집행/유료 노출 법률 검토 미확인.
 - 원복 supabase/rollback_profession_registration.sql + 이전 프런트23b885b, 추가 데이터 보존. 비공개 백업 artifacts/profession-production 및 private.profession_release_backup/snapshot.
 - 보고서 docs/profession-registration-20261012.md. 별도062~065·Claude 작업 병합/변경 안 함. 다음은 미확인 운영 절차/실단말 검사, 별도 로드맵 승인 범위 구분.
+
+## 2026-10-14 — 삼성화재 링크 최소 수정 (미배포)
+- 자료실 삼성화재/소비자 안내5곳 공식 필요서류 URL 교체, 실제 확인범위/날짜 정합성 수정. 원자료 기록 보존.
+- 빌드/검색2개 통과. PC1440/모바일390 공식 본문 확인, 자료실320~1440 검사 통과. 기존 예약18시/가상지도핀 통합 검사 실패와 외부 새 창 추적·실기기 미확인은 docs/samsungfire-link-20261014.md 참조.
+- 별도 작업본, 기존 작업 보존. DB/설정/배포/main push 없음. 배포 승인 확인 후 운영 재검수 필요.
