@@ -1,35 +1,17 @@
-# 현재 인수인계 — 공통 UI 개선 및 삼성화재 링크 통합 (2026-10-15)
+# 현재 상태 — 2026-10-15
 
-PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 최신 직접 사용자 지시를 우선한다.
+UI 개선과 기존 삼성화재 링크 수정을 개발·검수·배포 완료했다.
+코드4209cdbe682f475b2b9b1f40f1ac752c11506cf8, Netlify6acfb55bb53f525693aed49d ready (02:01:33 KST).
+운영 https://bohumso.netlify.app
+고정 배포 https://6acfb55bb53f525693aed49d--bohumso.netlify.app
 
-## 승인·범위
-- 사용자가 공통 UI 디자인 개선 후 먼저 작업한 삼성화재 수정까지 함께 배포하도록 명시적으로 승인했다. 이 작업의 통합 배포는 승인 대기 상태가 아니다.
-- 기존 b9ff9f1 삼성화재 링크 수정 + docs/ui-design-20261015.md의 디자인 작업만 포함한다. 다른 작업본/062~065·DB·요금·인증·정책·환경 설정을 변경하지 않는다.
-- 기존 운영 기준 fb970b4, 원격 main 문서 후속739a5d2. 작업 중 기존 main 추가변경 없음 확인.
+공통 디자인 토큰/버튼/카드/입력/탭/일관 SVG, 홈 도움 순서, 관리자 예약 우선 구성, 프로필 상담 설정 busy/실패복구를 적용. 브랜드·지도·전문가 선택·보험소 예약·정책·권한·DB·설정 유지.
+삼성화재 공식 필요서류 URL: https://www.samsungfire.com/v2/html/customer/13/G_030_010_010.html
+원자료2026-10-10과 본문검수2026-10-14 구분 유지.
 
-## 변경
-- 공통 service-ui.css/타이포 연결: 밝은 표면·브랜드 포인트·16/12px radius·48/44px 조작·16/14px 글자·180ms 전환·키보드 포커스.
-- 홈 정보/행동 순서와 바로가기, 실제 지도 위치, 일관 SVG 시스템과 세무사 아이콘.
-- 프로필 상담 설정 저장 중 표시·중복 방지·실패 시 상담 요청 상태 복구. 방문 상담 처리 중 표시 및 ON/OFF 글자 구분.
-- 관리자 밝은 메뉴, 예약 현황/지도 우선, 지역 오픈 알림은 접힌 보조 영역. 기능 경로/권한 유지.
+최종 GitHub verify38603056745 success. npm run build, service-ui-browser, profession-browser --ui-only, profile-usability-browser, claim-resources-browser, claim-help-browser, map-controls-browser 성공. 브라우저 tests는 tests/ 경로에서 node로 실행하며 필요한 격리 테스트 서버/fixture를 사용한다.
+360/390/768/1440 레이아웃, 로그인→지도→전문가→가상예약과 상태 저장/실패복구 검수. 운영 홈 신규 메뉴·실제 지도, 자료실 삼성화재 새 창 본문과 원래 화면 유지 확인.
 
-## 검수
-- 빌드, 선택 DB/검색/회원/프로필 검사6개 성공.
-- tests/service-ui-browser.mjs: 실제 렌더된 페이지의360/390/768/1440, 로그인 입력→지도→전문가 선택→가상 예약, 지역/전문가/상황 유지, 상담 상태의busy/실패복구/저장재접속, 관리자 레이아웃 성공. --admin-only로 정보 순서 변경 후 재확인 성공.
-- tests/profession-browser.mjs --ui-only 성공, tests/profile-usability-browser.mjs 사진추가·교체·조정·복구·중복/실패/200%글자/프로필 맥락 성공.
-- tests/claim-resources-browser.mjs 성공. 과거18시 fixture를 현행17시로 수정. claim-help의 구형 지도 클래스와 profession 누락 fixture, 지도 위치 안내/정밀 위치 요청 기대값을 현행 기준으로 갱신했다.
-- 오래된 expert-profile-page-browser.mjs는 구형 DB fixture에서 가입정보 로딩/방문가능 버튼 기대에 실패. 전체 통합 검사를 통과했다고 기록하지 않는다. 현재 전용 검수와 구분한다.
-- 전체 npm test 및 소비자 안내/지도 회귀의 최종 결과, 배포·운영 확인 결과는 후속 HANDOFF 기록을 확인한다.
-
-## 실측 한계
-- 가상 계정/API/DB 검사를 운영 저장 성공으로 주장하지 않는다. 실제 고객 예약·업로드·메시지·청구 실행 없음.
-- 실기기/실제 OAuth·SMS·GPS/OS 글자확대는 미확인. 일반 브라우저에서 공식 참고사이트와 실제 화면을 확인했다.
-- 이전 직군별066 운영 적용 상태는 HANDOFF.md의2026-10-12 기록을 유지하며 이번 디자인 때문에 SQL을 재실행하지 않는다.
-
-## 다음 단계
-전체검사 완료→최신main 보존 확인→승인된통합 배포→실제홈/지도/메뉴/삼성화재 링크/파일 일치 확인→배포ID와검수결과 기록. 예상15~30분(전체회귀 검사시간 별도).
-
-## 최종 검수
-- 위의 실행중 항목 완료: GitHub38596208604 success, 자료실/청구안내/지도 전체 회귀 성공. 오래된 expert-profile-page-browser DBfixture 한계는 현재 전용검수와 구분.
-- 기존지도 기하/데스크톱 고정목록/상세50% 정책 유지, 잘못 추정했던 짧은화면 높이 변경 제거.
-- 통합배포 승인에 따라 main 반영 후 운영 확인을 수행한다. 배포결과는 후속기록 확인.
+남은 미확인: 실기기, 실제 OAuth/SMS/GPS, 운영 예약/프로필 쓰기. 고객 개인정보·실제 청구/예약 실행 없음. 오래된 expert-profile-page-browser는 구형 DB fixture 실패이며 현행 전용 검사와 구분한다. 후속 실계정/실기기 검수 예상30~60분.
+기존 지도 높이/데스크톱 고정 목록/상세50% 상한 유지. 062~065 다른 작업본이나 SQL을 임의 적용하지 말 것. 되돌릴 경우 UI 변경 전739a5d2와 삼성화재 독립커밋b9ff9f1을 비교하며 운영 DB를 되돌리지 말 것.
+상세 docs/ui-design-20261015.md 및 HANDOFF.md. 문서 후속 커밋은 skip netlify/ci로 코드배포를 반복하지 않는다.
