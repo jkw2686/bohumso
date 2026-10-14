@@ -7,7 +7,7 @@
  function setAvatar(box,url){
   if(box.dataset.photo===String(url||'')&&box.childNodes.length)return;box.dataset.photo=String(url||'');
   box.replaceChildren();box.classList.remove('has-photo');
-  function fallback(){box.classList.remove('has-photo');box.innerHTML=box.dataset.profession==='tax'?(window.uiIcon?.('document')||person):person;}
+  function fallback(){box.classList.remove('has-photo');box.innerHTML=box.dataset.profession==='tax'?(window.uiIcon?.('tax')||person):person;}
   if(!url){fallback();return;}
   var img=node('img','',box);img.alt='';img.width=img.height=192;img.decoding='async';img.referrerPolicy='no-referrer';
   img.onload=function(){if(img.parentNode===box)box.classList.add('has-photo');};
@@ -62,6 +62,6 @@
   window.addEventListener('pageshow',check);document.addEventListener('visibilitychange',function(){if(!document.hidden)check();});window.addEventListener('bohumso-profile-updated',check);
  }
  function refreshDetail(profiles){if(activeDetail){var p=profiles.find(function(p){return p.id===activeDetail.id;});if(p)activeDetail.replace(p);}}
- function markerIcon(p){var box=node('div');var face=avatar(box,p);if(p.profession==='tax'&&!p.photo_url)face.innerHTML=window.uiIcon?.('document')||person;box.title=p.profession_name||'전문가';return window.L.divIcon({html:box.firstChild,className:'expert-map-marker',iconSize:[48,48],iconAnchor:[24,24],popupAnchor:[0,-28]});}
+ function markerIcon(p){var box=node('div');var face=avatar(box,p);if(p.profession==='tax'&&!p.photo_url)face.innerHTML=window.uiIcon?.('tax')||person;box.title=p.profession_name||'전문가';return window.L.divIcon({html:box.firstChild,className:'expert-map-marker',iconSize:[48,48],iconAnchor:[24,24],popupAnchor:[0,-28]});}
  window.BohumsoProfile={types:types,tasks:tasks,identity:identity,avatar:avatar,setAvatar:setAvatar,photoURL:photoURL,profileLink:profileLink,openDetail:openDetail,markerIcon:markerIcon,onChange:onChange,refreshDetail:refreshDetail};
 })();

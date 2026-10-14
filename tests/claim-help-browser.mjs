@@ -16,7 +16,7 @@ try{
    if(url.hostname==='auth.fixture.test'){
     if(url.pathname.endsWith('/user'))return route.fulfill({json:user});
     if(url.pathname.endsWith('/my_membership'))return route.fulfill({json:{member:true,state:'ACTIVE_MEMBER',partner_status:null}});
-    if(url.pathname.endsWith('/planner_catalog'))return route.fulfill({json:{planners:[{id:'expert',available:true,name:'공개 전문가',region:'경기 김포시',area_latitude:37.615,area_longitude:126.716,specialties:['claim','coverage'],availability_status:'scheduled'}]}});
+    if(url.pathname.endsWith('/planner_catalog'))return route.fulfill({json:{planners:[{id:'expert',profession:'planner',profession_name:'보험설계사',available:true,name:'공개 전문가',region:'경기 김포시',area_latitude:37.615,area_longitude:126.716,specialties:['claim','coverage'],availability_status:'scheduled'}]}});
     if(url.pathname.endsWith('/office_catalog'))return route.fulfill({json:[{id:'office',name:'운영 보험소',region:'경기 김포시',status:'active',address:'공개 주소',latitude:37.615,longitude:126.716}]});
     if(url.pathname.endsWith('/reservation_slots'))return route.fulfill({json:['10:00','11:00','18:00']});
     return route.fulfill({json:{}});
@@ -45,7 +45,7 @@ try{
     if(width===390&&!signedIn&&slug==='cancer')await page.screenshot({path:'artifacts/claim-help-cancer-mobile.png',fullPage:true});
     await page.locator('[data-guide-primary]').click();
     await expect(page).toHaveURL(new RegExp('/map.html\\?view=experts&purpose='+(slug==='coverage'?'coverage':'claim')+'&situation='+slug+'$'));
-    await expect(page.locator('.purpose-chip')).toContainText(banners[i]);await expect(page.locator('.professional-pin')).toHaveCount(1);
+    await expect(page.locator('.purpose-chip')).toContainText(banners[i]);await expect(page.locator('.expert-map-marker')).toHaveCount(1);
     await expect(page.locator('#listLink')).toHaveAttribute('href',new RegExp('situation='+slug));await expect(page.locator('.urgent-map-link')).toHaveAttribute('href',new RegExp('situation='+slug));
     await page.getByRole('button',{name:'공개 전문가 · 전문가 활동지역',exact:true}).press('Enter');
     await expect(page.locator('#cardBody a').first()).toHaveAttribute('href',new RegExp('situation='+slug));

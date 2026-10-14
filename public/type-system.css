@@ -1,3 +1,4 @@
+@import url('/service-ui.css');
 /* Shared typography, deliberately loaded after page-specific styles. */
 @font-face{font-family:'Bohumso Sans';src:url('/fonts/PretendardVariable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
 :root{--font-ui:'Bohumso Sans','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;--ink-heading:#172844;--ink-body:#334155;--ink-muted:#64748b;--type-small:13px;--type-label:14px;--type-body:16px;--type-title:clamp(25px,4vw,32px);--type-section:clamp(20px,3vw,24px);--space-control:12px;--radius-control:12px;--success-ink:#16704f;--success-surface:#edf8f2}

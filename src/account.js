@@ -108,7 +108,7 @@ async function start(){
   // ⑤ 다른 화면으로 가는 링크는 맨 아래에.
   const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink){workLink.hidden=membership.profession==='office'||applicationStatus==='office'&&membership.partner_status!=='approved';$("accountContent").append(workLink);}}
  if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
- if((mode==='partner'||document.body.dataset.workspace==='partner')&&membership.profession!=='office'&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='✦ 성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('a[href="/claim-resources.html"]')?.closest('section');if(resources)resources.append(entry);else $('accountContent').prepend(entry);}
+ if((mode==='partner'||document.body.dataset.workspace==='partner')&&membership.profession!=='office'&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('a[href="/claim-resources.html"]')?.closest('section');if(resources)resources.append(entry);else $('accountContent').prepend(entry);}
  $("accountContent").hidden=false;
  openMenuDestination();
 }

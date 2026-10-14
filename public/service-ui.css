@@ -1,0 +1,131 @@
+/* Service UI: shared surfaces and controls; map geometry and business rules stay local. */
+:root{
+ --bg:#f7f9fc;--card:#fff;--text:#172844;--muted:#526176;--border:#dce3ed;
+ --brand-soft:#eef3ff;--radius:16px;--shadow:0 2px 8px rgba(23,40,68,.04);--shadow-sm:0 1px 3px rgba(23,40,68,.04);
+ --ui-radius:16px;--ui-control-radius:12px;--ui-line:#dce3ed;--ui-surface:#fff;--ui-tint:#f7f9fc;
+ --ui-ink:#172844;--ui-muted:#526176;--ui-focus:#1E4FD6;--ui-disabled:#edf0f5;
+ --ui-space-1:4px;--ui-space-2:8px;--ui-space-3:12px;--ui-space-4:16px;--ui-space-5:24px;--ui-space-6:32px;--ui-space-7:48px;--ui-space-8:64px;
+ --ui-control:48px;--ui-touch:44px;--ui-icon:24px;--ui-icon-box:48px;--ui-duration:180ms;
+ --ui-title:clamp(28px,3vw,36px);--ui-heading:clamp(22px,2vw,28px);--ui-body:16px;--ui-caption:14px;--ui-weight:650;
+}
+html{scroll-behavior:auto}
+body{background:var(--bg);color:var(--text)}
+body .nav,body .map-nav{background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:1px solid var(--border)}
+body .card{border-radius:var(--ui-radius);box-shadow:var(--shadow-sm);padding:var(--ui-space-5)}
+body .card .card{box-shadow:none}
+body .btn,body button.primary{min-height:var(--ui-control);border-radius:var(--ui-control-radius);gap:var(--ui-space-2);padding:var(--ui-space-3) var(--ui-space-5);font-size:var(--ui-body);font-weight:var(--ui-weight);line-height:1.5;text-align:center;white-space:normal;box-shadow:none;transform:none;transition:background-color var(--ui-duration),border-color var(--ui-duration),color var(--ui-duration)}
+body .btn:hover{transform:none;box-shadow:none}
+body .btn.ghost,body .btn.secondary{background:var(--card);color:var(--brand);border:1px solid var(--border);box-shadow:none}
+body .btn.ghost:hover,body .btn.secondary:hover{background:var(--brand-soft);border-color:var(--brand)}
+body .btn:disabled,body button.primary:disabled{background:var(--ui-disabled);color:var(--ui-muted);opacity:1;cursor:not-allowed}
+body .btn .ui-icon{width:var(--ui-icon);height:var(--ui-icon)}
+body :is(a,button,input,select,textarea,summary):focus-visible{outline:3px solid var(--ui-focus);outline-offset:3px}
+body :is(.field input,.field select,.field textarea,form input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),form select,form textarea){border:1px solid var(--border);border-radius:var(--ui-control-radius);min-height:var(--ui-control);padding:var(--ui-space-3);background:var(--card);color:var(--text);font-size:var(--ui-body);line-height:1.5;max-width:100%}
+body input:is([type=checkbox],[type=radio]){accent-color:var(--brand);width:20px;height:20px;flex:none}
+body form label:has(input:is([type=checkbox],[type=radio])){min-height:var(--ui-touch)}
+body :is(input,select,textarea)[aria-invalid=true]{border-color:var(--danger-text)}
+body :is(form,section)[aria-busy=true]{cursor:progress}
+body :is(h1,h2,h3){color:var(--text)}
+body :is(.muted,.resource-meta,.profile-status,.wizard-context){color:var(--muted);line-height:1.7}
+body :is(.member-header a,.home-map-heading a,.home-map-tools button,.resource-detail-toggle,.menu-settings){min-height:var(--ui-touch)}
+body .customer-nav{box-shadow:var(--shadow-sm);border-color:var(--border);background:var(--card)}
+body .customer-nav a{border-radius:var(--ui-control-radius);min-height:var(--ui-touch);color:var(--muted)}
+body .customer-nav a[aria-current=page]{color:var(--brand)}
+body .profile-avatar{flex-shrink:0}
+body :is(.profile-summary,.consult-settings,.optional-profile){overflow-wrap:anywhere}
+body .profile-summary{padding-block:var(--ui-space-3);border-block:1px solid var(--border);margin-bottom:var(--ui-space-4)}
+body .profile-summary p{display:flex;align-items:center;gap:var(--ui-space-2);margin-block:var(--ui-space-2)}
+body .profile-summary .ui-icon{color:var(--brand)}
+body .profile-status[role=status]{min-height:var(--ui-space-5);font-size:var(--ui-caption)}
+body .request-heading h1,body .admin-heading h1{font-size:var(--ui-title)}
+body .request-wizard h2{font-size:var(--ui-heading);margin-block:var(--ui-space-4)}
+body .choice-grid button{min-height:var(--ui-control);border-radius:var(--ui-control-radius);font-size:var(--ui-body);line-height:1.5;white-space:normal}
+body .choice-grid button[aria-pressed=true]{background:var(--brand-soft);border-color:var(--brand)}
+body :is(.journey-status,.booking-gate){border-radius:var(--ui-control-radius)}
+body .booking-timeline li{font-size:var(--ui-caption);line-height:1.5}
+body .auth-card{box-shadow:none;border-radius:var(--ui-radius)}
+body .auth-help{font-size:var(--ui-caption)}
+body .help-guide{padding-top:var(--ui-space-6)}
+body .guide-steps{gap:var(--ui-space-5)}
+body .guide-steps li{box-shadow:none;border-radius:var(--ui-radius)}
+body .resource-row h3{font-size:18px}
+body .resource-row .resource-detail-toggle{font-size:var(--ui-caption);line-height:1.5}
+body .resource-info>td{background:var(--card);padding:var(--ui-space-5);border-top:1px solid var(--border)}
+body .resource-links .btn{font-size:var(--ui-caption);padding:var(--ui-space-3) var(--ui-space-4)}
+body.menu-page .menu-group{box-shadow:none;border-radius:var(--ui-radius)}
+body.menu-page .menu-row{padding:var(--ui-space-4) var(--ui-space-5)}
+body.menu-page .menu-row-icon{border-radius:var(--ui-control-radius)}
+body.admin-console .admin-sidebar{background:var(--card);color:var(--text);border-right:1px solid var(--border)}
+body.admin-console .admin-sidebar a,body.admin-console .admin-sidebar nav p{color:var(--muted);opacity:1}
+body.admin-console .admin-sidebar a:hover,body.admin-console .admin-sidebar a[aria-current=page]{color:var(--brand);background:var(--brand-soft)}
+body.admin-console :is(.admin-brand,.admin-sidebar-note){border-color:var(--border)}
+body.admin-console .admin-stat-grid strong{color:var(--text)}
+body.admin-console .admin-stat-grid button{border-radius:var(--ui-radius);box-shadow:none}
+body.admin-console .admin-section-heading{padding-bottom:var(--ui-space-4);border-bottom:1px solid var(--border)}
+body.admin-console .admin-regional-tools{margin-block:var(--ui-space-5);padding:var(--ui-space-4);background:var(--card);border:1px solid var(--border);border-radius:var(--ui-radius)}
+body.admin-console .admin-regional-tools>summary{min-height:var(--ui-touch);display:flex;align-items:center;cursor:pointer;color:var(--brand)}
+body.admin-console .admin-regional-tools>summary::before{content:'+';margin-right:var(--ui-space-3)}
+body.admin-console .admin-regional-tools[open]>summary::before{content:'−'}
+body.admin-console .waitlist-admin .btn.ghost{background:var(--card);color:var(--brand);border:1px solid var(--border)}
+body .policy-footer{background:var(--card);border-top:1px solid var(--border);line-height:1.8}
+/* Empty-state guidance stays expandable so the collapsed sheet leaves the map visible. */
+body.map-page .list-sheet .empty-art{display:none}
+body.map-page .list-sheet[data-sheet-state=collapsed] .empty-actions .btn.ghost,
+body.map-page .list-sheet[data-sheet-state=collapsed]:has(.empty-actions) #areaRequest{display:none}
+body.map-page .empty-actions-hint{font-size:var(--ui-caption);margin-block:var(--ui-space-2)}
+body.map-page .sheet-toolbar button{min-height:var(--ui-touch)}
+body.map-page .leaflet-control-zoom a,body.home-page .home-map-section .leaflet-control-zoom a{width:var(--ui-touch);height:var(--ui-touch);min-width:var(--ui-touch);min-height:var(--ui-touch);line-height:var(--ui-touch)}
+body.map-page .map-key{font-size:var(--ui-caption);color:var(--muted)}
+body .home-browse{gap:var(--ui-space-2)}
+/* Landing: a clear action followed by services and the real map. */
+body.home-page{background:var(--card)}
+body.home-page .simple-home{max-width:1168px;padding:var(--ui-space-7) var(--ui-space-5) var(--ui-space-6)}
+.home-hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);align-items:center;gap:var(--ui-space-8);padding-block:var(--ui-space-5) var(--ui-space-8);border-bottom:1px solid var(--border);margin-bottom:var(--ui-space-7)}
+body.home-page .simple-home h1{font-size:clamp(32px,3.5vw,48px);margin:var(--ui-space-4) 0;line-height:1.28;color:var(--text)}
+body.home-page .eyebrow{font-size:var(--ui-caption);letter-spacing:.04em;color:var(--brand)}
+body.home-page .intro-caption{font-size:var(--ui-body);line-height:1.8;color:var(--muted)}
+.hero-actions-row{display:flex;gap:var(--ui-space-3);align-items:center;flex-wrap:wrap}
+body.home-page .home-help{width:auto;margin:0;display:inline-flex}
+body.home-page .home-browse{display:inline-flex;align-items:center;min-height:var(--ui-control);font-size:var(--ui-caption);margin:0;color:var(--brand)}
+.home-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ui-space-3)}
+.home-shortcuts a{display:flex;flex-direction:column;align-items:flex-start;gap:var(--ui-space-3);padding:var(--ui-space-5);border:1px solid var(--border);border-radius:var(--ui-radius);background:var(--ui-tint);color:var(--text);text-decoration:none;line-height:1.5;font-weight:var(--ui-weight);min-width:0}
+.home-shortcuts a:hover{border-color:var(--brand);background:var(--brand-soft)}
+.home-shortcuts .ui-icon{color:var(--brand)}
+body.home-page #situations{font-size:var(--ui-heading);margin:0 0 var(--ui-space-3)}
+body.home-page .situation-cards{gap:var(--ui-space-4);margin-bottom:var(--ui-space-7)}
+body.home-page .situation-cards a{flex-direction:row;align-items:flex-start;gap:var(--ui-space-4);padding:var(--ui-space-5);box-shadow:none;border-radius:var(--ui-radius);font-size:var(--ui-body);transform:none;background:var(--card);line-height:1.6}
+body.home-page .situation-cards a:hover{transform:none;background:var(--ui-tint)}
+body.home-page .situation-cards a>[data-icon]{width:var(--ui-icon-box);height:var(--ui-icon-box);border-radius:var(--ui-control-radius);background:var(--brand-soft)}
+body.home-page .situation-copy small{font-size:var(--ui-caption);line-height:1.6}
+body.home-page .home-map-section{margin-block:var(--ui-space-7);border-radius:var(--ui-radius);box-shadow:none}
+body.home-page .home-map-tools button{background:var(--card)}
+body.home-page .home-map-heading h2{font-size:var(--ui-heading)}
+body.home-page .home-membership{margin-block:var(--ui-space-7);padding:var(--ui-space-5);box-shadow:none;border-radius:var(--ui-radius);background:var(--ui-tint)}
+body.home-page .home-membership h2{font-size:22px}
+body.home-page .home-membership .btn{background:var(--card);color:var(--brand);border:1px solid var(--border)}
+body.home-page .service-steps{padding-block:var(--ui-space-5);margin-block:var(--ui-space-7)}
+body.home-page .service-steps li{background:var(--card);box-shadow:none;border:0;border-radius:0;border-top:1px solid var(--border);padding:var(--ui-space-5) 0}
+body.home-page .service-steps p{font-size:var(--ui-body);color:var(--muted)}
+body.home-page .home-trust{background:var(--ui-tint);color:var(--text);padding:var(--ui-space-6);border-radius:var(--ui-radius);border:1px solid var(--border);box-shadow:none}
+body.home-page .home-trust h2{font-size:var(--ui-heading);color:var(--text)}
+body.home-page .home-trust p{color:var(--muted)}
+body.home-page .home-more{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--ui-space-4);margin-block:var(--ui-space-7)}
+body.home-page .home-more h2{grid-column:1/-1;font-size:var(--ui-heading)}
+body.home-page .more-card{box-shadow:none;border-radius:var(--ui-radius);padding:var(--ui-space-5)}
+@media(max-width:767px){
+ body.home-page .simple-home{padding:var(--ui-space-5) var(--ui-space-4)}
+ .home-hero{grid-template-columns:1fr;gap:var(--ui-space-6);padding-block:var(--ui-space-3) var(--ui-space-6);margin-bottom:var(--ui-space-6)}
+ .home-shortcuts a{flex-direction:row;align-items:center;padding:var(--ui-space-4);gap:var(--ui-space-3);font-size:var(--ui-caption)}
+ .hero-actions-row{align-items:stretch;flex-direction:column;gap:var(--ui-space-2)}
+ body.home-page .home-help{width:100%}body.home-page .home-browse{justify-content:center}
+ body.home-page .situation-cards{grid-template-columns:1fr;gap:var(--ui-space-3);margin-bottom:var(--ui-space-6)}
+ body.home-page .situation-cards a{padding:var(--ui-space-4);min-height:96px}
+ body.home-page .situation-copy small{font-size:var(--ui-caption)}
+ body.home-page .home-more{grid-template-columns:1fr}
+ body.home-page .home-trust{padding:var(--ui-space-5)}
+ body .card{padding:var(--ui-space-4)}
+ body .booking-timeline{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:var(--ui-space-4)}
+ body.admin-console .admin-main{padding-inline:var(--ui-space-4)}
+ body .nav .member-header{gap:var(--ui-space-1)}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}body .btn,body .home-shortcuts a,body .situation-cards a{transition:none}}

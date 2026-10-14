@@ -1,52 +1,30 @@
-# 현재 인수인계 — 직군별 가입 운영 배포 완료 (2026-10-12)
+# 현재 인수인계 — 공통 UI 개선 및 삼성화재 링크 통합 (2026-10-15)
 
-PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 읽고 최신 직접 사용자 지시를 우선한다.
+PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 최신 직접 사용자 지시를 우선한다.
 
-## 현재 상태
-- 사용자 “066 DB 적용 후 배포 승인”에 따라 운영 Supabase066 적용 및 공개 배포 완료. 재승인을 기다리는 상태가 아니다.
-- 브랜치 codex/profession-registration. main과 코드 fb970b48a76577dfe5477fc3e8e28b6cfd89fe91 동기화. 문서 후속 커밋은 배포 생략한다.
-- Production https://bohumso.netlify.app/ · Netlify6acc93b70f2a87c5160f7e22 · 2026-10-12 17:01:15 KST ready/published.
-- 고정 버전 https://6acc93b70f2a87c5160f7e22--bohumso.netlify.app/
-- 완료: 보험설계사/세무사/보험소 운영자 가입 첫 단계·직군별 서류·심사·선택 프로필·지도 유형·세무 비용 확인·예약 연결. 손해사정사/변호사 신규 접수 차단.
-- 기존 전체 메뉴/디자인 유지. 플랫폼 요금/무료기간/결제/외부 메시지 변경 없음.
-- 마지막 코드 수정: src/workflow.js 일정 변경 입력 1시간/09~17시, src/account.js invalid_slot 문구 일치.
+## 승인·범위
+- 사용자가 공통 UI 디자인 개선 후 먼저 작업한 삼성화재 수정까지 함께 배포하도록 명시적으로 승인했다. 이 작업의 통합 배포는 승인 대기 상태가 아니다.
+- 기존 b9ff9f1 삼성화재 링크 수정 + docs/ui-design-20261015.md의 디자인 작업만 포함한다. 다른 작업본/062~065·DB·요금·인증·정책·환경 설정을 변경하지 않는다.
+- 기존 운영 기준 fb970b4, 원격 main 문서 후속739a5d2. 작업 중 기존 main 추가변경 없음 확인.
 
-## 운영 DB 결과
-- 사전26대상함수, 전체128함수/569컬럼/제약·권한/기존 회원1건 비공개 백업. 066 전체BEGIN/COMMIT 실행.
-- 기존 데이터 내용 지문 보존 확인. 기존 컬럼 삭제/타입변경0, 기존정책 동일.
-- 새5테이블 RLS/anon·authenticated 직접 읽기쓰기 거부. expert-documents 비공개, 문서 메타 RPC service_role 전용.
-- 운영 스키마 비교 결과055 등 별도 작업은 미적용이다. 운영 기준24함수로 격리 DB를 재검사했다. 대표 전용2함수는 실신원 재현하지 않고 기존 위임/보존 확인.
+## 변경
+- 공통 service-ui.css/타이포 연결: 밝은 표면·브랜드 포인트·16/12px radius·48/44px 조작·16/14px 글자·180ms 전환·키보드 포커스.
+- 홈 정보/행동 순서와 바로가기, 실제 지도 위치, 일관 SVG 시스템과 세무사 아이콘.
+- 프로필 상담 설정 저장 중 표시·중복 방지·실패 시 상담 요청 상태 복구. 방문 상담 처리 중 표시 및 ON/OFF 글자 구분.
+- 관리자 밝은 메뉴, 예약 현황/지도 우선, 지역 오픈 알림은 접힌 보조 영역. 기능 경로/권한 유지.
 
-## 검증 재실행
-- node scripts/profession-catalog.mjs --check
-- node scripts/build.mjs
-- node --liftoff-only --no-wasm-tier-up --wasm-num-compilation-tasks=1 --test tests/profession-registration.test.mjs
-- node --test tests/expert-documents-api.test.mjs tests/profile-photo-api.test.mjs
-- node tests/profession-browser.mjs --ui-only
-- node --liftoff-only --no-wasm-tier-up --wasm-num-compilation-tasks=1 tests/profession-browser.mjs
-- 선택 환경변수 PROFESSION_BASELINE_FUNCTIONS=artifacts/profession-production/functions-before.json: 운영 대상24함수 기반 추가 통합 검사. 백업은 비공개/Git 제외. 보통 검사는 가상 데이터만 사용한다.
-- node_modules는 기존 설치의 연결 경로라 제한 환경 빌드에서 access denied가 날 수 있다. 같은 빌드를 승인된 로컬 권한으로 실행하여 통과했으며 신규 패키지 설치 안 함.
-- 운영 읽기 확인: 가입/직군별 입력, 모바일360/390/430 및PC1440, 기존2전문가 지도·상담 연결, 서버09~17 정각슬롯, 홈 새 문구·약관. 배포 account.js SHA-256 로컬과 동일, 인증 없는 자료 조회401.
-- 운영 캡처와 DB/화면/파일 검사 결과는 artifacts/profession-production에 로컬 보관. 원격에는 운영 캡처/개인정보/백업 원문을 전송하지 않음.
+## 검수
+- 빌드, 선택 DB/검색/회원/프로필 검사6개 성공.
+- tests/service-ui-browser.mjs: 실제 렌더된 페이지의360/390/768/1440, 로그인 입력→지도→전문가 선택→가상 예약, 지역/전문가/상황 유지, 상담 상태의busy/실패복구/저장재접속, 관리자 레이아웃 성공. --admin-only로 정보 순서 변경 후 재확인 성공.
+- tests/profession-browser.mjs --ui-only 성공, tests/profile-usability-browser.mjs 사진추가·교체·조정·복구·중복/실패/200%글자/프로필 맥락 성공.
+- tests/claim-resources-browser.mjs 성공. 과거18시 fixture를 현행17시로 수정. claim-help의 구형 지도 클래스와 profession 누락 fixture, 지도 위치 안내/정밀 위치 요청 기대값을 현행 기준으로 갱신했다.
+- 오래된 expert-profile-page-browser.mjs는 구형 DB fixture에서 가입정보 로딩/방문가능 버튼 기대에 실패. 전체 통합 검사를 통과했다고 기록하지 않는다. 현재 전용 검수와 구분한다.
+- 전체 npm test 및 소비자 안내/지도 회귀의 최종 결과, 배포·운영 확인 결과는 후속 HANDOFF 기록을 확인한다.
 
-## 미확인·다음 단계
-- 운영 실계정 신규가입/심사/파일 바이너리/예약 쓰기 검사는 안 함. 격리 DB/모의Storage 검사와 구분. 실제 로그인 세션으로 입력 화면/읽기는 확인.
-- 실제 단말 키보드/OS 글자확대/OAuth·SMS·업로드 검사는 약20~40분 예상. 지정 테스트 계정과 외부 발송 승인 범위 확인 후 수행. 자동으로 고객 메시지 보내지 않는다.
-- 기존 원본30일/기록1년 보관 문구는 유지. 실제 자동 파기 연결은 미확인, 운영자가 기간별 집행 절차 확인 필요(약30~60분 점검).
-- 세무사 등록/사무소는 사람이 공식 자료로 확인. 자동 자격검증 API를 연결한 것으로 표현하지 않음. 유료 노출 법률 판단은 미완료, 새 직군 가격·결제 개방 금지.
-- 거점 승인 시 관리자가 주소 확인 후 좌표 입력. 별도 거점 전용 대시보드는 기준 코드에 없어 신설하지 않음. 신규세무/거점 자기심사 차단: 대표 본인 신청은 다른 권한 있는 심사자 또는 운영 결정 필요.
-- 자세한 결과와 법적 근거 docs/profession-registration-20261012.md.
+## 실측 한계
+- 가상 계정/API/DB 검사를 운영 저장 성공으로 주장하지 않는다. 실제 고객 예약·업로드·메시지·청구 실행 없음.
+- 실기기/실제 OAuth·SMS·GPS/OS 글자확대는 미확인. 일반 브라우저에서 공식 참고사이트와 실제 화면을 확인했다.
+- 이전 직군별066 운영 적용 상태는 HANDOFF.md의2026-10-12 기록을 유지하며 이번 디자인 때문에 SQL을 재실행하지 않는다.
 
-## 보호·원복
-- 다른 작업본 bohumso-fec525a codex/meeting-feedback(062~065), bohumso-ui-release 등 수정/병합 안 함. Claude 작업을 직접 확인했다고 주장하지 않는다.
-- 충돌 가능: src/account.js, menu.js, workflow.js, profile-editor.js 및 consultation/urgent/profile SQL 함수. 특히066 뒤에 과거SQL을 덮어 적용하지 않는다.
-- 원복: supabase/rollback_profession_registration.sql + 이전 프런트23b885b. 추가 테이블/컬럼/신청은 보존, 신규거점 접수중지. 이후 생긴 실제 데이터/승인범위를 확인하고 실행. 무단 rollback 금지.
-- 비공개 백업 private.profession_release_backup / private.profession_release_snapshot, artifacts/profession-production. 회원/함수 전체 백업을 Git에 넣지 않는다.
-- 이번 작업 완료. 별도 ROADMAP4~9단계/062~065 완료로 표시하지 않는다.
-
-## 최신 후속 작업 — 2026-10-14 삼성화재 링크
-- 삼성화재 링크 최소 수정 개발 저장, 미배포. 상세 검수 docs/samsungfire-link-20261014.md.
-- 수정7파일 외 기능 코드 변경 없음. 원자료2026-10-10 보존, 현검수2026-10-14.
-- 남은 확인: 외부 새 창 본문 추적/모바일 실기기/운영 적용. 기존 통합 테스트의18시·가상전문가 fixture 실패는 수정 범위 밖.
-- 다음 예상: 배포 승인 확인 및 운영 재검수 약15~30분; 실기기는 장치 제공 필요.
-- 이전 직군별 운영 배포 상태와 별도 미적용 작업은 위 기록 그대로 유지.
+## 다음 단계
+전체검사 완료→최신main 보존 확인→승인된통합 배포→실제홈/지도/메뉴/삼성화재 링크/파일 일치 확인→배포ID와검수결과 기록. 예상15~30분(전체회귀 검사시간 별도).

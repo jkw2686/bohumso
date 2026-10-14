@@ -47,8 +47,8 @@ function common(expert, billing) {
 }
 function publicMenus() {
   group('도움 찾기', [
-    ['가까운 전문가', '/map.html?view=experts', 'person'],
-    ['방문할 보험소', '/map.html?view=offices', 'home'],
+    ['가까운 전문가', '/map.html?view=experts', 'experts'],
+    ['방문할 보험소', '/map.html?view=offices', 'office'],
     ['내 예약', destination('requests'), 'calendar'],
   ]);
   common(false, false);

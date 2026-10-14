@@ -8,7 +8,7 @@ const labels={REQUESTED:'전문가에게 방문상담을 요청했습니다.',AC
 const errors={fee_confirmation_required:'상담료 안내가 바뀌었어요. 목록에서 다시 확인해 주세요.',phone_verification_required:'휴대전화 인증 후 요청할 수 있어요.',membership_required:'로그인 후 요청할 수 있어요.',expert_verification_required:'전문가 승인·휴대전화 확인·활동지역 설정이 필요해요.',no_available_expert:'선택한 전문가가 지금은 방문할 수 없어요. 목록을 다시 확인해 주세요.',availability_expired:'방문 가능 시간이 끝났거나 위치가 오래됐어요. 현재 위치를 갱신해 주세요.',invalid_location:'위치를 확인하지 못했어요. 권한을 확인하거나 지역을 직접 선택해 주세요.',invalid_visit_time:'희망시간은 지금부터 15분 이후, 4시간 이내로 선택해 주세요.',request_limit:'이미 진행 중인 요청이 있거나 요청 횟수가 많아요. 아래 내역을 확인해 주세요.',offer_unavailable:'이미 처리되었거나 만료된 요청이에요.',customer_confirmation_required:'고객이 일정을 확정한 후 출발할 수 있어요.',invalid_transition:'요청 상태 또는 희망시간이 바뀌었어요. 새로고침해 주세요.',expert_busy:'진행 중인 방문상담을 먼저 마쳐 주세요.'};
 function el(tag,text,root,cls){const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;root?.append(n);return n;}
 function status(root,text){let n=root.querySelector('.urgent-status');if(!n){n=el('p','',root,'urgent-status');n.setAttribute('role','status');}n.textContent=text;}
-function button(text,root,fn,secondary=false){const b=el('button',text,root,'btn'+(secondary?' ghost':''));b.type='button';b.onclick=async()=>{b.disabled=true;try{await fn();}catch(e){status(root,errors[e.message]||'처리하지 못했어요. 입력과 연결 상태를 확인해 주세요.');}finally{b.disabled=false;}};return b;}
+function button(text,root,fn,secondary=false){const b=el('button',text,root,'btn'+(secondary?' ghost':''));b.type='button';b.onclick=async()=>{if(b.disabled)return;b.disabled=true;b.setAttribute('aria-busy','true');b.textContent='처리 중…';try{await fn();}catch(e){status(root,errors[e.message]||'처리하지 못했어요. 입력과 연결 상태를 확인해 주세요.');}finally{b.disabled=false;b.setAttribute('aria-busy','false');b.textContent=text;}};return b;}
 function link(text,href,root){const a=el('a',text,root,'btn ghost');a.href=href;return a;}
 function field(root,title,type='text'){const l=el('label',title,root,'field'),n=el(type==='textarea'?'textarea':'input','',l);if(type!=='textarea')n.type=type;return n;}
 async function rpc(client,op,payload={}){const {data,error}=await client.rpc('urgent_command',{operation:op,payload});if(error)throw Error(error.message);return data;}
@@ -20,7 +20,7 @@ const distance=km=>km<1?'약 '+Math.round(km*1000/100)*100+'m':'약 '+Number(km)
 export async function renderInstant(client,root){
  const card=el('section','',root,'card urgent-panel');let timer;
  const load=async()=>{const data=await rpc(client,'settings');card.replaceChildren();el('h2','지금 방문 상담 가능',card);const active=data.instant?.enabled;
-  el('strong',active?'ON · '+time(data.instant.expires_at)+'까지':'OFF · 필요할 때만 켜세요',card);
+  el('strong',active?'ON · 방문 상담 가능 · '+time(data.instant.expires_at)+'까지':'OFF · 방문 상담 중지 · 필요할 때만 켜세요',card);
   el('p','현재 위치를 기준으로 가까운 고객의 요청을 받습니다. 정확한 위치나 이동경로는 고객에게 공개되지 않아요.',card);
   if(!data.eligible)el('p','전문가 승인·휴대전화 확인·활동지역 설정을 완료해 주세요.',card);
   if(active){const age=(Date.now()-new Date(data.instant.updated_at))/60000;el('p',age>=data.visitConfig.expireMinutes?'위치가 오래되어 검색에서 제외됐어요. 갱신해 주세요.':'마지막 위치 확인 · '+time(data.instant.updated_at),card);
