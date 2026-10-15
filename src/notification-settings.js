@@ -1,4 +1,5 @@
 import {pushFailureMessage} from './push-feedback.js';
+import {readRpc} from './read-rpc.js';
 import {pushSupported,currentPushReady,enablePush,clearPushBinding,pushApi} from './reservation-push.js';
 const add=(tag,text,parent,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;parent.append(n);return n;};
 export const OFF_WARNING=['예약 알림을 끄시겠어요?','새 상담 요청과 예약 변경·취소 안내를 알림으로 받지 못합니다.','예약 진행 상황은 내 예약에서 직접 확인해야 합니다.'];
@@ -12,13 +13,14 @@ export async function mountNotificationSettings({client,host,user}){
  const note=add('p','알림을 꺼도 내 예약과 기존 알림 내역은 유지됩니다. 상담 가능 설정과 별개입니다.',root,'muted');
  add('p','푸시는 지금 사용하는 기기에 연결됩니다. 휴대전화 알림은 해당 휴대전화에서 켜주세요.',root,'muted');
  add('p','iPhone·iPad는 지원되는 iOS·iPadOS에서 홈 화면에 추가한 보험소를 열어 알림을 켜주세요.',root,'muted');
- let enabled=true,saved=false,ready=false,busy=false,config={enabled:false},accountChanged=false;
- const rpc=async(operation,payload={})=>{const r=await client.rpc('reservation_notification_settings',{operation,payload});if(r.error)throw r.error;return r.data;};
+ let enabled=true,saved=false,ready=false,busy=true,config={enabled:false},accountChanged=false;
+ const rpc=async(operation,payload={})=>{if(operation==='get')return readRpc(client,'reservation_notification_settings',{operation,payload});const r=await client.rpc('reservation_notification_settings',{operation,payload});if(r.error)throw r.error;return r.data;};
  const updateControls=()=>{test.disabled=busy||!ready||accountChanged;toggle.disabled=busy||!saved||accountChanged;enable.disabled=busy||ready||!saved||!enabled||!config.enabled||!pushSupported()||Notification.permission==='denied'||accountChanged;enable.textContent=ready?'이 기기 연결 완료':'예약 알림 켜기';retry.disabled=busy||accountChanged;toggle.textContent=enabled?'예약 알림 끄기':'앱 내 예약 알림 다시 켜기';};
  const load=async()=>{
+  saved=false;ready=false;app.textContent='앱 내 예약 알림을 확인하고 있습니다.';status.textContent='기기 연결 상태를 확인하고 있습니다.';updateControls();
   try{const result=await rpc('get');if(accountChanged)return;enabled=result.enabled!==false;saved=result.saved===true;app.textContent='앱 내 예약 알림: '+(enabled?'켜짐':'OFF · 다시 켜면 새 예약 안내를 확인할 수 있어요.');}
-  catch{saved=false;app.textContent='앱 내 예약 알림은 기본 켜짐입니다. 설정을 불러오지 못했습니다.';}
-  try{const r=await fetch('/api/reservation-push',{cache:'no-store'});config=r.ok?await r.json():{enabled:false};}catch{config={enabled:false};}
+  catch{if(accountChanged)return;saved=false;app.textContent='예약 알림 설정을 불러오지 못했습니다. 기존 설정은 유지됩니다. 설정 다시 확인을 눌러주세요.';status.textContent='알림 설정 미확인 · 푸시 수신 준비 상태를 확인하지 못했습니다.';updateControls();return;}
+  try{const r=await fetch('/api/reservation-push',{cache:'no-store',signal:AbortSignal.timeout(8000)});config=r.ok?await r.json():{enabled:false};}catch{config={enabled:false};}
   if(accountChanged)return;
   ready=false;
   if(!enabled)status.textContent='예약 알림 설정 OFF · 푸시를 받지 않습니다.';
@@ -34,5 +36,5 @@ export async function mountNotificationSettings({client,host,user}){
  test.onclick=()=>run(async()=>{if(!confirm('현재 로그인 계정의 이 기기에만 시험 알림 1회를 보냅니다. 실제 예약은 생성하지 않습니다.'))return;const result=await pushApi(client,'test',{request_key:crypto.randomUUID()});if(!result.queued)throw Error('test_failed');status.textContent='시험 알림 발송 대기 · 실제 도착 여부를 기기에서 확인해 주세요.';});
  retry.onclick=()=>run(load);
  client.auth.onAuthStateChange((event,session)=>{if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event)&&session?.user?.id!==user.id){accountChanged=true;status.textContent='계정이 변경되었습니다. 다시 로그인해 알림 설정을 확인해 주세요.';updateControls();}});
- await load();return root;
+ try{await load();}finally{busy=false;updateControls();}return root;
 }

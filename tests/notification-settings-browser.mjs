@@ -6,7 +6,7 @@ const origin='https://push.fixture.test';
 const bundle=await build({stdin:{contents:`import {mountNotificationSettings} from './src/notification-settings.js';import {installPushIdentityGuard} from './src/reservation-push.js';import {maybePromptReservationPush} from './src/notification-prompt.js';installPushIdentityGuard(window.fixture.client);window.fixture.prompt=context=>maybePromptReservationPush({client:window.fixture.client,user:{id:'actor-a'},context});await mountNotificationSettings({client:window.fixture.client,host:document.querySelector('main'),user:{id:'actor-a'}});`,resolveDir:process.cwd()},bundle:true,write:false,format:'esm'});
 const browser=await chromium.launch(launch);
 const context=await browser.newContext();
-let preference=true,failSet=false,failRegister=false,registered=null;
+let preference=true,failGet=false,failSet=false,failRegister=false,registered=null;
 const operations=[];
 await context.addInitScript(()=>{
  const f=window.fixture={actor:'actor-a',binding:null,sub:null,permission:'default',listeners:[],permissionRequests:0};
@@ -19,7 +19,7 @@ await context.addInitScript(()=>{
 });
 await context.route('**/*',async route=>{
  const req=route.request(),u=new URL(req.url());if(u.origin!==origin)return route.abort();
- if(u.pathname==='/fixture/settings'){const args=req.postDataJSON();if(args.operation==='set'){if(failSet)return route.fulfill({json:{error:{message:'fixture save failed'}}});preference=args.payload.enabled;}return route.fulfill({json:{data:{enabled:preference,saved:true},error:null}});}
+ if(u.pathname==='/fixture/settings'){const args=req.postDataJSON();if(args.operation==='get'&&failGet)return route.fulfill({json:{error:{message:'fixture read failed'}}});if(args.operation==='set'){if(failSet)return route.fulfill({json:{error:{message:'fixture save failed'}}});preference=args.payload.enabled;}return route.fulfill({json:{data:{enabled:preference,saved:true},error:null}});}
  if(u.pathname==='/api/reservation-push'){
   if(req.method()==='GET')return route.fulfill({json:{enabled:true,publicKey:'BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'}});
   const args=req.postDataJSON();operations.push(args.operation);
@@ -34,6 +34,7 @@ const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(
 try{
  await mkdir('artifacts/notification-settings',{recursive:true});
  for(const width of [360,390,768,1440]){await page.setViewportSize({width,height:900});await page.goto(origin);await expect(page.getByText('앱 내 예약 알림: 켜짐',{exact:true})).toBeVisible();await expect(page.getByText(/기기 연결 전/)).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`artifacts/notification-settings/settings-${width}.png`,fullPage:true});}
+ preference=false;failGet=true;await page.reload();await expect(page.getByText(/알림 설정 미확인/)).toBeVisible();await expect(page.getByText(/앱 내 예약 알림은 기본 켜짐/)).toHaveCount(0);await expect(page.getByRole('button',{name:'예약 알림 끄기',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'예약 알림 켜기',exact:true})).toBeDisabled();expect(preference).toBe(false);failGet=false;await page.getByRole('button',{name:'설정 다시 확인',exact:true}).click();await expect(page.getByText(/예약 알림 설정 OFF/)).toBeVisible();expect(preference).toBe(false);await page.getByRole('button',{name:'앱 내 예약 알림 다시 켜기',exact:true}).click();await expect(page.getByText('앱 내 예약 알림: 켜짐',{exact:true})).toBeVisible();
  await page.getByRole('button',{name:'예약 알림 끄기',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('새 상담 요청과 예약 변경·취소 안내를 알림으로 받지 못합니다.');await expect(page.getByRole('dialog')).toContainText('예약 진행 상황은 내 예약에서 직접 확인해야 합니다.');await page.getByRole('button',{name:'알림 유지하기',exact:true}).click();expect(preference).toBe(true);
  failSet=true;await page.getByRole('button',{name:'예약 알림 끄기',exact:true}).click();await page.getByRole('button',{name:'끄기',exact:true}).click();await expect(page.getByText('설정을 저장하지 못했습니다. 다시 시도해 주세요.',{exact:true})).toBeVisible();expect(preference).toBe(true);failSet=false;
  await page.getByRole('button',{name:'예약 알림 끄기',exact:true}).click();await page.getByRole('button',{name:'끄기',exact:true}).click();await expect(page.getByText(/예약 알림 설정 OFF/)).toBeVisible();expect(preference).toBe(false);await page.getByRole('button',{name:'앱 내 예약 알림 다시 켜기',exact:true}).click();await expect(page.getByText('앱 내 예약 알림: 켜짐',{exact:true})).toBeVisible();

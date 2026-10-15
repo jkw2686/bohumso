@@ -1,3 +1,4 @@
+import {readRpc} from './read-rpc.js';
 const outcomes={expert_absent:'전문가 불참 확인',consumer_absent:'소비자 불참 확인',agreement:'합의 취소·시간 또는 장소 착오',unverifiable:'확인 불가',withdrawn:'신고 철회'};
 const roles={consumer:'소비자',expert:'전문가',admin:'운영자'};
 const methods={phone:'전화상담',nearby:'전문가 방문',scheduled:'대면 상담',visit:'전문가 방문'};
@@ -6,7 +7,7 @@ export const careErrors={new_appointments_restricted:'새 약속은 잠시 제�
 const el=(tag,text,parent,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;parent?.append(n);return n;};
 const stamp=t=>t?new Date(t).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}):'시간 확인 필요';
 const link=(root,label,href)=>{const n=el('a',label,root,'btn ghost');n.href=href;return n;};
-export async function careRpc(client,operation,payload={}){const {data,error}=await client.rpc('appointment_care',{operation,payload});if(error)throw error;return data;}
+export async function careRpc(client,operation,payload={}){if(['status','get'].includes(operation))return readRpc(client,'appointment_care',{operation,payload});const {data,error}=await client.rpc('appointment_care',{operation,payload});if(error)throw error;return data;}
 const capabilities=new WeakMap();
 export async function careStatus(client){if(!capabilities.has(client))capabilities.set(client,careRpc(client,'status').then(x=>x?.enabled?x:null).catch(e=>{capabilities.delete(client);if(e.code==='PGRST202'||e.code==='42883')return null;throw e;}));return capabilities.get(client);}
 export async function getCare(client,kind,id){return await careStatus(client)?careRpc(client,'get',{kind,id}):null;}

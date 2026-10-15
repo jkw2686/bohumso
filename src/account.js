@@ -86,8 +86,14 @@ async function start(){
  if(document.body.dataset.workspace==='partner'&&(membership.partner_status!=='approved'||membership.profession==='office')){message('승인된 전문가만 이용할 수 있습니다.');return;}
  if(mode==="reset"){$("accountContent").hidden=false;onForm("passwordForm",async d=>{const {error}=await client.auth.updateUser({password:String(d.get("password"))});fail(error);message("비밀번호를 변경했습니다. 내 계정에서 계속 이용할 수 있습니다.");});return;}
  await refreshMembership();
- if(mode==='notifications'){await mountNotificationSettings({client,host:$('accountContent'),user});await renderNotificationPage({client,root:$('accountContent')});return;}
- if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config});if(document.body.dataset.workspace==='partner'){
+ if(mode==='notifications'){
+  // Resolve reservation links and show the inbox independently of device settings.
+  const page=renderNotificationPage({client,root:$('accountContent')});
+  if(!new URLSearchParams(location.search).has('reservation'))await Promise.all([page,mountNotificationSettings({client,host:$('accountContent'),user})]);
+  else await page;
+  return;
+ }
+ if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config});$('accountContent').hidden=false;if($('requestList'))focusBooking($('requestList'));if(document.body.dataset.workspace==='partner'){
   // 전문가가 매일 쓰는 두 가지를 화면 맨 위에 둔다: 지금 방문 ON/OFF → 청구지원 자료실.
   // 자료실은 정적 카드라 await 전에 먼저 옮겨 두어야 늦게 올라오며 깜빡이지 않는다.
   const tools=document.createElement('div'),quick=document.createElement('div');

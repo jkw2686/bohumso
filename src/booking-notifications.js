@@ -1,8 +1,9 @@
 import {el as baseEl,link as baseLink} from './consultation-ui.js';
+import {readRpc as notificationRpc} from './read-rpc.js';
+export {notificationRpc};
 const el=(tag,text,parent,cls)=>{const n=baseEl(tag,text,parent);if(cls)n.className=cls;return n;};
 const link=(parent,text,href)=>{const n=baseLink(parent,text,href);n.className='btn ghost';return n;};
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-export async function notificationRpc(client,name,args){let timer;try{const r=await Promise.race([client.rpc(name,args),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('notification_timeout')),12000);})]);if(r.error)throw r.error;return r.data;}finally{clearTimeout(timer);}}
 export function reservationId(value){try{const url=new URL(value,location.origin);if(url.origin!==location.origin||url.pathname!=='/notifications.html')return null;const id=url.searchParams.get('reservation');return uuid.test(id||'')?id:null;}catch{return null;}}
 export async function reservationDestination(client,id){if(!uuid.test(id||''))throw Error('reservation_not_found');const row=await notificationRpc(client,'notification_reservation',{reservation_id:id});if(!['/requests.html','/partner-work.html','/admin-requests.html'].includes(row?.workspace))throw Error('reservation_not_found');return row.workspace+'?request='+encodeURIComponent(id);}
 export async function renderNotificationPage({client,root}){
@@ -19,8 +20,8 @@ export async function mountBookingNotifications({client,host,expanded=false}){
  const owner=(await client.auth.getUser()).data?.user?.id;
  client.auth.onAuthStateChange((event,session)=>{if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event)&&session?.user?.id!==owner){generation++;list.replaceChildren();title.textContent='예약 알림';status.textContent='계정이 변경되었습니다. 다시 확인합니다.';setTimeout(()=>location.reload(),0);}});
  const load=async()=>{if(busy)return;busy=true;retry.disabled=true;const version=++generation;
-  try{const [result,pref]=await Promise.all([notificationRpc(client,'notification_inbox',{operation:'list'}),notificationRpc(client,'reservation_notification_settings',{operation:'get',payload:{}}).catch(()=>({enabled:true}))]);if(!section.isConnected||version!==generation)return;list.replaceChildren();retry.hidden=true;
-   const rows=Array.isArray(result?.items)?result.items:[];title.textContent='예약 알림'+(pref?.enabled===false?' · 설정 OFF':result?.unread?' · 새 알림 '+result.unread+'건':'');status.textContent=rows.length?'조회하거나 예약으로 이동해도 읽음 처리되지 않습니다.':'새로운 알림이 없습니다.';
+  try{const preference=notificationRpc(client,'reservation_notification_settings',{operation:'get',payload:{}}).catch(()=>null);const result=await notificationRpc(client,'notification_inbox',{operation:'list'});if(!section.isConnected||version!==generation)return;list.replaceChildren();retry.hidden=true;
+   const rows=Array.isArray(result?.items)?result.items:[],caption='예약 알림'+(result?.unread?' · 새 알림 '+result.unread+'건':'');title.textContent=caption;void preference.then(pref=>{if(section.isConnected&&version===generation)title.textContent=pref?.enabled===false?'예약 알림 · 설정 OFF':caption;});status.textContent=rows.length?'조회하거나 예약으로 이동해도 읽음 처리되지 않습니다.':'새로운 알림이 없습니다.';
    for(const n of rows){const card=el('article',undefined,list,'notification-item');el('h3',n.title,card);el('p',n.body,card);if(n.created_at)el('p',new Date(n.created_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}),card,'muted');el('span',n.read_at?'읽음':'읽음 기록 없음',card);
     const id=reservationId(n.deep_link);if(id){const a=link(card,'해당 예약 확인','/notifications.html?reservation='+encodeURIComponent(id));a.dataset.memberAction='';}
    }
