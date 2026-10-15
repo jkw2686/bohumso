@@ -1,10 +1,10 @@
-# 현재 상태 — 푸시 연결 실패 안내 개선 운영 배포 (2026-10-15)
+# 현재 상태 — 모바일 지도 전문가 카드 최적화 운영 배포 (2026-10-15)
 
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 다음 할 일부터 진행.
 
 ## 운영 버전
-- 코드 3b5c803ad44e0686b261b8c905fe0c569a2b4f9b, Netlify 6ad0dea98b0f2216a724e1bb, 2026-10-15 23:10:07 KST ready. 로컬빌드/알림설정브라우저통과, verify38748932567 진행중.
-- 운영 https://bohumso.netlify.app / 알림 https://bohumso.netlify.app/notifications.html / 버전 미리보기 https://6ad0dea98b0f2216a724e1bb--bohumso.netlify.app . 1분 reservation-push-dispatch 스케줄 실제 등록 확인.
+- 코드 fc2e1a45819aefcdcee4840dd56fc6336ee5b61c, Netlify 6ad0e13ada2553621faff3f0, 2026-10-15 23:20:57 KST ready. 빌드/프로필지도5폭·버튼4폭통과, verify38750546506 진행중. 이전푸시안내verify38748932567 success.
+- 운영 https://bohumso.netlify.app / 알림 https://bohumso.netlify.app/notifications.html / 버전 미리보기 https://6ad0e13ada2553621faff3f0--bohumso.netlify.app . 1분 reservation-push-dispatch 스케줄 실제 등록 확인.
 
 ## 완료와 판단
 - 원예약·이벤트·전문가알림·수신UUID는 정상. 미설치 appointment_care에 기본목록을 묶어 숨긴 것과 기존 notifications.html 404가 원인. 7c0c9fc/20:03:55 KST에 DB없이 기본목록부터 복구 배포.
@@ -39,8 +39,14 @@ Windows브라우저검사는sandbox Edge종료로 require_escalated 필요. 실�
 - 상세 docs/expert-contact-scope-20261015.md. 롤백SQL은새RPC권한만회수하고등록기록보존, 재적용복구격리검증. 다음확인은상대본인기기협조필요(약20~40분). 이전알림/푸시제약과미확인그대로유지.
 
 ## 2026-10-15 23:10 — 푸시 연결 실패 안내 운영 반영
-- 3b5c803ad44e0686b261b8c905fe0c569a2b4f9b / Netlify6ad0dea98b0f2216a724e1bb / 23:10:07 KST ready. 고정 미리보기 https://6ad0dea98b0f2216a724e1bb--bohumso.netlify.app . 배포API 커밋일치확인.
+- 3b5c803ad44e0686b261b8c905fe0c569a2b4f9b / Netlify6ad0dea98b0f2216a724e1bb / 23:10:07 KST ready. 고정 미리보기 https://6ad0e13ada2553621faff3f0--bohumso.netlify.app . 배포API 커밋일치확인.
 - 실제 운영알림설정에서 현재기기/휴대전화안내·앱내ON·기기연결전·기존시험내역1건/읽음기록없음 확인. 새구독/예약/시험생성안함. PC ChatGPT내장브라우저실패는정확한하위단계미확인, 단순미지원으로단정금지. 실패단계안내 개선이며푸시수신해결완료아님.
 - npm run build와 notification-settings-browser.mjs 통과(4폭,구독생성실패/서버저장실패구분,OFF/계정전환/로그아웃/팝업). verify38748932567은최종조회시진행중이므로성공으로기록하지않음.
 - DB/서버설정/전화/예약/발송변경없음. 남은검수는실브라우저연결단계와이충경본인/Android수신(사용자기기협조필요,약20~40분). 이전276d873으로클라이언트안내만롤백가능.
 
+
+## 2026-10-15 23:20 — 모바일 전문가 카드 최적화 운영 완료
+- fc2e1a45819aefcdcee4840dd56fc6336ee5b61c / Netlify6ad0e13ada2553621faff3f0 / 23:20:57 KST ready, API커밋일치. 미리보기 https://6ad0e13ada2553621faff3f0--bohumso.netlify.app .
+- 실제운영 이충경카드390px: 지도영역56%높이상한/좌우8px/주버튼전체폭. 상세390px폭374·높이480,360×640/390×560/768×1024/1440×900에서닫기·하단상담영역화면내/가로넘침없음. 닫기→선택지도복귀확인. 변경전후 outputs/mobile-expert-card 저장소밖증빙.
+- 빌드·공개연락처버튼4폭 및 프로필지도5폭브라우저검사완주통과. 긴이름/긴소개/사진/스크롤중상담버튼고정/200%글자/짧은화면검수. 실제Android/iPhone터치검수미확인. 실예약·전화·발송·DB/설정변경없음.
+- verify38750546506은최종조회진행중,성공판정아님. 이전푸시안내verify38748932567은success확인. 다음은실휴대전화모바일체감검수(약10~15분)와CI최종결과확인. 되돌리기는이번3코드파일이전버전,알림/DB손대지않기.
