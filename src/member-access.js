@@ -1,3 +1,4 @@
+import {installPushIdentityGuard} from './reservation-push.js';
 import {createClient} from '@supabase/supabase-js';
 import {requestParams} from './request-intent.js';
 export const MEMBER={anonymous:'ANONYMOUS',incomplete:'AUTHENTICATED_INCOMPLETE',active:'ACTIVE_MEMBER',beta:'BETA_MEMBER',expertPending:'EXPERT_PENDING',expertApproved:'EXPERT_APPROVED',admin:'ADMIN'};
@@ -16,7 +17,7 @@ export function authURL(next,mode='signup'){return '/'+(mode==='login'?'login':'
 export function loginCallback(origin=location.origin,next=pendingAction()){return new URL('/account.html?next='+encodeURIComponent(safeNext(next)),origin).href;}
 export function accountReturn(next=pendingAction()){return '/account.html'+(next==='/account.html'?'':'?next='+encodeURIComponent(safeNext(next)));}
 let service;
-export function memberService(){return service||(service=(async()=>{const response=await fetch('/api/config',{cache:'no-store'});if(!response.ok)throw Error('network_unavailable');const config=await response.json();if(!config.enabled)throw Error('service_unavailable');const client=createClient(config.url,config.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce',storageKey:'woori-account'}});return {client,config};})().catch(error=>{service=null;throw error;}));}
+export function memberService(){return service||(service=(async()=>{const response=await fetch('/api/config',{cache:'no-store'});if(!response.ok)throw Error('network_unavailable');const config=await response.json();if(!config.enabled)throw Error('service_unavailable');const client=createClient(config.url,config.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce',storageKey:'woori-account'}});installPushIdentityGuard(client);return {client,config};})().catch(error=>{service=null;throw error;}));}
 export async function memberState(client){
  const {data,error}=await client.auth.getUser();if(error||!data.user){if(error&&error.name!=='AuthSessionMissingError'&&error.status!==400&&error.status!==401)throw error;return {state:MEMBER.anonymous,user:null,membership:null};}
  const result=await client.rpc('my_membership');if(result.error)throw result.error;return {accountState:result.data?.state,state:result.data?.member?MEMBER.active:MEMBER.incomplete,user:data.user,membership:result.data};

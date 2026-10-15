@@ -1,3 +1,4 @@
+import {mountNotificationSettings} from './notification-settings.js';
 import {renderNotificationPage,focusBooking} from './booking-notifications.js';
 import {mountGrowthAdmin} from './growth-admin.js';
 import {renderWaitlistCounts} from './region-waitlist.js';
@@ -84,7 +85,7 @@ async function start(){
  if(document.body.dataset.workspace==='partner'&&(membership.partner_status!=='approved'||membership.profession==='office')){message('승인된 전문가만 이용할 수 있습니다.');return;}
  if(mode==="reset"){$("accountContent").hidden=false;onForm("passwordForm",async d=>{const {error}=await client.auth.updateUser({password:String(d.get("password"))});fail(error);message("비밀번호를 변경했습니다. 내 계정에서 계속 이용할 수 있습니다.");});return;}
  await refreshMembership();
- if(mode==='notifications'){await renderNotificationPage({client,root:$('accountContent')});return;}
+ if(mode==='notifications'){await mountNotificationSettings({client,host:$('accountContent'),user});await renderNotificationPage({client,root:$('accountContent')});return;}
  if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config});if(document.body.dataset.workspace==='partner'){
   // 전문가가 매일 쓰는 두 가지를 화면 맨 위에 둔다: 지금 방문 ON/OFF → 청구지원 자료실.
   // 자료실은 정적 카드라 await 전에 먼저 옮겨 두어야 늦게 올라오며 깜빡이지 않는다.
@@ -95,10 +96,11 @@ async function start(){
   await renderInstant(client,quick);
   await renderServiceArea(client,tools);await renderUrgentWorkspace(client,tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
  if(mode==='requests'&&document.body.dataset.workspace==='admin')await renderWaitlistCounts(client,document.getElementById('regionWaitlistHost'));
+ if(mode==='requests')await mountNotificationSettings({client,host:$('accountContent'),user});
  if(mode==='requests'&&document.body.dataset.workspace!=='admin')await renderCareCases(client,$('accountContent'),document.body.dataset.workspace);
  if(mode==="payment")await renderPaymentResult(client,message);
  if(mode==="phone")await renderPhoneVerification({client,config,root:$("accountContent")});
- if(mode==="account")await renderAccount();
+ if(mode==="account"){await renderAccount();if(membership.member)await mountNotificationSettings({client,host:$("accountContent"),user});}
  if(mode==="partner"&&membership.beta_role==="EXPERT"){await renderBetaExpert(client,$("accountContent"));$("accountContent").hidden=false;return;}
  if(mode==="partner"){const applicationStatus=await renderPartner();
   // ① 지금 방문 상담 카드를 신청 정보 카드보다 위에 둔다. partner-work 와 같은 renderInstant 를

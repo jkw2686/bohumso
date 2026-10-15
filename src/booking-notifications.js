@@ -19,14 +19,15 @@ export async function mountBookingNotifications({client,host,expanded=false}){
  const owner=(await client.auth.getUser()).data?.user?.id;
  client.auth.onAuthStateChange((event,session)=>{if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event)&&session?.user?.id!==owner){generation++;list.replaceChildren();title.textContent='예약 알림';status.textContent='계정이 변경되었습니다. 다시 확인합니다.';setTimeout(()=>location.reload(),0);}});
  const load=async()=>{if(busy)return;busy=true;retry.disabled=true;const version=++generation;
-  try{const result=await notificationRpc(client,'notification_inbox',{operation:'list'});if(!section.isConnected||version!==generation)return;list.replaceChildren();retry.hidden=true;
-   const rows=Array.isArray(result?.items)?result.items:[];title.textContent='예약 알림'+(result?.unread?' · 새 알림 '+result.unread+'건':'');status.textContent=rows.length?'조회하거나 예약으로 이동해도 읽음 처리되지 않습니다.':'새로운 알림이 없습니다.';
+  try{const [result,pref]=await Promise.all([notificationRpc(client,'notification_inbox',{operation:'list'}),notificationRpc(client,'reservation_notification_settings',{operation:'get',payload:{}}).catch(()=>({enabled:true}))]);if(!section.isConnected||version!==generation)return;list.replaceChildren();retry.hidden=true;
+   const rows=Array.isArray(result?.items)?result.items:[];title.textContent='예약 알림'+(pref?.enabled===false?' · 설정 OFF':result?.unread?' · 새 알림 '+result.unread+'건':'');status.textContent=rows.length?'조회하거나 예약으로 이동해도 읽음 처리되지 않습니다.':'새로운 알림이 없습니다.';
    for(const n of rows){const card=el('article',undefined,list,'notification-item');el('h3',n.title,card);el('p',n.body,card);if(n.created_at)el('p',new Date(n.created_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}),card,'muted');el('span',n.read_at?'읽음':'읽음 기록 없음',card);
     const id=reservationId(n.deep_link);if(id){const a=link(card,'해당 예약 확인','/notifications.html?reservation='+encodeURIComponent(id));a.dataset.memberAction='';}
    }
   }catch{if(section.isConnected){status.textContent='알림을 불러오지 못했습니다';retry.hidden=false;}}finally{busy=false;retry.disabled=false;}
  };
  retry.onclick=load;await load();
+ const preferenceChanged=()=>{if(section.isConnected)void load();else window.removeEventListener('bohumso-notification-preference',preferenceChanged);};window.addEventListener('bohumso-notification-preference',preferenceChanged);
  const timer=setInterval(()=>{if(!section.isConnected){clearInterval(timer);return;}if(!document.hidden&&details.open)void load();},60000);
  return {refresh:load,section};
 }

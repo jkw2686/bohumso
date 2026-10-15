@@ -45,3 +45,9 @@
 .notification-item h3{font-size:var(--ui-body)}
 .notification-item .btn{display:inline-flex;margin-top:var(--ui-space-3)}
 .booking-card:focus{outline:var(--focus-width) solid var(--brand);outline-offset:var(--space-2)}
+
+.notification-settings{overflow-wrap:anywhere}
+.notification-settings button{margin:var(--space-2) var(--space-2) var(--space-2) 0}
+.notification-off-dialog{width:min(440px,calc(100% - 32px));padding:var(--space-5);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);background:var(--card)}
+.notification-off-dialog::backdrop{background:rgba(0,0,0,.3)}
+.notification-off-dialog .btn{margin-top:var(--space-3)}
