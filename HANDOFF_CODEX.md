@@ -1,17 +1,13 @@
-# 현재 상태 — 2026-10-15
+# 현재 상태 — 체험사이트 예약 UX 적용 (2026-10-15)
 
-UI 개선과 기존 삼성화재 링크 수정을 개발·검수·배포 완료했다.
-코드4209cdbe682f475b2b9b1f40f1ac752c11506cf8, Netlify6acfb55bb53f525693aed49d ready (02:01:33 KST).
-운영 https://bohumso.netlify.app
-고정 배포 https://6acfb55bb53f525693aed49d--bohumso.netlify.app
+사용자 요청: 비공개 체험사이트 전문가 선택·예약시간·내용 확인의 장점을 실제 보험소에 적용. 사용자 로그인 후 실제 화면 비교 완료. 체험 데이터나 운영 기준 변경은 포함하지 않음.
 
-공통 디자인 토큰/버튼/카드/입력/탭/일관 SVG, 홈 도움 순서, 관리자 예약 우선 구성, 프로필 상담 설정 busy/실패복구를 적용. 브랜드·지도·전문가 선택·보험소 예약·정책·권한·DB·설정 유지.
-삼성화재 공식 필요서류 URL: https://www.samsungfire.com/v2/html/customer/13/G_030_010_010.html
-원자료2026-10-10과 본문검수2026-10-14 구분 유지.
+구현: src/office-request.js의 실제 전문가/보험소 예약에서 오전·오후 정각 버튼, 불가시간 취소선/설명, KST 표시, 별도 내용 확인과 일정 수정. public/requests-page.css에 범위한정 공통토큰 스타일. 최종 신청 전 요청0건, 기존 서버예약 검증·요청키·신청 후 조율·대상/지역 맥락 유지. DB/요금/권한/동의 불변.
 
-최종 GitHub verify38603056745 success. npm run build, service-ui-browser, profession-browser --ui-only, profile-usability-browser, claim-resources-browser, claim-help-browser, map-controls-browser 성공. 브라우저 tests는 tests/ 경로에서 node로 실행하며 필요한 격리 테스트 서버/fixture를 사용한다.
-360/390/768/1440 레이아웃, 로그인→지도→전문가→가상예약과 상태 저장/실패복구 검수. 운영 홈 신규 메뉴·실제 지도, 자료실 삼성화재 새 창 본문과 원래 화면 유지 확인.
+성공: 빌드, booking-selection-browser4폭, booking-hours/hardening3개, claim-resources-browser, connection-review-browser(가상 가입/휴대폰/재시도/대상/보험소), service-ui-browser4폭 실제렌더와 가상예약/상태저장/관리. connection-review 구형18시 fixture는 현행17시로 수정.
+전체 npm test 실행 중. 배포 최종 상태는 후속기록.
 
-남은 미확인: 실기기, 실제 OAuth/SMS/GPS, 운영 예약/프로필 쓰기. 고객 개인정보·실제 청구/예약 실행 없음. 오래된 expert-profile-page-browser는 구형 DB fixture 실패이며 현행 전용 검사와 구분한다. 후속 실계정/실기기 검수 예상30~60분.
-기존 지도 높이/데스크톱 고정 목록/상세50% 상한 유지. 062~065 다른 작업본이나 SQL을 임의 적용하지 말 것. 되돌릴 경우 UI 변경 전739a5d2와 삼성화재 독립커밋b9ff9f1을 비교하며 운영 DB를 되돌리지 말 것.
-상세 docs/ui-design-20261015.md 및 HANDOFF.md. 문서 후속 커밋은 skip netlify/ci로 코드배포를 반복하지 않는다.
+실제 고객 예약·SMS·개인정보 전송·청구 없음. 실단말 및 운영쓰기 미검수. 체험 전용 휴무·가짜 시간·무료/자격·후기·확정예약 표시는 적용하지 않음. 별도 즉시 전문가 방문요청 시간 정책 유지.
+
+docs/booking-selection-20261015.md, HANDOFF.md와 ROADMAP 갱신. 배포 전 기준5173b27; 되돌리려면 이번예약UI커밋만 revert, SQL 불필요. 이전 통합UI/삼성화재 운영코드4209cdbe/배포6acfb55bb53f525693aed49d 유지.
+남은 일: 실행중 전체검사 결과 확인→운영배포 확인·정적파일 대조→배포ID 기록/전후보고. 예상10~20분. 이후 실기기/실계정 쓰기 검수는 별도30~60분.

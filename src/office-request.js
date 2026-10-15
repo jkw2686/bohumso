@@ -23,7 +23,7 @@ export function renderOfficeRequest({form,command,refresh,message,selectedOffice
  function button(parent,label,fn,cls=''){const b=el('button',label,parent);b.type='button';b.className=cls;b.onclick=fn;return b;}
  if(!selectedOffice&&!selectedPlanner){form.replaceChildren();el('h2','누구에게 도움받으실까요?',form);el('p','전문가나 방문할 보험소를 직접 선택해 주세요.',form);for(const [label,view]of [['가까운 전문가 선택','experts'],['방문할 보험소 선택','offices']]){const a=el('a',label,form);a.className='btn'+(view==='offices'?' ghost':'');a.href=mapURL(view);}return;}
  function render(){
-  remember();checking=false;form.replaceChildren();el('p',step===1?'● ○ · 1 / 2':'● ● · 2 / 2',form).className='step-dots';
+  remember();checking=false;form.replaceChildren();const progress=el('p','1. 날짜 선택 → 2. 시간 선택 → 3. 내용 확인',form);progress.className='step-dots';progress.setAttribute('aria-label',step===1?'현재 단계: 날짜 선택':'현재 단계: 시간 선택');
   el('p',name+' · '+region+' · '+(selectedPlanner?.profession==='tax'?'세무 상담':situation||purposeLabels[purpose]),form).className='wizard-context';
   el('p',direction,form).className='wizard-context';if(selectedPlanner?.profession==='tax')el('p',selectedPlanner.fee_notice||'방문 전 상담료 확인이 필요합니다',form);
   if(step===1){
@@ -33,18 +33,32 @@ export function renderOfficeRequest({form,command,refresh,message,selectedOffice
    const more=el('details',undefined,form);el('summary','다른 날짜',more);const label=el('label','희망 날짜',more),input=el('input',undefined,label);input.type='date';input.min=day(new Date());input.max=day(new Date(Date.now()+90*86400000));const hint=el('p','',more);hint.setAttribute('role','alert');
    input.onchange=()=>{if(input.checkValidity()&&input.value){date=input.value;time='';step=2;render();}else{hint.textContent='오늘부터 90일 이내의 날짜를 선택해 주세요.';input.setAttribute('aria-invalid','true');input.focus();}};reselect(form);return;
   }
-  el('h2','몇 시가 편하세요?',form);el('p',shortDate(new Date(date+'T12:00:00+09:00')),form);
-  const choices=el('div',undefined,form);choices.className='choice-grid';
-  const selection=el('p','',form);selection.className='wizard-context';selection.setAttribute('role','status');
+  const schedule=el('section',undefined,form);
+  el('h2','몇 시가 편하세요?',schedule);el('p',shortDate(new Date(date+'T12:00:00+09:00')),schedule);
+  el('p','한국 시간(KST) · 1시간 단위 · 신청 후 일정 조율',schedule).className='wizard-context';
+  const choices=el('div',undefined,schedule);choices.className='booking-time-groups';
+  const periods=[['오전',0,12],['오후',12,24]].map(([label,start,end])=>{const group=el('section',undefined,choices);el('h3',label,group);const grid=el('div',undefined,group);grid.className='choice-grid';return {start,end,grid};});
+  el('p','흐린 취소선 시간은 선택할 수 없습니다. 선택한 시간은 파란색 테두리로 표시됩니다.',schedule).className='wizard-context';
+  const selection=el('p','',schedule);selection.className='wizard-context';selection.setAttribute('role','status');
   function summarize(){selection.textContent=time?name+' · '+(selectedOffice?'보험소 방문':method==='phone'?'전화상담':method==='nearby'?'전문가 방문':'상담 일정 조율')+' · 희망 '+date+' '+time+' (확정 전)':'희망 시간을 선택해 주세요.';}
   for(let minute=540;minute<=1020;minute+=60){
    const value=String(Math.floor(minute/60)).padStart(2,'0')+':'+String(minute%60).padStart(2,'0'),stamp=new Date(date+'T'+value+':00+09:00');
-   const b=button(choices,value,()=>{time=value;remember();summarize();choices.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));submit.disabled=checking;});b.setAttribute('aria-pressed',String(time===value));b.disabled=stamp.getTime()<Date.now()+1800000;
+   const grid=periods.find(p=>Number(value.slice(0,2))>=p.start&&Number(value.slice(0,2))<p.end).grid;
+   const b=button(grid,value,()=>{time=value;review.hidden=true;submit.hidden=true;reviewButton.hidden=false;remember();summarize();choices.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));submit.disabled=checking;reviewButton.disabled=checking;});b.dataset.slot=value;b.setAttribute('aria-pressed',String(time===value));b.disabled=stamp.getTime()<Date.now()+1800000;
   }
   const notice=el('p','연락·일정을 조율하고 필요한 확인을 마친 뒤 확정됩니다.',form);notice.setAttribute('role','status');
   const recovery=el('div','',form);recovery.hidden=true;reselect(recovery);
+  const review=el('section',undefined,form);review.className='booking-review';review.hidden=true;review.tabIndex=-1;
+  const reviewButton=button(form,'선택한 일정 확인',()=>{
+   if(checking||!time)return;review.replaceChildren();el('h2','신청 내용을 확인해 주세요',review);
+   const details=el('dl',undefined,review);for(const [label,value]of [[selectedOffice?'선택한 보험소':'선택한 전문가',name],['희망 일정',shortDate(new Date(date+'T12:00:00+09:00'))+' '+time+' · 한국 시간(KST)'],['만나는 방법',direction],['도움받을 내용',situation||purposeLabels[purpose]],['지역',region]]){el('dt',label,details);el('dd',value,details);}
+   if(selectedPlanner?.profession==='tax')el('p',selectedPlanner.fee_notice||'방문 전 상담료 확인이 필요합니다',review);
+   el('p','아직 확정된 예약이 아닙니다. 선택한 대상에게 요청한 뒤 연락·일정을 조율합니다.',review);
+   button(review,'시간 다시 선택',()=>{schedule.hidden=false;progress.setAttribute('aria-label','현재 단계: 시간 선택');review.hidden=true;submit.hidden=true;reviewButton.hidden=false;choices.querySelector('[aria-pressed=true]')?.focus();},'text-button');
+   schedule.hidden=true;progress.setAttribute('aria-label','현재 단계: 내용 확인');review.hidden=false;submit.hidden=false;reviewButton.hidden=true;review.focus();
+  },'primary');
   const submit=button(form,'이 시간으로 신청',async()=>{
-   if(busy||checking||!time)return;
+   if(busy||checking||!time||review.hidden)return;
    const stamp=new Date(date+'T'+time+':00+09:00').getTime();if(!Number.isFinite(stamp)||stamp<Date.now()+1800000||stamp>Date.now()+90*86400000){notice.textContent='예약시간을 다시 선택해 주세요.';time='';remember();summarize();submit.disabled=true;return;}
    busy=true;const enabled=[...form.querySelectorAll('button')].filter(b=>!b.disabled);form.querySelectorAll('button').forEach(b=>b.disabled=true);notice.textContent='요청을 전달하고 있어요.';
    const when=new Date(stamp).toISOString(),payload={office_assignment:!!selectedOffice,...(selectedOffice?{office_id:selectedOffice.id}:{planner_id:selectedPlanner.id}),purpose,region,method,preferred_at:when};if(selectedPlanner?.profession==='tax')payload.fee_ack=selectedPlanner.fee_notice||'방문 전 상담료 확인이 필요합니다';payload.request_key=stableRequestKey(payload);
@@ -63,10 +77,11 @@ export function renderOfficeRequest({form,command,refresh,message,selectedOffice
     dateButton.disabled=false;
    }finally{busy=false;}
   },'primary');
-  const dateButton=button(form,'날짜 변경',()=>{step=1;render();},'text-button');summarize();submit.disabled=!time;
+  submit.hidden=true;
+  const dateButton=button(form,'날짜 변경',()=>{step=1;render();},'text-button');summarize();submit.disabled=!time;reviewButton.disabled=!time;
   if(availability){
-   const requestedDay=date;checking=true;submit.disabled=true;choices.querySelectorAll('button').forEach(b=>b.disabled=true);notice.textContent='가능한 시간을 확인하고 있어요.';
-   queueMicrotask(async()=>{try{const slots=await availability(selectedOffice?.id||null,selectedPlanner?.id||null,requestedDay,method);if(date!==requestedDay||!choices.isConnected)return;checking=false;choices.querySelectorAll('button').forEach(b=>b.disabled=!slots.includes(b.textContent));if(!slots.includes(time)){time='';remember();summarize();}submit.disabled=!time;notice.textContent=slots.length?'희망시간을 요청하고 연락·일정 조율 후 확정해요.':'이 날짜에는 가능한 시간이 없습니다. 다른 날짜나 대상을 선택해 주세요.';recovery.hidden=slots.length>0;}catch{if(choices.isConnected){checking=false;time='';remember();summarize();submit.disabled=true;notice.textContent='가능한 시간을 확인하지 못했습니다. 날짜를 다시 선택해 주세요.';}}});
+   const requestedDay=date;checking=true;submit.disabled=true;reviewButton.disabled=true;choices.querySelectorAll('button').forEach(b=>b.disabled=true);notice.textContent='가능한 시간을 확인하고 있어요.';
+   queueMicrotask(async()=>{try{const slots=await availability(selectedOffice?.id||null,selectedPlanner?.id||null,requestedDay,method);if(date!==requestedDay||!choices.isConnected)return;checking=false;choices.querySelectorAll('button').forEach(b=>b.disabled=!slots.includes(b.dataset.slot)||new Date(requestedDay+'T'+b.dataset.slot+':00+09:00').getTime()<Date.now()+1800000);if(!slots.includes(time)||new Date(requestedDay+'T'+time+':00+09:00').getTime()<Date.now()+1800000){time='';remember();summarize();}submit.disabled=!time;reviewButton.disabled=!time;notice.textContent=slots.length?'희망시간을 요청하고 연락·일정 조율 후 확정해요.':'이 날짜에는 가능한 시간이 없습니다. 다른 날짜나 대상을 선택해 주세요.';recovery.hidden=slots.length>0;}catch{if(choices.isConnected){checking=false;time='';remember();summarize();submit.disabled=true;reviewButton.disabled=true;notice.textContent='가능한 시간을 확인하지 못했습니다. 날짜를 다시 선택해 주세요.';}}});
   }
  }render();
 }

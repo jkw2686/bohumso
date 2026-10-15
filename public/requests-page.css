@@ -29,3 +29,13 @@
 .customer-requests .booking-empty p{font-size:14px;color:var(--ink-muted);margin:0 0 16px}
 .customer-requests .booking-empty a{display:inline-block;padding:10px;font-size:14px;font-weight:600;text-decoration:none;min-height:44px;box-sizing:border-box}
 @media(max-width:480px){.customer-requests #requestForm.booking-gate{padding:20px}.customer-requests .booking-gate-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.customer-requests .booking-gate-actions a{padding:10px 8px;font-size:13px}.customer-requests .booking-list-heading h2{font-size:18px}.customer-requests .refresh-bookings{padding:8px 10px}.customer-requests .request-heading h1{font-size:28px}}
+.booking-time-groups{display:grid;gap:var(--space-4)}
+.booking-time-groups h3{margin:var(--space-3) 0;font-size:var(--ui-body);color:var(--text)}
+.request-wizard .booking-time-groups .choice-grid{margin:var(--space-2) 0;grid-template-columns:repeat(3,minmax(0,1fr))}
+.booking-time-groups button:disabled{text-decoration:line-through}
+.booking-review{margin-block:var(--space-4);padding:var(--space-4);background:var(--brand-soft);border:1px solid var(--border);border-radius:var(--ui-radius)}
+.booking-review[hidden]{display:none}
+.booking-review dl{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-2);margin:var(--space-4) 0}
+.booking-review dt{font-size:var(--ui-caption);color:var(--muted)}
+.booking-review dd{margin:0 0 var(--space-3);font-weight:600;overflow-wrap:anywhere}
+.booking-review:focus{outline:var(--focus-width) solid var(--brand);outline-offset:var(--space-2)}
