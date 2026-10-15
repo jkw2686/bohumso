@@ -44,3 +44,29 @@ Netlify 설정 추가 4개: RESERVATION_PUSH_ENABLED=true, WEB_PUSH_VAPID_PUBLIC
 사용자가 운영 DB·푸시 설정 적용을 명시 승인했다. SQL 067 운영 실행 후 신규 테이블/함수 존재, authenticated 서비스 RPC 실행 불가·본인 설정 RPC 실행 가능, 기존 대상 알림의 수신자·미열람 보존, 신규 구독/발송 0건을 SELECT 확인했다. 승인된 환경변수 4개도 production/functions에 저장 완료(비밀 키 secret). 운영 트리거 실제 정의의 요청/변경/확정/취소 유형과 큐 필터가 일치한다.
 
 전체 단위 테스트 167/167 통과, 빌드 통과. 추가 브라우저 3종 통과. 운영 배포와 실기기 검증을 이어서 진행한다. 코드/빌드/제공자 접수만으로 수신 해결 완료라고 판정하지 않는다.
+
+## 운영 배포 및 현재 검수 결과
+
+회원 설정·웹 푸시: cfe6ea2 / 6ad0ba1163407032e890dba9 / 2026-10-15 20:33:56 KST ready.
+
+메인 자동 안내 보완: 877b5ff / 6ad0bcc1a43443cf300da159 / **2026-10-15 20:45:19 KST ready**. 로그인한 회원이 메인을 열면 안내와 예약 알림 켜기 진입 링크가 표시된다. 실제 운영 메인에서 자동 표시→설정 화면의 기기 연결 전/기본ON/시험버튼 비활성을 확인했다. 1분 스케줄 등록 확인. 운영 https://bohumso.netlify.app , 해당 코드 미리보기 https://6ad0bcc1a43443cf300da159--bohumso.netlify.app .
+
+Android 시스템 권한창은 사용자 동작이 필요하므로 앱 실행만으로 자동 허용하지 않는다. 자동으로 제공하는 것은 안내이며, 실제 권한과 구독 저장 완료 후에만 준비완료로 표시한다.
+
+운영 360/390/768/1440px 설정 화면 가로넘침 없음, OFF 경고 문구/유지 확인, 최종 배포에서 기존 예약 링크→해당 이충경 카드 확인. 자동 안내 보완의 격리 4폭 메인/지도 유지/설정 진입과 로그인 완료→원래 알림 예약 복귀도 통과. 실제 전문가 계정 화면과 실기기 환경은 이와 구분한다.
+
+사용자는 두 기기 모두 Android라고 지정했고, 이충경 수신 여부는 모른다고 답했다. jkw 휴대전화에서 링크를 누르면 메인만 보이고 안내가 없다고 보고해 메인 자동 안내를 보완했다. PC·격리에서 동일한 URL 오동작은 재현하지 못했으므로 원인 해결 완료로 단정하지 않는다. 20:36 KST 관리SELECT 기준 지정 두 계정 구독0·발송0·시험알림0이며 기존 대상 알림은 동일 수신자/미열람 상태다. 휴대전화의 구독 저장과 실제 도착은 아직 미확인이다.
+
+## 변경 파일
+
+| 구분 | 파일 |
+| --- | --- |
+| 기본 앱 내 알림 | src/booking-notifications.js, src/workflow.js, src/account.js, src/menu.js, public/notifications.html |
+| 회원 설정·연결 해제 | src/notification-settings.js, src/reservation-push.js, src/member-access.js |
+| 메인 자동 안내·화면 | src/member-entry.js, public/simple-ux.css, public/requests-page.css |
+| 푸시 서버·워커 | netlify/functions/reservation-push.mjs, netlify/functions/reservation-push-dispatch.mjs, netlify/functions/_shared/reservation-push.mjs, public/reservation-push-sw.js |
+| 승인된 추가 스키마·의존성 | supabase/067_reservation_web_push.sql, package.json, package-lock.json, scripts/build.mjs |
+| 검증 | tests/notifications-browser.mjs, tests/notification-settings-browser.mjs, tests/reservation-push-worker-browser.mjs, tests/reservation-push-endpoint.test.mjs, tests/reservation-web-push.test.mjs |
+| 기록 | HANDOFF.md, HANDOFF_CODEX.md, docs/ROADMAP-20261011.md, 본 문서 |
+
+현재 채널은 앱 내 알림 및 명시적으로 구독한 기기의 웹 푸시다. 예약 문자·카카오 알림톡은 추가하지 않았다.
