@@ -688,3 +688,9 @@
 - 독립 notification_inbox의list분기는SELECT만, notification_reservation은당사자권한검사; 실제정의와authenticated실행권한을SELECT검토. 이번조사에서두inboxRPC는전혀호출안함.
 - 최소안확정: 기존독립조회연결/부가기능mount교체/notifications.html기존링크수용/부가기능없이예약카드포커스. 프런트만, DB·트리거·권한·정책·수신자·기존알림무변경. 고객별도전화계정은다른UUID확인, 전문가Google/전화는동일UUID.
 - 코드수정/배포/예약·알림생성/재발송/읽음/계정병합 없음. 다음은확정안구현요청시프런트4파일·격리회귀 약60~90분.
+
+## 2026-10-15 — 앱 내 예약 알림 복구 1차
+- notification_inbox(list) 독립목록, 기존 notifications.html 링크/notification_reservation 권한결과 연결, 예약카드 포커스 구현. 조회·이동은 읽음처리하지 않음.
+- 알림오류+재시도, 부가기능 미설치/비활성/오류의 목록1개, 타인예약차단/로그인복귀/360·390·768·1440 격리브라우저 검사 및 빌드 성공.
+- 기존회원 전체에 본인소유 목록/메뉴·계정진입 제공. DB·예약·기존알림 무변경. 사용자 요청에 따른 1차 운영배포 후 회원설정/웹푸시 추가 진행.
+- 운영에 legacy push_subscriptions/push_deliveries와 native token형 push_service 존재; 기존행을 덮어쓰지 않고 웹푸시·회원별설정을 별도로 준비. 아직DB/서버설정 적용안함.

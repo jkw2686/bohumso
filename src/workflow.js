@@ -1,5 +1,6 @@
+import {mountBookingNotifications,focusBooking} from './booking-notifications.js';
 import {trackEvent} from './member-access.js';
-import {careStatusSafe,getCareSafe,carePolicy,renderCare,renderCareInbox,renderCareAdmin} from './appointment-care.js';
+import {careStatusSafe,getCareSafe,carePolicy,renderCare,renderCareAdmin} from './appointment-care.js';
 import {renderAdminBookingMap} from './admin-booking-map.js';
 import {renderOfficeRequest,renderTimeline} from './office-request.js';
 import {renderAds} from './ad-subscription.js';
@@ -86,10 +87,11 @@ export async function renderWorkflow({client,membership,workspace,message,action
    if(workspace==='admin'){const audit=el('details',undefined,card);el('summary','처리 이력·확인 근거',audit);for(const e of row.events||[])el('p',kst(e.created_at)+' KST · '+e.event+' · 담당자 '+(e.actor||'시스템')+(e.reason?' · '+e.reason:''),audit);}
   }
   if(workspace==='admin')renderAdminBookingMap(rows);
+  focusBooking(host);
  }
  async function manualRefresh(){if(editing()&&!confirm('작성 중인 내용을 닫고 최신 내역을 불러올까요?'))return;dirtyForms.clear();await refresh();}
  document.getElementById('refreshRequests').onclick=()=>action(content,manualRefresh);
- if(careCapability){const notices=el('section',undefined,content);content.prepend(notices);await renderCareInbox(client,notices);if(workspace==='admin')await renderCareAdmin(client,notices);}
+ const notices=el('section',undefined,content);content.prepend(notices);await mountBookingNotifications({client,host:notices});if(careCapability&&workspace==='admin')await renderCareAdmin(client,notices);
  const form=document.getElementById('requestForm');
  if(form){
   let blocked=!!careCapability?.consumerBlocked;

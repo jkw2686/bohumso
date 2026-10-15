@@ -131,6 +131,7 @@ async function load() {
       publicMenus();
       group('내 활동', [[member.partner_status ? '전문가 신청 현황' : '전문가로 활동하기', destination('partner'), 'person']]);
     }
+    if(member.member)group('예약 알림', [['알림 내역·설정','/notifications.html','calendar']]);
     if(member.office_operator_status)group('보험소 운영', [['거점 신청·심사', '/partner.html?profession=office', 'home']]);
     if (!member.member) row(node('div', '', identity, 'menu-profile-action'), '가입 마무리', account);
     if (member.admin) group('운영 관리', [

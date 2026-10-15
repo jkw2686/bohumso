@@ -1,3 +1,4 @@
+import {renderNotificationPage,focusBooking} from './booking-notifications.js';
 import {mountGrowthAdmin} from './growth-admin.js';
 import {renderWaitlistCounts} from './region-waitlist.js';
 import {renderCareAdmin,renderCareCases,careErrors} from './appointment-care.js';
@@ -41,6 +42,7 @@ async function renderAccount(){
  try{if(membership.member&&sessionStorage.getItem("bohumso-signup-intent")==="expert"){sessionStorage.removeItem("bohumso-signup-intent");location.replace("/partner.html");return;}}catch{}
  document.querySelector('h1').textContent=membership.state==='EXPERT_APPROVED'?'보험소 PRO':['EXPERT_PENDING','EXPERT_VERIFICATION_PENDING'].includes(membership.state)?'전문가 심사 중':membership.state==='EXPERT_DRAFT'?'보험소 PRO · 프로필':membership.member?'내 계정':'가입 마무리';
  document.querySelector('.account-links').hidden=!membership.member;
+ if(membership.member&&!document.querySelector('[data-notification-entry]')){const a=document.createElement('a');a.href='/notifications.html';a.textContent='예약 알림·설정';a.dataset.notificationEntry='';document.querySelector('.account-links')?.append(a);}
  $("identity").textContent=user.email||user.phone||"내 계정";$("operator").textContent=config.operator;$("privacyContact").textContent=config.contact;
  $("membershipState").textContent=membership.member?(membership.beta?"베타 가입 완료 · "+(membership.phoneStatus==='UNVERIFIED'?'운영자 전화 확인 대기':'예약 이용 가능'):"회원 가입 완료"):"계정 인증 완료 · 가입 동의가 필요합니다.";
  $("membershipForm").hidden=membership.member||config.signupEnabled===false;if(!membership.member&&config.signupEnabled===false){$("membershipState").textContent="초대코드를 확인하면 베타 가입을 마칠 수 있어요.";if(!document.getElementById("accountInviteLink")){const a=document.createElement("a");a.id="accountInviteLink";a.className="btn";a.href="/signup.html?next="+encodeURIComponent(pendingAction());a.textContent="초대코드 입력";$("membershipState").after(a);}}$("adminLink").hidden=!membership.admin;
@@ -82,6 +84,7 @@ async function start(){
  if(document.body.dataset.workspace==='partner'&&(membership.partner_status!=='approved'||membership.profession==='office')){message('승인된 전문가만 이용할 수 있습니다.');return;}
  if(mode==="reset"){$("accountContent").hidden=false;onForm("passwordForm",async d=>{const {error}=await client.auth.updateUser({password:String(d.get("password"))});fail(error);message("비밀번호를 변경했습니다. 내 계정에서 계속 이용할 수 있습니다.");});return;}
  await refreshMembership();
+ if(mode==='notifications'){await renderNotificationPage({client,root:$('accountContent')});return;}
  if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config});if(document.body.dataset.workspace==='partner'){
   // 전문가가 매일 쓰는 두 가지를 화면 맨 위에 둔다: 지금 방문 ON/OFF → 청구지원 자료실.
   // 자료실은 정적 카드라 await 전에 먼저 옮겨 두어야 늦게 올라오며 깜빡이지 않는다.
@@ -110,6 +113,7 @@ async function start(){
  if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
  if((mode==='partner'||document.body.dataset.workspace==='partner')&&membership.profession!=='office'&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('a[href="/claim-resources.html"]')?.closest('section');if(resources)resources.append(entry);else $('accountContent').prepend(entry);}
  $("accountContent").hidden=false;
+ if(mode==='requests'&&$('requestList'))focusBooking($('requestList'));
  openMenuDestination();
 }
 // 로딩 그림 자리(3-6)는 내용이 떴거나 오류 안내가 나오면 감춘다. 안 붙어 있는 화면도 있어 없으면 넘어간다.
