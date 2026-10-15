@@ -124,4 +124,12 @@ const loadingArt=document.querySelector('[data-art-slot="loading"]');
 if(loadingArt){const content=$("accountContent");
  const settle=()=>{if(!content.hidden)loadingArt.hidden=true;};
  new MutationObserver(settle).observe(content,{attributes:true,attributeFilter:["hidden"]});settle();}
-start().catch(e=>{message(safeError(e));$("accountContent").hidden=true;$("accountNotice").textContent="회원 서비스 연결 상태를 확인할 수 없습니다.";if(loadingArt)loadingArt.hidden=true;});
+// A slow auth/member lookup must not leave a hidden workspace without recovery.
+let startupFailed=false;
+function offerStartupRetry(){if(document.getElementById('memberStartupRetry'))return;const retry=document.createElement('button');retry.type='button';retry.className='btn ghost';retry.id='memberStartupRetry';retry.textContent='연결 다시 확인';retry.onclick=()=>location.reload();$("accountNotice").append(' ',retry);}
+const startupTimer=setTimeout(()=>{
+ if(!$("accountContent")?.hidden)return;
+ $("accountNotice").textContent='로그인·회원 정보 확인이 지연되고 있습니다. 연결을 다시 확인해 주세요. 예약은 새로 생성되지 않습니다.';
+ offerStartupRetry();if(loadingArt)loadingArt.hidden=true;
+},15000);
+start().catch(e=>{startupFailed=true;message(safeError(e));$("accountContent").hidden=true;$("accountNotice").textContent="회원 서비스 연결 상태를 확인할 수 없습니다.";offerStartupRetry();if(loadingArt)loadingArt.hidden=true;}).finally(()=>{clearTimeout(startupTimer);const retry=document.getElementById('memberStartupRetry');if(!startupFailed&&retry){retry.remove();if(!$("accountContent").hidden)$("accountNotice").textContent=[config?.operator&&'운영: '+config.operator,config?.contact&&'문의: '+config.contact].filter(Boolean).join(' · ');}});
