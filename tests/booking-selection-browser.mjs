@@ -8,19 +8,20 @@ await build({entryPoints:['src/office-request.js'],bundle:true,format:'esm',outf
 const browser=await chromium.launch(PW_LAUNCH),base='https://booking.fixture.test';
 const context=await browser.newContext();
 await context.route('**/*',async route=>{
- const u=new URL(route.request().url());if(u.origin!==base)return route.abort();
- if(u.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:`<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/simple-ux.css"><link rel="stylesheet" href="/type-system.css"><link rel="stylesheet" href="/requests-page.css"><main class="container"><form class="card" id="form"></form><div id="requestList"></div></main><script type="module">import {renderOfficeRequest} from '/module.js';window.calls=[];window.fail=false;renderOfficeRequest({form:document.getElementById('form'),selectedPlanner:{id:'expert-test',name:'검수 전문가',region:'경기 김포시',profession:'planner'},availability:async()=>{await new Promise(r=>setTimeout(r,60));return ['10:00','14:00','17:00'];},command:async(op,payload)=>{window.calls.push(payload);await new Promise(r=>setTimeout(r,180));if(window.fail)throw Error('reservation_slot_taken');},refresh:async()=>{},message:()=>{}});</script>`});
+ const u=new URL(route.request().url());if(u.origin!==base)return route.abort();if(u.pathname==='/notifications.html')return route.fulfill({contentType:'text/html',body:'<!doctype html><meta charset=utf-8><p>예약 권한 확인 경로</p>'});
+ if(u.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:`<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/simple-ux.css"><link rel="stylesheet" href="/type-system.css"><link rel="stylesheet" href="/requests-page.css"><body class="customer-requests" data-account-page="requests"><main class="container"><form class="card" id="form"></form><div id="requestList"></div></main><script type="module">import {renderOfficeRequest} from '/module.js';window.calls=[];window.fail=false;window.refreshFail=false;window.refreshes=0;renderOfficeRequest({form:document.getElementById('form'),selectedPlanner:{id:'expert-test',name:'검수 전문가',region:'경기 김포시',profession:'planner'},availability:async()=>{await new Promise(r=>setTimeout(r,60));return ['10:00','14:00','17:00'];},command:async(op,payload)=>{window.calls.push(payload);await new Promise(r=>setTimeout(r,180));if(window.fail)throw Error('reservation_slot_taken');return {id:window.savedId};},refresh:async()=>{window.refreshes++;if(window.refreshFail)throw Error("fixture list failed");},message:()=>{}});</script>`});
  try{const file=u.pathname==='/module.js'?'artifacts/booking-selection/module.js':path.join('public',u.pathname);return route.fulfill({body:await readFile(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'application/octet-stream'});}catch{return route.fulfill({status:404,body:''});}
 });
 try{
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
- for(const width of [360,390,768,1440]){
-  await page.setViewportSize({width,height:900});await page.goto(base+'/fixture?planner=expert-test&region=test&purpose=claim');
+ for(const [width,height] of [[360,640],[390,844],[430,932],[768,1024],[1440,900],[740,360]]){
+  await page.setViewportSize({width,height});await page.goto(base+'/fixture?planner=expert-test&region=test&purpose=claim');
+  const dayChoice=page.getByRole('button',{name:/내일/});expect(await dayChoice.evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgb(255, 255, 255)');expect(await dayChoice.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
   await page.getByRole('button',{name:/내일/}).click();
   await expect(page.getByRole('button',{name:'10:00',exact:true})).toBeEnabled();
   await expect(page.getByRole('button',{name:'09:00',exact:true})).toBeDisabled();
   await expect(page.getByRole('heading',{name:'오전',exact:true})).toBeVisible();await expect(page.getByRole('heading',{name:'오후',exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'14:00',exact:true}).click();
+  await page.getByRole('button',{name:'14:00',exact:true}).click();await expect(page.getByRole('button',{name:'14:00',exact:true})).toHaveAttribute('aria-pressed','true');
   await expect(page.getByRole('button',{name:'이 시간으로 신청',exact:true})).toBeHidden();
   await page.getByRole('button',{name:'선택한 일정 확인',exact:true}).click();
   await expect(page.locator('.booking-review')).toContainText('검수 전문가');await expect(page.locator('.booking-review')).toContainText('14:00');
@@ -41,5 +42,7 @@ try{
   expect(await page.evaluate(()=>window.calls.length)).toBe(2);expect(await page.evaluate(()=>window.calls[1].planner_id)).toBe('expert-test');
   console.log('PASS booking groups/review/edit/date reset/server availability/error/one submission '+width);
  }
+ await page.goto(base+'/fixture?planner=expert-test&region=test&purpose=claim');await page.getByRole('button',{name:/내일/}).click();await page.getByRole('button',{name:'14:00',exact:true}).click();await page.getByRole('button',{name:'선택한 일정 확인',exact:true}).click();await page.evaluate(()=>window.refreshFail=true);await page.getByRole('button',{name:'이 시간으로 신청',exact:true}).click();await expect(page.getByRole('heading',{name:'상담 요청이 접수되었습니다.'})).toBeVisible();await expect(page.getByRole('button',{name:'내 예약 다시 불러오기'})).toBeVisible();await page.evaluate(()=>window.refreshFail=false);await page.getByRole('button',{name:'내 예약 다시 불러오기'}).click();await expect(page.getByRole('button',{name:'예약 확인',exact:true})).toBeVisible();expect(await page.evaluate(()=>window.calls.length)).toBe(1);expect(await page.evaluate(()=>window.refreshes)).toBe(2);
+ await page.goto(base+'/fixture?planner=expert-test&region=test&purpose=claim');await page.evaluate(()=>window.savedId='50000000-0000-4000-8000-000000000001');await page.getByRole('button',{name:/내일/}).click();await page.getByRole('button',{name:'14:00',exact:true}).click();await page.getByRole('button',{name:'선택한 일정 확인',exact:true}).click();await page.getByRole('button',{name:'이 시간으로 신청',exact:true}).click();await expect(page.getByRole('link',{name:'예약 확인',exact:true})).toHaveAttribute('href','/notifications.html?reservation=50000000-0000-4000-8000-000000000001');await page.getByRole('link',{name:'예약 확인',exact:true}).click();await expect(page).toHaveURL(base+'/notifications.html?reservation=50000000-0000-4000-8000-000000000001');
  expect(errors).toEqual([]);
 }finally{await browser.close();}

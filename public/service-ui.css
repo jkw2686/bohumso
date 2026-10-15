@@ -41,6 +41,17 @@ body .request-heading h1,body .admin-heading h1{font-size:var(--ui-title)}
 body .request-wizard h2{font-size:var(--ui-heading);margin-block:var(--ui-space-4)}
 body .choice-grid button{min-height:var(--ui-control);border-radius:var(--ui-control-radius);font-size:var(--ui-body);line-height:1.5;white-space:normal}
 body .choice-grid button[aria-pressed=true]{background:var(--brand-soft);border-color:var(--brand)}
+/* Booking choices are selections; reserve brand fill for the next action. */
+body .request-wizard .choice-grid button{background:var(--card);color:var(--ink-body);border:1px solid var(--border)}
+body .request-wizard .choice-grid button[aria-pressed=true]{background:var(--brand-soft);color:var(--brand-dark);border:2px solid var(--brand);font-weight:750}
+body .request-wizard .choice-grid button:disabled{background:var(--ui-disabled);color:var(--ui-muted);border-color:var(--border);opacity:1;cursor:not-allowed}
+body .request-wizard .text-button{background:transparent;color:var(--brand-dark);border:1px solid var(--border);min-height:var(--ui-touch);font-size:var(--ui-body)}
+body .request-wizard :is(p,input,select,textarea){font-size:var(--ui-body);line-height:1.65}
+body .request-wizard .wizard-context,body .request-wizard .step-dots{font-size:var(--ui-caption)}
+body[data-account-page] .booking-card :is(input,select,textarea){font-size:var(--ui-body)}
+body[data-account-page] .booking-card .review-actions button{min-height:var(--ui-touch);background:var(--card);color:var(--ink-body);border:1px solid var(--border);font-size:var(--ui-body)}
+body[data-account-page] .booking-card .review-actions button:disabled{background:var(--ui-disabled);color:var(--ui-muted)}
+body[data-account-page] .booking-card .review-actions button.booking-danger{color:var(--danger-text)}
 body :is(.journey-status,.booking-gate){border-radius:var(--ui-control-radius)}
 body .booking-timeline li{font-size:var(--ui-caption);line-height:1.5}
 body .auth-card{box-shadow:none;border-radius:var(--ui-radius)}

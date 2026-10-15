@@ -229,6 +229,9 @@
  .map-page #cardSheet.expert-card-sheet{width:calc(100% - var(--space-2)*2);max-height:56%;bottom:var(--space-2)}
  .map-page .expert-card-sheet .card-sheet-body{padding:0 var(--space-3) var(--space-3)}
  .map-page .expert-card-sheet .expert-card-actions{padding-top:var(--space-3)}
+ .map-page .expert-card-sheet .expert-profile :is(.expert-profession,.expert-organization){font-size:var(--type-label);line-height:1.5}
+ .map-page .expert-card-sheet .expert-profile .expert-introduction{font-size:var(--type-body);line-height:1.65}
+ .map-page .expert-card-sheet .expert-card-actions .btn{font-size:var(--type-body);min-height:var(--ui-control)}
 }
 
 /* 빈 지역 안내 — 오픈 알림 신청 연결.
