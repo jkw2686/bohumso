@@ -1,10 +1,10 @@
-# 현재 상태 — 예약 알림·권한 팝업 운영 배포 (2026-10-15)
+# 현재 상태 — 전문가 공개 연락처·버튼 정리 운영 배포 (2026-10-15)
 
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 다음 할 일부터 진행.
 
 ## 운영 버전
-- 코드 885617a46147bce152167f59e14dfd51d056b49b, Netlify 6ad0c0ed2b8cb2832a38bf0a, 2026-10-15 21:03:08 KST ready.
-- 운영 https://bohumso.netlify.app / 알림 https://bohumso.netlify.app/notifications.html / 버전 미리보기 https://6ad0c0ed2b8cb2832a38bf0a--bohumso.netlify.app . 1분 reservation-push-dispatch 스케줄 실제 등록 확인.
+- 코드 276d873fb469e7cd5be51159993e1a4119f4a877, Netlify 6ad0cc1a6573df908c0282ec, 2026-10-15 21:50:54 KST ready. verify38737751631·migrate38737751688 success.
+- 운영 https://bohumso.netlify.app / 알림 https://bohumso.netlify.app/notifications.html / 버전 미리보기 https://6ad0cc1a6573df908c0282ec--bohumso.netlify.app . 1분 reservation-push-dispatch 스케줄 실제 등록 확인.
 
 ## 완료와 판단
 - 원예약·이벤트·전문가알림·수신UUID는 정상. 미설치 appointment_care에 기본목록을 묶어 숨긴 것과 기존 notifications.html 404가 원인. 7c0c9fc/20:03:55 KST에 DB없이 기본목록부터 복구 배포.
@@ -30,3 +30,10 @@
 npm run build; npm test; node tests/notifications-browser.mjs; node tests/notification-settings-browser.mjs; node tests/reservation-push-worker-browser.mjs.
 Windows브라우저검사는sandbox Edge종료로 require_escalated 필요. 실제웹UI는CUA만. 개인정보포함증빙은저장소밖 outputs/notification-recovery. 상세 docs/reservation-notifications-20261015.md.
 롤백은 RESERVATION_PUSH_ENABLED=false+재배포. 원예약/원알림/새기록삭제·계정병합·노쇼전체활성화·시험예약·일괄재전송·SMS/카카오/새유료서비스금지. 키·구독원문을채팅/로그/저장소에출력금지. 문서만커밋은 [skip netlify] [skip ci].
+
+## 최신 전문가 상세 결정 및 운영 결과
+- SQL068 1테이블/2RPC는 별도 영향 제시 후 사용자 운영적용·배포 승인. 인증/예약번호 자동복사 없음. 본인 선택번호+명시 공개동의만 별도 저장, RLS/본인설정/공개카탈로그 범위 조회. 운영 신규행0·이충경 공개번호null 확인.
+- 공통 전문가 하단 전화하기(동의번호 있을 때만)/상담 요청(주버튼). 전문가 보험소예약·별도방문가능링크 제거. 실제보험소 분기는 유지. 카카오 준비중 로그인/체험 UI 제거, 메시지·알림톡·개인카카오 연결 없음.
+- 운영4폭과 상담요청맥락, 가입 Google/휴대전화·카카오없음, 본인공개연락처빈값/미동의 확인. 기존알림URL→현재소비자계정의이충경해당예약 확인. 상대이충경본인목록검증은미확인.
+- 신규DB/푸시단위4건·브라우저7종·빌드·CI 통과. 운영active office_catalog 0건이라실제보험소 실대상검수불가, 격리활성보험소경로통과. 현재연락처등록/전화/예약/발송은실행하지않음.
+- 상세 docs/expert-contact-scope-20261015.md. 롤백SQL은새RPC권한만회수하고등록기록보존, 재적용복구격리검증. 다음확인은상대본인기기협조필요(약20~40분). 이전알림/푸시제약과미확인그대로유지.
