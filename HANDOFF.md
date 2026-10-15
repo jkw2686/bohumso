@@ -681,3 +681,10 @@
 - 예약 알림은 앱내 구현만 확인. 문자훅은 인증번호용, 예약SMS/카카오/웹푸시는 미연결. 전화로그인과 기존계정전화인증은 별개이며 계정별 예약/권한 표시차이 확인.
 - 미확인: 해당알림행 생성/수신UUID/운영함수상태. 관리자UI에 조회기능이 없어 권한있는DB SELECT 필요. 최소안은 기본알림RPC/화면/생성을 부가정책과 분리; 단순게이트삭제/전체정책활성화로 우회하지 않음.
 - 다음: 보고 검토 후 읽기전용DB대조20~40분, 필요시 최소수정 별도검토. 자동계정병합/권한복사/과거알림 재발송 금지.
+
+## 2026-10-15 — 관리자 SELECT 대조 완료 / 최소안 확정
+- Supabase 기존 postgres SQL 편집기에서 대상예약·이벤트·알림·양쪽수신UUID를SELECT대조. 예약저장/이벤트/전문가알림1건/수신자일치 확인. 상세개인정보는 저장소밖 outputs/notification-audit/admin-select-conclusion.md에만 보존.
+- 운영 reservation_notification 트리거 활성, 기본알림생성 정상. appointment_care 함수는 미설치. 프런트의care조건이기본알림을숨기고, 기존notifications.html 링크는404 확인.
+- 독립 notification_inbox의list분기는SELECT만, notification_reservation은당사자권한검사; 실제정의와authenticated실행권한을SELECT검토. 이번조사에서두inboxRPC는전혀호출안함.
+- 최소안확정: 기존독립조회연결/부가기능mount교체/notifications.html기존링크수용/부가기능없이예약카드포커스. 프런트만, DB·트리거·권한·정책·수신자·기존알림무변경. 고객별도전화계정은다른UUID확인, 전문가Google/전화는동일UUID.
+- 코드수정/배포/예약·알림생성/재발송/읽음/계정병합 없음. 다음은확정안구현요청시프런트4파일·격리회귀 약60~90분.
