@@ -69,7 +69,7 @@ try{
  // Legacy long and multiline text is kept, fully visible in detail, never truncated on unrelated save.
  profile.name='아주긴이름의지역상담담당전문가박도움';profile.organization='고객의상황을함께확인하는아주긴소속이름지역상담사무소';profile.biography='안녕하세요 🙂\n'+('어려운보험금청구준비를함께확인해드려요'.repeat(6));
  await openEditor();await expect(editor.getByLabel('소개 인사말 (선택 · 40자)')).not.toHaveValue('');await editor.getByLabel('생명보험',{exact:true}).uncheck();await saved();expect(profile.biography).toContain('\n');expect(Array.from(profile.biography).length).toBeGreaterThan(40);
- for(const width of [360,390,430,1440]){
+ for(const width of [360,390,430,768,1440]){
   await editor.setViewportSize({width,height:844});await noOverflow(editor);await editor.locator('.optional-profile').evaluate(el=>el.scrollIntoView());
   if(width===390)await editor.screenshot({path:'artifacts/profile-editor-390.png',fullPage:true});
   await map.setViewportSize({width,height:844});await map.goto(base+'/map.html?view=experts&region='+encodeURIComponent(profile.region)+'&planner='+id);await expect(map.locator('#cardBody h2')).toHaveText(profile.name);
@@ -78,6 +78,8 @@ try{
   const before=await map.evaluate(()=>({center:window.profileTestMaps[0].getCenter(),zoom:window.profileTestMaps[0].getZoom()}));
   await map.locator('#cardBody h2 a').click();const detail=map.getByRole('dialog',{name:'전문가 프로필'});await expect(detail).toBeVisible();await expect(detail.locator('.expert-introduction')).toHaveText(profile.biography);await expect(detail.locator('.expert-introduction')).toHaveCSS('white-space','pre-wrap');await expect(detail.locator('.expert-introduction')).toHaveCSS('overflow','visible');
   await detail.getByRole('link',{name:'상담 요청',exact:true}).scrollIntoViewIfNeeded();await expect(detail.getByRole('link',{name:'상담 요청',exact:true})).toHaveAttribute('href',new RegExp('planner='+id));expect((await detail.getByRole('link',{name:'상담 요청',exact:true}).boundingBox()).height).toBeGreaterThanOrEqual(44);await noOverflow(map);
+  const fixedAction=detail.getByRole('link',{name:'상담 요청',exact:true});await expect(fixedAction).toBeInViewport();const actionBefore=await fixedAction.boundingBox();await detail.locator('.expert-detail-body').evaluate(el=>el.scrollTop=el.scrollHeight);expect(Math.abs((await fixedAction.boundingBox()).y-actionBefore.y)).toBeLessThan(2);await expect(detail.getByRole('button',{name:'프로필 닫고 이전 화면으로'})).toBeInViewport();
+  if(width<=430){const panel=await map.locator('#cardSheet').boundingBox(),stage=await map.locator('#map').boundingBox();expect(panel.height).toBeLessThanOrEqual(stage.height*.57+2);await map.setViewportSize({width,height:560});await expect(fixedAction).toBeInViewport();await expect(detail.getByRole('button',{name:'프로필 닫고 이전 화면으로'})).toBeInViewport();await map.setViewportSize({width,height:844});}
   if(width===390){await detail.locator('.expert-detail-body').evaluate(el=>el.scrollTop=0);await map.screenshot({path:'artifacts/profile-detail-390.png'});}
   await map.getByRole('button',{name:'프로필 닫고 이전 화면으로',exact:true}).click();await expect(detail).toHaveCount(0);expect(await map.evaluate(()=>({center:window.profileTestMaps[0].getCenter(),zoom:window.profileTestMaps[0].getZoom()}))).toEqual(before);
   // Both photo and name open the same detail. Browser back closes only the detail.

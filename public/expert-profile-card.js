@@ -46,7 +46,8 @@
   function render(profile,ctx){body.replaceChildren();identity(body,profile);if(profile.region)node('p',profile.region+' · 공개 활동지역 기준',body,'expert-profile-note');
    node('p',profile.available?'상담 요청 가능 · 통화 후 일정 조율':profile.newRequestsRestricted?'현재 새 상담 요청을 받을 수 없습니다.':'현재 상담 요청을 받지 않습니다.',body,'expert-detail-status');
    (profile.offices||[]).filter(function(o){return !o.available;}).forEach(function(o){node('p',o.name+' · 방문예약 중지',body,'expert-profile-note');});
-   requestActions(body,profile,ctx);body.scrollTop=0;
+   dialog.querySelector('.expert-detail-actions')?.remove();
+   requestActions(dialog,profile,ctx).classList.add('expert-detail-actions');body.scrollTop=0;
   }
   render(p,context);history.pushState(Object.assign({},history.state,{bohumsoExpertDetail:token}),'');
   function finish(){window.removeEventListener('popstate',pop);dialog.close();dialog.remove();document.body.style.overflow=oldOverflow;activeDetail=null;if(opener?.isConnected)opener.focus({preventScroll:true});}

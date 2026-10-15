@@ -224,6 +224,12 @@
 @media(min-width:900px){.map-page .card-sheet.expert-card-sheet{left:auto;right:calc(var(--touch-target) + var(--space-5));transform:none}}
 .map-page .expert-card-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
 .map-page .expert-card-actions .expert-office-action{grid-column:1/-1}
+.map-page .expert-card-actions .btn:only-child{grid-column:1/-1}
+@media(max-width:600px){
+ .map-page #cardSheet.expert-card-sheet{width:calc(100% - var(--space-2)*2);max-height:56%;bottom:var(--space-2)}
+ .map-page .expert-card-sheet .card-sheet-body{padding:0 var(--space-3) var(--space-3)}
+ .map-page .expert-card-sheet .expert-card-actions{padding-top:var(--space-3)}
+}
 
 /* 빈 지역 안내 — 오픈 알림 신청 연결.
    .list-body 는 시트가 접혀 있을 때(205행)와 빈 상태일 때(209행) 숨겨지므로 안내 블록은
