@@ -33,8 +33,9 @@
  function requestActions(parent,p,context){
   var actions=node('div','',parent,'expert-card-actions'),vq=query(p,context);
   if(p.available){var request=node('a','상담 요청',actions,'btn');request.href='/requests.html?'+vq+'&method=phone';}
-  (p.offices||[]).forEach(function(o){if(o.available){var a=node('a','보험소 방문예약 · '+o.name,actions,'btn ghost');a.href='/requests.html?'+new URLSearchParams({office:o.id,region:o.region,purpose:context?.purpose||'claim',situation:context?.situation||'',method:'scheduled'});}});
-  var visit=node('a','이 전문가의 방문 가능 여부',actions,'expert-visit-link');visit.href='/urgent.html?'+vq;return actions;
+  function loadPhone(){if(!window.bohumsoPublicExpertPhone||!actions.isConnected)return;Promise.resolve().then(function(){return window.bohumsoPublicExpertPhone(p.id);}).then(function(contact){if(!actions.isConnected||contact?.id!==p.id||!/^(0[1-9][0-9]{7,10}|1[568][0-9]{6})$/.test(contact.phone||''))return;var phone=node('a','전화하기',null,'btn ghost');phone.href='tel:'+contact.phone;actions.prepend(phone);}).catch(function(){/* No explicit public contact: no phone button. */});}
+  if(window.bohumsoPublicExpertPhone)loadPhone();else window.addEventListener('bohumso-member-ready',loadPhone,{once:true});
+  return actions;
  }
  function openDetail(p,context){
   if(activeDetail){activeDetail.replace(p,context);return;}
@@ -63,5 +64,5 @@
  }
  function refreshDetail(profiles){if(activeDetail){var p=profiles.find(function(p){return p.id===activeDetail.id;});if(p)activeDetail.replace(p);}}
  function markerIcon(p){var box=node('div');var face=avatar(box,p);if(p.profession==='tax'&&!p.photo_url)face.innerHTML=window.uiIcon?.('tax')||person;box.title=p.profession_name||'전문가';return window.L.divIcon({html:box.firstChild,className:'expert-map-marker',iconSize:[48,48],iconAnchor:[24,24],popupAnchor:[0,-28]});}
- window.BohumsoProfile={types:types,tasks:tasks,identity:identity,avatar:avatar,setAvatar:setAvatar,photoURL:photoURL,profileLink:profileLink,openDetail:openDetail,markerIcon:markerIcon,onChange:onChange,refreshDetail:refreshDetail};
+  window.BohumsoProfile={types:types,tasks:tasks,identity:identity,avatar:avatar,setAvatar:setAvatar,photoURL:photoURL,profileLink:profileLink,requestActions:requestActions,openDetail:openDetail,markerIcon:markerIcon,onChange:onChange,refreshDetail:refreshDetail};
 })();

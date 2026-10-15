@@ -1,6 +1,7 @@
 import {openRegionWaitlist} from './region-waitlist.js';
 import {maybePromptReservationPush} from './notification-prompt.js';
 window.openRegionWaitlist=openRegionWaitlist;
+window.bohumsoPublicExpertPhone=async id=>{const {client}=await memberService();const {data,error}=await client.rpc('expert_public_phone',{expert_id:id});if(error)throw error;return data;};
 // Recover canonical email callbacks that arrive at the site root. Never log the code.
 if(location.pathname==='/'&&new URLSearchParams(location.search).has('code'))location.replace('/account.html'+location.search+location.hash);
 import {trackEvent,memberService,memberState,requireActiveMember,MEMBER,authURL} from './member-access.js';

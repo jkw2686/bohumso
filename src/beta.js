@@ -12,7 +12,7 @@ function button(text,root,run){const b=el('button',text,root,'btn');b.type='butt
 function input(root,label,name,type='text'){const l=el('label',label,root,'field'),i=el('input','',l);i.name=name;i.type=type;return i;}
 async function rpc(client,name,args){const {data,error}=await client.rpc(name,args);if(error)throw Error(error.message);return data;}
 export async function renderBetaSignup({client,root,message}){
- root.innerHTML='<section class="card auth-card"><p>예약과 상담 내용을 안전하게 관리하기 위해 로그인이 필요합니다.</p><div id="betaLogin"></div><div class="auth-divider">또는</div><h2>초대받으셨나요?</h2><p>초대코드를 확인하면 베타 가입을 이어갈 수 있어요.</p><div id="inviteEntry"></div><div id="inviteSignup" hidden></div><p class="muted">현재 우리곁에 보험소는 초대된 분들과 클로즈드 베타를 진행하고 있습니다. 기존 회원은 바로 로그인할 수 있습니다.</p><button type="button" disabled class="btn secondary">카카오 로그인 · 준비중</button><p><a href="/beta-terms.html">베타 이용 안내</a> · <a href="/beta-privacy.html">개인정보 안내</a></p></section>';
+ root.innerHTML='<section class="card auth-card"><p>예약과 상담 내용을 안전하게 관리하기 위해 로그인이 필요합니다.</p><div id="betaLogin"></div><div class="auth-divider">또는</div><h2>초대받으셨나요?</h2><p>초대코드를 확인하면 베타 가입을 이어갈 수 있어요.</p><div id="inviteEntry"></div><div id="inviteSignup" hidden></div><p class="muted">현재 우리곁에 보험소는 초대된 분들과 클로즈드 베타를 진행하고 있습니다. 기존 회원은 바로 로그인할 수 있습니다.</p><p><a href="/beta-terms.html">베타 이용 안내</a> · <a href="/beta-privacy.html">개인정보 안내</a></p></section>';
  const login=root.querySelector('#betaLogin');
  const oauth=()=>client.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+betaReturn()}}).then(r=>{if(r.error)throw r.error;});
  button('Google로 계속하기',login,oauth);

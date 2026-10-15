@@ -1,10 +1,12 @@
 import {PROFESSION_CONFIG} from './profession-config.js';
+import {renderPublicContact} from './public-contact.js';
 import {renderOptionalProfile} from './optional-profile.js';
 import {availabilityLabels,availabilityOf} from './availability.js';
 import {el,input,select,specialties} from './consultation-ui.js';
 export async function renderProfileEditor(client,parent){
  const {data,error}=await client.rpc('consultation_workspace',{workspace:'partner'});if(error)return;const p=data.profile||{};
  await renderOptionalProfile(client,parent);
+ await renderPublicContact(client,parent);
  // '주활동지역 · 지금 가능 설정 →' 링크 삭제. 지금 방문 ON/OFF 는 이 화면 맨 위 카드로 올라갔다.
  // ▶ 접힘 대신 '제목 + 요약 + 전체 폭 버튼' 카드. 저장 로직은 그대로 둔다.
  const details=el('section',undefined,parent);details.className='card consult-settings';
