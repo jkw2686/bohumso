@@ -11,3 +11,9 @@
 
 docs/booking-selection-20261015.md, HANDOFF.md와 ROADMAP 갱신. 배포 전 기준5173b27; 되돌리려면 이번예약UI커밋만 revert, SQL 불필요. 이전 통합UI/삼성화재 운영코드4209cdbe/배포6acfb55bb53f525693aed49d 유지.
 남은 일: 실행중 전체검사 결과 확인→운영배포 확인·정적파일 대조→배포ID 기록/전후보고. 예상10~20분. 이후 실기기/실계정 쓰기 검수는 별도30~60분.
+
+## 최종 상태
+구현·배포 완료. 1755c705 / Netlify6ad02fbe202190f23dff6245 ready, 2026-10-15 10:43:39 KST.
+https://bohumso.netlify.app / https://6ad02fbe202190f23dff6245--bohumso.netlify.app
+GitHub verify38667185087 completed/success(전체 원격검사). 운영 account.js 해시일치, 예약CSS 줄바꿈 정규화 일치. 위 실행중/남은배포 기록을 대체한다. 로컬 전체 검사도 진행했으나 원격verify 성공을 최종 완료 기준으로 기록.
+운영 지도에서 접속지역 전문가0명으로 실계정 예약 진입·쓰기는 미검수. 실단말/실계정 예약 검수 별도20~40분 외 필수 구현 남은것 없음. 실제 고객 예약/알림 전송하지 않음.

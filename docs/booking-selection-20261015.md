@@ -15,3 +15,6 @@ src/office-request.js, public/requests-page.css. 기존 확인/복귀 테스트3
 ## 검수
 신규 검사360/390/768/1440 성공: 서버 불가시간 비활성, 최종 확인 전 요청0건, 수정/날짜변경 초기화, 오류 뒤 재선택, 처리 중 중복방지와 대상 유지. 기존 자료실 브라우저 검사 성공, service-ui의 로그인→지도→선택전문가→가상예약/상태저장/관리4폭 성공. booking-hours/hardening3검사 성공.
 실제 계정 예약·보험금 청구 실행 없음. 실단말과 실제 운영 저장은 확인하지 않음. 빌드/전체검사 및 배포결과는 최종 HANDOFF 참고.
+
+## 배포 완료
+2026-10-15 10:43:39 KST, 코드1755c705085651951c74ca01e0cbfa5f40013a9e, Netlify6ad02fbe202190f23dff6245 ready/published 확인. 운영 https://bohumso.netlify.app / 고정배포 https://6ad02fbe202190f23dff6245--bohumso.netlify.app . GitHub verify38667185087 success. 운영 assets/account.js SHA256 동일, requests-page.css는 줄바꿈 정규화 후 동일. 현재 접속지역 운영 지도는 전문가0명이라 실계정 예약화면 진입/쓰기 미검수. 격리 검수와 운영 실측을 구분한다. 로컬 전체 npm test도 별도 진행했으며 원격 전체verify 성공을 최종 기준으로 기록한다.
