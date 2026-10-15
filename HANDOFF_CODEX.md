@@ -1,10 +1,10 @@
-# 현재 상태 — 전문가 공개 연락처·버튼 정리 운영 배포 (2026-10-15)
+# 현재 상태 — 푸시 연결 실패 안내 개선 운영 배포 (2026-10-15)
 
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 다음 할 일부터 진행.
 
 ## 운영 버전
-- 코드 276d873fb469e7cd5be51159993e1a4119f4a877, Netlify 6ad0cc1a6573df908c0282ec, 2026-10-15 21:50:54 KST ready. verify38737751631·migrate38737751688 success.
-- 운영 https://bohumso.netlify.app / 알림 https://bohumso.netlify.app/notifications.html / 버전 미리보기 https://6ad0cc1a6573df908c0282ec--bohumso.netlify.app . 1분 reservation-push-dispatch 스케줄 실제 등록 확인.
+- 코드 3b5c803ad44e0686b261b8c905fe0c569a2b4f9b, Netlify 6ad0dea98b0f2216a724e1bb, 2026-10-15 23:10:07 KST ready. 로컬빌드/알림설정브라우저통과, verify38748932567 진행중.
+- 운영 https://bohumso.netlify.app / 알림 https://bohumso.netlify.app/notifications.html / 버전 미리보기 https://6ad0dea98b0f2216a724e1bb--bohumso.netlify.app . 1분 reservation-push-dispatch 스케줄 실제 등록 확인.
 
 ## 완료와 판단
 - 원예약·이벤트·전문가알림·수신UUID는 정상. 미설치 appointment_care에 기본목록을 묶어 숨긴 것과 기존 notifications.html 404가 원인. 7c0c9fc/20:03:55 KST에 DB없이 기본목록부터 복구 배포.
@@ -37,3 +37,10 @@ Windows브라우저검사는sandbox Edge종료로 require_escalated 필요. 실�
 - 운영4폭과 상담요청맥락, 가입 Google/휴대전화·카카오없음, 본인공개연락처빈값/미동의 확인. 기존알림URL→현재소비자계정의이충경해당예약 확인. 상대이충경본인목록검증은미확인.
 - 신규DB/푸시단위4건·브라우저7종·빌드·CI 통과. 운영active office_catalog 0건이라실제보험소 실대상검수불가, 격리활성보험소경로통과. 현재연락처등록/전화/예약/발송은실행하지않음.
 - 상세 docs/expert-contact-scope-20261015.md. 롤백SQL은새RPC권한만회수하고등록기록보존, 재적용복구격리검증. 다음확인은상대본인기기협조필요(약20~40분). 이전알림/푸시제약과미확인그대로유지.
+
+## 2026-10-15 23:10 — 푸시 연결 실패 안내 운영 반영
+- 3b5c803ad44e0686b261b8c905fe0c569a2b4f9b / Netlify6ad0dea98b0f2216a724e1bb / 23:10:07 KST ready. 고정 미리보기 https://6ad0dea98b0f2216a724e1bb--bohumso.netlify.app . 배포API 커밋일치확인.
+- 실제 운영알림설정에서 현재기기/휴대전화안내·앱내ON·기기연결전·기존시험내역1건/읽음기록없음 확인. 새구독/예약/시험생성안함. PC ChatGPT내장브라우저실패는정확한하위단계미확인, 단순미지원으로단정금지. 실패단계안내 개선이며푸시수신해결완료아님.
+- npm run build와 notification-settings-browser.mjs 통과(4폭,구독생성실패/서버저장실패구분,OFF/계정전환/로그아웃/팝업). verify38748932567은최종조회시진행중이므로성공으로기록하지않음.
+- DB/서버설정/전화/예약/발송변경없음. 남은검수는실브라우저연결단계와이충경본인/Android수신(사용자기기협조필요,약20~40분). 이전276d873으로클라이언트안내만롤백가능.
+
