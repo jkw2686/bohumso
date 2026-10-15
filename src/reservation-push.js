@@ -18,13 +18,16 @@ export function installPushIdentityGuard(client){const identity={user:null,epoch
  client.auth.onAuthStateChange((_event,session)=>{const current=session?.user?.id||null;if(identity.user!==current){identity.epoch++;identity.user=current;}queueMicrotask(()=>{let saved;try{saved=deviceState();}catch{return;}if(saved.user&&saved.user!==identity.user)void clearPushBinding(client,{remote:false}).catch(()=>{});});});
 }
 export async function enablePush(client,userId,publicKey,permissionPromise){const epoch=identities.get(client)?.epoch;const unchanged=()=>{if(identities.get(client)?.epoch!==epoch)throw Error('account_changed');};const permission=await permissionPromise;unchanged();if(permission!=='granted')throw Error('permission_blocked');
+ let pushStage='worker';
  try{
  const reg=await activated(await navigator.serviceWorker.register('/reservation-push-sw.js',{scope}));await message(reg.active,{type:'set-binding',binding:null});
  const raw=publicKey.replace(/-/g,'+').replace(/_/g,'/'),key=Uint8Array.from(atob(raw+'='.repeat((4-raw.length%4)%4)),c=>c.charCodeAt(0));
+ pushStage='subscription';
  let subscription=await reg.pushManager.getSubscription();if(!subscription)subscription=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});
+ pushStage='save';
  const binding=crypto.randomUUID(),result=await pushApi(client,'register',{binding,subscription:subscription.toJSON()});if(!result.saved||!result.active||result.binding!==binding)throw Error('push_save_failed');
  const check=await pushApi(client,'status');if(!check.active||check.binding!==binding||!check.enabled)throw Error('push_save_failed');
  unchanged();const current=(await client.auth.getUser()).data?.user?.id;if(current!==userId)throw Error('account_changed');const ack=await message(reg.active,{type:'set-binding',binding});unchanged();if(!ack.saved)throw Error('worker_unavailable');const d=deviceState();d.binding=binding;d.user=userId;saveDevice(d);return check;
- }catch(error){await clearPushBinding(client).catch(()=>{});throw error;}
+ }catch(error){const failure=new Error(error.message);failure.name=error.name;failure.pushStage=pushStage;await clearPushBinding(client).catch(()=>{});throw failure;}
 }
 export async function currentPushReady(client,userId){if(!pushSupported()||Notification.permission!=='granted')return false;const d=deviceState();if(d.user!==userId||!d.binding)return false;const reg=await pushRegistration();if(!reg||!await reg.pushManager.getSubscription())return false;const status=await pushApi(client,'status');const worker=await message(reg.active,{type:'get-binding'});return !!(status.active&&status.enabled&&status.binding===d.binding&&worker.binding===d.binding);}

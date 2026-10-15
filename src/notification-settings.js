@@ -1,3 +1,4 @@
+import {pushFailureMessage} from './push-feedback.js';
 import {pushSupported,currentPushReady,enablePush,clearPushBinding,pushApi} from './reservation-push.js';
 const add=(tag,text,parent,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;parent.append(n);return n;};
 export const OFF_WARNING=['예약 알림을 끄시겠어요?','새 상담 요청과 예약 변경·취소 안내를 알림으로 받지 못합니다.','예약 진행 상황은 내 예약에서 직접 확인해야 합니다.'];
@@ -9,6 +10,7 @@ export async function mountNotificationSettings({client,host,user}){
  const toggle=add('button','예약 알림 끄기',root,'btn ghost'),enable=add('button','예약 알림 켜기',root,'btn'),retry=add('button','설정 다시 확인',root,'btn ghost');for(const b of [toggle,enable,retry])b.type='button';
  const test=add('button','이 기기로 시험 알림 받기',root,'btn ghost');test.type='button';test.disabled=true;
  const note=add('p','알림을 꺼도 내 예약과 기존 알림 내역은 유지됩니다. 상담 가능 설정과 별개입니다.',root,'muted');
+ add('p','푸시는 지금 사용하는 기기에 연결됩니다. 휴대전화 알림은 해당 휴대전화에서 켜주세요.',root,'muted');
  add('p','iPhone·iPad는 지원되는 iOS·iPadOS에서 홈 화면에 추가한 보험소를 열어 알림을 켜주세요.',root,'muted');
  let enabled=true,saved=false,ready=false,busy=false,config={enabled:false},accountChanged=false;
  const rpc=async(operation,payload={})=>{const r=await client.rpc('reservation_notification_settings',{operation,payload});if(r.error)throw r.error;return r.data;};
@@ -26,7 +28,7 @@ export async function mountNotificationSettings({client,host,user}){
   else{try{ready=await currentPushReady(client,user.id);status.textContent=ready?'푸시 수신 준비 완료 · 로그인 계정과 이 기기의 구독 저장을 확인했습니다.':'기기 연결 전 · 예약 알림 켜기를 눌러 권한과 구독 저장을 완료해 주세요.';}catch{status.textContent='구독 저장 상태를 확인하지 못했습니다. 다시 확인해 주세요.';}}
   updateControls();
  };
- const run=async fn=>{if(busy||accountChanged)return;busy=true;updateControls();try{await fn();}catch(e){status.textContent=e.message==='permission_blocked'?'알림 권한이 허용되지 않았습니다. 수신 준비 완료가 아닙니다.':'설정을 저장하지 못했습니다. 다시 시도해 주세요.';}finally{busy=false;updateControls();}};
+ const run=async fn=>{if(busy||accountChanged)return;busy=true;updateControls();try{await fn();}catch(e){status.textContent=pushFailureMessage(e);}finally{busy=false;updateControls();}};
  toggle.onclick=()=>run(async()=>{if(enabled&&!await confirmOff())return;const next=!enabled;const result=await rpc('set',{enabled:next});if(result.enabled!==next)throw Error('save_failed');enabled=next;if(!next)await clearPushBinding(client);await load();window.dispatchEvent(new Event('bohumso-notification-preference'));});
  enable.onclick=()=>run(async()=>{const permission=Notification.requestPermission();status.textContent='권한 확인 후 기기 구독을 저장하고 있습니다.';await enablePush(client,user.id,config.publicKey,permission);await load();});
  test.onclick=()=>run(async()=>{if(!confirm('현재 로그인 계정의 이 기기에만 시험 알림 1회를 보냅니다. 실제 예약은 생성하지 않습니다.'))return;const result=await pushApi(client,'test',{request_key:crypto.randomUUID()});if(!result.queued)throw Error('test_failed');status.textContent='시험 알림 발송 대기 · 실제 도착 여부를 기기에서 확인해 주세요.';});
