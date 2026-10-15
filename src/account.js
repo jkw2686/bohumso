@@ -1,4 +1,5 @@
 import {mountNotificationSettings} from './notification-settings.js';
+import {maybePromptReservationPush} from './notification-prompt.js';
 import {renderNotificationPage,focusBooking} from './booking-notifications.js';
 import {mountGrowthAdmin} from './growth-admin.js';
 import {renderWaitlistCounts} from './region-waitlist.js';
@@ -96,7 +97,7 @@ async function start(){
   await renderInstant(client,quick);
   await renderServiceArea(client,tools);await renderUrgentWorkspace(client,tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
  if(mode==='requests'&&document.body.dataset.workspace==='admin')await renderWaitlistCounts(client,document.getElementById('regionWaitlistHost'));
- if(mode==='requests')await mountNotificationSettings({client,host:$('accountContent'),user});
+ if(mode==='requests'){await mountNotificationSettings({client,host:$('accountContent'),user});void maybePromptReservationPush({client,user,context:'reservation'});}
  if(mode==='requests'&&document.body.dataset.workspace!=='admin')await renderCareCases(client,$('accountContent'),document.body.dataset.workspace);
  if(mode==="payment")await renderPaymentResult(client,message);
  if(mode==="phone")await renderPhoneVerification({client,config,root:$("accountContent")});

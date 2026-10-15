@@ -1,4 +1,5 @@
 import {openRegionWaitlist} from './region-waitlist.js';
+import {maybePromptReservationPush} from './notification-prompt.js';
 window.openRegionWaitlist=openRegionWaitlist;
 // Recover canonical email callbacks that arrive at the site root. Never log the code.
 if(location.pathname==='/'&&new URLSearchParams(location.search).has('code'))location.replace('/account.html'+location.search+location.hash);
@@ -6,15 +7,6 @@ import {trackEvent,memberService,memberState,requireActiveMember,MEMBER,authURL}
 const header=document.querySelector('[data-member-header]');
 function expertEntry(){if(!header||header.querySelector('.expert-header-entry'))return;const a=document.createElement('a');a.href='/partner.html?roleIntent=expert';a.className='expert-header-entry';a.textContent='전문가로 참여하기';header.append(a);}
 expertEntry();
-function renderReservationPrompt(active){
- let prompt=document.querySelector('[data-reservation-notification-prompt]');
- if(!active){prompt?.remove();return;}
- if(!['/','/index.html'].includes(location.pathname)||prompt)return;
- const main=document.querySelector('main');if(!main)return;
- prompt=document.createElement('aside');prompt.dataset.reservationNotificationPrompt='';prompt.className='reservation-notification-prompt';prompt.setAttribute('aria-label','예약 알림 안내');
- const text=document.createElement('p');text.textContent='예약을 놓치지 않도록 알림을 켜주세요';
- const link=document.createElement('a');link.href='/notifications.html';link.className='btn';link.textContent='예약 알림 켜기';prompt.append(text,link);main.prepend(prompt);
-}
 let busy=false;
 function notice(text){let n=document.getElementById('memberGateNotice');if(!n){n=document.createElement('p');n.id='memberGateNotice';n.setAttribute('role','alert');n.className='member-gate-notice';document.querySelector('main')?.prepend(n);}n.textContent=text;}
 // Capture includes dynamically rendered map cards and the shared bottom navigation.
@@ -24,7 +16,7 @@ document.addEventListener('click',async event=>{
  event.preventDefault();if(busy)return;busy=true;link.setAttribute('aria-busy','true');
  try{const next=link.dataset.memberNext||url.pathname+url.search+url.hash;if(await requireActiveMember({next}))location.assign(next);}catch{notice('연결을 확인하지 못했어요. 잠시 후 다시 눌러 주세요.');}finally{busy=false;link.removeAttribute('aria-busy');}
 });
-if(header){(async()=>{try{const {client,config}=await memberService();const serviceNotice=document.querySelector('[data-home-service-status]');if(serviceNotice&&config.serviceStage==='PRODUCTION'&&config.bookingEnabled)serviceNotice.textContent='전문가 상담은 지금 이용할 수 있으며, 오프라인 보험소 거점은 순차적으로 준비하고 있습니다.';const show=async()=>{const result=await memberState(client);header.replaceChildren();renderReservationPrompt(result.state===MEMBER.active);const panel=document.querySelector("[data-membership-panel]");if(panel){const active=result.state===MEMBER.active,incomplete=result.state===MEMBER.incomplete;panel.querySelector('[data-membership-description]').textContent=active?'현재 로그인되어 있습니다. 가입 화면도 확인할 수 있어요.':incomplete?'계정 인증이 완료됐어요. 필수 동의로 가입을 마무리하세요.':'가입하고 상담·예약 내역을 한곳에서 확인하세요.';const account=panel.querySelector('[data-membership-account]');account.textContent=active?'내 정보 보기':incomplete?'가입 마무리':'이미 가입했다면 로그인';account.href=active||incomplete?'/account.html':authURL('/account.html','login');}const add=(label,href,primary)=>{const a=document.createElement('a');a.textContent=label;a.href=href;if(primary)a.className='member-primary';header.append(a);};if(result.state===MEMBER.anonymous){add('로그인',authURL('/account.html','login'));add('무료 회원가입',authURL('/account.html'),true);}else if(result.state===MEMBER.incomplete){add('가입 마무리','/account.html',true);}else{const expert=result.membership.partner_status==='approved';add(expert?'예약·고객':'내 예약',expert?'/partner-work.html':'/requests.html');if(expert)add('전문가 정보','/partner.html');add('내 정보','/account.html');}expertEntry();};await show();client.auth.onAuthStateChange(()=>{setTimeout(()=>show().catch(()=>{}),0);});}catch{/* Keep the explicit login/signup links if the service is unavailable. */}})();}
+if(header){(async()=>{try{const {client,config}=await memberService();const serviceNotice=document.querySelector('[data-home-service-status]');if(serviceNotice&&config.serviceStage==='PRODUCTION'&&config.bookingEnabled)serviceNotice.textContent='전문가 상담은 지금 이용할 수 있으며, 오프라인 보험소 거점은 순차적으로 준비하고 있습니다.';const show=async()=>{const result=await memberState(client);header.replaceChildren();if(result.state===MEMBER.active&&['/','/index.html'].includes(location.pathname))void maybePromptReservationPush({client,user:result.user});const panel=document.querySelector("[data-membership-panel]");if(panel){const active=result.state===MEMBER.active,incomplete=result.state===MEMBER.incomplete;panel.querySelector('[data-membership-description]').textContent=active?'현재 로그인되어 있습니다. 가입 화면도 확인할 수 있어요.':incomplete?'계정 인증이 완료됐어요. 필수 동의로 가입을 마무리하세요.':'가입하고 상담·예약 내역을 한곳에서 확인하세요.';const account=panel.querySelector('[data-membership-account]');account.textContent=active?'내 정보 보기':incomplete?'가입 마무리':'이미 가입했다면 로그인';account.href=active||incomplete?'/account.html':authURL('/account.html','login');}const add=(label,href,primary)=>{const a=document.createElement('a');a.textContent=label;a.href=href;if(primary)a.className='member-primary';header.append(a);};if(result.state===MEMBER.anonymous){add('로그인',authURL('/account.html','login'));add('무료 회원가입',authURL('/account.html'),true);}else if(result.state===MEMBER.incomplete){add('가입 마무리','/account.html',true);}else{const expert=result.membership.partner_status==='approved';add(expert?'예약·고객':'내 예약',expert?'/partner-work.html':'/requests.html');if(expert)add('전문가 정보','/partner.html');add('내 정보','/account.html');}expertEntry();};await show();client.auth.onAuthStateChange(()=>{setTimeout(()=>show().catch(()=>{}),0);});}catch{/* Keep the explicit login/signup links if the service is unavailable. */}})();}
 
 window.bohumsoCatalog=async(area,wanted)=>{const {client}=await memberService();const {data,error}=await client.rpc('planner_catalog',{area,wanted});if(error)throw error;return data;};
 

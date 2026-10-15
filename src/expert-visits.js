@@ -1,3 +1,4 @@
+import {maybePromptReservationPush} from './notification-prompt.js';
 import {memberService,memberState,requireActiveMember,MEMBER} from './member-access.js';
 import {PROFESSION_CONFIG} from './profession-config.js';
 import {stableRequestKey} from './request-intent.js';
@@ -45,6 +46,7 @@ export async function renderInstant(client,root){
  try{await load();}catch{status(card,'방문 가능 상태를 불러오지 못했어요.');button('다시 확인',card,load);}
 }
 export async function renderUrgentWorkspace(client,root){
+ void client.auth.getUser().then(({data})=>maybePromptReservationPush({client,user:data?.user,context:'reservation'})).catch(()=>{});
  const panel=el('section','',root,'card urgent-panel');el('h2','전문가 방문상담 내역',panel);const body=el('div','',panel);let busy=false;
  const load=async()=>{if(busy)return;busy=true;try{const rows=await rpc(client,'workspace');body.replaceChildren();if(!rows.length)el('p','접수한 방문상담이 없습니다.',body);
   for(const r of rows){const care=r.mine||r.assigned?await getCareSafe(client,'visit',r.id):null;const c=el('article','',body,'urgent-request');c.dataset.bookingId=r.id;el('h3',(r.purpose==='other'?'세무 상담':purposes[r.purpose]||'보험 상담')+' · 전문가 방문',c);
