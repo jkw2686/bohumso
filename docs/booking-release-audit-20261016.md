@@ -32,3 +32,12 @@
 
 ## 배포
 마지막 사용자 승인 후 배포 진행. 정확한 커밋·Netlify ID·시각·운영 정적 번들 검수는 후속 기록한다. 실회원 조회 없이 운영 번들을 격리 인증/예약 모형으로 검수하는 QA_ASSET_ORIGIN 옵션을 notifications-browser에 추가했다. 구성/모든 RPC를 가로채며 원격에서는 공개 정적 파일만 GET한다.
+
+## 2026-10-16 18:57:35 KST 운영 배포 완료
+사용자의 마지막 배포 승인으로 ee306ca028ae8dbc5560209596bd9601bac25b0b를 main에 반영. Netlify 6ad1f50055b845cd21d14766 state=ready, published_at=2026-10-16T09:57:35.028Z. 오류 없음. 운영 https://bohumso.netlify.app/requests.html / 고정 https://6ad1f50055b845cd21d14766--bohumso.netlify.app/requests.html . Netlify 공개 배포화면에서도 Published main@ee306ca 확인. outputs/booking-release/production-deploy.png 증빙 저장.
+운영 후 검수는 실회원 조회 없이 공개 정적파일만 가져와 인증/예약/알림 RPC 전부를 합성 자료로 가로챈 tests/notifications-browser.mjs의 QA_ASSET_ORIGIN 모드로 진행. 실제 회원 데이터·발송·이충경 관련 건에는 접근하지 않음. 최종 결과는 후속 기록.
+
+### 운영 후 최종 검수 통과
+QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.mjs 최종 PASS: 배포된 실제 공개 HTML/JS/CSS + 합성 계정/예약자료, 360/390/430/768/1440폭의 목록, 조회실패/지연/재시도, 부가기능 없음/비활성/오류, 정확한 예약 진입/포커스, 타인 거절, 로그인 복귀, 읽음/생성 호출 없음. 예약의 full settings 0개/상태요약 1개 확인. 실제 회원 API/DB는 조회하지 않았다.
+공개 /assets/account.js는 최종 빌드와 SHA256 일치, /requests-page.css는 Windows 줄바꿈 정규화 후 본문 일치. 공개 HTML은 Netlify pretty URL 후처리로 .html 링크가 확장자 없는 주소/속성순서로 바뀌어 byte 동일하지 않음. 실제 운영 번들 격리 브라우저 검사는 정상 통과. Netlify build와 배포 확인까지 완료했으나 전체 GitHub CI·실기기·실푸시 수신 성공을 의미하지 않는다.
+최종 기능 커밋 ee306ca, 운영 배포 6ad1f50055b845cd21d14766 / 2026-10-16 18:57:35 KST. 고정 URL과 실제 사용자용 운영URL은 위 기록 참조. 이번 코드에 대한 개발/관련검사/운영배포 완료. 출시 준비 판정은 실기기/허용된 비제외 계정 검수와 별개로 보류. 추가 운영 DB/권한 설정 승인 필요 없음.

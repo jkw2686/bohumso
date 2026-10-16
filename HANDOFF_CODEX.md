@@ -11,7 +11,7 @@
 - [x] 고객 보험소방문예약·전문가 고객방문 구분 유지. 방문내역도 요약/현재지난 동기화. 지도빈상태 숨김CSS복구.
 - [x] 관련 SQL/서버/브라우저 회귀와 5폭/360px200% 통과. 자세한 근거 docs/booking-release-audit-20261016.md. 전체 npm test를 이번에 전부 재실행한 것은 아님.
 - [x] npm run build 통과. 새 프레임워크/DBmigration/요금정책/카카오/문자/실회원발송 없음.
-- [ ] 마지막 승인에 따른 운영 배포/운영 공개 정적번들+격리자료 확인 결과 후속기록.
+- [x] 마지막 승인에 따른 운영 배포 완료(18:57:35 KST). 운영 공개 정적번들+격리자료 검수 통과.
 - [ ] 실기기 터치·OS글자/스크린리더/실제푸시 미검증. 이충경 외 허용 테스트 계정·기기 지정 및 수신검수 필요(사용자가능시간 의존 15~30분). 출시 준비완료 아님.
 
 ## 파일·검사
@@ -22,3 +22,14 @@ node --test --test-concurrency=1 tests/basic-reservation-alerts.test.mjs tests/b
 
 ## 되돌리기와 미검증
 이번 커밋의 화면/진입/테스트만 되돌리고 이전 청구 만화·지도 직접선택·실제 보험소·공개동의전화·기본알림/서버ACL 유지. 저장 설정없는 기존회원ON/명시OFF/읽음미처리/예약중복방지 보존. 운영실회원/실기기/실푸시 증거를 코드·빌드성공으로 대체하지 않는다. DB변경으로 우회하지 않는다.
+
+## 2026-10-16 18:57:35 KST 운영 배포 완료
+사용자의 마지막 배포 승인으로 ee306ca028ae8dbc5560209596bd9601bac25b0b를 main에 반영. Netlify 6ad1f50055b845cd21d14766 state=ready, published_at=2026-10-16T09:57:35.028Z. 오류 없음. 운영 https://bohumso.netlify.app/requests.html / 고정 https://6ad1f50055b845cd21d14766--bohumso.netlify.app/requests.html . Netlify 공개 배포화면에서도 Published main@ee306ca 확인. outputs/booking-release/production-deploy.png 증빙 저장.
+운영 후 검수는 실회원 조회 없이 공개 정적파일만 가져와 인증/예약/알림 RPC 전부를 합성 자료로 가로챈 tests/notifications-browser.mjs의 QA_ASSET_ORIGIN 모드로 진행. 실제 회원 데이터·발송·이충경 관련 건에는 접근하지 않음. 최종 결과는 후속 기록.
+
+
+### 운영 후 최종 검수 통과
+QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.mjs 최종 PASS: 배포된 실제 공개 HTML/JS/CSS + 합성 계정/예약자료, 360/390/430/768/1440폭의 목록, 조회실패/지연/재시도, 부가기능 없음/비활성/오류, 정확한 예약 진입/포커스, 타인 거절, 로그인 복귀, 읽음/생성 호출 없음. 예약의 full settings 0개/상태요약 1개 확인. 실제 회원 API/DB는 조회하지 않았다.
+공개 /assets/account.js는 최종 빌드와 SHA256 일치, /requests-page.css는 Windows 줄바꿈 정규화 후 본문 일치. 공개 HTML은 Netlify pretty URL 후처리로 .html 링크가 확장자 없는 주소/속성순서로 바뀌어 byte 동일하지 않음. 실제 운영 번들 격리 브라우저 검사는 정상 통과. Netlify build와 배포 확인까지 완료했으나 전체 GitHub CI·실기기·실푸시 수신 성공을 의미하지 않는다.
+최종 기능 커밋 ee306ca, 운영 배포 6ad1f50055b845cd21d14766 / 2026-10-16 18:57:35 KST. 고정 URL과 실제 사용자용 운영URL은 위 기록 참조. 이번 코드에 대한 개발/관련검사/운영배포 완료. 출시 준비 판정은 실기기/허용된 비제외 계정 검수와 별개로 보류. 추가 운영 DB/권한 설정 승인 필요 없음.
+
