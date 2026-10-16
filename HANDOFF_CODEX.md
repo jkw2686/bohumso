@@ -1,34 +1,27 @@
-# 현재 상태 — 전문가 청구 도움 대화/만화/애니메이션 로컬 완료 (2026-10-16)
+# 현재 상태 — 전문가 청구 도움 만화·애니메이션 운영 배포 완료 (2026-10-16)
 
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 다음 할 일부터 진행.
 
-## 최신 지시와 보존
-**2026-10-16 최신 사용자 지시 “배포해”로 GitHub main 반영 및 Netlify 운영 배포 승인. 아래 로컬 한정 기록은 이전 상태이며 대체됨.** 별도 feat/claim-conversation-comics-20261016 브랜치, 커밋에 [skip netlify] [skip ci] 적용. 이전 변경638a5eb를기준으로깨끗한상태에서시작. 운영은53f7978/6ad10640095ad7a2b5d242f5/10월16일01:59KST 그대로다.
+## 최신 승인과 단계
+사용자 최신 “배포해”가 이전 로컬한정/원격전송보류를 대체. GitHub main 반영 및 Netlify운영배포 완료.
+- [x] 암진단 먼저완성 후 가족사망·입원수술·사고 확장. 네편대본/동일전문가 SVG실제16컷/HTML대사.
+- [x] 각24초 사용자선택재생·고개/손동작·일시정지/재개/다시보기/정적복귀·종료정지/동작줄이기정적대체.
+- [x] 공통3멘트/상황별문구복사·실패시선택대안/기존병원보험사검색연결/기관출처날짜보존.
+- [x] build·검색2검사·신규4편360/390/430/768/1440/2배글자/동작/복사검사, 기존자료실/성장자료회귀 통과.
+- [x] 운영배포 및 실제운영 IAB 재생/8초정지/정적복귀/가족사망390px/기존병원분류연결 확인.
+- [ ] 실휴대전화 터치·스크린리더음성/운영자최종그림문구 평가 10~20분. 기관별최신본문일괄재검증없음.
 
-## 단계 진행표
-- [x] 기존 전문가업무 자료실/성장상담도구·검색/신청자요건/비교/공식링크복사 구조확인. 별도자료실없음.
-- [x] 암진단4컷 먼저구현·실그림/대사/재생검수후 나머지3편확장. 네편대본·총16컷직접제작SVG원화. 같은전문가·그림체,실제장면/표정/손동작/시점,HTML대사.
-- [x] 각24초(5/6/5/8초) 선택재생,고개/손동작/대사등장. 정적기본/일시정지/재개/다시보기/만화복귀포커스,종료후정지/무한반복없음,동작줄이기정적대체·재생중설정변경대응.
-- [x] 공통3멘트·상황별문구복사/실패선택대안,같은병원/보험사검색분류연결,출처/날짜/재확인 보존. 개인정보입력없음.
-- [x] 기존전문가업무와성장상담도구 목록/상세에서 #claimScripts진입.
-- [x] build·검색2개·새4편5폭/390·1440전체그림/2배글자·재생/정지/복귀·동작줄이기·복사/기존검색 재사용 통과. 기존자료실320/360/390/768/1440검색/요건/비교/복사/전문가예약맥락 통과. 기존성장자료회귀통과,상담도구목록/상세 새진입링크최종검사통과.
-- [x] 실제 IAB localhost 재생/9초일시정지/만화복귀·가족사망390px·입원상황맥락확인.
-- [ ] 실휴대전화 터치/운영자최종문구·그림평가10~20분,배포별도승인. **배포없음.**
+## 파일·검사·되돌리기
+상세 docs/claim-conversations-20261016.md. public/claim-conversations-data.js(대본), claim-conversation-art.js(SVG원화), claim-conversations.js/css(화면/동작), claim-resources.html/js(기존자료연결), partner-work.html/src/growth.js(진입). tests/claim-conversations-browser.mjs, tests/growth-browser.mjs.
+검사 npm run build; node --test tests/claim-resource-search.test.mjs; node tests/claim-conversations-browser.mjs; node tests/claim-resources-browser.mjs; node tests/growth-browser.mjs. Windows 격리브라우저 실행 require_escalated 필요. 이번배포시코드변경없음. CI최신상태는DNS오류로미확인.
+원복은이번대화콘텐츠/진입만되돌리고91기관원자료/지도/직접전문가선택/실제보험소예약/알림/DB보존. 카카오연결/새발송/시험예약/요금변경없음.
 
-## 파일과실행
-상세 docs/claim-conversations-20261016.md. public/claim-conversations-data.js(대본), claim-conversation-art.js(SVG원화), claim-conversations.js/css(화면·재생), claim-resources.html/js(기존자료연결), partner-work.html/src/growth.js(진입). tests/claim-conversations-browser.mjs, tests/growth-browser.mjs.
-로컬 http://127.0.0.1:4178/claim-resources.html#claimScripts /서버세션35672는이PC전용. 원격미리보기/배포주소아님. IAB탭6은전달용. artifacts/claim-conversations에4편390/1440캡처,outputs/claim-conversations/local-390.png는실제IAB.
-검사: npm run build; node --test tests/claim-resource-search.test.mjs; node tests/claim-conversations-browser.mjs; node tests/claim-resources-browser.mjs; node tests/growth-browser.mjs. WindowsEdge검사 require_escalated 필요. 유료생성/API/외부발송/운영예약없음.
-
-## 판단/되돌리기/남은문제
-서류를알아야만도움요청하는조건없음.기관별필수요건단정·위임장일괄필수·상품유도·지급확답없음. 기관자료최신성재검증안함(기존확인기록보존). 음성/MP4없음,사이트내WebAnimationsAPI재생. 실기기/스크린리더음성 미검수. 만화원화는SVG직접제작이며유료이미지생성아님.
-원복은이번브랜치의콘텐츠/진입만되돌리고원래91기관/지도/전문가직접선택/보험소예약/상담ONOFF/알림/DB보존. 새방송/시험예약/카카오/요금/계정병합금지.
-
-## 이전작업미확인 (이번지시와분리)
-이충경98333c96-38da-491c-96e4-c93257e9f286의본인알림→정확예약·두Android실푸시확인은사용자내일하자로보류. 재발송/원예약상태변경금지. 운영초기연결지연원인/현재관리SELECT/활성운영보험소 실대상 미확인. 6회차운영재검수는당시IAB network IO suspended로막힘. 출시판정보류.
-
-## 원격 전송 상태 — 로컬 보존만 완료
-코드 커밋54dfeda는 로컬에만 존재. origin의 feat/claim-conversation-comics-20261016 push 요청은 자동승인검토에서 거절되어 실행되지 않았다. 사유: 로컬 구현/검수 승인과 외부 GitHub 저장소로의 소스·문서 전송 승인은 별개이며 목적지 push 명시 승인이 없다는 판단. 우회/재시도하지 않음. 원격 보존을 원하면 사용자의 jkw2686/bohumso 별도브랜치 push 승인을 받은 뒤 진행. 배포/메인병합 승인으로 해석하지 않는다.
-
-## 2026-10-16 최신 배포 승인
-사용자 최신 지시 “배포해”로 이번 전문가 대화·만화·애니메이션의 GitHub main 반영과 Netlify 운영 배포가 승인되었다. 이전 로컬 한정/전송 보류 기록은 과거 상태이며 이번 승인으로 대체한다. 코드54dfeda 및 검수 결과를 보존하여 배포 진행. DB·정책·외부 발송 변경 없음. 운영 결과는 후속 기록.
+## 이전작업 미확인 — 이번 배포와 별개
+이충경 예약98333c96-38da-491c-96e4-c93257e9f286 본인알림→정확예약·두Android실푸시확인은 사용자 내일하자로 보류. 재발송/원예약상태변경금지. 운영초기연결지연원인/현재관리SELECT/활성운영보험소 실대상 미확인. 출시준비완료 판정보류. 후속본인기기확인 10~20분+사용자가능시간 의존.
+## 2026-10-16 운영 배포 완료
+- 사용자 “배포해” 승인에 따라 GitHub main 79e6f6f3d22de1a63c8fa931714bacc5fc2fcf19 반영. Netlify 6ad19fcab160895569bbab96 ready, published_at 2026-10-16T03:53:59.398Z = 12:53:59 KST.
+- 운영 https://bohumso.netlify.app/claim-resources.html#claimScripts / 고정 https://6ad19fcab160895569bbab96--bohumso.netlify.app/claim-resources.html#claimScripts
+- 실제 운영 IAB 네 상황 선택·실제 4컷 원화/HTML대사·기본 정적 표시 확인. 재생 후2컷8초 일시정지·만화복귀 정상. 가족사망390px 화면 및 가로넘침없음 확인(문서폭375=scrollWidth375, 스크롤바 제외). 기존 병원찾기→병원분류 연결 확인, 91기관/기존확인정보 유지. viewport 원복.
+- 증빙 outputs/claim-conversations/production.png, production-comic.png (작업폴더 내 저장소 밖).
+- 이전 build/검색2검사/신규4편반응형·재생·동작줄이기·복사·기존자료실/성장 회귀검사 통과 결과 유지. 이번에는 코드수정 없이 동일 검수 코드를 배포. GitHub CI 최신상태 조회는 호스트 DNS오류로 미확인; Netlify빌드/공개 성공과 구분.
+- 실휴대전화 터치·스크린리더 음성 미확인. 기관 공식본문을 이번에 일괄재검증하지 않음. 예약/알림 실제수신 미확인은 별도 기존과제 그대로이며 이번 배포로 해결 완료 처리하지 않음. DB·정책·요금·외부발송 변경 없음.
