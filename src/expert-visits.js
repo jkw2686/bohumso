@@ -46,15 +46,15 @@ export async function renderInstant(client,root){
  try{await load();}catch{status(card,'방문 가능 상태를 불러오지 못했어요.');button('다시 확인',card,load);}
 }
 export async function renderUrgentWorkspace(client,root){
- void client.auth.getUser().then(({data})=>maybePromptReservationPush({client,user:data?.user,context:'reservation'})).catch(()=>{});
- const panel=el('section','',root,'card urgent-panel');el('h2','전문가 방문상담 내역',panel);const body=el('div','',panel);let busy=false;
- const load=async()=>{if(busy)return;busy=true;try{const rows=await rpc(client,'workspace');body.replaceChildren();if(!rows.length)el('p','접수한 방문상담이 없습니다.',body);
+ const compact=document.body.dataset.accountPage==='requests',opened=new Set();if(!compact)void client.auth.getUser().then(({data})=>maybePromptReservationPush({client,user:data?.user,context:'reservation'})).catch(()=>{});
+ const panel=el('section','',root,'card urgent-panel');el('h2','전문가 방문상담 내역',panel);const body=el('div','',panel);let busy=false,lastView=null;
+ const load=async()=>{if(busy)return;busy=true;try{const rows=await rpc(client,'workspace');const anchor=compact?[...body.querySelectorAll('[data-booking-id]')].find(n=>n.getBoundingClientRect().bottom>0):null,position=anchor?{id:anchor.dataset.bookingId,top:anchor.getBoundingClientRect().top}:null;body.replaceChildren();if(!rows.length)el('p','접수한 방문상담이 없습니다.',body);
   for(const r of rows){const care=r.mine||r.assigned?await getCareSafe(client,'visit',r.id):null;const c=el('article','',body,'urgent-request');c.dataset.bookingId=r.id;el('h3',(r.purpose==='other'?'세무 상담':purposes[r.purpose]||'보험 상담')+' · 전문가 방문',c);
    el('strong',r.rejected?labels.REJECTED:r.confirmed&&r.state==='ACCEPTED'?labels.CONFIRMED:labels[r.state],c);
    el('p',r.region+(r.distanceKm!=null?' · 검색 기준 '+distance(r.distanceKm):''),c);if(r.expertName)el('p',r.expertName+' 전문가',c);
    if(r.fee_notice)el('p',r.fee_notice,c);if(r.preferredAt)el('p',(r.confirmed?'확정시간':'희망시간')+' · '+time(r.preferredAt),c);
    if(r.details){el('p','만날 장소 · '+r.details.place,c);link(r.details.phone,'tel:'+r.details.phone,c);if(r.details.note)el('p',r.details.note,c);}else el('p','고객이 일정을 확정한 뒤 방문 주소와 연락처를 확인할 수 있어요.',c,'visit-hint');
-   const act=(title,op,payload={})=>button(title,c,async()=>{await rpc(client,op,{id:r.id,...payload});await load();});
+   const act=(title,op,payload={})=>button(title,c,async()=>{opened.add(r.id);await rpc(client,op,{id:r.id,...payload});await load();});
    // 약속 안내는 부가 정보다. 조회가 느리거나 실패해도 수락·거절 버튼은 반드시 남도록
    // 자리만 먼저 잡고 버튼을 그린 뒤, 안내는 마지막에 채운다.
    if(!r.mine&&!r.assigned&&r.state==='REQUESTED'){const notice=el('div','',c);act('희망시간 수락','accept');act('요청 거절','pass');carePolicy(notice,'expert',await careStatusSafe(client));}
@@ -62,8 +62,11 @@ export async function renderUrgentWorkspace(client,root){
    if(r.assigned&&r.confirmed){if(['ACCEPTED','PREPARING'].includes(r.state))act('출발 알리기','trip',{state:'DEPARTED'});if(['DEPARTED','EN_ROUTE'].includes(r.state))act('도착 알리기','trip',{state:'ARRIVED'});if(r.state==='ARRIVED')act('상담 완료','trip',{state:'COMPLETED'});}
    if(care)renderCare({client,root:c,data:care,refresh:load});
    else if((r.mine||r.assigned)&&!['COMPLETED','CANCELLED','EXPIRED'].includes(r.state))button('요청 취소',c,async()=>{if(!confirm('이 방문상담 요청을 취소할까요?'))return;await rpc(client,'cancel',{id:r.id});await load();});
+   if(compact){const archived=['COMPLETED','CANCELLED','EXPIRED'].includes(r.state)||r.rejected;c.dataset.visitArchive=String(archived);const detail=document.createElement('details');detail.className='booking-visit-detail';const summary=document.createElement('summary');summary.textContent=(r.expertName||'전문가 방문상담')+' · '+(r.rejected?labels.REJECTED:r.confirmed&&r.state==='ACCEPTED'?labels.CONFIRMED:labels[r.state])+(r.preferredAt?' · '+time(r.preferredAt):'');detail.append(summary);const inner=document.createElement('div');while(c.firstChild)inner.append(c.firstChild);detail.append(inner);const primary=[...inner.querySelectorAll('button')].find(b=>!/취소|거절/.test(b.textContent));primary?.classList.add('booking-primary-action');c.append(detail);detail.open=opened.has(r.id);detail.addEventListener('toggle',()=>{if(detail.open)opened.add(r.id);else opened.delete(r.id);});c.addEventListener('click',()=>{if(detail.open)opened.add(r.id);});}
   }
+  if(compact){applyView();if(position){const card=[...body.querySelectorAll('[data-booking-id]')].find(n=>n.dataset.bookingId===position.id);if(card)window.scrollBy(0,card.getBoundingClientRect().top-position.top);}}
  }finally{busy=false;}};
+ const applyView=()=>{const past=document.querySelector('[data-booking-view]')?.dataset.bookingView==='past';if(lastView!==null&&lastView!==past){opened.clear();for(const d of body.querySelectorAll('details'))d.open=false;}lastView=past;for(const c of body.querySelectorAll('[data-visit-archive]'))c.hidden=!opened.has(c.dataset.bookingId)&&(c.dataset.visitArchive==='true')!==past;};if(compact)window.addEventListener('bohumso-booking-view',applyView);
  button('내역 새로고침',panel,load,true);try{await load();}catch{status(panel,'내역을 불러오지 못했어요. 새로고침해 주세요.');}
  const timer=setInterval(()=>{if(!panel.isConnected){clearInterval(timer);return;}if(document.visibilityState==='visible'&&!document.querySelector('dialog[open]')&&!document.activeElement?.closest('form'))load().catch(()=>{});},30000);
 }

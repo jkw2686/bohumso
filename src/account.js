@@ -1,4 +1,4 @@
-import {mountNotificationSettings} from './notification-settings.js';
+import {mountNotificationSettings,mountNotificationSummary} from './notification-settings.js';
 import {maybePromptReservationPush} from './notification-prompt.js';
 import {renderNotificationPage,focusBooking} from './booking-notifications.js';
 import {mountGrowthAdmin} from './growth-admin.js';
@@ -89,11 +89,11 @@ async function start(){
  if(mode==='notifications'){
   // Resolve reservation links and show the inbox independently of device settings.
   const page=renderNotificationPage({client,root:$('accountContent')});
-  if(!new URLSearchParams(location.search).has('reservation'))await Promise.all([page,mountNotificationSettings({client,host:$('accountContent'),user})]);
+  if(!new URLSearchParams(location.search).has('reservation')){await page;const settings=document.createElement('a');settings.href='/account.html#notificationSettings';settings.className='btn ghost';settings.textContent='알림 설정';$('accountContent').append(settings);}
   else await page;
   return;
  }
- if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config});$('accountContent').hidden=false;if($('requestList'))focusBooking($('requestList'));if(document.body.dataset.workspace==='partner'){
+ if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config:{...config,viewerId:user.id}});$('accountContent').hidden=false;if($('requestList'))focusBooking($('requestList'));if(document.body.dataset.workspace==='partner'){
   // 전문가가 매일 쓰는 두 가지를 화면 맨 위에 둔다: 지금 방문 ON/OFF → 청구지원 자료실.
   // 자료실은 정적 카드라 await 전에 먼저 옮겨 두어야 늦게 올라오며 깜빡이지 않는다.
   const tools=document.createElement('div'),quick=document.createElement('div');
@@ -103,7 +103,7 @@ async function start(){
   await renderInstant(client,quick);
   await renderServiceArea(client,tools);await renderUrgentWorkspace(client,tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
  if(mode==='requests'&&document.body.dataset.workspace==='admin')await renderWaitlistCounts(client,document.getElementById('regionWaitlistHost'));
- if(mode==='requests'){await mountNotificationSettings({client,host:$('accountContent'),user});void maybePromptReservationPush({client,user,context:'reservation'});}
+ if(mode==='requests'&&document.body.dataset.workspace!=='admin')void mountNotificationSummary({client,host:$('accountContent'),user});
  if(mode==='requests'&&document.body.dataset.workspace!=='admin')await renderCareCases(client,$('accountContent'),document.body.dataset.workspace);
  if(mode==="payment")await renderPaymentResult(client,message);
  if(mode==="phone")await renderPhoneVerification({client,config,root:$("accountContent")});

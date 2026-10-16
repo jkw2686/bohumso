@@ -32,4 +32,4 @@ export async function mountBookingNotifications({client,host,expanded=false}){
  const timer=setInterval(()=>{if(!section.isConnected){clearInterval(timer);return;}if(!document.hidden&&details.open)void load();},60000);
  return {refresh:load,section};
 }
-export function focusBooking(host){const id=new URLSearchParams(location.search).get('request');if(!uuid.test(id||''))return;const card=[...host.querySelectorAll('[data-booking-id]')].find(n=>n.dataset.bookingId===id);if(card){card.tabIndex=-1;requestAnimationFrame(()=>{card.focus({preventScroll:true});card.scrollIntoView({block:'center',behavior:'auto'});});}}
+export function focusBooking(host){const id=new URLSearchParams(location.search).get('request');if(!uuid.test(id||''))return;const card=[...host.querySelectorAll('[data-booking-id]')].find(n=>n.dataset.bookingId===id);if(card){const details=card.querySelector('[data-booking-detail]');if(details)details.open=true;card.tabIndex=-1;requestAnimationFrame(()=>{card.focus({preventScroll:true});card.scrollIntoView({block:'center',behavior:'auto'});});}}

@@ -62,7 +62,7 @@ async function visibleActions(page) {
   });
 }
 
-for (const [width, label] of [[360, '360'], [390, '390'], [1280, '1280']]) {
+for (const [width, label] of [[360, '360'], [390, '390'], [430, '430'], [768, '768'], [1440, '1440']]) {
   const page = await browser.newPage({viewport: {width, height: 780}});
   page.on('pageerror', e => { failed++; console.log('FAIL 콘솔 오류: ' + e.message); });
   await openMap(page);

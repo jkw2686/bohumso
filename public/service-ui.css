@@ -81,8 +81,6 @@ body.admin-console .waitlist-admin .btn.ghost{background:var(--card);color:var(-
 body .policy-footer{background:var(--card);border-top:1px solid var(--border);line-height:1.8}
 /* Empty-state guidance stays expandable so the collapsed sheet leaves the map visible. */
 body.map-page .list-sheet .empty-art{display:none}
-body.map-page .list-sheet[data-sheet-state=collapsed] .empty-actions .btn.ghost,
-body.map-page .list-sheet[data-sheet-state=collapsed]:has(.empty-actions) #areaRequest{display:none}
 body.map-page .empty-actions-hint{font-size:var(--ui-caption);margin-block:var(--ui-space-2)}
 body.map-page .sheet-toolbar button{min-height:var(--ui-touch)}
 body.map-page .leaflet-control-zoom a,body.home-page .home-map-section .leaflet-control-zoom a{width:var(--ui-touch);height:var(--ui-touch);min-width:var(--ui-touch);min-height:var(--ui-touch);line-height:var(--ui-touch)}
