@@ -12,7 +12,7 @@ export function contentBody(host,doc){
  el('div',doc.body,host).className='growth-body';el('h3','작게 시작해 보세요',host);el('p',doc.practice,host);
  el('p',doc.origin==='bohumso'?'보험소 자체 작성 운영 팁':doc.method==='ai'?'AI 작성 초안 · 운영자 검토 후 게시':'운영자 작성',host).className='growth-meta';
  if(doc.category==='book')el('p','책 정보와 보험소의 실천 제안을 구분해 읽어 주세요. 출판사 소개를 바탕으로 작성한 안내는 전체 내용을 읽은 서평이 아닙니다.',host);
- if(doc.category==='tools')anchor(host,'병원·보험사 공식 자료 찾기','/claim-resources.html');
+ if(doc.category==='tools'){anchor(host,'병원·보험사 공식 자료 찾기','/claim-resources.html');anchor(host,'상황별 청구 도움 · 대화·만화','/claim-resources.html#claimScripts');}
  if(doc.sources?.length){el('h3','출처',host);for(const s of doc.sources){const href=safeSource(s.url);if(!href)continue;const a=anchor(host,s.title||'공식 자료',href);a.target='_blank';a.rel='noopener noreferrer';if(s.published_date)el('small','원문 게시일 '+s.published_date,host);}}
  if(doc.base_date)el('p','자료 기준일 '+doc.base_date,host).className='growth-meta';
  if(doc.checked_date)el('p','운영자 확인일 '+doc.checked_date,host).className='growth-meta';
@@ -49,7 +49,7 @@ export async function mountGrowth({client,host,userId}){
  for(const [key,label] of Object.entries(categories)){const b=button(nav,label,()=>{activeCategory=key;drawLibrary();},true);b.dataset.category=key;}
  const dialog=el('dialog',undefined,host);dialog.className='growth-dialog card';const close=button(dialog,'닫기',()=>dialog.close(),true);close.className+=' growth-close';const body=el('div',undefined,dialog);dialog.setAttribute('aria-label','자료 상세');
  async function openContent(id){try{const doc=await growthRPC(client,'content',{id});body.replaceChildren();contentBody(body,doc);button(body,'＋ 내 실천에 추가',()=>{dialog.close();edit(null,doc);});dialog.showModal();close.focus();}catch(e){notice.textContent=growthError(e);}}
- function drawLibrary(){nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.category===activeCategory)));cards.replaceChildren();const selected=docs.filter(d=>d.category===activeCategory);if(!selected.length)el('p','공개된 자료가 아직 없습니다.',cards);for(const doc of selected){const card=el('article',undefined,cards);el('h3',doc.title,card);el('p',doc.practice,card);button(card,'자료 읽기',()=>openContent(doc.id),true);}if(activeCategory==='tools')anchor(cards,'병원·보험사 자료실 열기','/claim-resources.html');}
+ function drawLibrary(){nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.category===activeCategory)));cards.replaceChildren();const selected=docs.filter(d=>d.category===activeCategory);if(!selected.length)el('p','공개된 자료가 아직 없습니다.',cards);for(const doc of selected){const card=el('article',undefined,cards);el('h3',doc.title,card);el('p',doc.practice,card);button(card,'자료 읽기',()=>openContent(doc.id),true);}if(activeCategory==='tools'){anchor(cards,'병원·보험사 자료실 열기','/claim-resources.html');anchor(cards,'상황별 청구 도움 · 대화·만화','/claim-resources.html#claimScripts');}}
  button(host,'새로고침',async()=>{if(busy||dirty&&!confirm('입력 내용을 유지한 채 목록을 새로고침할까요?'))return;await load();},true);
  const unload=e=>{if(dirty&&host.isConnected){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',unload);
  async function load(){await refreshTasks();try{docs=await growthRPC(client,'library');drawLibrary();}catch{cards.textContent='자료를 불러오지 못했습니다. 새로고침해 주세요.';}}

@@ -1,3 +1,4 @@
+import {mountClaimConversations} from './claim-conversations.js';
 import {resources,resourceTypes,applicantTypes,resourceScope} from './claim-resources-data.js';
 import {matchesResourceQuery,inResourceCategory} from './claim-resource-search.js';
 
@@ -86,5 +87,7 @@ for(const labelText of ['첫 번째 보험사','두 번째 보험사']){
 }
 const scope=resourceScope.summary;
 $('resourceScope').textContent='병원 '+scope.hospital+'곳 · 생명보험 '+(scope.life+scope.pension)+'곳(연금보험 '+scope.pension+'곳 포함) · 손해보험 '+scope.nonlife+'곳 · 우체국보험 '+scope.post+'곳. 연금보험과 보증·재보험 '+scope.other+'곳은 업무 범위를 구분해 안내합니다.';
-function openHash(){if(location.hash.slice(1)==='compareTitle'){$('comparisonTools').open=true;$('compareTitle').scrollIntoView({block:'start'});}}
+function openHash(){if(location.hash==='#claimScripts'){$('claimScripts').open=true;$('claimScripts').scrollIntoView({block:'start'});}if(location.hash.slice(1)==='compareTitle'){$('comparisonTools').open=true;$('compareTitle').scrollIntoView({block:'start'});}}
 window.addEventListener('hashchange',openHash);search();comparison();openHash();
+
+mountClaimConversations($('claimConversations'),{findResources(type){category=type;queryInput.value='';lastSearch='';search();$('resourceFilters').scrollIntoView({block:'start'});queryInput.focus({preventScroll:true});}});
