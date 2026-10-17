@@ -16,8 +16,8 @@ export async function getCare(client,kind,id){return await careStatus(client)?ca
 // 일시 오류를 모두 '안내 없음'으로 낮춘다. careStatus/getCare 원본은 그대로 둔다.
 export function careStatusSafe(client){return careStatus(client).then(x=>x,()=>null);}
 export function getCareSafe(client,kind,id){return getCare(client,kind,id).then(x=>x,()=>null);}
-export function carePolicy(root,role,data){
- const d=el('details',null,root,'appointment-policy');el('summary',role==='expert'?'고객과의 약속을 지켜주세요':'서로의 시간을 지켜주세요',d);
+export function carePolicy(root,role,data,inline=false){
+ const d=el(inline?'section':'details',null,root,'appointment-policy');el(inline?'h4':'summary',role==='expert'?'고객과의 약속을 지켜주세요':'서로의 시간을 지켜주세요',d);
  el('p','참석이 어렵다면 미리 변경·취소해 주세요.',d);
  if(data?.policyActive&&!(role==='expert'&&data?.paidHold))el('p',role==='expert'?'최근 90일 내 확인된 무단 노쇼는 1회 경고, 2회 신규 예약 7일 제한, 3회 30일 제한 및 재개 전 운영자 확인이 적용됩니다.':'최근 90일 내 확인된 무단 노쇼는 1회 경고, 2회 신규 예약 3일 제한, 3회 7일 제한이 적용됩니다.',d);
  else if(role==='expert'&&data?.paidHold)el('p','신고는 양쪽의 설명을 확인한 후 판단합니다. 유료 전문가의 신규 예약 제한은 시행 보류 중입니다.',d);
@@ -33,14 +33,14 @@ function measure(root,m){if(!m||m.status==='none')return;
  if(m.blocked){el('p','제한 기간 · '+stamp(m.starts_at)+' ~ '+stamp(m.ends_at),root);el('p',m.role==='expert'?'새 예약 접수·수락이 제한됩니다.':'새 예약 신청이 제한됩니다.',root);el('p','기존 예약 확인·연락·변경·취소·이행과 운영자 문의는 계속 이용할 수 있어요.',root);if(m.resume_required)el('p','기간 종료 후 운영자의 이용 재개 확인이 필요합니다.',root);}
  if(m.review_required)el('p','추가 사건은 운영자가 별도로 검토합니다. 제한 기간은 자동 연장하지 않습니다.',root);
 }
-export function renderCare({client,root,data:a,refresh=()=>{},admin=false}){
+export function renderCare({client,root,data:a,refresh=()=>{},admin=false,inline=false}){
  const section=el('section',null,root,'appointment-care');section.dataset.appointmentId=a.id;
  if(new URLSearchParams(location.search).get('request')===a.id&&!document.documentElement.dataset.careFocused){document.documentElement.dataset.careFocused='true';section.tabIndex=-1;requestAnimationFrame(()=>{section.focus({preventScroll:true});section.scrollIntoView({block:'center'});});}
  const feedback=el('p',null,section,'review-feedback');feedback.setAttribute('role','status');
  const run=async(op,payload,key)=>{const result=await careRpc(client,op,{kind:a.kind,id:a.id,revision:a.revision,request_key:key,...payload});await refresh();return result;};
  const button=(parent,title,op,payload={},confirmText)=>{const b=el('button',title,parent,'btn ghost');b.type='button';const key=crypto.randomUUID();b.onclick=async()=>{if(confirmText&&!window.confirm(confirmText))return;b.disabled=true;try{await run(op,payload,key);}catch(e){feedback.textContent=careErrors[e.message]||'처리하지 못했어요. 입력과 연결 상태를 확인해 주세요.';feedback.scrollIntoView({block:'nearest'});}finally{b.disabled=false;}};return b;};
  const form=(title,op,fields,extra={},confirmText)=>{
-  const d=el('details',null,section);el('summary',title,d);const f=el('form',null,d),key=crypto.randomUUID();fields(f);const b=el('button',title,f,'btn');b.type='submit';
+  const d=el(inline?'section':'details',null,section);el(inline?'h4':'summary',title,d);const f=el('form',null,d),key=crypto.randomUUID();fields(f);const b=el('button',title,f,'btn');b.type='submit';
   f.onsubmit=async e=>{e.preventDefault();if(confirmText&&!window.confirm(confirmText))return;b.disabled=true;const body=Object.fromEntries(new FormData(f));for(const n of f.querySelectorAll('[type=checkbox]'))body[n.name]=n.checked;try{await run(op,{...body,...extra},key);}catch(e){feedback.textContent=careErrors[e.message]||'처리하지 못했어요. 입력과 연결 상태를 확인해 주세요.';feedback.scrollIntoView({block:'nearest'});}finally{b.disabled=false;}};
   return f;
  };
@@ -50,7 +50,7 @@ export function renderCare({client,root,data:a,refresh=()=>{},admin=false}){
  if(!a.confirmed&&a.customerAgreed)el('p','고객이 장소 제공에 동의했습니다. 전문가가 같은 시간·장소를 확인하면 확정돼요.',section);
  measure(section,a.measure);
  if(a.otherPhone&&!admin)link(section,'상대방에게 연락','tel:'+a.otherPhone.replace(/[^+0-9]/g,''));
- if(a.canAgree){carePolicy(section,'expert',a);button(section,'시간·방식·장소 확인하고 확정','agree');}
+ if(a.canAgree){carePolicy(section,'expert',a,inline);button(section,'시간·방식·장소 확인하고 확정','agree');}
  if(!admin&&a.state==='active'){
   if(a.confirmed){form('늦어요','late',f=>{const n=field(f,'예상 지연시간 (분)','minutes','number','10');n.required=true;n.min=1;n.max=240;el('p','지각 안내를 보내도 원래 약속 시간은 바뀌지 않습니다.',f);});
    if(a.events?.some(e=>e.event==='late'))button(section,'기존 일정 유지','keep');}
@@ -65,7 +65,7 @@ export function renderCare({client,root,data:a,refresh=()=>{},admin=false}){
  }
  const cs=a.case;
  if(cs){const c=el('div',null,section,'appointment-case');el('h3',cs.outcome?outcomes[cs.outcome]:'불참 확인 중',c);el('p',cs.reason||'아직 노쇼로 확정된 것은 아닙니다. 당시 상황을 알려주세요.',c);if(cs.appeal_pending)el('p','이의제기 확인 중',c);
-  const history=el('details',null,c);el('summary','양쪽 설명·처리 기록',history);for(const s of cs.statements||[])el('p',roles[s.who]+' · '+stamp(s.created_at)+' · '+s.body,history);for(const d of cs.decisions||[])el('p',stamp(d.created_at)+' · '+outcomes[d.outcome]+' · '+d.reason,history);
+  const history=el(inline?'section':'details',null,c);el(inline?'h4':'summary','양쪽 설명·처리 기록',history);for(const s of cs.statements||[])el('p',roles[s.who]+' · '+stamp(s.created_at)+' · '+s.body,history);for(const d of cs.decisions||[])el('p',stamp(d.created_at)+' · '+outcomes[d.outcome]+' · '+d.reason,history);
   if(!admin&&!cs.outcome)button(c,'신고 철회 요청','explain',{body:'신고 철회를 요청합니다. 상대방의 설명과 함께 확인해 주세요.'});
   if(!admin)form(cs.outcome?'이의제기':'상황 설명하기',cs.outcome?'appeal':'explain',f=>{const n=field(f,'당시 상황 (민감한 정보는 적지 마세요)','body','textarea');n.required=true;n.minLength=3;n.maxLength=1000;});
  }
@@ -84,7 +84,7 @@ export function renderCare({client,root,data:a,refresh=()=>{},admin=false}){
  if(admin&&a.state==='cancelled'){
   form('반복 취소 별도 검토 기록','review_cancellations',f=>{const n=field(f,'검토 사유 (노쇼 횟수와 별도)','reason','textarea');n.minLength=5;n.required=true;});
  }
- const log=el('details',null,section);el('summary','예약 기록 보기',log);for(const e of [...(a.priorEvents||[]),...(a.events||[])])el('p',stamp(e.created_at)+' · '+roles[e.who]+' · '+(eventNames[e.event]||'약속 기록')+(e.detail?.minutes?' · 약 '+e.detail.minutes+'분 지연':'')+(e.detail?.reason?' · '+e.detail.reason:''),log);
+ const log=el(inline?'section':'details',null,section);el(inline?'h4':'summary','예약 기록 보기',log);for(const e of [...(a.priorEvents||[]),...(a.events||[])])el('p',stamp(e.created_at)+' · '+roles[e.who]+' · '+(eventNames[e.event]||'약속 기록')+(e.detail?.minutes?' · 약 '+e.detail.minutes+'분 지연':'')+(e.detail?.reason?' · '+e.detail.reason:''),log);
  if(!admin&&(cs||a.state==='cancelled')){
   el('p',a.state==='active'?'기존 약속은 유지 중입니다. 다른 약속을 정하기 전 변경·취소 여부를 확인해 주세요.':'새 약속은 직접 선택하고 다시 동의한 뒤 요청합니다.',section);
   if(a.mine){const q=new URLSearchParams({region:a.terms.region||'',purpose:a.terms.purpose||'claim'});link(section,'다른 전문가 찾기','/map.html?view=experts&'+q);link(section,'방문할 보험소 찾기','/map.html?view=offices&'+q);if(a.state!=='active'&&a.expertId)link(section,'같은 전문가 재예약','/requests.html?'+q+'&planner='+encodeURIComponent(a.expertId));}

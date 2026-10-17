@@ -1,3 +1,4 @@
+import {arrangeExpertManagement} from './expert-management-layout.js';
 import {mountNotificationSettings,mountNotificationSummary} from './notification-settings.js';
 import {maybePromptReservationPush} from './notification-prompt.js';
 import {renderNotificationPage,focusBooking} from './booking-notifications.js';
@@ -112,15 +113,15 @@ async function start(){
  if(mode==="partner"){const applicationStatus=await renderPartner();
   // ① 지금 방문 상담 카드를 신청 정보 카드보다 위에 둔다. partner-work 와 같은 renderInstant 를
   //    그대로 쓴다(새로 만들지 않는다). 승인 전에는 카드 대신 안내 한 줄만 보여준다.
-  const top=document.createElement('div');$("accountContent").prepend(top);
+  const top=document.createElement('div');top.dataset.managementPriority='';$("accountContent").prepend(top);
   if(applicationStatus==='approved')await renderInstant(client,top);
-  else if(applicationStatus!=='office'){const note=document.createElement('p');note.className='card';note.textContent='승인 후 지금 방문 상담을 켤 수 있어요';top.append(note);}
+  else if(applicationStatus!=='office'){const note=document.createElement('p');note.className='card';note.textContent=membership.partner_status==='approved'?'방문 상담 상태를 확인하지 못했습니다. 새로고침해 주세요.':'승인 후 지금 방문 상담을 켤 수 있어요';top.append(note);}
   if(membership.partner_status&&membership.profession!=='office')await renderServiceArea(client,$("accountContent"));
   if(["planner","tax"].includes(membership.profession)&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));
-  // ⑤ 다른 화면으로 가는 링크는 맨 아래에.
-  const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink){workLink.hidden=membership.profession==='office'||applicationStatus==='office'&&membership.partner_status!=='approved';$("accountContent").append(workLink);}}
+
+  const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink){workLink.hidden=membership.profession==='office'||applicationStatus==='office'&&membership.partner_status!=='approved';$("accountContent").append(workLink);}if(membership.profession!=='office'&&applicationStatus!=='office')arrangeExpertManagement($("accountContent"));}
  if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
- if((mode==='partner'||document.body.dataset.workspace==='partner')&&membership.profession!=='office'&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('a[href="/claim-resources.html"]')?.closest('section');if(resources)resources.append(entry);else $('accountContent').prepend(entry);}
+ if((mode==='partner'||document.body.dataset.workspace==='partner')&&membership.profession!=='office'&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('a[href="/claim-resources.html"]')?.closest('section');if(resources)resources.append(entry);else {const menu=$('accountContent').querySelector('[data-management-menu]');if(menu)menu.append(entry);else $('accountContent').append(entry);}}
  $("accountContent").hidden=false;
  if(mode==='requests'&&$('requestList'))focusBooking($('requestList'));
  openMenuDestination();

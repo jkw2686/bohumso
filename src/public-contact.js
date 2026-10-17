@@ -1,7 +1,7 @@
 import {el,input} from './consultation-ui.js';
 export async function renderPublicContact(client,parent){
  const root=el('section',undefined,parent);root.className='card public-contact-settings';el('h2','공개 연락처 (선택)',root);
- el('p','공개에 동의한 번호만 전문가 상세의 전화하기에 표시합니다. 로그인·인증 번호와 별개이며, 등록하지 않아도 가입이나 지도 노출에 불이익이 없습니다.',root);
+ const help=el('details',undefined,root);help.className='supporting-details';el('summary','공개 연락처 안내',help);el('p','공개에 동의한 번호만 전문가 상세의 전화하기에 표시합니다. 로그인·인증 번호와 별개이며, 등록하지 않아도 가입이나 지도 노출에 불이익이 없습니다.',help);
  const summary=el('p','연락처 설정을 확인하고 있습니다.',root),host=el('div',undefined,root),status=el('p','',root);status.setAttribute('role','status');
  const retry=el('button','다시 확인',root);retry.type='button';retry.className='btn ghost';retry.hidden=true;
  const rpc=async(operation,payload={})=>{const r=await client.rpc('expert_public_contact',{operation,payload});if(r.error)throw r.error;return r.data;};

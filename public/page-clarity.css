@@ -1,0 +1,51 @@
+/* Shared content rhythm. Map geometry and fixed navigation remain owned by their layouts. */
+:root{--page-top:24px;--page-title-gap:16px;--page-card-gap:16px;--page-card-padding:24px;--page-gutter:24px}
+body:not(.map-page) main.container,body:not(.map-page)>div.container,body .help-guide{padding-top:var(--page-top);margin-top:0}
+body:not(.map-page) main.container>h1,body:not(.map-page)>div.container>h1,body .request-heading h1,body .admin-heading h1{margin-top:0;margin-bottom:var(--page-title-gap);line-height:1.4}
+body .request-heading,body .admin-heading{margin-top:0;margin-bottom:var(--page-title-gap);padding-top:0}
+body .card{padding:var(--page-card-padding);margin-block:var(--page-card-gap)}
+body :is(#accountNotice,#accountMessage):empty{display:none}
+body [data-art-slot="loading"]{display:none}
+body :is(.supporting-details,.request-filters,.resource-note,.guide-documents)>summary{display:list-item;cursor:pointer;min-height:var(--ui-touch,44px);padding:var(--space-3,12px) var(--space-4,16px);box-sizing:border-box;font-size:var(--ui-body,16px);line-height:1.6;overflow-wrap:anywhere}
+body .supporting-details{border:1px solid var(--border);border-radius:var(--ui-control-radius,12px);margin-block:var(--page-card-gap);background:var(--card)}
+body .supporting-details>:not(summary){margin-inline:var(--space-4,16px);font-size:var(--ui-body,16px);line-height:1.7}
+body .supporting-details>:last-child{margin-bottom:var(--space-4,16px)}
+body details>summary:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
+body .compact-work-menu{display:flex;flex-wrap:wrap;gap:var(--space-2,8px);margin-block:var(--page-card-gap)}
+body .compact-work-menu a{flex:1 1 140px;margin:0;white-space:normal}
+body [data-instant-settings]>strong{display:block;margin-block:var(--space-3,12px)}
+body .guide-method .guide-steps{margin-block:var(--space-4,16px)}
+body .guide-intro{padding-top:0}
+body .guide-intro h1{margin-bottom:var(--page-title-gap)}
+body .guide-trust{margin-top:var(--page-card-gap)}
+body .guide-trust p{font-size:var(--ui-body,16px)}
+body .policy-page{overflow-wrap:anywhere}
+body .compact-work-menu,body .supporting-details{min-width:0;max-width:100%;box-sizing:border-box}
+@media(max-width:600px){:root{--page-top:16px;--page-card-padding:16px;--page-gutter:16px}body:not(.map-page) main.container,body:not(.map-page)>div.container{padding-left:var(--page-gutter);padding-right:var(--page-gutter)}body:not(.map-page)>.nav{padding-inline:var(--page-gutter)}body:is([data-account-page="signup"],[data-account-page="login"]) main.container{margin-top:0;padding-top:var(--page-top)}}
+body .menu-container,body.home-page .simple-home{padding-top:var(--page-top)}
+body .menu-container h1{margin-bottom:var(--page-title-gap)}
+body.home-page .home-hero{padding-top:0;gap:var(--ui-space-5);padding-bottom:var(--ui-space-5);margin-bottom:var(--ui-space-5)}
+body.home-page .simple-home h1{margin-top:0;margin-bottom:var(--page-title-gap)}
+body .help-guide .guide-intro{margin-top:var(--space-3,12px)}
+body .help-guide .guide-icon{display:none}
+body .help-guide .guide-intro h1{margin-top:0}
+body .guide-method .guide-steps{border:0;padding:0;background:transparent}
+body .guide-method .guide-steps p,body details :is(p,li,dd){font-size:var(--ui-body,16px);line-height:1.7}
+body details>summary{min-height:var(--ui-touch,44px);cursor:pointer;overflow-wrap:anywhere}
+body:not(.has-bottom-nav):not(.map-page) main.container{padding-bottom:var(--ui-space-5,24px)}
+body:not(.has-bottom-nav) .policy-footer{padding-bottom:var(--ui-space-5,24px)}
+body .company-info:empty{display:none}
+body .public-contact-settings>.supporting-details{margin-bottom:var(--space-3,12px)}
+/* One horizontal grid for header and content, using the existing page widths. */
+body{--page-width:760px}
+body.home-page{--page-width:1168px}
+body.resources-page{--page-width:calc(var(--dialog-width)*2 + var(--space-5))}
+body:is([data-account-page="login"],[data-account-page="signup"]){--page-width:var(--auth-width,440px)}
+body.phone-page{--page-width:520px}
+body.customer-requests{--page-width:800px}
+body.menu-page{--page-width:var(--menu-width,760px)}
+body:not(.map-page):not(.admin-console)>:is(main.container,main.menu-container,main.help-guide,div.container){max-width:var(--page-width);padding-inline:var(--page-gutter);margin-inline:auto}
+body:not(.map-page):not(.admin-console)>.nav{padding-inline:max(var(--page-gutter),calc((100% - var(--page-width))/2 + var(--page-gutter)))}
+body .supporting-details>summary{font-weight:650}
+body .help-guide .guide-intro{margin-top:0}body .help-guide .guide-actions{margin-top:var(--page-title-gap)}
+body :is(.profile-status,.urgent-status):empty{display:none}

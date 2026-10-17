@@ -46,7 +46,7 @@ try {
 
   // 1) 첫 두 카드가 ON/OFF → 청구지원 자료실 순서
   const order = await page.$$eval('#accountContent .card h2', h => h.map(x => x.textContent.trim()));
-  expect(order.slice(0, 2)).toEqual(['지금 방문 상담 가능', '청구지원 자료실']);
+  expect(order[0]).toBe('지금 방문 상담 가능');await expect(page.locator('[data-expert-resources]')).toHaveClass('compact-work-menu');
 
   // 2) 실제로 눌러야 하는 것이 첫 화면 안에 들어온다.
   //    카드 테두리가 아니라 조작 요소(스위치 버튼 / 자료실 링크) 기준으로 본다.
@@ -56,7 +56,7 @@ try {
     const toggleBtn = [...document.querySelectorAll('#accountContent .card button')]
       .find(b => /방문 가능 (켜기|끄기)/.test(b.textContent))?.getBoundingClientRect();
     return {h: window.innerHeight, toggle: toggleBtn ? Math.round(toggleBtn.bottom) : null,
-      resource: q('[data-expert-resources] a')};
+      resource: q('[data-expert-resources] a[href="/claim-resources.html"]')};
   });
   let box = await reach();
   expect(box.toggle).not.toBeNull();
@@ -70,12 +70,12 @@ try {
   await page.setViewportSize({width: 390, height: 844});
 
   // 4) 자료실 링크가 살아 있다 (이동만 확인, 페이지 이탈 없음)
-  expect(await page.getAttribute('[data-expert-resources] a', 'href')).toBe('/claim-resources.html');
+  expect(await page.getAttribute('[data-expert-resources] a[href="/claim-resources.html"]', 'href')).toBe('/claim-resources.html');
 
   // 5) 주활동지역·배정된 상담은 그대로 아래에 남는다
   expect(order).toContain('주활동지역');
   expect(order).toContain('배정된 상담·일정');
-  expect(order.indexOf('주활동지역')).toBeGreaterThan(1);
+  expect(order.indexOf('주활동지역')).toBeGreaterThan(0);
 
   for (const width of [360, 390, 430]) {
     await page.setViewportSize({width, height: 844});
@@ -85,5 +85,5 @@ try {
   await page.screenshot({path: 'artifacts/expert-workspace-order-390.png'});
   await context.close();
   expect(errors).toEqual([]);
-  console.log('PASS partner-work.html 첫 화면: 지금 방문 ON/OFF → 청구지원 자료실 순, 844px 안에 둘 다 노출, 360/390/430 가로 넘침 없음, 콘솔 오류 없음. 캡처 artifacts/expert-workspace-order-390.png');
+  console.log('PASS partner-work.html 첫 화면: 지금 방문 ON/OFF → 간결한 업무 메뉴 순, 844px 안에 둘 다 노출, 360/390/430 가로 넘침 없음, 콘솔 오류 없음. 캡처 artifacts/expert-workspace-order-390.png');
 } finally { await browser.close(); await f.db.close(); }

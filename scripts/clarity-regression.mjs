@@ -1,0 +1,4 @@
+import {spawn} from 'node:child_process';import {mkdir,writeFile} from 'node:fs/promises';
+const tests=process.argv.slice(2),results=[];await mkdir('artifacts/page-clarity/regression',{recursive:true});
+for(const test of tests){const result=await new Promise(resolve=>{let output='';const child=spawn(process.execPath,['tests/'+test],{stdio:['ignore','pipe','pipe'],windowsHide:true});child.stdout.on('data',b=>output+=b);child.stderr.on('data',b=>output+=b);child.on('exit',code=>resolve({test,code,output}));});await writeFile('artifacts/page-clarity/regression/'+test+'.log',result.output);results.push({test,code:result.code});console.log(result.test,result.code===0?'PASS':'FAIL',result.code===0?'':result.output.slice(-1600));}
+await writeFile('artifacts/page-clarity/regression/results-'+Date.now()+'.json',JSON.stringify(results,null,2));process.exitCode=results.some(r=>r.code!==0)?1:0;
