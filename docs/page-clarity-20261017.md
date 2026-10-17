@@ -86,3 +86,7 @@
 ## 변경 파일과 다음 확인
 공통 public/page-clarity.css 및 HTML37개, src/expert-management-layout.js/account.js/expert-visits.js/urgent.js/partner-onboarding.js/public-contact.js, booking-overview.js/workflow.js/appointment-care.js, public/claim-conversations.js, scripts/build-help-guides.mjs와 검사 파일. DB·서버 설정 변경 없음.
 허용된 비제외 테스트 계정/실기기에서 역할별 데이터 화면과 키보드/200% 확대 검수 약30~60분(기기 준비시간 별도). 이번 변경 배포는 별도 지시 후 진행. 로컬 캡처는 배포 링크가 아니다.
+
+
+## 2026-10-17 13:52:18 KST 운영 배포
+사용자가 main 반영·운영 배포를 명시 승인하여 3bc42758b9ab42683809f65821a6bb391e4715ef를 origin/main에 반영. Netlify 6ad2fef3be0db24fff59e3cb ready, published_at=2026-10-17T04:52:18.345Z, error=null. 운영 https://bohumso.netlify.app / 고정 https://6ad2fef3be0db24fff59e3cb--bohumso.netlify.app . 공개 page-clarity.css와 assets/account.js HTTP200 및 로컬과 정규화 본문 일치 확인. 실제 회원·이충경 자료 접근/발송 없음. 잔여 크레딧은 도구에 제공되지 않고 Netlify UI 로그인이 필요하여 미확인(Pro 요금제만 확인).

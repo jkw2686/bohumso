@@ -6,7 +6,7 @@
 - [x] 예약 장소·비용 상시 표시, 상세 열기와 수락·확정 구분, 중첩 접힘 제거. 지도 직접 선택·실제 보험소 방문예약 유지.
 - [x] 37×5 정적조건과 마지막12페이지60조건 통과. 격리 동작 검사 통과. 페이지별표/증빙 docs/page-clarity-20261017.md.
 - [x] npm run build, git diff --check 통과.
-- [ ] 이번 변경 미배포. 이전 운영 ee306ca / Netlify6ad1f50055b845cd21d14766 (2026-10-16 18:57:35KST)과 구분. 이전 배포 승인 재사용 금지.
+- [x] 새 명시 승인으로3bc4275 main 반영·운영 배포 완료. Netlify6ad2fef3be0db24fff59e3cb, 2026-10-17 13:52:18KST. 공개 CSS/account번들 일치 확인.
 - [ ] 실기기/실푸시/실회원 양쪽 상태 미검증. 출시준비 판정 안 함. 과거 약관8·test-flow 미수정/미검수.
 
 ## 절대 보존
@@ -21,4 +21,8 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 
 ## 판단·되돌리기·다음
 기존 DOM 이동으로 입력/이벤트 보존. native details로 키보드/동시열림. 필수 상태/비용/동의 숨기지 않음. CSS/UI만 되돌릴 수 있고 SQL/서버 변경 없음. 구형 테스트 selector/직군 fixture/약관 기대버전은 수정 후 통과.
-허용된 비제외 계정·실휴대전화 검수30~60분(기기 준비 별도). 배포는 이번 작업에 대한 별도 지시 후. 로컬 캡처는 공유/배포주소 아님. 전체 운영 역할·실기기 검증으로 표현하지 말 것. 이충경 과거 미확인 과제 재개 금지.
+허용된 비제외 계정·실휴대전화 검수30~60분(기기 준비 별도). 이번 배포 완료. 추가 배포는 새 변경 범위 확인 후. 로컬 캡처는 공유/배포주소 아님. 전체 운영 역할·실기기 검증으로 표현하지 말 것. 이충경 과거 미확인 과제 재개 금지.
+
+
+## 2026-10-17 13:52:18 KST 운영 배포
+사용자가 main 반영·운영 배포를 명시 승인하여 3bc42758b9ab42683809f65821a6bb391e4715ef를 origin/main에 반영. Netlify 6ad2fef3be0db24fff59e3cb ready, published_at=2026-10-17T04:52:18.345Z, error=null. 운영 https://bohumso.netlify.app / 고정 https://6ad2fef3be0db24fff59e3cb--bohumso.netlify.app . 공개 page-clarity.css와 assets/account.js HTTP200 및 로컬과 정규화 본문 일치 확인. 실제 회원·이충경 자료 접근/발송 없음. 잔여 크레딧은 도구에 제공되지 않고 Netlify UI 로그인이 필요하여 미확인(Pro 요금제만 확인).
