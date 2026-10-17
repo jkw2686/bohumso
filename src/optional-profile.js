@@ -1,3 +1,4 @@
+import {settingsRow} from './settings-row.js';
 import '../public/expert-profile-card.js';
 import {el,input} from './consultation-ui.js';
 import {createPhotoCrop} from './profile-photo-crop.js';
@@ -11,6 +12,7 @@ export async function renderOptionalProfile(client,parent){
  el('h2','지도 프로필',details);
  const summaryBox=el('div',undefined,details);summaryBox.className='profile-summary';
  const toggle=el('button','프로필 입력',details);toggle.type='button';toggle.className='btn profile-toggle';
+ settingsRow(details,{title:details.querySelector('h2'),value:summaryBox,action:toggle,icon:'person'});
  const body=el('div',undefined,details);body.id='optionalProfileBody';body.hidden=true;
  // 저장 성공 시 폼을 닫으므로 확인 문구는 접히는 영역 밖에 둔다. 닫혀도 보인다.
  const message=el('p','',details);message.className='profile-status';message.setAttribute('role','status');message.setAttribute('aria-live','polite');

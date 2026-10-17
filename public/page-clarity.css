@@ -49,3 +49,169 @@ body:not(.map-page):not(.admin-console)>.nav{padding-inline:max(var(--page-gutte
 body .supporting-details>summary{font-weight:650}
 body .help-guide .guide-intro{margin-top:0}body .help-guide .guide-actions{margin-top:var(--page-title-gap)}
 body :is(.profile-status,.urgent-status):empty{display:none}
+/* Visual hierarchy: task surfaces, compact rows and contextual supporting areas. */
+:root{--workspace-width:1120px;--reading-width:760px;--ui-title:28px;--ui-section:20px;--ui-subsection:18px;--ui-caption:14px;--ui-radius:16px;--ui-header:64px;--layout-gap:24px;--surface-rule:1px solid var(--border)}
+body{--page-width:var(--workspace-width)}
+body:is([data-account-page="login"],[data-account-page="signup"]){--page-width:var(--auth-width,440px)}
+body:is([data-account-page="reset"],[data-account-page="phone"],.phone-page){--page-width:520px}
+body:has(.policy-page),body:has(.help-guide){--page-width:var(--reading-width)}
+body.customer-requests,body.resources-page{--page-width:var(--workspace-width)}
+body:not(.map-page)>.nav{min-height:var(--ui-header);height:auto;box-sizing:border-box;padding-block:var(--space-2);gap:var(--space-4);flex-wrap:wrap;box-shadow:none;border-bottom:var(--surface-rule);background:var(--card)}
+body:not(.map-page)>.nav .brand-logo{width:168px;height:auto;max-height:none}
+body:not(.home-page):not(.map-page) main h1{font-size:var(--ui-title);line-height:1.35;font-weight:750;margin-top:0;margin-bottom:var(--page-title-gap)}
+body main :is(h2,.card h2){font-size:var(--ui-section);line-height:1.45}
+body main h3{font-size:var(--ui-subsection);line-height:1.5}
+body main :is(p,li,label,input,select,textarea){line-height:1.65}
+body main :is(.muted,.review-meta,small){font-size:var(--ui-caption);line-height:1.6}
+body .card{border-radius:var(--ui-radius);box-shadow:none}
+body :is(button,.btn){box-shadow:none;white-space:normal}
+body .btn:is(.ghost,.secondary),body .profile-toggle{background:var(--card);color:var(--brand);border:1px solid var(--border);box-shadow:none}
+body :is(.profile-status,[role="alert"]):not(:empty){overflow-wrap:anywhere}
+body .management-layout,body .work-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:var(--layout-gap);align-items:start}
+body :is(.management-primary,.management-secondary,.work-primary,.work-settings){min-width:0}
+body .management-primary{background:var(--card);border:var(--surface-rule);border-radius:var(--ui-radius);padding:var(--page-card-padding)}
+body .management-primary>.card{background:transparent;border:0;border-radius:0;box-shadow:none;padding:var(--space-5) 0;margin:0;border-top:var(--surface-rule)}
+body .management-primary>.card:first-child{border-top:0;padding-top:0}
+body .management-primary>.card:last-child{padding-bottom:0}
+body .management-primary :is(h2,h3){margin-top:0}
+body [data-management-priority] .card,body .work-availability .card{background:var(--brand-soft);border-color:var(--border);padding:var(--space-4) var(--page-card-padding)}
+body [data-instant-settings]>.btn{display:inline-flex;width:auto}
+body [data-instant-settings]>.location-explanation{background:transparent;border:0;margin-bottom:0}
+body [data-instant-settings]>.location-explanation>summary{padding-inline:0}
+body .management-secondary>.card{background:transparent;border:0;border-top:var(--surface-rule);border-radius:0;padding:var(--space-4) 0}
+body .management-secondary #partnerForm{background:var(--card);border:var(--surface-rule);border-radius:var(--ui-radius);padding:var(--space-4)}
+body .compact-work-menu{display:grid;grid-template-columns:1fr;gap:0;border:var(--surface-rule);border-radius:var(--ui-radius);background:var(--card);margin-top:0}
+body .compact-work-menu a{display:flex;justify-content:space-between;width:auto;min-height:48px;border:0;border-bottom:var(--surface-rule);border-radius:0;padding:var(--space-3) var(--space-4);text-align:left;color:var(--text);background:transparent}
+body .compact-work-menu a::after{content:'›';color:var(--muted);margin-left:var(--space-3)}
+body .compact-work-menu a:last-child{border-bottom:0}
+body .work-heading{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-2) var(--space-4);padding-block:var(--space-4);border-bottom:var(--surface-rule)}
+body .work-heading h2{margin:0;flex:1 1 180px}
+body .work-heading p{order:3;flex-basis:100%;font-size:var(--ui-caption);margin:0;color:var(--muted)}
+body .work-heading button{background:transparent;color:var(--brand);border:var(--surface-rule);width:auto;min-height:var(--touch-target)}
+body .work-settings>.card,body .work-settings>div>.card{border:0;border-top:var(--surface-rule);border-radius:0;background:transparent;padding:var(--space-4) 0}
+body .work-settings>h2{margin-top:var(--space-4)}
+body #workflowSummary:empty{display:none}
+body [data-management-state="registration"]>[data-application-summary]{border-left:var(--focus-width) solid var(--brand)}
+body [data-management-state="registration"]>#partnerForm{max-width:var(--reading-width)}
+body .booking-card-summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--space-2) var(--space-4);align-items:start}
+body .booking-card-summary h2,body .booking-card-summary p{grid-column:1;margin:0}
+body .booking-card-summary>.btn{grid-column:2;grid-row:1 / span 3;align-self:center;margin:0;width:auto;background:var(--card);color:var(--brand);border:var(--surface-rule)}
+body .booking-card-summary .request-status{display:block;color:var(--ink-heading);font-size:var(--ui-caption);font-weight:700}
+body .booking-card-summary .booking-summary-time{font-weight:650}
+body .booking-card-summary .booking-summary-place{font-size:var(--ui-caption)}
+body .booking-card{border:var(--surface-rule);border-radius:var(--ui-radius);box-shadow:none}
+body .request-filters{background:transparent;border:var(--surface-rule);border-radius:var(--ui-radius);margin-block:var(--space-4)}
+body .request-filters form.card{border:0;margin:0;background:transparent;padding-top:0}
+body .account-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;margin-block:var(--space-4)}
+body .account-links a{display:flex;align-items:center;min-height:48px;padding:var(--space-3);border:var(--surface-rule);background:transparent;color:var(--brand);border-radius:0;box-shadow:none;width:auto;overflow-wrap:anywhere}
+body[data-account-page="account"] #accountContent{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:var(--layout-gap);align-items:start}
+body[data-account-page="account"] #accountContent[hidden]{display:none}
+body[data-account-page="account"] .notification-settings{grid-column:2;grid-row:1 / span 3;margin-top:var(--space-4)}
+body[data-account-page="account"] #accountContent>.card{margin-block:var(--space-4);min-width:0}
+body .notification-item{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:var(--space-4);padding:var(--space-4) 0}
+body .notification-item>:not(a):not(button){grid-column:1}
+body .notification-item .btn{grid-column:2;grid-row:1 / span 4;align-self:center;margin:0}
+body .support-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:var(--layout-gap);align-items:start}
+body .support-layout>aside{padding-block:var(--space-4);min-width:0}
+body .support-layout>aside h2{margin-top:0}
+body .resource-table{border:var(--surface-rule);border-radius:var(--ui-radius);background:var(--card)}
+body .resource-search{margin-top:var(--space-4)}
+body .resource-tools{background:transparent;box-shadow:none}
+body .claim-conversations{margin-top:var(--space-5)}
+body .admin-toolbar{display:flex;gap:var(--space-4);align-items:center;flex-wrap:wrap;border-bottom:var(--surface-rule);padding-block:var(--space-4)}
+body .admin-toolbar p{margin:0;flex:1 1 240px}
+body .admin-toolbar button{width:auto;background:var(--card);color:var(--brand);border:var(--surface-rule)}
+body .home-shortcuts{border:var(--surface-rule);border-radius:var(--ui-radius);background:var(--card);padding:var(--space-3)}
+body .home-shortcuts a{background:transparent;border:0;border-radius:0;box-shadow:none;border-bottom:var(--surface-rule)}
+body .home-shortcuts a:last-child{border-bottom:0}
+body .situation-cards{gap:0;border:var(--surface-rule);border-radius:var(--ui-radius);background:var(--card);padding:var(--space-3)}
+body .situation-cards>a{box-shadow:none;border-radius:0;border:0;border-bottom:var(--surface-rule);background:transparent;padding:var(--space-4)}
+body .home-more .more-card{border-radius:0;border:0;border-bottom:var(--surface-rule);box-shadow:none;background:transparent;padding-inline:0}
+body .home-membership{box-shadow:none;border-radius:var(--ui-radius)}
+body .home-steps-details{border-top:var(--surface-rule);border-bottom:var(--surface-rule);margin-block:var(--space-5);padding-block:var(--space-3)}
+body .home-steps-details>summary{font-size:var(--ui-section);font-weight:700;min-height:var(--touch-target);cursor:pointer}
+body .guide-actions .btn{width:auto}
+body .guide-method{background:transparent}
+body .expert-card .btn.ghost,body .planner-card .btn.ghost{box-shadow:none}
+body .policy-page{max-width:var(--reading-width);margin-inline:auto}
+@media(max-width:800px){
+ :root{--ui-title:24px;--ui-header:56px;--layout-gap:16px}
+ body :is(.management-layout,.work-layout,.support-layout),body[data-account-page="account"] #accountContent{grid-template-columns:minmax(0,1fr)}
+ body[data-account-page="account"] .notification-settings{grid-column:auto;grid-row:auto}
+ body .work-settings{border-top:var(--surface-rule);padding-top:var(--space-4)}
+ body .management-secondary .compact-work-menu{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body .booking-card-summary{grid-template-columns:minmax(0,1fr)}
+ body .booking-card-summary>.btn{grid-column:1;grid-row:auto;justify-self:start;width:auto}
+ body .notification-item{grid-template-columns:minmax(0,1fr)}
+ body .notification-item .btn{grid-column:1;grid-row:auto;justify-self:start;margin-top:var(--space-3)}
+ body .account-links{grid-template-columns:1fr}
+ body:not(.map-page)>.nav .brand-logo{width:140px}
+}
+body [data-management-priority] .urgent-panel,body .work-availability .urgent-panel{max-width:none;margin-inline:0}
+body[data-account-page] .compact-work-menu a.btn{border:0;border-radius:0;box-shadow:none;border-bottom:var(--surface-rule);background:transparent;justify-content:space-between;text-align:left}
+body[data-account-page] .compact-work-menu a.btn:last-child{border-bottom:0}
+body[data-account-page] .management-primary :is(.profile-toggle,.optional-profile>button,.public-contact-settings>button),body[data-account-page] [data-service-area-settings]>button{width:auto;display:inline-flex;min-height:var(--touch-target);background:var(--card);color:var(--brand);border:var(--surface-rule)}
+body[data-account-page] .management-primary form button[type=submit]{width:auto;display:inline-flex}
+body[data-account-page] .management-secondary .phone-signup-panel{box-shadow:none}
+body[data-account-page="partner"] #partnerDetails>.card{border:0;background:transparent;margin:0;padding:0}
+body .growth-actions .btn{flex:0 1 auto}
+body .growth-task{border-radius:0;box-shadow:none;border:0;border-bottom:var(--surface-rule)}
+body .support-layout :is(input,textarea),body .management-layout :is(input,select,textarea){min-width:0;max-width:100%;box-sizing:border-box}
+body .nav>.logo{margin-right:auto}
+/* Profile detail keeps its existing dialog/selection behavior and clear identity hierarchy. */
+body .expert-profile-head{align-items:center;gap:var(--space-4)}
+body .expert-profile-head>div{min-width:0}
+body .expert-profile-head h2{font-size:var(--ui-section);margin:0;overflow-wrap:anywhere}
+body .expert-organization{font-size:var(--ui-caption);color:var(--ink-muted);overflow-wrap:anywhere}
+body .expert-introduction,body .expert-introduction.is-summary{font-size:var(--type-body);display:block;-webkit-line-clamp:unset;line-clamp:unset;max-height:none;overflow:visible;white-space:normal;overflow-wrap:anywhere}
+body .expert-detail-header{border-bottom:var(--surface-rule);padding-bottom:var(--space-3)}
+body .expert-detail-status{font-size:var(--type-body);font-weight:650;border-left:var(--focus-width) solid var(--brand);padding-left:var(--space-3)}
+body .expert-detail-actions{gap:var(--space-3);border-top:var(--surface-rule);box-shadow:none}
+body .expert-badges span,body .expert-help-tasks span{font-size:var(--ui-caption);line-height:1.6}
+body .growth-workspace{grid-template-columns:minmax(0,2fr) minmax(280px,1fr);align-items:start}
+body .growth-workspace>#growthStatus{grid-column:1 / -1}
+body .growth-workspace>#growthPractice{grid-column:1}
+body .growth-workspace>#growthLibrary{grid-column:2}
+body .growth-workspace .growth-actions .btn{flex:0 1 auto}
+@media(max-width:800px){body .growth-workspace{grid-template-columns:minmax(0,1fr)}body .growth-workspace>#growthLibrary{grid-column:1}}
+body[data-account-page] .notification-summary .btn,body[data-account-page] .booking-notifications .btn,body[data-account-page] .urgent-panel>.btn{width:auto;display:inline-flex}
+body .work-primary>.urgent-panel{max-width:none;border:0;border-top:var(--surface-rule);background:transparent;border-radius:0;padding-inline:0}
+body.partner-bookings>details.container{margin-block:var(--space-5);padding-bottom:var(--space-5);max-width:var(--workspace-width)}
+body[data-account-page="support"] #rightsContent>a.btn{width:auto;display:inline-flex}
+@media(min-width:801px){body .guide-actions .btn{flex:0 1 auto}body .home-shortcuts a{min-height:var(--touch-target)}}
+body[data-account-page="admin"] .expert-review-card{background:transparent;border:0;border-top:var(--surface-rule);border-radius:0;padding-inline:0}
+body[data-account-page="admin"] .review-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);margin-block:var(--space-4)}
+body[data-account-page="admin"] .review-fields label{margin:0;min-width:0}
+body[data-account-page="admin"] .review-fields label:last-child{grid-column:1 / -1}
+body[data-account-page="admin"] .expert-review-actions{justify-content:flex-start;flex-wrap:wrap}
+body[data-account-page="admin"] .expert-review-actions .btn{width:auto;flex:0 1 auto;min-height:var(--touch-target)}
+body[data-account-page="partner"] .phone-signup-panel{border:var(--surface-rule);background:var(--card);border-radius:var(--ui-radius);padding:var(--space-4)}
+body[data-account-page="partner"] .phone-signup-panel .btn{width:auto;display:inline-flex}
+@media(max-width:800px){body[data-account-page="admin"] .review-fields{grid-template-columns:minmax(0,1fr)}}
+/* Settings are rows, not independent promotional cards. Values remain visible. */
+body .management-primary{background:transparent;border:0;border-radius:0;padding:0}
+body .management-primary>.card{padding:20px 0;border:0;border-bottom:var(--surface-rule);border-radius:0;background:transparent;margin:0}
+body .settings-row{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:start;gap:12px 16px}
+body .settings-row>svg{width:24px;height:24px;fill:none;stroke:var(--brand);stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;margin-top:4px}
+body .settings-row-info{min-width:0}
+body .settings-row-info h2{font-size:18px;line-height:1.5;margin:0 0 6px;font-weight:700}
+body .settings-row-info :is(p,strong){font-size:16px;line-height:1.6;margin:0;overflow-wrap:anywhere}
+body .settings-row-info .profile-summary{margin:0;padding:0;background:transparent;border:0}
+body .settings-row-info .profile-summary p{font-size:15px;color:var(--ink-muted)}
+body .settings-row-info .profile-summary p:first-child{color:var(--text);font-weight:500}
+body .settings-row>.btn{width:auto;min-height:44px;max-width:100%;margin:0;background:transparent;color:var(--brand);border:var(--surface-rule);box-shadow:none;align-self:center}
+body .settings-section>div:not(.settings-row):not([role]){margin-top:16px}
+body .settings-section>.profile-status:empty{display:none}
+body .public-contact-settings .supporting-details{margin:16px 0}
+body .management-secondary .compact-work-menu{display:flex;flex-direction:column;padding:0;border:0;border-top:var(--surface-rule);background:transparent}
+body .management-secondary .compact-work-menu a{flex:0 1 auto;font-size:16px;padding:14px 0;min-height:48px}
+body .management-primary .settings-row .profile-summary-line{gap:12px;align-items:center}
+body[data-account-page="partner"] [data-instant-settings]{max-width:none;margin-inline:0}
+body .management-secondary .document-card{background:transparent;border:0;border-bottom:var(--surface-rule);border-radius:0;padding:12px 0;margin:0}
+body .management-secondary .document-card h3{font-size:16px;margin:0}
+@media(max-width:600px){
+ body .settings-row{grid-template-columns:24px minmax(0,1fr);gap:8px 12px}
+ body .settings-row>.btn{grid-column:2;justify-self:start}
+ body .management-primary>.card{padding-block:16px}
+ body .settings-row-info h2{font-size:18px}
+}

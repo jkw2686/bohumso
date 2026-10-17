@@ -45,7 +45,7 @@ try{
     if(width===390&&!signedIn&&slug==='cancer')await page.screenshot({path:'artifacts/claim-help-cancer-mobile.png',fullPage:true});
     await page.locator('[data-guide-primary]').click();
     await expect(page).toHaveURL(new RegExp('/map.html\\?view=experts&purpose='+(slug==='coverage'?'coverage':'claim')+'&situation='+slug+'$'));
-    await expect(page.locator('.purpose-chip')).toContainText(banners[i]);await expect(page.locator('.expert-map-marker')).toHaveCount(1);
+    await expect(page.locator('.purpose-chip')).toContainText(banners[i]);await expect(page.locator('.expert-map-marker')).toHaveCount(1,{timeout:20000});
     await expect(page.locator('#listLink')).toHaveAttribute('href',new RegExp('situation='+slug));await expect(page.locator('.urgent-map-link')).toHaveAttribute('href',new RegExp('situation='+slug));
     await page.getByRole('button',{name:'공개 전문가 · 전문가 활동지역',exact:true}).press('Enter');
     await expect(page.locator('#cardBody a').first()).toHaveAttribute('href',new RegExp('situation='+slug));

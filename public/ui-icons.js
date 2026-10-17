@@ -25,3 +25,8 @@
  const adjust=()=>{const v=window.visualViewport;const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||'');document.body.classList.toggle('keyboard-open',Boolean(v&&typing&&window.innerHeight-v.height>120));};window.visualViewport?.addEventListener('resize',adjust);document.addEventListener('focusin',adjust);document.addEventListener('focusout',()=>setTimeout(adjust,0));
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+// Reveal invalid fields inside an existing disclosure before native validation focuses them.
+document.addEventListener('invalid',event=>{
+ let node=event.target?.parentElement;
+ while(node){if(node.tagName==='DETAILS')node.open=true;node=node.parentElement;}
+},true);

@@ -1,3 +1,4 @@
+import {settingsRow} from './settings-row.js';
 import {PROFESSION_CONFIG} from './profession-config.js';
 import {renderPublicContact} from './public-contact.js';
 import {renderOptionalProfile} from './optional-profile.js';
@@ -28,6 +29,7 @@ export async function renderProfileEditor(client,parent){
   return (d.length===11?d.slice(0,3)+'-':'')+'****-'+d.slice(-4);};
  function drawSummary(){
   summaryBox.replaceChildren();
+  el('p','상담시간 · '+(p.hours||'미설정'),summaryBox);
   el('p','상담 요청 받기 · '+(p.available?'켜짐 · 상담 가능':'꺼짐 · 상담 중지'),summaryBox);
   el('p','예약 확정 후 공개 연락처 · '+masked(p.phone),summaryBox);
   const open=!body.hidden;
@@ -42,4 +44,5 @@ export async function renderProfileEditor(client,parent){
  };
  form.onsubmit=async e=>{e.preventDefault();if(button.disabled)return;button.disabled=true;button.textContent='저장 중…';form.setAttribute('aria-busy','true');message.textContent='상담 설정을 저장하고 있습니다.';const controls=[...form.querySelectorAll('input,select,textarea')];const disabled=controls.map(c=>c.disabled);controls.forEach(c=>c.disabled=true);toggle.disabled=true;try{const payload={hours:p.hours||'',phone:form.elements.phone.value,available:available.checked,specialties:p.specialties||[],latitude:p.latitude??null,longitude:p.longitude??null};const {error}=await client.rpc('consultation_command',{operation:'profile',payload});if(error)throw error;p.phone=payload.phone;p.available=payload.available;body.hidden=true;drawSummary();toggle.focus({preventScroll:true});message.textContent='프로필을 저장했습니다. 등록 확인 전에는 목록에 공개되지 않습니다.';}catch{available.checked=!!p.available;message.textContent='상담 요청 받기 상태는 이전 설정으로 복구했습니다. 프로필을 저장하지 못했습니다. 입력과 전문가 신청 상태를 확인하세요.';}finally{button.disabled=false;button.textContent='프로필 저장';toggle.disabled=false;form.setAttribute('aria-busy','false');controls.forEach((c,i)=>c.disabled=disabled[i]);if(body.hidden)toggle.focus({preventScroll:true});}};
  drawSummary();
+ settingsRow(details,{title:details.querySelector('h2'),value:summaryBox,action:toggle});
 }

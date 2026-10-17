@@ -95,14 +95,14 @@ async function start(){
   return;
  }
  if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config:{...config,viewerId:user.id}});$('accountContent').hidden=false;if($('requestList'))focusBooking($('requestList'));if(document.body.dataset.workspace==='partner'){
-  // 전문가가 매일 쓰는 두 가지를 화면 맨 위에 둔다: 지금 방문 ON/OFF → 청구지원 자료실.
+  // 업무와 설정의 DOM 순서도 모바일 읽는 순서와 같게 유지한다.
   // 자료실은 정적 카드라 await 전에 먼저 옮겨 두어야 늦게 올라오며 깜빡이지 않는다.
   const tools=document.createElement('div'),quick=document.createElement('div');
-  $("accountContent").prepend(tools);$("accountContent").prepend(quick);
+  const settings=$("accountContent").querySelector("[data-work-settings]")||$("accountContent");settings.append(tools);$("accountContent").prepend(quick);quick.className="work-availability";
   const resources=$("accountContent").querySelector('[data-expert-resources]');
-  if(resources)quick.after(resources);
+  if(resources){const heading=settings.querySelector("h2");if(heading)heading.after(resources);else settings.prepend(resources);}
   await renderInstant(client,quick);
-  await renderServiceArea(client,tools);await renderUrgentWorkspace(client,tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
+  await renderServiceArea(client,tools);await renderUrgentWorkspace(client,$("accountContent").querySelector("[data-work-primary]")||tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
  if(mode==='requests'&&document.body.dataset.workspace==='admin')await renderWaitlistCounts(client,document.getElementById('regionWaitlistHost'));
  if(mode==='requests'&&document.body.dataset.workspace!=='admin')void mountNotificationSummary({client,host:$('accountContent'),user});
  if(mode==='requests'&&document.body.dataset.workspace!=='admin')await renderCareCases(client,$('accountContent'),document.body.dataset.workspace);
@@ -119,9 +119,9 @@ async function start(){
   if(membership.partner_status&&membership.profession!=='office')await renderServiceArea(client,$("accountContent"));
   if(["planner","tax"].includes(membership.profession)&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));
 
-  const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink){workLink.hidden=membership.profession==='office'||applicationStatus==='office'&&membership.partner_status!=='approved';$("accountContent").append(workLink);}if(membership.profession!=='office'&&applicationStatus!=='office')arrangeExpertManagement($("accountContent"));}
+  const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink){workLink.hidden=membership.profession==='office'||applicationStatus==='office'&&membership.partner_status!=='approved';$("accountContent").append(workLink);}if(membership.profession!=='office'&&applicationStatus!=='office')arrangeExpertManagement($("accountContent"),{approved:applicationStatus==="approved"});}
  if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
- if((mode==='partner'||document.body.dataset.workspace==='partner')&&membership.profession!=='office'&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('a[href="/claim-resources.html"]')?.closest('section');if(resources)resources.append(entry);else {const menu=$('accountContent').querySelector('[data-management-menu]');if(menu)menu.append(entry);else $('accountContent').append(entry);}}
+ if((mode==='partner'||document.body.dataset.workspace==='partner')&&membership.profession!=='office'&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('[data-management-menu]');if(resources)resources.append(entry);else {const menu=$('accountContent').querySelector('[data-management-menu]');if(menu)menu.append(entry);else $('accountContent').append(entry);}}
  $("accountContent").hidden=false;
  if(mode==='requests'&&$('requestList'))focusBooking($('requestList'));
  openMenuDestination();

@@ -61,7 +61,7 @@ try {
   let box = await reach();
   expect(box.toggle).not.toBeNull();
   expect(box.toggle).toBeLessThanOrEqual(box.h);          // 844px: 스위치 버튼
-  expect(box.resource.bottom).toBeLessThanOrEqual(box.h); // 844px: 자료실 링크
+  expect(box.resource.top).toBeGreaterThan(await page.locator('#requestList').evaluate(n=>n.getBoundingClientRect().top)); // 844px: 자료실 링크
 
   // 3) 더 좁은 세로(640px)에서도 스위치 버튼은 첫 화면에 남는다
   await page.setViewportSize({width: 390, height: 640});
@@ -74,7 +74,7 @@ try {
 
   // 5) 주활동지역·배정된 상담은 그대로 아래에 남는다
   expect(order).toContain('주활동지역');
-  expect(order).toContain('배정된 상담·일정');
+  await expect(page.getByRole('heading',{name:'받은 요청·예약',exact:true})).toBeVisible();
   expect(order.indexOf('주활동지역')).toBeGreaterThan(0);
 
   for (const width of [360, 390, 430]) {
@@ -85,5 +85,5 @@ try {
   await page.screenshot({path: 'artifacts/expert-workspace-order-390.png'});
   await context.close();
   expect(errors).toEqual([]);
-  console.log('PASS partner-work.html 첫 화면: 지금 방문 ON/OFF → 간결한 업무 메뉴 순, 844px 안에 둘 다 노출, 360/390/430 가로 넘침 없음, 콘솔 오류 없음. 캡처 artifacts/expert-workspace-order-390.png');
+  console.log('PASS partner-work.html 첫 화면: 지금 방문 ON/OFF → 요청·예약 → 자료·설정 순, 360/390/430 가로 넘침 없음, 콘솔 오류 없음. 캡처 artifacts/expert-workspace-order-390.png');
 } finally { await browser.close(); await f.db.close(); }
