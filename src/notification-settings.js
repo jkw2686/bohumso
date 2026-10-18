@@ -53,8 +53,9 @@ export async function mountNotificationSummary({client,host,user}){
  try{const preference=await readRpc(client,'reservation_notification_settings',{operation:'get',payload:{}});if(changed)return;if(typeof preference?.enabled!=='boolean')throw Error('settings_unknown');app.textContent='앱 내 예약 알림: '+(preference.enabled?'켜짐':'꺼짐 · 기존 내역은 유지됩니다.');
  if(preference?.enabled===false)status.textContent='기기 알림 꺼짐 · 예약 알림 설정이 OFF입니다. 내 예약과 기존 알림 내역은 확인할 수 있어요.';
  else if(!pushSupported())status.textContent='기기 알림 확인 필요 · 이 브라우저는 웹 푸시를 지원하지 않습니다.';
+ else if(Notification.permission==='denied')status.textContent='기기 알림 권한 차단 · 브라우저 설정에서 허용해 주세요. 앱 내 알림은 유지됩니다.';
  else if(Notification.permission!=='granted')status.textContent='기기 알림 꺼짐 · 예약 소식을 놓칠 수 있어요. 앱 내 알림과 예약 내역에서 확인할 수 있습니다.';
- else {const ready=await currentPushReady(client,user.id);if(!changed)status.textContent=ready?'기기 알림 켜짐 · 이 계정과 기기의 구독 저장을 확인했습니다.':'기기 알림 꺼짐 · 예약 소식을 놓칠 수 있어요. 알림 설정에서 이 기기를 연결해 주세요.';}
+ else {const response=await fetch('/api/reservation-push',{cache:'no-store',signal:AbortSignal.timeout(8000)});const config=response.ok?await response.json():null;if(changed)return;if(config?.enabled!==true){status.textContent='기기 알림 확인 필요 · 푸시 서버 연결 전입니다.';return root;}const ready=await currentPushReady(client,user.id);if(!changed)status.textContent=ready?'기기 알림 켜짐 · 이 계정과 기기의 구독 저장을 확인했습니다.':'기기 알림 꺼짐 · 예약 소식을 놓칠 수 있어요. 알림 설정에서 이 기기를 연결해 주세요.';}
  }catch{if(!changed){app.textContent='앱 내 예약 알림: 확인 필요';status.textContent='기기 알림 확인 필요 · 상태를 불러오지 못했습니다. 알림 설정에서 다시 확인해 주세요.';}}
  return root;
 }
