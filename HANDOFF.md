@@ -1,5 +1,18 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-18 — 마이그레이션 자동화: 새 SQL도 자동 적용
+
+- 원인: migrate.yml이 `scripts/migrate-early-access.mjs`를 돌렸고, 이 스크립트는 `scripts/early-sql.mjs`의 고정 목록(030~036 + expert_storage_setup.sql)만 적용한다. 그래서 새 번호 SQL은 영원히 자동 적용되지 않았다. 070·071도 손으로 적용된 것이다.
+- 범용 `scripts/migrate.mjs`를 그대로 켜면 기록에 없는 010~071을 운영에서 다시 실행하게 되므로, 먼저 안전장치를 넣었다.
+- 신규 `scripts/migration-plan.mjs`: 무엇을 실행하고 무엇을 '이미 적용됨'으로 기록만 할지 정하는 순수 함수. `MIGRATE_ADOPT_THROUGH`(채택 지점)까지는 실행 없이 기록만 하고 그 뒤부터 적용한다. **적용 이력이 있는 DB에서 채택 지점 없이 미기록 파일을 만나면 아무것도 실행하지 않고 거부한다.**
+- `scripts/migrate.mjs`: 위 함수를 쓰도록 교체. 적용할 파일이 있을 때만 `private.release_controls·service_areas·office_locations` 존재를 확인하는 027 기준선 가드를 넣어, early-access 스크립트가 갖고 있던 '엉뚱한 DB 방지'를 유지했다. `MIGRATE_BASELINE`은 같은 뜻의 옛 이름으로 계속 받는다.
+- `.github/workflows/migrate.yml`: 실행 스크립트를 `node scripts/migrate.mjs`로 바꾸고 `MIGRATE_ADOPT_THROUGH: 071_help_intent.sql`을 넣었다. **앞으로 손으로 적용한 파일이 생기면 이 값을 그 파일로 올려야 한다.**
+- 검증: 신규 `tests/migration-plan.test.mjs` 7건 포함 단위 194/194 통과. 저장소 실제 파일로 채택=071일 때 적용 대상이 072 하나뿐임을 확인했다. **운영 DB에 직접 실행한 검증은 없다**(이 세션에 접속 정보 없음).
+- 이 푸시로 migrate 워크플로가 돌면 071 이하는 기록만 되고 **072가 자동 적용**된다. 전제는 GitHub `DATABASE_URL` 시크릿 등록이며, 없으면 워크플로가 경고만 남기고 넘어간다(그 경우 072 미적용).
+- 미반영: 트리거 `paths`에 `scripts/migrate.mjs`·`scripts/migration-plan.mjs`를 추가하려 했으나 권한 정책에 막혔다. 지금은 `supabase/**`와 migrate.yml 변경으로만 트리거된다.
+- 원복: 이 커밋 revert(워크플로가 early-access 고정 목록으로 돌아감). 072를 되돌리려면 `supabase/rollback_planner_claim_expert_label.sql`.
+
+
 ## 2026-10-18 — 세무 상담 방향 정정 · 직군 라벨 · 코덱스 회귀 복구
 - 시작 기준 main b4fcea3(코덱스). 확인 결과 b4fcea3는 **이미 운영 배포·DB 적용 완료 상태**였다. 빌드 산출물 8개(account/growth/member/menu/rights/support-badge/urgent/visit.js) SHA-256이 라이브와 일치했고, 070·071의 백업 함수 7종이 운영 DB에 존재(없으면 PGRST202, 실제는 permission denied)해 적용을 확인했다. 이번 세션에서 새로 적용한 SQL은 없다.
 - 사용자 정정 ①: 세무사는 출장이 아니라 **고객이 세무사 사무실로 방문**한다. 지도에서 세무 선택 시 /urgent.html(전문가가 고객에게 방문) 진입 2개(.urgent-map-link, #areaRequest)를 숨기고, 예약 위자드는 세무사 선택 시 "고객이 세무사 사무실에 방문 · 정확한 주소는 예약 확정 후 안내"·요약 "세무사 사무실 방문"으로 표시한다. 전문가 쪽 선택 설정 문구는 "고객에게 찾아가는 상담 설정 · 사무실 방문 예약과 별개"로 바꿨다. 청구(설계사) 방문 경로·method 값·DB는 변경 없음.

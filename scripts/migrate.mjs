@@ -13,10 +13,13 @@
 //   DATABASE_URL은 Supabase 연결 문자열(비밀). GitHub Actions Secrets에 둔다. 로그에 값 출력 금지.
 import pg from 'pg';
 import { readFile, readdir } from 'node:fs/promises';
+import { planMigrations } from './migration-plan.mjs';
 
 const url = process.env.DATABASE_URL;
 if (!url) { console.error('DATABASE_URL 환경변수가 필요합니다(Supabase 연결 문자열). 실행하지 않았습니다.'); process.exit(1); }
-const baseline = (process.env.MIGRATE_BASELINE || '').trim();
+// MIGRATE_ADOPT_THROUGH: 이미 운영에 적용된 마지막 파일. 그 뒤 번호부터 실제 적용한다.
+// MIGRATE_BASELINE은 예전 이름으로, 같은 뜻으로 계속 받는다.
+const baseline = (process.env.MIGRATE_ADOPT_THROUGH || process.env.MIGRATE_BASELINE || '').trim();
 
 const files = (await readdir('supabase')).filter(f => /^\d{3}_.*\.sql$/.test(f)).sort();
 const client = new pg.Client({ connectionString: url, ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 15000 });
@@ -41,23 +44,30 @@ try {
   await client.query('create schema if not exists private');
   await client.query('create table if not exists private.schema_migrations(name text primary key, applied_at timestamptz not null default now())');
   const applied = new Set((await client.query('select name from private.schema_migrations')).rows.map(r => r.name));
-  const firstRun = applied.size === 0;
-  if (firstRun) console.log(baseline ? `최초 실행: '${baseline}'까지 기준선으로 기록하고 이후만 적용합니다.` : '최초 실행: 현재 모든 마이그레이션을 기준선으로 기록만 합니다(실행 없음).');
+  const plan = planMigrations({ files, applied, adoptThrough: baseline });
+  if (plan.error) { console.error(plan.error); process.exit(1); }
+  if (applied.size === 0) console.log(plan.adopt ? `최초 실행: '${plan.adopt}'까지 기준선으로 기록하고 이후만 적용합니다.` : '최초 실행: 현재 모든 마이그레이션을 기준선으로 기록만 합니다(실행 없음).');
+  else if (plan.adopt) console.log(`채택 지점 '${plan.adopt}' — 그 이전의 미기록 파일은 실행하지 않고 기록만 합니다.`);
 
-  let ran = 0, seeded = 0, skipped = 0;
-  for (const f of files) {
-    if (applied.has(f)) { skipped++; continue; }
-    const seedOnly = firstRun && (!baseline || f <= baseline);
-    if (seedOnly) {
-      await client.query('insert into private.schema_migrations(name) values($1) on conflict do nothing', [f]);
-      seeded++; console.log('  기준선 기록(실행 안 함):', f);
-    } else {
-      console.log('  적용 중:', f);
-      await client.query(await readFile('supabase/' + f, 'utf8'));
-      await client.query('insert into private.schema_migrations(name) values($1) on conflict do nothing', [f]);
-      ran++; console.log('  ✔ 적용 완료:', f);
-    }
+  // 엉뚱한 DB에 적용하는 사고를 막는다(migrate-early-access.mjs의 027 기준선 점검과 같은 뜻).
+  if (plan.apply.length) {
+    const base = await client.query("select to_regclass('private.release_controls') a, to_regclass('private.service_areas') b, to_regclass('private.office_locations') c");
+    const {a, b, c} = base.rows[0];
+    if (!a || !b || !c) { console.error('운영 기준선(027) 테이블이 없는 DB입니다. 적용하지 않았습니다.'); process.exit(1); }
   }
+
+  for (const f of plan.seed) {
+    await client.query('insert into private.schema_migrations(name) values($1) on conflict do nothing', [f]);
+    console.log('  기준선 기록(실행 안 함):', f);
+  }
+  for (const f of plan.apply) {
+    console.log('  적용 중:', f);
+    await client.query(await readFile('supabase/' + f, 'utf8'));
+    await client.query('insert into private.schema_migrations(name) values($1) on conflict do nothing', [f]);
+    console.log('  ✔ 적용 완료:', f);
+  }
+  const ran = plan.apply.length, seeded = plan.seed.length, skipped = plan.skip.length;
+
   console.log(`\n완료 — 신규 적용 ${ran}건 · 기준선 기록 ${seeded}건 · 이미 적용 ${skipped}건.`);
 } catch (e) {
   console.error('마이그레이션 실패:', e.message);
