@@ -879,3 +879,8 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 
 ## 2026-10-17 13:52:18 KST 운영 배포
 사용자가 main 반영·운영 배포를 명시 승인하여 3bc42758b9ab42683809f65821a6bb391e4715ef를 origin/main에 반영. Netlify 6ad2fef3be0db24fff59e3cb ready, published_at=2026-10-17T04:52:18.345Z, error=null. 운영 https://bohumso.netlify.app / 고정 https://6ad2fef3be0db24fff59e3cb--bohumso.netlify.app . 공개 page-clarity.css와 assets/account.js HTTP200 및 로컬과 정규화 본문 일치 확인. 실제 회원·이충경 자료 접근/발송 없음. 잔여 크레딧은 도구에 제공되지 않고 Netlify UI 로그인이 필요하여 미확인(Pro 요금제만 확인).
+
+## 2026-10-18 일일 리서치 브리핑 (코드 변경 없음)
+예약 작업으로 리서치 브리핑만 작성. `outputs/daily-brief/brief-20261018.md`. 적용 아이디어 10건(실손24 의원·약국 연계 26.2%, 무기명 대리청구인 2026-07-01 시행·암/뇌/심혈관 확대, 금감원 약관 TF가 상속인조회·대리청구 안내를 가입서류에서 분리, 2026 상반기 분쟁민원 89%가 보험·손보 면책부책 +78.9%, 손해사정사 선임권, 금융위 중개/광고 기준, 로톡 헌재 선례, Empathy·Settld·Counterforce Health) 출처 포함.
+앱 점검은 라이브 사이트 접근 실패로 저장소 HEAD 4ebc848 코드 기준만: sitemap.xml 7개 URL로 find/map/claim-resources 누락, og는 index.html 1개뿐·meta description 없는 페이지 29개, application/ld+json 0건, 거점 지역 문구 0건, '대리청구' 0건·실손24는 자료실 1항목(병원데이터 상급종합 47곳 범위). 금지용어·자동매칭 grep 위반 없음 확인.
+권고 다음 작업 1건: help/cancer.html·death.html에 지정대리청구인 안내 블록 추가. 미실행 — 본 커밋은 문서만. 라이브 사이트 실측·실기기·실회원 검증은 이번에도 하지 않았고 기존 미검증 과제는 그대로. HANDOFF_CODEX.md 현재 상태는 코드 변경이 없어 갱신하지 않음.
