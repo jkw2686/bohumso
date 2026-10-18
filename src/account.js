@@ -56,7 +56,7 @@ async function renderAccount(){
   if(destination.href.startsWith('/map'))line(nextPanel,'가까운 전문가를 찾아 필요한 도움을 받아보세요.');
   const primary=document.createElement('a');primary.href=destination.href;primary.className='btn';primary.textContent=destination.label;nextPanel.append(primary);
   const reservations=document.createElement('a');reservations.href='/requests.html';reservations.className='btn ghost';reservations.textContent='내 예약';nextPanel.append(reservations);
-  const expertLink=document.querySelector('.account-links a[href="/partner.html"]');if(expertLink&&!membership.partner_status)expertLink.textContent='전문가로 참여하기';
+  const expertLink=document.querySelector('.account-links a[href="/partner.html"],.account-links a[href="/partner"]');if(expertLink&&!membership.partner_status){const label=expertLink.querySelector('span:last-child')||expertLink;label.textContent='전문가로 참여하기';expertLink.href='/partner.html?roleIntent=expert';}
  }
  if(membership.member&&!document.querySelector('[data-notification-entry]')){const a=document.createElement('a');a.href='/notifications.html';a.innerHTML=window.uiIcon?.('calendar')||'';a.append(document.createTextNode('예약 알림·설정'));a.dataset.notificationEntry='';document.querySelector('.account-links')?.append(a);}
  $("identity").textContent=user.email||user.phone||"내 계정";$("operator").textContent=config.operator;$("privacyContact").textContent=config.contact;

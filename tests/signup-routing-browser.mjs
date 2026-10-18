@@ -22,7 +22,7 @@ await p.goto(origin+'/signup.html?next='+encodeURIComponent('/requests.html?purp
 await p.getByRole('button',{name:'전문가 가입',exact:true}).click();await p.reload();await p.getByRole('button',{name:'일반회원 가입',exact:true}).click();expect(new URL(p.url()).searchParams.get('next')).toContain('purpose=claim');
 await p.goto(origin+'/signup.html?next=%2Faccount.html');
 await p.evaluate(({token,user})=>{localStorage.setItem('woori-account',JSON.stringify({access_token:token,refresh_token:'fixture',expires_at:Math.floor(Date.now()/1000)+3600,expires_in:3600,token_type:'bearer',user}));sessionStorage.setItem('bohumso-signup-intent','expert');}, {token,user});
-await p.goto(origin+'/account.html');await expect(p.locator('#accountNextAction')).toContainText('가까운 전문가 찾기');await expect(p).toHaveURL(origin+'/account.html');
+await p.goto(origin+'/account.html');await expect(p.locator('#accountNextAction')).toContainText('가까운 전문가 찾기');await expect(p).toHaveURL(origin+'/account.html');await expect(p.getByRole('link',{name:/^전문가로 참여하기/})).toBeVisible();
 for(const [state,partner_status,label] of [['EXPERT_DRAFT',null,'전문가 등록 이어하기'],['EXPERT_PENDING','pending','심사 현황 확인'],['EXPERT_APPROVED','approved','상담 업무 시작하기']]){member={member:true,state,partner_status,profession:'planner'};await p.reload();await expect(p.locator('#accountNextAction')).toContainText(label);}
 member={member:true,state:'ACTIVE_MEMBER'};await p.goto(origin+'/partner-work.html');await expect(p.locator('#accountMessage')).toContainText('승인된 전문가');await expect(p.locator('#accountContent')).not.toBeVisible();
 await p.goto(origin+'/admin.html');await expect(p.locator('#accountMessage')).toContainText('관리자 권한');await expect(p.locator('#accountContent')).not.toBeVisible();
