@@ -31,7 +31,7 @@ export async function mountNotificationSettings({client,host,user}){
   else if(!pushSupported())status.textContent='기기 미지원 · 이 브라우저는 웹 푸시를 지원하지 않습니다. 내 예약과 앱 내 알림은 이용할 수 있어요.';
   else if(Notification.permission==='denied')status.textContent='권한 차단 · 브라우저 설정에서 알림을 허용한 뒤 다시 켜주세요.';
   else if(!config.enabled)status.textContent='푸시 서버 연결 전 · 아직 수신 준비 완료가 아닙니다.';
-  else{try{ready=await currentPushReady(client,user.id);status.textContent=ready?'푸시 수신 준비 완료 · 로그인 계정과 이 기기의 구독 저장을 확인했습니다.':'기기 연결 전 · 예약 알림 켜기를 눌러 권한과 구독 저장을 완료해 주세요.';}catch{status.textContent='구독 저장 상태를 확인하지 못했습니다. 다시 확인해 주세요.';}}
+  else{try{ready=await currentPushReady(client,user.id);status.textContent=ready?'푸시 수신 준비 완료 · 로그인 계정과 이 기기의 구독 저장을 확인했습니다.':'휴대전화 알림 연결 필요 · 이 기기에서 예약 알림 켜기를 눌러 권한과 구독 저장을 완료해 주세요.';}catch{status.textContent='구독 저장 상태를 확인하지 못했습니다. 다시 확인해 주세요.';}}
   updateControls();
  };
  const run=async fn=>{if(busy||accountChanged)return;busy=true;updateControls();try{await fn();}catch(e){status.textContent=pushFailureMessage(e);}finally{busy=false;updateControls();}};
