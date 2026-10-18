@@ -9,6 +9,9 @@ await f.db.exec('reset role');
 // Isolated owner identity, same predicate contract as the growth fixture.
 await f.db.exec(`create or replace function private.is_owner() returns boolean language sql stable security definer set search_path='' as $$select private.is_admin() and auth.uid()='${ids.admin}'::uuid$$;revoke all on function private.is_owner() from public,anon,authenticated;`);
 for (const name of ['057_support_conversations.sql', '060_support_chat.sql', '061_expert_growth.sql']) await f.db.exec(await readFile('supabase/' + name, 'utf8'));
+// Current registration UI uses SQL 066; the old fixture stopped at SQL 061.
+await f.db.exec('create table private.phone_contacts(user_id uuid primary key,phone_e164 text,phone_verification_status text,phone_verified_at timestamptz)');
+for (const name of ['043_auth_phone_status_bridge.sql','051_phone_signup.sql','056_booking_hardening.sql','066_profession_registration.sql']) await f.db.exec(await readFile('supabase/' + name,'utf8'));
 await f.db.exec("update private.planner_directory set is_sample=false");
 const browser = await chromium.launch(PW_LAUNCH);
 const flowsOnly = process.argv.includes('--flows-only');
@@ -98,7 +101,7 @@ try {
   await menu(p);
   await p.getByRole('link', {name: '프로필 수정', exact: true}).click();
   await expect(p.locator('#optionalProfileBody')).toBeVisible();
-  await expect(p.locator('.optional-profile > h2')).toBeFocused();
+  await expect(p.locator('.optional-profile h2').first()).toBeFocused();
   if (!flowsOnly) await p.screenshot({path: 'artifacts/menu-screens/profile-destination-390.png'});
   await p.goBack();
   await expect(p.locator('#menuContent')).toHaveAttribute('aria-busy', 'false');
@@ -108,7 +111,7 @@ try {
   check(true, 'existing profile and consultation settings expand; back returns to menu');
   await menu(p);
   await p.getByRole('link', {name: '활동 지역', exact: true}).click();
-  await expect(p.locator('.urgent-panel > h2').filter({hasText: /^주활동지역$/})).toBeFocused();
+  await expect(p.locator('.urgent-panel h2').filter({hasText: /^주활동지역$/})).toBeFocused();
   await menu(p);
   await p.getByRole('link', {name: '지금 방문 상담', exact: true}).click();
   await expect(p.getByRole('heading', {name: '지금 방문 상담 가능', exact: true})).toBeFocused();
