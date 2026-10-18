@@ -5,9 +5,10 @@ const el=(tag,text,parent,cls)=>{const n=baseEl(tag,text,parent);if(cls)n.classN
 const link=(parent,text,href)=>{const n=baseLink(parent,text,href);n.className='btn ghost';return n;};
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export function reservationId(value){try{const url=new URL(value,location.origin);if(url.origin!==location.origin)return null;const id=url.pathname==='/notifications.html'?url.searchParams.get('reservation'):['/requests.html','/partner-work.html','/urgent.html'].includes(url.pathname)?url.searchParams.get('request'):null;return uuid.test(id||'')?id:null;}catch{return null;}}
-const workspaces=['/requests.html','/partner-work.html','/admin-requests.html','/urgent.html'];
+const destination=(row,id)=>row.workspace+(row.workspace==='/partner.html'?'?profession=office&request=':'?request=')+encodeURIComponent(id);
+const workspaces=['/partner.html','/requests.html','/partner-work.html','/admin-requests.html','/urgent.html'];
 async function reservationRow(client,id){if(!uuid.test(id||''))throw Error('reservation_not_found');const row=await notificationRpc(client,'notification_reservation',{reservation_id:id});if(row?.id!==id)throw Error('reservation_not_found');return row;}
-export async function reservationDestination(client,id){const row=await reservationRow(client,id);if(!workspaces.includes(row.workspace))throw Error('reservation_not_found');return row.workspace+'?request='+encodeURIComponent(id);}
+export async function reservationDestination(client,id){const row=await reservationRow(client,id);if(!workspaces.includes(row.workspace))throw Error('reservation_not_found');return destination(row,id);}
 function renderAuthorizedSummary(section,status,row){
  if(row.workspace===null&&row.receipt_only===true&&row.state==='DECLINED'){status.textContent='요청 거절 처리 완료';el('p','본인이 거절한 요청의 처리 결과입니다. 고객의 예약 상세 정보는 표시하지 않습니다.',section);link(section,'알림 목록으로','/notifications.html');return;}
  const labels={requested:'요청 접수 · 확정 전',coordinating:'일정 조율 중 · 확정 전',scheduled:'예약 확정',confirmed:'예약 확정',awaiting_completion:'상담 완료 확인 대기',completed:'상담 완료',cancelled:'예약 취소',unmatched:'요청 종료'};
@@ -19,7 +20,7 @@ function renderAuthorizedSummary(section,status,row){
 }
 export async function renderNotificationPage({client,root}){
  root.hidden=false;const id=new URLSearchParams(location.search).get('reservation');
- if(id){const section=el('section',undefined,root,'card');el('h2','예약 확인',section);const status=el('p','예약 접근 권한을 확인하고 있습니다.',section);status.setAttribute('role','status');try{const row=await reservationRow(client,id);if(workspaces.includes(row.workspace))location.replace(row.workspace+'?request='+encodeURIComponent(id));else renderAuthorizedSummary(section,status,row);}catch{status.textContent='이 계정에서 확인할 수 없는 예약이거나 조회하지 못했습니다.';link(section,'다시 확인',location.pathname+location.search);link(section,'내 예약 보기','/requests.html');}return;}
+ if(id){const section=el('section',undefined,root,'card');el('h2','예약 확인',section);const status=el('p','예약 접근 권한을 확인하고 있습니다.',section);status.setAttribute('role','status');try{const row=await reservationRow(client,id);if(workspaces.includes(row.workspace))location.replace(destination(row,id));else renderAuthorizedSummary(section,status,row);}catch{status.textContent='이 계정에서 확인할 수 없는 예약이거나 조회하지 못했습니다.';link(section,'다시 확인',location.pathname+location.search);link(section,'내 예약 보기','/requests.html');}return;}
  await mountBookingNotifications({client,host:root,expanded:true});
 }
 export async function mountBookingNotifications({client,host,expanded=false}){

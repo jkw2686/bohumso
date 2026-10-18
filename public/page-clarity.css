@@ -336,3 +336,11 @@ body .expert-detail :is(.expert-profile,.expert-profile-head,.expert-profile-hea
 .expert-overview{display:grid;gap:16px;margin-bottom:24px}.expert-overview :is(p,h2,a,summary){word-break:keep-all;overflow-wrap:break-word;white-space:normal}.expert-overview h2{font-size:1.125rem;line-height:1.5;margin:0 0 8px}.expert-overview p{font-size:1rem;line-height:1.6;margin:8px 0}.expert-overview .btn{font-size:1rem;min-height:44px;height:auto;line-height:1.5}.management-switch{display:flex;gap:12px;flex-wrap:wrap}.management-switch [aria-current=page]{background:var(--brand-soft);border-color:var(--brand);font-weight:700}.management-status,.management-tasks{padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--card)}.management-task-row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid var(--border);padding:12px 0}.expert-overview .urgent-panel{margin:0}.expert-overview summary{min-height:44px;cursor:pointer}
 
 .expert-overview .btn{width:fit-content;max-width:100%;display:inline-flex;align-items:center;justify-content:center}.expert-overview .management-status{padding:0 0 12px;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent}.expert-overview .notification-summary{margin:0}.expert-overview .management-tasks{border:0;padding:12px 0;background:transparent}.expert-overview .management-task-row p{flex:1;min-width:160px}
+
+/* Owner management reuses the existing page; settings stay separate from bookings. */
+[data-office-management] form{display:grid;gap:12px;margin-block:16px}
+[data-office-management] label{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:16px;min-height:44px}
+[data-office-management] input[type=number],[data-office-management] select{min-width:0;max-width:100%;font-size:16px}
+[data-office-management] .management-task-row{border-bottom:1px solid var(--line,#e3e8ef);padding-block:16px;overflow-wrap:break-word}
+[data-office-management] .management-task-row p{margin-block:6px}
+[data-office-management] button{min-height:44px;white-space:normal;word-break:keep-all}

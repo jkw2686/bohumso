@@ -19,7 +19,7 @@
       function action(block,role,label){var b=document.createElement('button');b.textContent=label;b.type='button';b.className='btn'+(role==='planner'?' ghost':'');b.onclick=function(){if(window.openRegionWaitlist)window.openRegionWaitlist({region:office.region,role:role});else b.textContent='화면을 새로고침한 뒤 다시 시도해 주세요.';};block.appendChild(b);}
       var customer=section(null,'오픈 준비 중이에요. 열리면 알려드릴까요?');action(customer,'consumer','오픈 알림 신청');
       var planner=section();action(planner,'planner','전문가 활동 신청');planner.lastElementChild.setAttribute('aria-label','이 지역에서 활동하고 싶어요');
-      var nearby=section();var browse=document.createElement('a');browse.textContent='주변 전문가 보기';browse.setAttribute('aria-label','주변 지역 전문가 보기');browse.className='btn ghost';var query=new URLSearchParams({view:'experts',purpose:office.purpose||'claim'});if(office.situation)query.set('situation',office.situation);browse.href='/map.html?'+query;nearby.appendChild(browse);return;
+      var nearby=section();var browse=document.createElement('a');browse.textContent='주변 전문가 보기';browse.setAttribute('aria-label','주변 지역 전문가 보기');browse.className='btn ghost';var query=new URLSearchParams({view:'experts',help:office.help||'claim',profession:office.help==='tax'?'tax':'planner',purpose:office.purpose||'claim'});if(office.situation)query.set('situation',office.situation);browse.href='/map.html?'+query;nearby.appendChild(browse);return;
     }
     add('p','희망 상담시간을 선택하세요. 보험소가 담당자를 배정해요.');
     var dl=add('label','방문 날짜'),date=document.createElement('input');date.type='date';date.min=day(new Date());date.max=day(new Date(Date.now()+89*86400000));date.value=day(new Date(Date.now()+86400000));dl.appendChild(date);

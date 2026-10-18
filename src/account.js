@@ -44,7 +44,7 @@ async function refreshMembership(){const {data,error}=await client.rpc("my_membe
 async function renderAccount(){
  if(config.earlyAccess&&!membership.member&&await finishPublicSignup(client)){justCompleted=true;await refreshMembership();}
  if(config.closedBeta&&betaCode()&&!membership.beta){const done=await renderBetaFinish({client,root:$("accountContent"),onDone:async()=>{await refreshMembership();if(membership.beta_role==='EXPERT'){location.assign('/partner.html?next='+encodeURIComponent(pendingAction()));return;}await renderAccount();}});if(done){$("identity").textContent=user.email||user.phone||"내 계정";document.querySelector(".account-links").hidden=true;$("membershipForm").hidden=true;$("logout").onclick=async()=>{await client.auth.signOut();location.assign('/login.html');};return;}}
- const next=pendingAction();if(membership.member&&next!='/account.html'){clearAction();location.replace(next.startsWith('/partner.html?roleIntent=expert')&&membership.partner_status==='approved'?signupNext(membership).href:next);return;}
+ const next=pendingAction();if(membership.member&&next!='/account.html'){clearAction();location.replace(next.startsWith('/partner.html?roleIntent=expert')&&membership.profession==='office'?'/partner.html?profession=office':next);return;}
  try{sessionStorage.removeItem("bohumso-signup-intent");}catch{}
  document.querySelector('h1').textContent=membership.state==='EXPERT_APPROVED'?'보험소 PRO':['EXPERT_PENDING','EXPERT_VERIFICATION_PENDING'].includes(membership.state)?'전문가 심사 중':membership.state==='EXPERT_DRAFT'?'보험소 PRO · 프로필':membership.member?'내 계정':'가입 마무리';
  document.querySelector('.account-links').hidden=!membership.member;
@@ -83,7 +83,7 @@ async function start(){
  $("accountNotice").textContent=[config.operator&&"운영: "+config.operator,config.contact&&"문의: "+config.contact].filter(Boolean).join(" · ");
  if(mode==="directory"){$("accountContent").hidden=false;await renderDirectory(client);return;}
  if(mode==="signup"||mode==="login"){
- if(config.closedBeta)betaCode();const next=pendingAction();const state=await memberState(client);const showSignupOptions=mode==='signup'&&new URLSearchParams(location.search).get('view')==='options';if(state.state!==MEMBER.anonymous&&!showSignupOptions&&(mode==='login'||state.membership?.member||(config.closedBeta&&betaCode()))){location.replace(config.closedBeta&&betaCode()?betaReturn():accountReturn(next));return;}
+ if(config.closedBeta)betaCode();const next=pendingAction();if(mode==='login')document.querySelector('h1').textContent=next.startsWith('/partner.html')?'전문가 로그인':next.startsWith('/map.html')?'일반회원 로그인':'로그인';const state=await memberState(client);const showSignupOptions=mode==='signup'&&new URLSearchParams(location.search).get('view')==='options';if(state.state!==MEMBER.anonymous&&!showSignupOptions&&(mode==='login'||state.membership?.member||(config.closedBeta&&betaCode()))){location.replace(config.closedBeta&&betaCode()?betaReturn():accountReturn(next));return;}
  $("accountContent").hidden=false;document.querySelectorAll('a[href]').forEach(a=>{const path=new URL(a.href,location.href).pathname;if(/^\/(signup|login)(\.html)?$/.test(path))a.href=authURL(next,path.includes('login')?'login':'signup');});
  if(mode==="login"){document.getElementById("authMethods").innerHTML=authMethodsMarkup(mode);bindPhoneAuth({client,config,root:$("accountContent")});void configureSocialAuth(config,mode);}
  }

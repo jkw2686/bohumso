@@ -1,3 +1,4 @@
+import {mountOfficeManagement} from './office-management.js';
 import {readRpc} from './read-rpc.js';
 import {mountNotificationSummary} from './notification-settings.js';
 import {el,kst,states} from './consultation-ui.js';
@@ -18,10 +19,10 @@ export async function mountExpertOverview({client,host,user,membership}){
  el('p',membership.beta_role==='EXPERT'?'비공개 베타 참여 · 공개 자격 승인과 별개':p.status==='APPROVED'?(officeMode?'보험소 운영 승인 · 개인 전문가 자격과 별개':p.registration_status==='VERIFIED'?'활동 승인 · 등록 확인 완료':'활동 승인 · 등록자격 확인 범위는 등록정보에서 확인'):p.status==='SUSPENDED'?'활동 정지 · 보완사항을 확인해 주세요.':'자격 확인 중 · 등록정보에서 필요한 조치를 확인해 주세요.',status);
  if(officeMode||p.profession==='tax'){
  el('p',(officeMode?'보험소 주소: ':'사무소 주소: ')+(p.address||p.office_address||'확인 필요'),status);
- el('p','고정 사업장 기준 · 활동지역 중심점은 실제 사업장 좌표가 아닙니다.',status);
- el('p',officeMode?'운영시간·방문예약 접수 변경: 고객센터 확인 필요':`상담 시간: ${p.start_hour??'미설정'}${p.end_hour!=null?'–'+p.end_hour+'시':''}`,status);
+ el('p',officeMode?'고정 사업장 기준 · 휴대전화 위치와 별개':p.office_coordinates_verified?'사무소 좌표 확인 완료 · '+kst(p.office_coordinates_checked_at):'사무소 좌표 확인 필요 · 지도에는 활동지역 중심점으로 표시됩니다.',status);
+ if(!officeMode)el('p',`상담 시간: ${p.start_hour??'미설정'}${p.end_hour!=null?'–'+p.end_hour+'시':''}`,status);
  link(status,'주소·자격 확인','/partner.html'+(officeMode?'?profession=office':'')+'#partnerState');
- if(officeMode){el('p','보험소 전용 예약 처리 화면은 아직 연결되지 않았습니다. 개인 전문가 승인·현재 위치와 연동하지 않습니다.',status);link(status,'운영 문의','/support.html');}
+ if(officeMode&&p.status==='APPROVED')await mountOfficeManagement({client,host:status,isCurrent:()=>!changed});
  }else {el('p','공개 활동지역: '+(p.primary_area||'설정 필요'),status);link(status,'활동지역·등록정보 확인','#partnerState');}
  }
  if(changed)return;
@@ -40,5 +41,6 @@ export async function mountExpertOverview({client,host,user,membership}){
  }catch{el('p','요청·예약을 불러오지 못했습니다. 업무 화면에서 다시 확인해 주세요.',tasks);link(tasks,'요청·예약 확인','/partner-work.html');}
  }else if(!officeMode){el('p','업무 요청은 서버의 전문가 승인 조건을 충족한 계정만 확인할 수 있습니다.',root);link(root,'등록·심사 상태 확인','#partnerState');}
  }catch{if(!changed){el('p','관리 상태를 불러오지 못했습니다. 등록정보와 알림 설정에서 다시 확인해 주세요.',root);link(root,'알림 설정','/account.html#notificationSettings');}}
+ if(!changed&&!root.querySelector('[data-notification-summary]')){try{await mountNotificationSummary({client,host:root,user});}catch{link(root,'예약 알림 설정','/account.html#notificationSettings');}}
  return root;
 }

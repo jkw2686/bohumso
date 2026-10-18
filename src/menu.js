@@ -68,9 +68,9 @@ function profile(name, role, photo) {
 function guest() {
   profile('반가워요', '로그인하고 내 메뉴를 확인하세요.');
   const actions = node('div', '', identity, 'menu-login-actions');
-  for (const [label, mode] of [['로그인', 'login'], ['무료 회원가입', 'signup']]) {
-    const link = node('a', label, actions, mode === 'login' ? 'btn ghost' : 'btn');
-    link.href = authURL('/menu.html', mode);
+  for (const [label, mode] of [['일반회원 로그인', 'login'], ['전문가 로그인', 'expert'], ['회원가입', 'signup']]) {
+    const link = node('a', label, actions, mode === 'signup' ? 'btn' : 'btn ghost');
+    link.href = authURL(mode==='expert'?'/partner.html?roleIntent=expert':'/map.html?view=experts&profession=planner&help=claim&purpose=claim',mode==='expert'?'login':mode);
   }
   publicMenus();
 }
