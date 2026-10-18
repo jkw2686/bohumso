@@ -42,3 +42,13 @@ body[data-account-page="signup"] main .auth-method :is(img,svg){width:20px;heigh
  body[data-account-page="signup"] main.container{width:100%;box-sizing:border-box;padding-left:16px;padding-right:16px}
  body[data-account-page="signup"] main .auth-card{padding:0;border:0;background:transparent;box-shadow:none}
 }
+
+/* Login shares the readable entry layout; forms and errors remain fully visible. */
+body[data-account-page="login"] main :is(h1,p,label,summary,button,a,.auth-method-label){word-break:keep-all;overflow-wrap:break-word;white-space:normal}
+body[data-account-page="login"] main :is(#accountNotice,.auth-help,#socialAuthStatus,#phoneAuthStatus){font-size:.875rem;font-weight:400;line-height:1.6}
+body[data-account-page="login"] main .auth-methods{gap:12px}
+body[data-account-page="login"] main .auth-method{min-height:52px;height:auto;padding:14px 16px;gap:10px;font-size:1rem;font-weight:500;line-height:1.5}
+body[data-account-page="login"] main .auth-method-label{min-width:0}
+body[data-account-page="login"] main .email-auth :is(summary,.btn){font-size:.9375rem;line-height:1.6;font-weight:500;height:auto}
+body[data-account-page="login"] main .email-auth input{font-size:1rem;min-width:0;max-width:100%;box-sizing:border-box}
+@media(max-width:600px){body[data-account-page="login"] main.container{width:100%;box-sizing:border-box;padding-left:16px;padding-right:16px}body[data-account-page="login"] main .auth-card{padding:0;border:0;background:transparent;box-shadow:none}}

@@ -295,3 +295,44 @@ body .policy-footer .company-info p{margin:4px 0}
  body .management-primary{padding-inline:16px}
  body .booking-card{padding:16px}
 }
+
+/* Member tasks: Korean phrase wrapping and flexible mobile controls. */
+body:is([data-account-page="account"],[data-account-page="requests"],[data-account-page="notifications"]) main :is(h1,h2,h3,p,summary,label,button,.btn,dt,dd){word-break:keep-all;overflow-wrap:break-word;white-space:normal}
+body:is([data-account-page="account"],[data-account-page="requests"],[data-account-page="notifications"]) main :is(button,.btn){height:auto;min-height:44px;max-width:100%;box-sizing:border-box;line-height:1.6}
+body:is([data-account-page="account"],[data-account-page="requests"],[data-account-page="notifications"]) main :is(.notification-item,.notification-settings,.notification-summary,.booking-card){min-width:0;word-break:keep-all;overflow-wrap:break-word}
+body:is([data-account-page="account"],[data-account-page="requests"],[data-account-page="notifications"]) main :is(#accountNotice,.muted,.booking-list-heading p,.request-filters summary span){font-size:.875rem;line-height:1.6;font-weight:400}
+body:is([data-account-page="account"],[data-account-page="requests"],[data-account-page="notifications"]) main :is(.notification-item p,.notification-settings p,.booking-card-summary p){font-size:1rem;line-height:1.6}
+body:is([data-account-page="account"],[data-account-page="requests"],[data-account-page="notifications"]) main :is(.notification-item .btn,.notification-settings button,.refresh-bookings,.booking-gate-actions a){font-size:.9375rem;font-weight:500}
+body .customer-requests .booking-list-heading{flex-wrap:wrap}
+@media(max-width:600px){
+ body:is([data-account-page="account"],[data-account-page="requests"],[data-account-page="notifications"]) main.container{box-sizing:border-box;width:100%;padding-inline:16px}
+ body.customer-requests .booking-list-heading{flex-wrap:wrap;align-items:flex-start}
+ body.customer-requests .booking-gate-actions{grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
+ body[data-account-page="account"] .account-identity{grid-template-columns:minmax(0,1fr);gap:12px}
+ body[data-account-page="account"] .account-identity button{justify-self:start}
+}
+
+/* Discovery and booking: readable phrases without changing selection or submission. */
+body.map-page :is(.region-title,.purpose-chip,.spot .name,.spot .sub,.spot .meta,.card-sheet h2,.card-sheet p,.card-sheet .btn,.expert-profile span){word-break:keep-all;overflow-wrap:break-word;white-space:normal}
+body.map-page .spot .sub{overflow:visible;text-overflow:clip}
+body.map-page :is(.spot .sub,.spot .meta,.region-title,.card-note,.expert-organization){font-size:.875rem;line-height:1.6}
+body.map-page .card-sheet p{font-size:.9375rem;line-height:1.6}
+body.map-page .card-sheet h2{font-size:1.125rem;line-height:1.5}
+body.map-page .card-sheet .btn{font-size:1rem;min-height:44px;height:auto;line-height:1.5}
+body.map-page .purpose-chip{font-size:.875rem;min-height:44px;height:auto;line-height:1.5}
+body.map-page .spot>div{min-width:0}
+body.resources-page main :is(h1,h2,h3,p,li,dd,summary,label,button,a){word-break:keep-all;overflow-wrap:break-word;white-space:normal}
+body.resources-page main :is(button,.btn,input,select){min-height:44px;height:auto;max-width:100%;box-sizing:border-box;font-size:1rem;line-height:1.6}
+body.resources-page main :is(.resource-row-hint,.muted,small){font-size:.875rem;line-height:1.6}
+body .request-wizard :is(h2,h3,p,label,button,dt,dd){word-break:keep-all;overflow-wrap:break-word;white-space:normal}
+body .request-wizard :is(button,input,select){font-size:1rem;line-height:1.6;min-height:44px;height:auto;max-width:100%;box-sizing:border-box}
+body .request-wizard .booking-review dd{overflow-wrap:break-word;word-break:keep-all}
+@media(max-width:600px){body.resources-page main{padding-inline:16px}body .request-wizard .choice-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,88px),1fr))}body.resources-page main .resource-actions{flex-wrap:wrap;gap:12px}}
+
+body .expert-detail :is(h2,p,span,.btn){word-break:keep-all;overflow-wrap:break-word;white-space:normal}body .expert-detail p{font-size:1rem;line-height:1.6}body .expert-detail .expert-profile-note{font-size:.875rem}body .expert-detail .btn{font-size:1rem;line-height:1.5;min-height:44px;height:auto}
+
+body .expert-detail :is(.expert-profile,.expert-profile-head,.expert-profile-head>div,.expert-detail-body){min-width:0;max-width:100%;box-sizing:border-box}body .expert-detail :is(.expert-organization,.expert-introduction){white-space:normal;word-break:keep-all;overflow-wrap:anywhere;max-width:100%;overflow:visible;text-overflow:clip}
+
+.expert-overview{display:grid;gap:16px;margin-bottom:24px}.expert-overview :is(p,h2,a,summary){word-break:keep-all;overflow-wrap:break-word;white-space:normal}.expert-overview h2{font-size:1.125rem;line-height:1.5;margin:0 0 8px}.expert-overview p{font-size:1rem;line-height:1.6;margin:8px 0}.expert-overview .btn{font-size:1rem;min-height:44px;height:auto;line-height:1.5}.management-switch{display:flex;gap:12px;flex-wrap:wrap}.management-switch [aria-current=page]{background:var(--brand-soft);border-color:var(--brand);font-weight:700}.management-status,.management-tasks{padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--card)}.management-task-row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid var(--border);padding:12px 0}.expert-overview .urgent-panel{margin:0}.expert-overview summary{min-height:44px;cursor:pointer}
+
+.expert-overview .btn{width:fit-content;max-width:100%;display:inline-flex;align-items:center;justify-content:center}.expert-overview .management-status{padding:0 0 12px;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent}.expert-overview .notification-summary{margin:0}.expert-overview .management-tasks{border:0;padding:12px 0;background:transparent}.expert-overview .management-task-row p{flex:1;min-width:160px}

@@ -18,13 +18,19 @@ function locationOnce(){return new Promise((resolve,reject)=>{if(!navigator.geol
 Object.assign(errors,careErrors);errors.slot_unavailable='희망시간에 다른 상담이 있어요. 다른 전문가나 시간을 선택해 주세요.';
 const time=value=>new Date(value).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Seoul'});
 const distance=km=>km<1?'약 '+Math.round(km*1000/100)*100+'m':'약 '+Number(km).toFixed(1)+'km';
+export function instantDisplay(data,now=Date.now()){
+ const enabled=data.instant?.enabled===true,updated=Date.parse(data.instant?.updated_at),expires=Date.parse(data.instant?.expires_at),minutes=Number(data.visitConfig?.expireMinutes);
+ const fresh=Number.isFinite(updated)&&Number.isFinite(minutes)&&minutes>0&&updated<=now&&now-updated<minutes*60000;
+ const active=enabled&&data.eligible===true&&fresh&&expires>now;
+ return {enabled,active,label:active?'ON · 방문 상담 가능 · '+time(expires)+'까지':enabled?'방문 연결 중지 · 위치·이용 조건 확인 필요':'OFF · 방문 상담 중지 · 필요할 때만 켜세요'};
+}
 export async function renderInstant(client,root){
  const card=el('section','',root,'card urgent-panel');card.dataset.instantSettings='';let timer;
- const load=async()=>{const data=await rpc(client,'settings');const guideOpen=card.querySelector('.location-explanation')?.open;card.replaceChildren();el('h2','지금 방문 상담 가능',card);const active=data.instant?.enabled;
-  el('strong',active?'ON · 방문 상담 가능 · '+time(data.instant.expires_at)+'까지':'OFF · 방문 상담 중지 · 필요할 때만 켜세요',card);
+ const load=async()=>{const data=await rpc(client,'settings');const guideOpen=card.querySelector('.location-explanation')?.open;card.replaceChildren();el('h2','지금 방문 상담 가능',card);const display=instantDisplay(data),active=display.enabled;
+  el('strong',display.label,card);
 
-  if(!data.eligible)el('p','전문가 승인·휴대전화 확인·활동지역 설정을 완료해 주세요.',card);
-  if(active){const age=(Date.now()-new Date(data.instant.updated_at))/60000;el('p',age>=data.visitConfig.expireMinutes?'위치가 오래되어 검색에서 제외됐어요. 갱신해 주세요.':'마지막 위치 확인 · '+time(data.instant.updated_at),card);
+  if(!data.eligible){el('p','방문 연결 이용 조건 확인 필요 · 자격 승인·휴대전화 확인·활동지역을 확인해 주세요. 일반 예약 내역은 계속 확인할 수 있습니다.',card);link('등록·자격 확인','/partner.html#partnerState',card);link('휴대전화 확인','/phone.html',card);}
+  if(active){const age=(Date.now()-new Date(data.instant.updated_at))/60000;el('p',!display.active?'방문 연결이 중지되었습니다. 현재 위치와 이용 조건을 다시 확인해 주세요.':'마지막 위치 확인 · '+time(data.instant.updated_at),card);
    button('현재 위치 갱신',card,async()=>{await rpc(client,'refresh_location',await locationOnce());await load();});
    button('방문 가능 끄기',card,async()=>{await rpc(client,'stop');await load();},true);
   }else{

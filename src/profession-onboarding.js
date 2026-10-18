@@ -61,5 +61,5 @@ export async function renderProfessionApplication({client,config,message}) {
   finally{busy=false;}
  };
  draw();details.hidden=!profile;if(profile?.profession)await renderEarlyDocuments(client,details,config,message,profile.profession);
- return personal?.status==='APPROVED'?'approved':values.profession==='office'?'office':undefined;
+ return values.profession==='office'?'office':personal?.status==='APPROVED'?'approved':undefined;
 }

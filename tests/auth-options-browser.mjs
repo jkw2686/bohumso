@@ -38,12 +38,12 @@ try{
  const page=await context.newPage();page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));
  for(const width of [320,360,390,768])for(const mode of ['signup','login']){
   await page.setViewportSize({width,height:844});await page.goto(origin+'/'+mode+'.html');
-  await expect(page.getByRole('button',{name:mode==='signup'?'Google로 계속하기':'Google 계정으로 계속하기',exact:true})).toBeEnabled();
+  await expect(page.getByRole('button',{name:'Google로 계속하기',exact:true})).toBeEnabled();
   await expect(page.getByRole('button',{name:'카카오로 계속하기 준비 중'})).toHaveCount(0);
-  await expect(page.getByRole('button',{name:mode==='signup'?'휴대전화로 계속하기':'휴대전화 번호로 계속하기',exact:true})).toBeEnabled();
+  await expect(page.getByRole('button',{name:'휴대전화로 계속하기',exact:true})).toBeEnabled();
   await expect(page.locator('input[type=password]')).not.toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
-  const measures=await page.locator('.auth-google').evaluate(el=>({height:el.getBoundingClientRect().height,radius:getComputedStyle(el).borderRadius,logo:el.querySelector('img').naturalWidth}));expect(measures.height).toBeGreaterThanOrEqual(mode==='signup'?52:56);expect(measures.radius).toBe('999px');expect(measures.logo).toBeGreaterThan(0);
+  const measures=await page.locator('.auth-google').evaluate(el=>({height:el.getBoundingClientRect().height,radius:getComputedStyle(el).borderRadius,logo:el.querySelector('img').naturalWidth}));expect(measures.height).toBeGreaterThanOrEqual(52);expect(measures.radius).toBe('999px');expect(measures.logo).toBeGreaterThan(0);
   if(width===390)await page.screenshot({path:'artifacts/auth-'+mode+'-mobile.png',fullPage:true});
  }
  for(const width of [320,360,390,768]){await page.setViewportSize({width,height:844});await page.goto(origin+'/index.html');await expect(page.locator('.home-membership')).toBeVisible();await expect(page.locator('[data-membership-account]')).toContainText('로그인');await expect(page.locator('[data-membership-link]')).toHaveAttribute('href','/signup.html?view=options');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);if(width===390)await page.screenshot({path:'artifacts/home-signup-entry-mobile.png'});}

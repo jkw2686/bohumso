@@ -1,3 +1,4 @@
+import {mountExpertOverview} from './expert-overview.js';
 import {arrangeExpertManagement} from './expert-management-layout.js';
 import {signupNext} from './signup-next.js';
 import {mountNotificationSettings,mountNotificationSummary} from './notification-settings.js';
@@ -122,17 +123,18 @@ async function start(){
  if(mode==="payment")await renderPaymentResult(client,message);
  if(mode==="phone")await renderPhoneVerification({client,config,root:$("accountContent")});
  if(mode==="account"){await renderAccount();$("accountContent").hidden=false;if(membership.member)await mountNotificationSettings({client,host:$("accountContent"),user});}
- if(mode==="partner"&&membership.beta_role==="EXPERT"){await renderBetaExpert(client,$("accountContent"));$("accountContent").hidden=false;return;}
+ if(mode==="partner"&&membership.beta_role==="EXPERT"){await renderBetaExpert(client,$("accountContent"));const quick=document.createElement('div');$("accountContent").prepend(quick);await renderInstant(client,quick);await mountExpertOverview({client,host:$("accountContent"),user,membership});$("accountContent").hidden=false;return;}
  if(mode==="partner"){const applicationStatus=await renderPartner();
   // ① 지금 방문 상담 카드를 신청 정보 카드보다 위에 둔다. partner-work 와 같은 renderInstant 를
   //    그대로 쓴다(새로 만들지 않는다). 승인 전에는 카드 대신 안내 한 줄만 보여준다.
   const top=document.createElement('div');top.dataset.managementPriority='';$("accountContent").prepend(top);
   if(applicationStatus==='approved')await renderInstant(client,top);
   else if(applicationStatus!=='office'){const note=document.createElement('p');note.className='card';note.textContent=membership.partner_status==='approved'?'방문 상담 상태를 확인하지 못했습니다. 새로고침해 주세요.':'승인 후 지금 방문 상담을 켤 수 있어요';top.append(note);}
-  if(membership.partner_status&&membership.profession!=='office')await renderServiceArea(client,$("accountContent"));
+  if(applicationStatus!=='office'&&membership.partner_status&&membership.profession!=='office')await renderServiceArea(client,$("accountContent"));
   if(["planner","tax"].includes(membership.profession)&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));
 
-  const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink){workLink.hidden=membership.profession==='office'||applicationStatus==='office'&&membership.partner_status!=='approved';$("accountContent").append(workLink);}if(membership.profession!=='office'&&applicationStatus!=='office')arrangeExpertManagement($("accountContent"),{approved:applicationStatus==="approved"});}
+  const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink){workLink.hidden=membership.profession==='office'||applicationStatus==='office';$("accountContent").append(workLink);}if(membership.profession!=='office'&&applicationStatus!=='office')arrangeExpertManagement($("accountContent"),{approved:applicationStatus==="approved"});}
+ if(mode==="partner")await mountExpertOverview({client,host:$("accountContent"),user,membership});
  if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
  if((mode==='partner'||document.body.dataset.workspace==='partner')&&membership.profession!=='office'&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('[data-management-menu]');if(resources)resources.append(entry);else {const menu=$('accountContent').querySelector('[data-management-menu]');if(menu)menu.append(entry);else $('accountContent').append(entry);}}
  $("accountContent").hidden=false;

@@ -3,11 +3,11 @@ export const socialProviders=[
 ];
 export function authMethodsMarkup(mode){
  const suffix=mode==='signup'?'Signup':'Login';
- return `<div class="social-auth auth-methods" aria-label="가입 및 로그인 방법"><button id="google${suffix}" type="button" class="btn auth-method auth-google" disabled><img src="/brand/google-g.png" alt="" width="20" height="20"><span class="auth-method-label">${mode==='signup'?'Google로 계속하기':'Google 계정으로 계속하기'}</span></button><button type="button" class="btn auth-method" data-phone-auth aria-expanded="false" aria-controls="phoneAuthPanel"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4M11 18h2"/></svg><span class="auth-method-label">${mode==='signup'?'휴대전화로 계속하기':'휴대전화 번호로 계속하기'}</span></button></div><section id="phoneAuthPanel" data-phone-panel hidden></section>`;
+ return `<div class="social-auth auth-methods" aria-label="가입 및 로그인 방법"><button id="google${suffix}" type="button" class="btn auth-method auth-google" disabled><img src="/brand/google-g.png" alt="" width="20" height="20"><span class="auth-method-label">Google로 계속하기</span></button><button type="button" class="btn auth-method" data-phone-auth aria-expanded="false" aria-controls="phoneAuthPanel"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4M11 18h2"/></svg><span class="auth-method-label">휴대전화로 계속하기</span></button></div><section id="phoneAuthPanel" data-phone-panel hidden></section>`;
 }
 function setLabel(button,text){const label=button.querySelector('.auth-method-label');if(label)label.textContent=text;else button.textContent=text;}
 export async function configureSocialAuth(config,mode){
- const googleLabel=mode==='signup'?'Google로 계속하기':'Google 계정으로 계속하기';
+ const googleLabel='Google로 계속하기';
  const items=socialProviders.map(p=>({...p,button:document.getElementById(p.id+(mode==='signup'?'Signup':'Login'))})).filter(p=>p.button);
  let notice=document.getElementById('socialAuthStatus');if(!notice){notice=document.createElement('p');notice.id='socialAuthStatus';notice.setAttribute('role','status');items[0]?.button.closest('.social-auth')?.after(notice);}
  notice.textContent='간편로그인 연결을 확인하고 있습니다.';

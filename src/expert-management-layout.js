@@ -7,7 +7,7 @@ export function arrangeExpertManagement(root,{approved=!!root?.querySelector('[d
  let menu=root.querySelector('[data-management-menu]');
  if(!menu){menu=document.createElement('nav');menu.dataset.managementMenu='';menu.className='compact-work-menu';menu.setAttribute('aria-label','전문가 업무 메뉴');for(const [title,url]of [['자료실','/claim-resources.html'],['청구 도움 대화·만화','/claim-resources.html#claimScripts'],['받은 요청·예약','/partner-work.html']]){const a=document.createElement('a');a.className='btn ghost';a.textContent=title;a.href=url;menu.append(a);}}
  const old=root.querySelector('[data-work-link]');if(old)old.hidden=true;
- if(!approved){const summary=root.querySelector('[data-application-summary]');if(summary)root.prepend(summary);if(instant)root.append(instant);root.append(menu);return;}
+ if(!approved){menu.querySelector('a[href="/partner-work.html"]')?.remove();const summary=root.querySelector('[data-application-summary]');if(summary)root.prepend(summary);if(instant)root.append(instant);root.append(menu);return;}
  const main=document.createElement('section'),side=document.createElement('section');main.className='management-primary';side.className='management-secondary';main.setAttribute('aria-label','상담·지역·프로필 설정');side.setAttribute('aria-label','등록 정보와 업무 자료');
  const profile=root.querySelector('.optional-profile')?.closest('.card');
  const contact=root.querySelector('.public-contact-settings');
