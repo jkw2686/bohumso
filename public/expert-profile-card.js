@@ -27,8 +27,8 @@
   var chosen=(p.insurance_types||[]).filter(function(k){return types[k];});
   if(chosen.length){var badges=node('div','',root,'expert-badges');badges.setAttribute('aria-label','보험 취급 구분 · 본인 선택');chosen.forEach(function(k){node('span',types[k],badges);});node('p','보험 취급 구분 · 본인 선택',root,'expert-profile-note');}
   var help=(p.help_tasks||[]).filter(function(k){return tasks[k]&&(k!=='office_consultation'||p.offices?.some(function(o){return o.available===true;}));}).slice(0,3);
-  if(help.length){var jobs=node('div','',root,'expert-help-tasks');jobs.setAttribute('aria-label','도움 가능한 업무');help.forEach(function(k){node('span',tasks[k],jobs);});}
-  if(p.biography)node('p',p.biography,root,'expert-introduction'+(options.summary?' is-summary':''));return root;
+  if(help.length&&!options.summary){var jobs=node('div','',root,'expert-help-tasks');jobs.setAttribute('aria-label','도움 가능한 업무');help.forEach(function(k){node('span',tasks[k],jobs);});}
+  if(p.biography&&!options.summary)node('p',p.biography,root,'expert-introduction'+(options.summary?' is-summary':''));return root;
  }
  function requestActions(parent,p,context){
   var actions=node('div','',parent,'expert-card-actions'),vq=query(p,context);

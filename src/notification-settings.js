@@ -14,8 +14,9 @@ export async function mountNotificationSettings({client,host,user}){
  const disconnect=add('button','이 기기 푸시만 끄기',root,'btn ghost');disconnect.type='button';disconnect.hidden=true;
  const note=add('p','알림을 꺼도 내 예약과 기존 알림 내역은 유지됩니다. 상담 가능 설정과 별개입니다.',root,'muted');
  add('p','예약 알림 끄기는 계정의 새 앱 내 알림과 푸시를 함께 끕니다. 이 기기 푸시만 끄기는 앱 내 알림을 유지하고 이 기기의 연결만 해제합니다.',root,'muted');
- add('p','푸시는 지금 사용하는 기기에 연결됩니다. 휴대전화 알림은 해당 휴대전화에서 켜주세요.',root,'muted');
- add('p','iPhone·iPad는 지원되는 iOS·iPadOS에서 홈 화면에 추가한 보험소를 열어 알림을 켜주세요.',root,'muted');
+ const guide=add('details','',root,'supporting-details');add('summary','기기별 알림 설정 방법',guide);
+ add('p','푸시는 지금 사용하는 기기에 연결됩니다. 휴대전화 알림은 해당 휴대전화에서 켜주세요.',guide,'muted');
+ add('p','iPhone·iPad는 지원되는 iOS·iPadOS에서 홈 화면에 추가한 보험소를 열어 알림을 켜주세요.',guide,'muted');
  let enabled=true,saved=false,ready=false,busy=true,config={enabled:false},accountChanged=false;
  const rpc=async(operation,payload={})=>{if(operation==='get')return readRpc(client,'reservation_notification_settings',{operation,payload});const r=await client.rpc('reservation_notification_settings',{operation,payload});if(r.error)throw r.error;return r.data;};
  const updateControls=()=>{disconnect.hidden=!ready;disconnect.disabled=busy||accountChanged;test.disabled=busy||!ready||accountChanged;toggle.disabled=busy||!saved||accountChanged;enable.disabled=busy||ready||!saved||!enabled||!config.enabled||!pushSupported()||Notification.permission==='denied'||accountChanged;enable.textContent=ready?'이 기기 연결 완료':'예약 알림 켜기';retry.disabled=busy||accountChanged;toggle.textContent=enabled?'예약 알림 끄기':'앱 내 예약 알림 다시 켜기';};

@@ -1,6 +1,15 @@
 import {el,kst} from './consultation-ui.js';
 const archived=new Set(['completed','cancelled','unmatched']);
 const labels={requested:'요청 중 · 전문가 확인 전',coordinating:'요청 중 · 일정 확인 필요',confirmed:'예약 확정',scheduled:'예약 확정',awaiting_completion:'상담 완료 확인 대기',completed:'상담 완료',cancelled:'예약 취소',unmatched:'요청 종료',dispute:'문제 확인 중',no_show:'문제 확인 중'};
+function nextAction(row,workspace){
+ if(row.schedule_proposal?.can_accept)return '제안된 변경 일정을 확인해 주세요.';
+ if(row.state==='requested')return workspace==='partner'?'요청 내용을 확인하고 수락 여부를 선택해 주세요.':'전문가 확인을 기다려 주세요. 아직 확정 전입니다.';
+ if(row.state==='coordinating')return row.planner_ok?(workspace==='partner'?'고객의 일정 확정을 기다려 주세요.':'일정을 확인한 뒤 확정해 주세요.'):'상담 일정을 확인해 주세요. 아직 확정 전입니다.';
+ if(['confirmed','scheduled'].includes(row.state))return '아래 일정과 상담 방식을 확인해 주세요.';
+ if(row.state==='awaiting_completion')return '상담 완료 내역을 확인해 주세요.';
+ if(['completed','cancelled','unmatched'].includes(row.state))return '필요한 경우 예약 상세에서 처리 내역을 확인하세요.';
+ return '예약 상세에서 현재 처리 내용을 확인해 주세요.';
+}
 export function bookingOverview({host,workspace,viewerId,refresh}){
  if(workspace==='admin')return {filter:rows=>rows,before(){},after(){},decorate(){},select(){}};
  const key=viewerId?'bohumso-booking-view:'+viewerId+':'+workspace:null,filters=document.getElementById('workflowFilters');
@@ -20,6 +29,7 @@ export function bookingOverview({host,workspace,viewerId,refresh}){
   const header=document.createElement('header');header.className='booking-card-summary';card.prepend(header);
   el('h2',workspace==='customer'?(row.planner_name||row.office_name||'담당자 확인 중'):(row.contact?.name||'상담 요청 고객'),header);
   el('p',row.state==='coordinating'&&row.planner_ok?(workspace==='partner'?'고객 일정 확정 대기':'요청 중 · 일정 확인 필요'):labels[row.state]||'상태 확인 필요',header).className='request-status';
+  el('p',nextAction(row,workspace),header).className='booking-next-action';
   el('p',row.office_id?'고객이 보험소에 방문 · '+(row.office_name||'선택한 보험소'):({phone:'전화 상담',nearby:'전문가가 고객에게 방문',scheduled:'전문가와 상담 장소 조율'}[row.method]||'상담 방식 확인 필요'),header);
   el('p',(['confirmed','scheduled','awaiting_completion','completed'].includes(row.state)?'확정 시간 · ':'희망 시간 · ')+kst(row.preferred_at)+' KST',header).className='booking-summary-time';
   if(context.place)el('p','장소 · '+context.place,header).className='booking-summary-place';else if(row.region)el('p','상담 지역 · '+row.region,header).className='booking-summary-place';if(row.fee_notice){const fee=[...body.children].find(n=>n.tagName==='P'&&n.textContent===row.fee_notice);if(fee)header.append(fee);else el('p',row.fee_notice,header);}

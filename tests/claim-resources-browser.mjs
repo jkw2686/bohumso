@@ -23,7 +23,7 @@ try{
   await expect(page.locator('main')).not.toContainText('안내문');
   if(width===390)await page.screenshot({path:'artifacts/resources-simple-mobile.png'});
   await page.getByLabel('병원·지역·보험사 검색',{exact:true}).fill('서울 삼성');await expect(page.locator('#resourceList .resource-row')).toHaveCount(2);
-  await expect(page.locator('#resourceList h3').first()).toHaveText('삼성서울병원');
+  await expect(page.locator('#resourceList .resource-institution-name').first()).toHaveText('삼성서울병원');
   await page.getByRole('button',{name:'검색',exact:true}).click();await expect(page.locator('#resourceCount')).toContainText('검색 결과 2곳');
   await page.getByLabel('병원·지역·보험사 검색',{exact:true}).fill('분당 서울대');await expect(page.locator('#resourceList .resource-row')).toHaveCount(1);
   await page.locator('#resourceList .resource-detail-toggle').press('Enter');await expect(page.locator('#resourceList .resource-detail-toggle')).toHaveAttribute('aria-expanded','true');
@@ -35,7 +35,7 @@ try{
   await page.getByLabel('병원·지역·보험사 검색',{exact:true}).fill('부산 병원');await expect(page.locator('#resourceList .resource-row')).toHaveCount(5);
   await page.getByRole('button',{name:'병원',exact:true}).click();await expect(page.getByRole('button',{name:'병원',exact:true})).toHaveAttribute('aria-pressed','true');
   // A new search starts from all institutions, not a previous category.
-  await page.getByLabel('병원·지역·보험사 검색',{exact:true}).fill('캐롯');await expect(page.getByRole('button',{name:'전체',exact:true})).toHaveAttribute('aria-pressed','true');await expect(page.locator('#resourceList h3')).toHaveText('한화손해보험');
+  await page.getByLabel('병원·지역·보험사 검색',{exact:true}).fill('캐롯');await expect(page.getByRole('button',{name:'전체',exact:true})).toHaveAttribute('aria-pressed','true');await expect(page.locator('#resourceList .resource-institution-name')).toHaveText('한화손해보험');
   await page.getByRole('button',{name:'전체 목록',exact:true}).click();await expect(page.locator('#resourceList .resource-row')).toHaveCount(91);
   await page.getByRole('button',{name:'보험사',exact:true}).click();await expect(page.locator('#resourceList .resource-row')).toHaveCount(39);
   for(const [name,count]of [['생명보험',22],['손해보험',16],['우체국',1]]){await page.getByRole('button',{name,exact:true}).click();await expect(page.locator('#resourceList .resource-row')).toHaveCount(count);}
