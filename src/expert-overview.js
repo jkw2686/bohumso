@@ -26,7 +26,7 @@ export async function mountExpertOverview({client,host,user,membership}){
  }else {el('p','공개 활동지역: '+(p.primary_area||'설정 필요'),status);link(status,'활동지역·등록정보 확인','#partnerState');}
  }
  if(changed)return;
- const instant=host.querySelector('[data-instant-settings]');if(instant){if(officeMode){instant.hidden=true;}else if(p?.profession==='tax'){const visits=el('details',undefined,root);el('summary','출장 상담 설정 · 사무소 위치와 별개',visits);visits.append(instant);}else root.append(instant);}
+ const instant=host.querySelector('[data-instant-settings]');if(instant){if(officeMode){instant.hidden=true;}else if(p?.profession==='tax'){const visits=el('details',undefined,root);el('summary','고객에게 찾아가는 상담 설정 · 사무실 방문 예약과 별개',visits);visits.append(instant);}else root.append(instant);}
  await mountNotificationSummary({client,host:root,user});if(changed)return;
  link(root,'앱 내 예약 알림','/notifications.html');
  const canWork=membership.partner_status==='approved'&&membership.profession!=='office'&&!officeMode;

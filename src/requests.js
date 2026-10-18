@@ -1,5 +1,5 @@
 const labels={pending:'접수 완료',assigned:'담당자 배정 · 고객 확정 대기',confirmed:'예약 확정',completed:'상담 완료',cancelled:'취소'};
-const professions={planner:'보험설계사',adjuster:'손해사정사',lawyer:'변호사',corporate:'기업보험 컨설턴트',tax:'세무사',office:'보험대리점·거점'};
+const professions={planner:'보험설계사(청구전문가)',adjuster:'손해사정사',lawyer:'변호사',corporate:'기업보험 컨설턴트',tax:'세무사',office:'보험대리점·거점'};
 const time=value=>new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
 function node(tag,text,parent){const el=document.createElement(tag);if(text)el.textContent=text;if(parent)parent.append(el);return el;}
 function field(parent,title,name,type='text'){const label=node('label',title,parent);const input=node('input','',label);input.name=name;input.type=type;input.required=true;return input;}

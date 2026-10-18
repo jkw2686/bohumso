@@ -1,5 +1,15 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-18 — 세무 상담 방향 정정 · 직군 라벨 · 코덱스 회귀 복구
+- 시작 기준 main b4fcea3(코덱스). 확인 결과 b4fcea3는 **이미 운영 배포·DB 적용 완료 상태**였다. 빌드 산출물 8개(account/growth/member/menu/rights/support-badge/urgent/visit.js) SHA-256이 라이브와 일치했고, 070·071의 백업 함수 7종이 운영 DB에 존재(없으면 PGRST202, 실제는 permission denied)해 적용을 확인했다. 이번 세션에서 새로 적용한 SQL은 없다.
+- 사용자 정정 ①: 세무사는 출장이 아니라 **고객이 세무사 사무실로 방문**한다. 지도에서 세무 선택 시 /urgent.html(전문가가 고객에게 방문) 진입 2개(.urgent-map-link, #areaRequest)를 숨기고, 예약 위자드는 세무사 선택 시 "고객이 세무사 사무실에 방문 · 정확한 주소는 예약 확정 후 안내"·요약 "세무사 사무실 방문"으로 표시한다. 전문가 쪽 선택 설정 문구는 "고객에게 찾아가는 상담 설정 · 사무실 방문 예약과 별개"로 바꿨다. 청구(설계사) 방문 경로·method 값·DB는 변경 없음.
+- 사용자 정정 ②: 직군 표시 "보험설계사" → **"보험설계사(청구전문가)"**. 화면(map.html 직군 선택·범례, account.js, requests.js)만 반영했다. 전문가 카드의 profession_name은 DB값이라 supabase/072_planner_claim_expert_label.sql + rollback_planner_claim_expert_label.sql을 **만들어만 두고 운영 미적용**이다. 072는 바꾸기 전 값을 private.profession_label_backup_20261018에 보관하고 재실행 안전하다.
+- 코덱스가 남긴 회귀 복구: 헤더 문구 변경(로그인/무료 회원가입 → 일반회원 로그인/전문가 로그인/회원가입)에 테스트·템플릿이 따라오지 않아 브라우저 테스트 3건이 깨져 있었다. brand-browser.cjs·claim-help-browser.mjs를 새 문구 기준으로 고쳐 통과시켰고, /help/*.html 6개의 정적 헤더도 생성기(scripts/build-help-guides.mjs)에서 새 3개 진입으로 맞췄다.
+- 지도 안내칩 회귀도 고쳤다. help 파라미터가 있으면 상황별 문구("사망보험금 확인·청구 도움")가 일괄 "보험금 청구 도움"으로 덮이던 것을, 상황 문구가 있으면 그것을 우선하도록 되돌렸다.
+- 검증: build 통과, 단위 187/187 통과(542s). 브라우저 help-entry(360/390/430/1440)·booking-selection(6폭+격리)·claim-help(5폭×로그인 전후)·brand 통과. 로컬 미리보기 390px에서 홈·청구지도·세무지도 실측, 가로 넘침 0, 콘솔 오류 0(로컬 /api 503은 미리보기 스텁).
+- **member-gate-browser.cjs는 고치지 않았다.** 상황카드 클릭이 가입 게이트로 가던 옛 전제를 검증하는 테스트로, docs/test-failures-classification-20261011.md 13번의 기존 실패 항목이다. 이번 변경과 무관하다.
+- 실제 휴대전화 확인·운영 로그인 E2E·072 운영 적용은 하지 않았다. 원복 기준: 이 커밋 revert(화면), 072는 미적용이라 원복 불필요.
+
 ## 2026-10-12 — 별도 전체 메뉴 화면 / 색상 범위 제한
 - 배포 완료: main `23b885ba63e9271203464d897a82bdde4647c7eb`, Netlify `6acc5a47f394f70008b11015`, 2026-10-12 12:56:05 KST published/ready 확인. 실제 `/menu.html` 360/390/430/1440px에서 가로 넘침 없음·행64px, 배경 rgb(246,247,249)·강조 #3157C8 확인. 홈 새 문구와 홈↔메뉴 이동 확인.
 - 운영 브라우저의 현재 세션은 일반 회원으로 확인되어 소비자 메뉴를 검증했다. 전문가/관리자 운영 로그인 검증은 하지 않았고 해당 역할은 격리 계정에서 검증. 운영 데이터 쓰기 없음. PC 전체 캡처는 브라우저 캡처 오류로 미확보; PC DOM 치수와 로컬 전체 캡처로 구분 기록. 임시 viewport 복원 완료.

@@ -15,7 +15,9 @@ export function renderOfficeRequest({form,command,refresh,message,selectedOffice
  if(region&&/^\d{4}-\d{2}-\d{2}$/.test(chosenDate)&&/^(09|1[0-7]):00$/.test(chosenTime)&&chosenStamp>=Date.now()+1800000&&chosenStamp<=Date.now()+90*86400000){date=chosenDate;time=chosenTime;step=2;}
  const situationLabels={death:'가족 사망',cancer:'암 진단',illness:'암·질병',hospitalization:'입원·수술',medical:'입원·수술',accident:'사고',claim:'보험금 청구',coverage:'내 보험 확인'};
  const situation=situationLabels[params.get('situation')]||'',name=selectedOffice?.name||selectedPlanner?.name||'';
- const direction=selectedOffice?'고객이 보험소에 방문 · '+(selectedOffice.address||selectedOffice.region):methodLabels[method];
+ // 세무 상담은 고객이 세무사 사무실로 방문한다. 보험소 방문과 같은 장소 유형으로 묶지 않는다.
+ const taxOfficeVisit=selectedPlanner?.profession==='tax'&&method!=='phone';
+ const direction=selectedOffice?'고객이 보험소에 방문 · '+(selectedOffice.address||selectedOffice.region):taxOfficeVisit?'고객이 세무사 사무실에 방문 · 정확한 주소는 예약 확정 후 안내':methodLabels[method];
  const mapURL=view=>'/map.html?'+new URLSearchParams({view,region,purpose,...(help&&view==='experts'?{help,profession:help==='tax'?'tax':'planner'}:{}),situation:params.get('situation')||''});
  function reselect(parent){const a=el('a',selectedOffice?'다른 보험소 선택':'다른 전문가 선택',parent);a.href=mapURL(selectedOffice?'offices':'experts');a.className='text-button';return a;}
  function remember(){params.set('region',region);for(const [key,value]of [['date',date],['time',time]])if(value)params.set(key,value);else params.delete(key);history.replaceState(null,'',location.pathname+'?'+params);}
@@ -41,7 +43,7 @@ export function renderOfficeRequest({form,command,refresh,message,selectedOffice
   const periods=[['오전',0,12],['오후',12,24]].map(([label,start,end])=>{const group=el('section',undefined,choices);el('h3',label,group);const grid=el('div',undefined,group);grid.className='choice-grid';return {start,end,grid};});
   el('p','흐린 취소선 시간은 선택할 수 없습니다. 선택한 시간은 파란색 테두리로 표시됩니다.',schedule).className='wizard-context';
   const selection=el('p','',schedule);selection.className='wizard-context';selection.setAttribute('role','status');
-  function summarize(){selection.textContent=time?name+' · '+(selectedOffice?'보험소 방문':method==='phone'?'전화상담':method==='nearby'?'전문가 방문':'상담 일정 조율')+' · 희망 '+date+' '+time+' (확정 전)':'희망 시간을 선택해 주세요.';}
+  function summarize(){selection.textContent=time?name+' · '+(selectedOffice?'보험소 방문':method==='phone'?'전화상담':taxOfficeVisit?'세무사 사무실 방문':method==='nearby'?'전문가 방문':'상담 일정 조율')+' · 희망 '+date+' '+time+' (확정 전)':'희망 시간을 선택해 주세요.';}
   for(let minute=540;minute<=1020;minute+=60){
    const value=String(Math.floor(minute/60)).padStart(2,'0')+':'+String(minute%60).padStart(2,'0'),stamp=new Date(date+'T'+value+':00+09:00');
    const grid=periods.find(p=>Number(value.slice(0,2))>=p.start&&Number(value.slice(0,2))<p.end).grid;

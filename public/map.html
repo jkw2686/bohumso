@@ -39,7 +39,7 @@
 </div>
 
 <!-- 지도: 화면 세로의 큰 비중(65dvh) -->
-<a class="urgent-map-link" href="/urgent.html">지금 방문 가능한 전문가 찾기 →</a><p class="map-key" aria-label="지도 아이콘 안내"><span><i data-icon="home"></i>보험소 거점</span><span><i data-icon="person"></i>보험설계사 활동지역</span><span><i data-icon="tax"></i>세무사 거점 · 현재 위치 아님</span></p><main class="map-stage" id="mapStage">
+<a class="urgent-map-link" href="/urgent.html">지금 방문 가능한 전문가 찾기 →</a><p class="map-key" aria-label="지도 아이콘 안내"><span><i data-icon="home"></i>보험소 거점</span><span><i data-icon="person"></i>보험설계사(청구전문가) 활동지역</span><span><i data-icon="tax"></i>세무사 거점 · 현재 위치 아님</span></p><main class="map-stage" id="mapStage">
 <div id="map" role="application" aria-label="내 주변 보험소 지도"></div>
 <p class="map-credit">지도 © OpenStreetMap 기여자</p>
 
@@ -49,7 +49,7 @@
 <section class="list-sheet" id="listSheet" data-sheet-state="collapsed" aria-label="주변 보험소 목록">
   <div class="sheet-toolbar"><button class="sheet-resize" id="listGrip" type="button" aria-label="목록 크기 조절" aria-expanded="false" aria-controls="listBody">목록 펼치기 ⌃</button><button class="sheet-close" id="listClose" type="button" aria-label="목록 닫기">×</button></div>
   <div class="list-head">
-    <strong id="listCount">주변 보험소</strong><label class="profession-filter">직군<select id="professionFilter" aria-label="지도 직군 선택"><option value="">전체</option><option value="planner">보험설계사</option><option value="tax">세무사</option><option value="office">보험소 거점</option></select></label>
+    <strong id="listCount">주변 보험소</strong><label class="profession-filter">직군<select id="professionFilter" aria-label="지도 직군 선택"><option value="">전체</option><option value="planner">보험설계사(청구전문가)</option><option value="tax">세무사</option><option value="office">보험소 거점</option></select></label>
     <div class="sort-tabs" role="tablist" aria-label="정렬 기준">
       <button role="tab" data-sort="distance" aria-selected="true">거리순</button>
       <button role="tab" data-sort="rating" aria-selected="false">전문가 활동지역</button><button role="tab" data-sort="offices" aria-selected="false">보험소 방문</button>

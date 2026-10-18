@@ -235,7 +235,8 @@
 
     var arr = sortedSpots();
     sheet.classList.toggle('is-empty',!arr.length);
-    areaLink.hidden=showOffices;areaLink.href='/urgent.html?purpose='+encodeURIComponent(PURPOSE||'claim')+'&situation='+encodeURIComponent(SITUATION||'claim')+'&help='+encodeURIComponent(helpIntent)+'&region='+encodeURIComponent(selectedArea||'');areaLink.textContent='이 지역 방문 가능한 전문가 찾기';
+    // 세무 상담은 고객이 세무사 사무실로 방문한다. 전문가가 찾아가는 방문요청 진입은 제공하지 않는다.
+    areaLink.hidden=showOffices||helpIntent==='tax';areaLink.href='/urgent.html?purpose='+encodeURIComponent(PURPOSE||'claim')+'&situation='+encodeURIComponent(SITUATION||'claim')+'&help='+encodeURIComponent(helpIntent)+'&region='+encodeURIComponent(selectedArea||'');areaLink.textContent='이 지역 방문 가능한 전문가 찾기';
     if (!arr.length) {
       $('listCount').textContent = showOffices?'아직 이 지역에 등록된 보험소가 없어요.':'아직 이 지역에 등록된 전문가가 없어요.';
       renderEmptyActions(sheet, areaLink);
@@ -351,7 +352,7 @@
       var nav = document.querySelector('.map-nav');
       if (nav) nav.after(chip);
     }
-    syncHelpLinks=function(){var guideQuery=new URLSearchParams({purpose:PURPOSE||'claim'});if(SITUATION)guideQuery.set('situation',SITUATION);if(helpIntent)guideQuery.set('help',helpIntent);if(professionFilter)guideQuery.set('profession',professionFilter);if(selectedArea)guideQuery.set('region',selectedArea);var ll=$('listLink');if(ll)ll.href='/find.html?'+guideQuery;var vl=document.querySelector('.urgent-map-link');if(vl){vl.href='/urgent.html?'+guideQuery;vl.textContent=helpIntent==='tax'?'출장상담 가능한 세무사 찾기 →':'지금 방문 가능한 전문가 찾기 →';}var chip=document.querySelector('.purpose-chip');if(chip)chip.textContent=(helpIntent==='tax'?'세무 상담':helpIntent==='claim'?'보험금 청구 도움':PURPOSE_LABELS[PURPOSE]||'전문가 찾기')+' · 지역과 전문가를 직접 선택하세요.';}
+    syncHelpLinks=function(){var guideQuery=new URLSearchParams({purpose:PURPOSE||'claim'});if(SITUATION)guideQuery.set('situation',SITUATION);if(helpIntent)guideQuery.set('help',helpIntent);if(professionFilter)guideQuery.set('profession',professionFilter);if(selectedArea)guideQuery.set('region',selectedArea);var ll=$('listLink');if(ll)ll.href='/find.html?'+guideQuery;var vl=document.querySelector('.urgent-map-link');if(vl){vl.hidden=helpIntent==='tax';vl.href='/urgent.html?'+guideQuery;vl.textContent='지금 방문 가능한 전문가 찾기 →';}var chip=document.querySelector('.purpose-chip');if(chip)chip.textContent=(helpIntent==='tax'?'세무 상담':Object.hasOwn(situationLabels,SITUATION)?situationLabels[SITUATION]:helpIntent==='claim'?'보험금 청구 도움':PURPOSE_LABELS[PURPOSE]||'전문가 찾기')+' · 지역과 전문가를 직접 선택하세요.';}
     syncHelpLinks();
     SAMPLES = SPOTS.slice(); // 지역 재필터용 원본 샘플 보관
     SPOTS = PLANNED.slice();

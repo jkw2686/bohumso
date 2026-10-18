@@ -34,7 +34,7 @@ try{
     const slug=routes[i];await page.goto('https://fixture.test/');await page.locator('.situation-cards a[href="/help/'+slug+'.html"]').click();
     await expect(page).toHaveURL('https://fixture.test/help/'+slug+'.html');await expect(page.getByRole('heading',{level:1,name:titles[i],exact:true})).toBeVisible();
     await expect(page.locator('.guide-steps li')).toHaveCount(3);await expect(page.locator('.guide-icon')).toBeHidden();await expect(page.locator('.guide-method')).not.toHaveAttribute('open','');await page.locator('.guide-method summary').click();await expect(page.locator('.guide-steps')).toBeVisible();
-    await expect(page.locator('.member-header')).toContainText(signedIn?'내 정보':'무료 회원가입');
+    await expect(page.locator('.member-header')).toContainText(signedIn?'내 정보':'일반회원 로그인');
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
     await expect(page.locator('#documents')).not.toHaveAttribute('open','');await page.locator('#documents summary').click();
     await expect(page.locator('#documents')).toHaveAttribute('open','');await expect(page.locator('#documents summary')).toBeFocused();

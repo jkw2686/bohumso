@@ -27,7 +27,7 @@ const $=id=>document.getElementById(id);const mode=document.body.dataset.account
 let client,config,user,membership;
 let justCompleted=false;
 const status={pending:"심사 대기",approved:"승인 완료",rejected:"반려",suspended:"활동 정지",withdrawn:"신청 철회"};
-const jobs={planner:"보험설계사",adjuster:"손해사정사",lawyer:"변호사",corporate:"기업보험 컨설턴트",tax:"세무사",office:"거점 운영자"};
+const jobs={planner:"보험설계사(청구전문가)",adjuster:"손해사정사",lawyer:"변호사",corporate:"기업보험 컨설턴트",tax:"세무사",office:"거점 운영자"};
 function message(text){$("accountMessage").textContent=text;}
 let toastTimer;function toast(text){const t=$("toast");if(!t){message(text);return;}t.textContent=text;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2800);}
 function flagInvalid(field,msg){toast(msg);let hint=field.parentElement.querySelector(".field-error");if(!hint){hint=document.createElement("p");hint.className="field-error";hint.id="error-"+(field.name||field.id);hint.setAttribute("role","alert");field.after(hint);}hint.textContent=msg;field.setAttribute("aria-describedby",hint.id);field.addEventListener("change",()=>{hint.remove();field.removeAttribute("aria-invalid");},{once:true});field.setAttribute("aria-invalid","true");field.classList.add("invalid");field.scrollIntoView({block:"center",behavior:"smooth"});field.focus({preventScroll:true});field.addEventListener("input",()=>{field.removeAttribute("aria-invalid");field.classList.remove("invalid");},{once:true});return false;}
