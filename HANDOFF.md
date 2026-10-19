@@ -1,5 +1,15 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-20 — 빈 지역 시트 1440px 잘림 수정
+
+- 증상: 1440×780에서 빈 지역 안내가 상한 높이(`max-height:calc(100% - 16px)` = 404px)를 넘어 `overflow:hidden`에 잘리고, 맨 아래 "이 지역 방문 가능한 전문가 찾기"(#areaRequest)가 시트 밖으로 밀렸다. 선행 실패였고 3c64497에서도 재현했다.
+- 실측: 시트 상한 404px, 내용 422px로 18px 초과. 빈 그림 자리(높이 0인데 margin-bottom 12px), #areaRequest 위아래 여백 24px, empty-actions 상단 패딩·버튼 간격이 원인이었다.
+- 수정(`public/map.css`, 모두 `.list-sheet.is-empty` 범위): 빈 그림 자리 margin 제거, #areaRequest 여백 8/16 → 4/8, empty-actions 상단 패딩 제거·간격 8 → 6. 내용 398px로 상한 안에 들어온다. 더 짧은 화면을 대비해 빈 상태 시트에 `overflow-y:auto`를 둬 다시는 잘리지 않게 했다.
+- 버튼 높이는 그대로 48px 이상이고 줄인 것은 여백뿐이다. 글자 크기는 건드리지 않았다.
+- 검증: `tests/map-empty-waitlist-browser.mjs` 360/390/430/768/1440 전부 통과(이전에는 1440 1건 실패). help-entry·discovery-mobile 회귀 통과, build 통과, 390px 실측 확인.
+- **기존 실패 유지**: `tests/compact-ui-browser.mjs`가 `.expert-mobile-entry`를 찾지 못해 실패한다. 이 선택자를 만드는 코드가 없어(CSS와 테스트에만 존재) 오래된 검사이며, test-failures-classification-20261011 6번 항목이다. 이번 변경과 무관하다.
+
+
 ## 2026-10-20 — 직군 라벨은 화면에서 정한다 / 빈 지역 안내 문구
 
 - 직군명이 DB(`profession_definitions.name`)에서 오던 탓에 072 SQL과 GitHub `DATABASE_URL` 시크릿에 묶여 있었다. **화면이 라벨을 직접 정하게 바꿔 DB 의존을 끊었다.**

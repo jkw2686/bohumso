@@ -244,3 +244,11 @@
 /* 빈 상태 시트를 140px 에 고정하면 안내 버튼이 잘린다. 내용 높이만큼만 늘리고 상한만 유지한다. */
 .map-page .list-sheet.is-empty,.map-page .list-sheet.is-empty.open{height:auto!important;max-height:calc(100% - 16px)!important}
 @media(min-width:900px){.map-page .list-sheet.is-empty,.map-page .list-sheet.is-empty.open{height:auto!important}}
+
+/* 빈 상태 안내가 상한 높이를 넘으면 잘라내지 말고 시트 안에서 스크롤한다(1440px에서 방문 링크가 잘리던 문제). */
+.map-page .list-sheet.is-empty,.map-page .list-sheet.is-empty.open{overflow-y:auto}
+.map-page .list-sheet.is-empty .empty-actions,.map-page .list-sheet.is-empty #areaRequest{flex-shrink:0}
+/* 빈 상태에서는 빈 그림 자리와 방문 링크 여백을 줄여 상한 높이 안에 모두 들어오게 한다. */
+.map-page .list-sheet.is-empty .art-slot.empty-art{margin-bottom:0}
+.map-page .list-sheet.is-empty #areaRequest{margin-top:4px;margin-bottom:8px}
+.map-page .list-sheet.is-empty .empty-actions{padding-top:0;gap:6px}
