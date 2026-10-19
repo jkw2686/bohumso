@@ -879,3 +879,26 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 
 ## 2026-10-17 13:52:18 KST 운영 배포
 사용자가 main 반영·운영 배포를 명시 승인하여 3bc42758b9ab42683809f65821a6bb391e4715ef를 origin/main에 반영. Netlify 6ad2fef3be0db24fff59e3cb ready, published_at=2026-10-17T04:52:18.345Z, error=null. 운영 https://bohumso.netlify.app / 고정 https://6ad2fef3be0db24fff59e3cb--bohumso.netlify.app . 공개 page-clarity.css와 assets/account.js HTTP200 및 로컬과 정규화 본문 일치 확인. 실제 회원·이충경 자료 접근/발송 없음. 잔여 크레딧은 도구에 제공되지 않고 Netlify UI 로그인이 필요하여 미확인(Pro 요금제만 확인).
+
+
+## 2026-10-19 리서치 브리핑 (예약 실행, 코드 변경 없음)
+예약된 일일 리서치 작업. 산출물 `outputs/briefings/2026-10-19.md` 1개 추가. 제품 코드·DB·요금·정책 변경 없음. 배포 없음.
+
+브리핑 내용: 웹 조사 아이디어 10개(금감원 손해사정제도 개편 TF 2026.11 결론, 소비자 선임 손해사정사 비용 보험사 부담, 숨은보험금 10.3조 집중 안내, 안심상속 원스톱, Empathy Series C, 금감원 2026 상반기 분쟁민원 중 보험 89%, 실손24 연계율 28.4%, 5세대 실손 2026.5.9, 피플라이프 보험클리닉 점포 확장, 보험개발원 지도 라벨 마케팅 지원) + 저장소 코드 확인으로 찾은 앱 개선점 5개 + 오늘 할 일 1개.
+
+확인한 코드 지점: `public/company-info.js`(BUSINESS_INFO 6개 필드 전부 빈 문자열 → 운영정보 섹션 미렌더), `public/coverage-data.js`(83개 항목 전부 status="planned"), `public/home-map.js:83`(운영 중 핀은 offices의 status==='active'만), `public/sitemap.xml`(7 URL), `public/robots.txt`, `public/index.html`, `supabase/seed_ad_pricing.sql`(basic 30000원/30일/약정노출1000, 슬롯은 서울·경기·인천 광역 3개, premium·regional_exclusive 비활성), `netlify/functions/payment.mts`(전 경로 testOnly), `netlify.toml`(CSP Report-Only). JSON-LD 0건·og:image 0건은 38개 HTML 전수 grep 결과.
+
+### 검증 못 한 것
+- `bohumso.netlify.app` 직접 열기 **실패**(이번 실행의 네트워크 정책 차단). 앱 점검 5개는 전부 로컬 저장소 코드 기준이며, 배포본과 동일하다는 근거는 `netlify.toml`의 `publish = "public"` 뿐이다. 운영 화면 검증으로 표현하지 말 것.
+- `offices` 테이블에 `status='active'` 거점이 있는지 **미확인**(DB 미접근). 지도에 운영 중 거점이 0개로 보인다는 것은 `coverage-data.js` 기준 추정이며 확정 아님.
+- 손해사정사 선임 비용 보험사 부담 조항의 2024.8 개정 보험업법 반영·확정 여부 **미확인**. 근거는 금융위 2021.9.9 입법예고 단계 보도자료뿐. **확인 전 서비스 문구에 쓰지 말 것.**
+- 안심상속 원스톱서비스의 상조상품 조회 범위는 기사 **제목만** 확인, 본문 미확인.
+- 피플라이프 수치는 회사 자체 집계(기사 내 독립 검증 없음).
+- 이번 실행에서 커넥터 1개가 저장된 로그인 만료로 세션에서 제외됨 → 재연결 필요. 오늘 작업에는 사용하지 않았다.
+
+### 저장소 상태 (주의)
+작업 시작 시 로컬이 **detached HEAD**(`4f79804`)였고 `origin/main`(`3c64497`)보다 커밋 2개 앞서 있었다. 유실 방지로 로컬 브랜치 `wip/detached-20261019`에 보존했다. 미푸시 커밋: `4f79804` fix(map) 1440px 방문 링크 잘림, `f1c7594` 직군 라벨·빈 지역 안내. **이 2개는 main 반영·배포 승인을 받은 적이 없어 이번에 push하지 않았다.**
+브리핑은 `origin/main`에서 분기한 `docs/research-briefing-20261019`에 올렸다. 커밋 `0bb2f9b`, 제목에 `[skip netlify] [skip ci]`. 초안 PR jkw2686/bohumso#3. main 미반영, 배포 없음.
+
+### 다음
+브리핑의 '오늘 할 일'(`coverage-data.js`에서 영등포구만 active, 나머지 핀 내림)은 **실행하지 않았다** — 실제 거점 운영 여부가 대표 확인 사항이기 때문. 선행 과제는 `company-info.js` 사업자 정보 확정(구독료 수취 전 필수). `docs/ROADMAP-20261011.md`는 진행된 단계가 없어 갱신하지 않았다.

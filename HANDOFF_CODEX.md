@@ -1,3 +1,20 @@
+# 먼저 읽을 것 — 저장소 상태 경고 (2026-10-19)
+아래 '현재 상태' 요약은 2026-10-17 제품 작업 기준이며 **그대로 유효하다**. 2026-10-19 실행은 리서치 브리핑만 추가했고 제품 코드·DB·요금·정책을 바꾸지 않았다. 다만 저장소 상태에 다음 두 가지가 있으니 이어받기 전에 확인한다.
+
+1. **detached HEAD로 남아 있던 미푸시 커밋 2개.** 작업 시작 시 로컬 HEAD가 `4f79804`(detached), `origin/main`은 `3c64497`이었다. 유실 방지로 로컬 브랜치 `wip/detached-20261019`에 보존했다. 내용: `4f79804` fix(map) 1440px 빈 지역 안내 방문 링크 잘림, `f1c7594` 직군 라벨·빈 지역 안내 '지역'. **이 2개는 main 반영·운영 배포 승인을 받은 기록이 없어 push하지 않았다.** 처리 여부는 대표 확인 사항.
+2. **브리핑은 별도 브랜치에만 있다.** `docs/research-briefing-20261019`, 커밋 `0bb2f9b`, 초안 PR #3. `origin/main` 미반영, 배포 없음. 문서만이라 `[skip netlify] [skip ci]` 적용.
+
+2026-10-19 브리핑이 코드에서 확인한 미해결 지점(상세·검증 한계는 HANDOFF.md 2026-10-19 항목):
+- `public/company-info.js` 사업자등록번호·통신판매업 신고번호·주소·대표전화 전부 빈 문자열 → 운영정보 섹션 미렌더. **전문가 구독료 수취 전 선결.**
+- `public/coverage-data.js` 83개 전부 `status:"planned"`. 운영 중 거점은 `offices.status='active'`에서만 나온다(`home-map.js:83`). **DB에 active 거점이 있는지는 미확인.**
+- `supabase/seed_ad_pricing.sql` 슬롯이 서울·경기·인천 **광역 3개뿐** — 거점 1개 구(區) 전략을 담을 단위가 없다.
+- 38개 HTML 전수 grep 결과 JSON-LD 0건, og:image 0건, canonical 8건. `sitemap.xml`은 7 URL만(소비자 진입면 다수 누락).
+- `netlify.toml` CSP는 아직 Report-Only.
+
+**bohumso.netlify.app 직접 열기는 2026-10-19 실행에서 네트워크 정책에 막혀 실패했다. 위 지점은 전부 로컬 코드 기준이며 운영 화면 검증이 아니다.**
+
+---
+
 # 현재 상태 — 전체 페이지 간결화 (2026-10-17)
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 다음 할 일부터 진행.
 
