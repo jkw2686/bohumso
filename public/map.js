@@ -207,10 +207,10 @@
     } else {
       var hint = document.createElement('p');
       hint.className = 'empty-actions-hint';
-      hint.textContent = '구를 선택하면 오픈 알림을 신청할 수 있어요.';
+      hint.textContent = '지역을 선택하면 오픈 알림을 신청할 수 있어요.';
       box.appendChild(hint);
       var pick = document.createElement('button');
-      pick.type = 'button'; pick.className = 'btn'; pick.textContent = '구 선택하기';
+      pick.type = 'button'; pick.className = 'btn'; pick.textContent = '지역 선택하기';
       pick.onclick = function () {
         var picker = $('regionPicker'), gu = $('regionGu');
         if (picker) picker.hidden = false;
@@ -327,7 +327,7 @@
       var spots = list.map(function (p) {
         return {
           id: p.id, name: (p.beta?'[베타] ':'')+(p.name || p.organization || '보험소'),
-          job: [p.profession_name,p.organization].filter(Boolean).join(' · ') || '전문가',
+          job: [window.BohumsoProfile.professionLabel(p)||p.profession_name,p.organization].filter(Boolean).join(' · ') || '전문가',
           specialty: (Array.isArray(p.specialties) && p.specialties.length ? p.specialties.map(function (x) { return SPECIALTY[x] || x; }).join('·') : '상담'),
           region: p.region || '', officeCoordinatesVerified: !!p.office_coordinates_verified,
           lat: p.profession==='tax'&&p.office_coordinates_verified?p.office_latitude:Number.isFinite(p.area_latitude) ? p.area_latitude : null, lng: p.profession==='tax'&&p.office_coordinates_verified?p.office_longitude:Number.isFinite(p.area_longitude) ? p.area_longitude : null,

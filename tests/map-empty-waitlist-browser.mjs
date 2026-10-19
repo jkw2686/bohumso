@@ -114,7 +114,7 @@ for (const [width, label] of [[360, '360'], [390, '390'], [430, '430'], [768, '7
   // 4) 시만 선택 → 구 선택 안내
   await pickRegion(page, '인천', '');
   const hint = await page.textContent('#listSheet');
-  check(hint.includes('구를 선택하면 오픈 알림을 신청할 수 있어요'), `${label}px 시만 선택 시 구 선택 안내`);
+  check(hint.includes('지역을 선택하면 오픈 알림을 신청할 수 있어요'), `${label}px 시만 선택 시 지역 선택 안내`);
   const only = await page.$$eval('#listSheet .empty-actions .btn', e => e.map(x => x.textContent.trim()));
   check(!only.includes('오픈 알림 신청'), `${label}px 시만 선택이면 신청 버튼 없음`);
   await page.screenshot({path: `${out}/city-only-${label}.png`, fullPage: false});

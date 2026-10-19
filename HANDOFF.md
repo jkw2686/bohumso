@@ -1,5 +1,16 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-20 — 직군 라벨은 화면에서 정한다 / 빈 지역 안내 문구
+
+- 직군명이 DB(`profession_definitions.name`)에서 오던 탓에 072 SQL과 GitHub `DATABASE_URL` 시크릿에 묶여 있었다. **화면이 라벨을 직접 정하게 바꿔 DB 의존을 끊었다.**
+- `shared/professions.json`의 planner 이름을 "보험설계사(청구전문가)"로 바꿨다(전문가 가입 직군 선택, 관리자 심사 목록도 같이 따라온다).
+- 표시 지점에서 DB의 `profession_name` 대신 화면 라벨을 쓴다: `public/expert-profile-card.js`에 `professionLabel()`을 두고 프로필 카드·지도 마커 title에 적용, `public/map.js`의 목록 `job` 줄, `src/expert-visits.js`의 방문 후보 카드는 `PROFESSION_CONFIG[...].name`을 우선한다. 설정에 없는 직군은 DB값으로 떨어진다.
+- **072는 이제 선택 사항이다.** 적용하지 않아도 화면은 전부 새 라벨로 보인다. DB까지 맞추고 싶을 때 적용하면 되고, 적용하면 `MIGRATE_ADOPT_THROUGH`를 072로 올린다.
+- 빈 지역 안내 문구를 "구를 선택하면" → "지역을 선택하면", 버튼을 "구 선택하기" → "지역 선택하기"로 바꿨다(`public/map.js`). `tests/map-empty-waitlist-browser.mjs`의 검사 문구도 같이 맞췄다. `docs/map-empty-waitlist-20261011.md`는 그날의 검수 기록이라 그대로 둔다.
+- 검증: build 통과, 단위 194/194 통과. 브라우저 profession·expert-entry-integration·help-login 통과. 미리보기 390px에서 두 문구와 직군 라벨 실측.
+- **기존 실패 1건 확인**: `tests/map-empty-waitlist-browser.mjs`의 "1440px 기존 방문 링크 제자리·보임"이 `inSheet:false`로 실패한다. 이번 변경을 stash하고 3c64497에서 그대로 재현해 **이번 작업과 무관한 선행 실패**임을 확인했다(1440px에서 #areaRequest가 시트 아래로 넘침). 고치지 않았다.
+
+
 ## 2026-10-18 — 마이그레이션 자동화: 새 SQL도 자동 적용
 
 - 원인: migrate.yml이 `scripts/migrate-early-access.mjs`를 돌렸고, 이 스크립트는 `scripts/early-sql.mjs`의 고정 목록(030~036 + expert_storage_setup.sql)만 적용한다. 그래서 새 번호 SQL은 영원히 자동 적용되지 않았다. 070·071도 손으로 적용된 것이다.
