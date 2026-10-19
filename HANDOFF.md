@@ -896,9 +896,13 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 - 피플라이프 수치는 회사 자체 집계(기사 내 독립 검증 없음).
 - 이번 실행에서 커넥터 1개가 저장된 로그인 만료로 세션에서 제외됨 → 재연결 필요. 오늘 작업에는 사용하지 않았다.
 
-### 저장소 상태 (주의)
-작업 시작 시 로컬이 **detached HEAD**(`4f79804`)였고 `origin/main`(`3c64497`)보다 커밋 2개 앞서 있었다. 유실 방지로 로컬 브랜치 `wip/detached-20261019`에 보존했다. 미푸시 커밋: `4f79804` fix(map) 1440px 방문 링크 잘림, `f1c7594` 직군 라벨·빈 지역 안내. **이 2개는 main 반영·배포 승인을 받은 적이 없어 이번에 push하지 않았다.**
-브리핑은 `origin/main`에서 분기한 `docs/research-briefing-20261019`에 올렸다. 커밋 `0bb2f9b`, 제목에 `[skip netlify] [skip ci]`. 초안 PR jkw2686/bohumso#3. main 미반영, 배포 없음.
+### 저장소 상태
+로컬은 detached HEAD(`4f79804`)였다. 이 커밋은 **이미 origin/main에 있다** — 처음에 `origin/main`이 `3c64497`로 보인 것은 `git fetch`를 하지 않아 remote-tracking ref가 낡아 있었기 때문이고, `4f79804`·`f1c7594`가 미푸시라고 판단한 것은 **오판이었다**. fetch 후 `git merge-base --is-ancestor`로 둘 다 origin/main 포함을 확인했다. 미푸시 커밋은 없었다. 오판 당시 만든 보존용 브랜치 `wip/detached-20261019`는 origin/main과 동일해 삭제했다.
+교훈: 이 저장소에서 `origin/main`을 읽기 전에 **반드시 `git fetch` 먼저**. 안 하면 승인·배포 상태를 잘못 판단한다.
+브리핑·인수인계는 `origin/main`에서 분기한 `docs/research-briefing-20261019`에 올렸다. 커밋 `0bb2f9b`, `b2d9b66`. 초안 PR jkw2686/bohumso#3, mergeable_state=clean, 체크 3개 중 success 2·neutral 1(Pages changed). main 미반영.
+
+### `[skip netlify]`가 PR 배포 프리뷰를 막지 못한다 (확인됨)
+두 커밋 모두 제목에 `[skip netlify] [skip ci]`를 넣었지만 Netlify는 PR #3의 **배포 프리뷰를 그대로 빌드했다**(`deploy-preview-3--bohumso.netlify.app`, deploy `6ad6a348945013df88553442`, Header/Redirect rules 체크 success). CLAUDE.md §7의 "문서만 바꾼 커밋은 `[skip netlify] [skip ci]`"는 **운영 배포에는 유효할 수 있어도 PR 프리뷰 빌드는 막지 않는다.** 운영 배포에서도 실제로 막히는지는 이번에 확인하지 않았다(운영 배포를 하지 않았으므로).
 
 ### 다음
 브리핑의 '오늘 할 일'(`coverage-data.js`에서 영등포구만 active, 나머지 핀 내림)은 **실행하지 않았다** — 실제 거점 운영 여부가 대표 확인 사항이기 때문. 선행 과제는 `company-info.js` 사업자 정보 확정(구독료 수취 전 필수). `docs/ROADMAP-20261011.md`는 진행된 단계가 없어 갱신하지 않았다.
