@@ -33,18 +33,28 @@ jobs:
       - name: Check database connection configuration
         id: database
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Repository secret이 정석이다. Variables 탭에 잘못 넣은 경우도 집어내려고 둘 다 본다.
+          # 값 자체는 어느 쪽에서도 출력하지 않는다.
+          FROM_SECRET: ${{ secrets.DATABASE_URL }}
+          FROM_VAR: ${{ vars.DATABASE_URL }}
         run: |
-          if [ -n "$DATABASE_URL" ]; then
+          if [ -n "$FROM_SECRET" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "source=secret" >> "$GITHUB_OUTPUT"
+            echo "DATABASE_URL found in repository secrets."
+          elif [ -n "$FROM_VAR" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "source=var" >> "$GITHUB_OUTPUT"
+            echo "::warning::DATABASE_URL was found in Variables, not Secrets. It works but is not masked in logs — move it to Settings → Secrets and variables → Actions → Repository secrets."
           else
             echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::DATABASE_URL is not configured. Apply reviewed SQL through the Supabase SQL Editor; see HANDOFF.md."
+            echo "source=none" >> "$GITHUB_OUTPUT"
+            echo "::warning::DATABASE_URL is not configured for this workflow. Check Settings → Secrets and variables → Actions → Repository secrets (an Environment secret or an organization secret without repository access is not visible here). Until then apply reviewed SQL through the Supabase SQL Editor; see supabase/README.md."
           fi
       - name: Apply pending migrations
         if: steps.database.outputs.ready == 'true'
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL || vars.DATABASE_URL }}
           # 운영에 이미 적용된 마지막 파일. 그 이전 파일은 실행하지 않고 기록만 하고,
           # 그 뒤 번호(072~)부터 자동 적용한다. 손으로 적용한 과거 파일을 다시 실행하지 않는다.
           # 앞으로 손으로 적용한 파일이 생기면 이 값을 그 파일로 올린다.
