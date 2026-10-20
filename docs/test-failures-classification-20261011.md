@@ -16,7 +16,7 @@ ROADMAP 1단계 잔여 항목. **분류만 하고 수정은 하지 않았다.**
 | 3 | `browser-smoke.cjs` | △ | | ● | | | 로그인 폼 구조 변경(`[name=email]`) | `/login.html` 외 6개 |
 | 4 | `claim-help-browser.mjs` | △ | | △ | | ● | 요소 사라짐(1 → 0) | `/help/claim.html`, `/map.html`, `/requests.html` |
 | 5 | `commerce-browser.cjs` | ● | | ● | ● | △ | 로그인 폼 구조 변경 | `/login.html`, `/requests.html`, `/payment-result.html`, `/partner-work.html` |
-| 6 | `compact-ui-browser.mjs` | △ | △ | △ | | | 레이아웃 수치(< 200 → 279.5) | `/index.html`, `/map.html`, `/partner.html`, `/requests.html`, `/signup.html` |
+| 6 | `compact-ui-browser.mjs` | △ | △ | △ | | | ~~레이아웃 수치(< 200 → 279.5)~~ **2026-10-20 해결** — 낡은 기대값 6개를 의도 기준으로 교체, 8개 폭 통과 | `/index.html`, `/map.html`, `/partner.html`, `/requests.html`, `/signup.html` |
 | 7 | `requests-browser-legacy.cjs` | ● | | ● | ● | △ | 로그인 폼 구조 변경(5번과 같은 뿌리) | 구 `requests` 흐름 전체 |
 | 8 | `home-layout-browser.mjs` | △ | | | | | 구조 변경( → 6) | `/` 홈·지도 마커·상담 신청 |
 | 9 | `location-feedback-browser.mjs` | | | | | | 문구 변경(`🏠 군포 보험소 · 개설 예정`) | 홈 위치 안내·지역 목록 |
