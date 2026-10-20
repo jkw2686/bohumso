@@ -5,6 +5,7 @@ import {mountNotificationSettings,mountNotificationSummary} from './notification
 import {maybePromptReservationPush} from './notification-prompt.js';
 import {renderNotificationPage,focusBooking} from './booking-notifications.js';
 import {mountGrowthAdmin} from './growth-admin.js';
+import {mountInsurerAdmin} from './admin-insurers.js';
 import {renderWaitlistCounts} from './region-waitlist.js';
 import {renderCareAdmin,renderCareCases,careErrors} from './appointment-care.js';
 import {renderEarlyExpertAdmin} from './early-expert-admin.js';
@@ -68,7 +69,9 @@ async function renderAccount(){
  $("logout").onclick=async()=>{const {error}=await client.auth.signOut();if(error){message("로그아웃하지 못했습니다. 다시 시도해 주세요.");return}location.replace("/login.html");};
 }
 async function renderPartner(){return renderPartnerApplication({client,user,membership,message,action,config});}
-async function renderAdmin(){if(!membership.admin)throw {message:'admin_required'};await (config.earlyAccess?renderEarlyExpertAdmin:renderExpertAdmin)({client,host:$('applications'),message});await renderCareAdmin(client,$('accountContent'));document.getElementById('growthAdmin')?.remove();try{await mountGrowthAdmin({client,host:$('accountContent')});}catch(e){if(!['PGRST202','42883'].includes(e.code)){const p=document.createElement('p');p.textContent='성장·실천 자료 운영을 불러오지 못했습니다.';$('accountContent').append(p);}}}
+async function renderAdmin(){if(!membership.admin)throw {message:'admin_required'};await (config.earlyAccess?renderEarlyExpertAdmin:renderExpertAdmin)({client,host:$('applications'),message});await renderCareAdmin(client,$('accountContent'));document.getElementById('growthAdmin')?.remove();try{await mountGrowthAdmin({client,host:$('accountContent')});}catch(e){if(!['PGRST202','42883'].includes(e.code)){const p=document.createElement('p');p.textContent='성장·실천 자료 운영을 불러오지 못했습니다.';$('accountContent').append(p);}}
+ // 보험사 연락처. 073 미적용 환경에서는 조용히 숨기고 다른 운영 화면을 막지 않는다.
+ document.querySelector('[data-insurer-admin]')?.remove();try{await mountInsurerAdmin({client,host:$('accountContent')});}catch(e){if(!['PGRST202','42883'].includes(e.code)){const p=document.createElement('p');p.textContent='보험사 연락처 운영을 불러오지 못했습니다.';$('accountContent').append(p);}}}
 async function start(){
  // 백엔드(Functions) 미배포·미설정 시 에러 대신 '준비 중'으로 degrade. 정적 공유 배포에서도 화면이 깨지지 않는다.
  config=await memberConfig();

@@ -186,3 +186,18 @@ body[data-account-page="partner"] .expert-resource-entry{display:flex;width:100%
 body[data-account-page="partner"] .expert-resource-entry>span:nth-child(2){flex:1;min-width:0;word-break:keep-all;overflow-wrap:anywhere}
 body[data-account-page="partner"] .expert-resource-entry>span[data-icon]{display:flex;flex:none}
 body[data-account-page="partner"] .expert-resource-entry .ui-icon{width:var(--space-5);height:var(--space-5)}
+
+/* 관리자 보험사 연락처. 기존 카드·행·입력 스타일 위에 배치만 더한다. */
+[data-insurer-admin] .admin-toolbar{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:flex-end}
+[data-insurer-admin] .admin-toolbar .field{margin:0}
+[data-insurer-admin] .management-task-row{align-items:flex-start}
+[data-insurer-admin] .management-task-row>div:first-child{flex:1 1 180px;min-width:0}
+[data-insurer-admin] .management-task-row>div:last-child{display:flex;gap:var(--space-2);flex-wrap:wrap;flex:0 0 auto}
+[data-insurer-admin] .management-task-row button{min-height:44px;width:auto;flex:0 0 auto;padding:10px var(--space-3)}
+[data-insurer-admin] details{margin-top:var(--space-4)}
+[data-insurer-admin] summary{min-height:44px;cursor:pointer}
+dialog.insurer-form{max-width:var(--dialog-width);width:calc(100% - 32px);max-height:85dvh;overflow-y:auto}
+dialog.insurer-form form{display:grid;gap:var(--space-3)}
+dialog.insurer-form .field{margin:0}
+dialog.insurer-form input,dialog.insurer-form select,dialog.insurer-form textarea{width:100%;box-sizing:border-box;font-size:16px;min-height:44px}
+dialog.insurer-form button{min-height:48px}
