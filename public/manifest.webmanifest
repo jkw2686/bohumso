@@ -1,12 +1,12 @@
 {
-  "name": "우리곁에 보험소",
-  "short_name": "보험소",
+  "name": "우리보험소",
+  "short_name": "우리보험소",
   "description": "예방은 보건소에서, 보험금 청구는 보험소에서",
   "lang": "ko",
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#1E4FD6",
-  "background_color": "#ffffff",
+  "theme_color": "#01404B",
+  "background_color": "#FFFFFF",
   "icons": [
     {
       "src": "/brand/app-icon.svg",
@@ -23,6 +23,12 @@
       "src": "/brand/favicon-512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "/brand/app-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/brand/app-icon-1024.png",

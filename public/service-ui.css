@@ -3,7 +3,7 @@
  --bg:#f7f9fc;--card:#fff;--text:#172844;--muted:#526176;--border:#dce3ed;
  --brand-soft:#eef3ff;--radius:16px;--shadow:0 2px 8px rgba(23,40,68,.04);--shadow-sm:0 1px 3px rgba(23,40,68,.04);
  --ui-radius:16px;--ui-control-radius:12px;--ui-line:#dce3ed;--ui-surface:#fff;--ui-tint:#f7f9fc;
- --ui-ink:#172844;--ui-muted:#526176;--ui-focus:#1E4FD6;--ui-disabled:#edf0f5;
+ --ui-ink:#172844;--ui-muted:#526176;--ui-focus:var(--brand-ink);--ui-disabled:#edf0f5;
  --ui-space-1:4px;--ui-space-2:8px;--ui-space-3:12px;--ui-space-4:16px;--ui-space-5:24px;--ui-space-6:32px;--ui-space-7:48px;--ui-space-8:64px;
  --ui-control:48px;--ui-touch:44px;--ui-icon:24px;--ui-icon-box:48px;--ui-duration:180ms;
  --ui-title:clamp(28px,3vw,36px);--ui-heading:clamp(22px,2vw,28px);--ui-body:16px;--ui-caption:14px;--ui-weight:650;

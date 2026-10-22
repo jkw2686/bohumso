@@ -1,4 +1,4 @@
-# design-system.md — 우리곁에 보험소 (풀앱 · 네이비 프리미엄)
+# design-system.md — 우리보험소 (풀앱 · 네이비 프리미엄)
 
 ## 전체 메뉴 전용 토큰 (2026-10-12 사용자 지정)
 - `/menu.html`의 `.menu-page` 범위만: 배경 `#F6F7F9`, 표면 `#FFFFFF`, 본문 `#17212F`, 보조 `#596579`, 강조 `#3157C8`, 아이콘 `#526176`, 아이콘 배경 `#EEF2FA`, 구분선 `#E5E9F0`.
@@ -14,12 +14,18 @@
 ## 1. 컬러 토큰 (styles.css `:root` 기준)
 ```css
 :root{
-  --blue:#1E4FD6;
-  --brand:var(--blue);        /* 주요 파랑 — 기본 버튼·강조·링크 */
-  --brand-dark:#123a99;   /* brand hover */
-  --brand-soft:#eef2ff;   /* 옅은 파랑 배경 — 태그·아이콘칩 */
-  --navy:#101e36;         /* 히어로/딥 배경 (프리미엄 네이비) */
-  --accent:#477cff;       /* 히어로 위 강조 파랑 */
+  --brand-ink:#01404B;         /* 주 버튼·강조 제목 */
+  --brand-teal:#019D9C;        /* 아이콘·지도 핀·선택 테두리 — 본문 글자에 쓰지 않는다 */
+  --brand-teal-strong:#0A7A78; /* 링크·작은 강조 */
+  --brand-teal-soft:#E6F4F3;
+  --brand-orange:#F99526;      /* 화면당 핵심 버튼 1개 */
+  --brand-orange-soft:#FFF3E6;
+  --navy:#062F36;              /* 딥 섹션 배경 */
+  /* 기존 이름은 위 토큰에 연결해 둔다. 새 코드에서는 위 이름을 쓴다. */
+  --blue:var(--brand-ink);  --brand:var(--brand-ink);
+  --brand-dark:#012F37;        /* brand hover */
+  --brand-soft:var(--brand-teal-soft);
+  --accent:var(--brand-teal-strong);
   --danger:#d64545;  --ok:#1a9c6d;  --warn:#b45309;
   --bg:#f4f5f8;           /* 페이지 배경 */
   --card:#ffffff;         /* 카드 배경 */
@@ -28,13 +34,16 @@
   --border:#ecedf1;       /* 구분선/테두리 */
 }
 ```
-- 주요 행동(제출/다음/찾기) = `--brand`. 히어로 등 딥 섹션 = `--navy` 배경 + 흰 글자 + `--accent` 강조.
+- 브랜드 색은 **styles.css `:root` 와 이 문서에만** 정의한다. 다른 파일에서 hex 를 새로 쓰지 않는다.
+- 주요 행동(제출/다음/찾기) = `--brand-ink`. 딥 섹션 = `--navy` 배경 + 흰 글자 + `--brand-teal-strong` 강조.
+- **주황은 화면당 하나**. 주황 버튼 위 글자는 `--brand-ink`, 흰 글자는 쓰지 않는다(대비 부족).
+- `--brand-teal` 은 아이콘·지도 핀·선택 테두리 전용. 본문 글자에는 `--brand-teal-strong` 을 쓴다.
 - 페이지 배경은 `--bg`, 카드 내부만 `--card`(#fff). 새 hex 만들지 말고 위 토큰 사용.
 
 ## 2. 타이포그래피
 - 폰트: 자체 호스팅 Pretendard Variable (`public/fonts`, OFL 라이선스 포함). `type-system.css`를 페이지별 CSS 뒤에 로드하고 `--font-ui`를 공통 사용한다. 외부 폰트 CDN에 의존하지 않는다.
 - 기존 홈 히어로 크기는 유지한다. 계정 화면 제목 25~32px(모바일 26px), 섹션 20~24px, 본문 16px, 레이블 14px, 보조 13px. 제목 `--ink-heading`, 본문 `--ink-body`, 보조 `--ink-muted`, 완료 상태 `--success-ink` / `--success-surface` 사용.
-- 로고: `우리곁에`(작게) + `보험소`(굵게). line-height 본문 1.6~1.7.
+- 로고: `우리보험소`(작게) + `보험소`(굵게). line-height 본문 1.6~1.7.
 
 ## 3. 간격·레이아웃
 - 공통 재사용 토큰: `--space-2:8px`, `--space-3:12px`, `--space-4:16px`, `--space-5:20px`, `--sheet-radius:22px`, `--focus-width:3px`, `--touch-target:44px`.

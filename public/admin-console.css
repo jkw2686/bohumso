@@ -2,7 +2,7 @@
 .admin-console{--admin-sidebar-width:248px;background:var(--bg);color:var(--text)}
 .admin-console [hidden]{display:none!important}
 .admin-console .nav{margin-left:var(--admin-sidebar-width);max-width:none;border-bottom:1px solid var(--border)}
-.admin-console .admin-sidebar{position:fixed;inset:0 auto 0 0;width:var(--admin-sidebar-width);height:100dvh;max-height:none;box-sizing:border-box;margin:0;padding:24px 16px;background:var(--navy,#101e36);border:0;border-radius:0;overflow-y:auto;z-index:40;color:var(--card)}
+.admin-console .admin-sidebar{position:fixed;inset:0 auto 0 0;width:var(--admin-sidebar-width);height:100dvh;max-height:none;box-sizing:border-box;margin:0;padding:24px 16px;background:var(--navy,var(--navy));border:0;border-radius:0;overflow-y:auto;z-index:40;color:var(--card)}
 .admin-brand{display:grid;padding:0 12px 24px;gap:4px;border-bottom:1px solid var(--accent)}
 .admin-brand strong{font-size:28px}.admin-brand span{font-size:13px}
 .admin-console .admin-sidebar nav{display:grid;gap:4px;margin:16px 0}

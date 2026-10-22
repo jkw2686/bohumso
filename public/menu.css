@@ -4,7 +4,7 @@
   --card: #FFFFFF;
   --text: #17212F;
   --muted: #596579;
-  --brand: #3157C8;
+  --brand: var(--brand-ink);
   --brand-soft: #EEF2FA;
   --menu-icon: #526176;
   --border: #E5E9F0;

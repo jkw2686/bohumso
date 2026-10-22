@@ -1,6 +1,6 @@
 .resources-page .container{max-width:calc(var(--dialog-width)*2 + var(--space-5));padding:var(--space-5) var(--space-4)}
 .resources-page .nav{gap:var(--space-3);flex-wrap:wrap;padding:var(--space-3) var(--space-4)}
-.resources-page .brand-logo{max-width:calc(var(--touch-target)*4);height:auto}
+.resources-page .brand-logo{height:32px;width:auto}
 .resources-page h1{font-size:var(--type-title);margin:var(--space-2) 0 var(--space-3)}
 .resources-page h2{font-size:var(--type-section);margin:0 0 var(--space-3)}
 .resources-page h3{font-size:var(--type-body);margin:0 0 var(--space-2)}

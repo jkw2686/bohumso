@@ -7,10 +7,10 @@ export async function buildHelpGuides(){
   const choices=guide.slug==='claim'?`<fieldset class="guide-situation-choice"><legend>어떤 상황인가요? <span>(선택)</span></legend>${[['illness','진단받았어요'],['hospitalization','입원·수술했어요'],['accident','다쳤어요 / 사고가 났어요'],['death','가족이 돌아가셨어요'],['claim','어떤 항목인지 잘 모르겠어요']].map(([value,label])=>`<label><input type="radio" name="guideSituation" value="${value}"${value==='claim'?' checked':''}><span>${label}</span></label>`).join('')}</fieldset>`:'';
   const html=`<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>${esc(guide.title)} · 우리곁에 보험소</title><meta name="description" content="${esc(guide.intro)}"><link rel="canonical" href="https://bohumso.netlify.app/help/${guide.slug}.html">
-<meta property="og:title" content="${esc(guide.title)} · 우리곁에 보험소"><meta property="og:description" content="${esc(guide.intro)}"><meta property="og:type" content="website">
+<title>${esc(guide.title)} · 우리보험소</title><meta name="description" content="${esc(guide.intro)}"><link rel="canonical" href="https://bohumso.netlify.app/help/${guide.slug}.html">
+<meta property="og:title" content="${esc(guide.title)} · 우리보험소"><meta property="og:description" content="${esc(guide.intro)}"><meta property="og:type" content="website">
 <link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/brand.css"><link rel="stylesheet" href="/simple-ux.css"><link rel="stylesheet" href="/type-system.css"><link rel="stylesheet" href="/help-guide.css"><link rel="stylesheet" href="/page-clarity.css"></head>
-<body class="claim-help-page"><header class="nav"><a class="logo" href="/"><img class="brand-logo" src="/brand/logo-horizontal-transparent.svg" alt="우리곁에 보험소" width="224" height="60"></a><nav data-member-header class="member-header" aria-label="회원 메뉴"><a href="/login.html?next=%2Fmap.html%3Fview%3Dexperts%26profession%3Dplanner%26help%3Dclaim%26purpose%3Dclaim">일반회원 로그인</a><a href="/login.html?next=%2Fpartner.html%3FroleIntent%3Dexpert">전문가 로그인</a><a class="member-primary" href="/signup.html">회원가입</a></nav></header>
+<body class="claim-help-page"><header class="nav"><a class="logo" href="/"><img class="brand-logo" src="/brand/logo-horizontal-transparent.svg" alt="우리보험소" width="224" height="60"></a><nav data-member-header class="member-header" aria-label="회원 메뉴"><a href="/login.html?next=%2Fmap.html%3Fview%3Dexperts%26profession%3Dplanner%26help%3Dclaim%26purpose%3Dclaim">일반회원 로그인</a><a href="/login.html?next=%2Fpartner.html%3FroleIntent%3Dexpert">전문가 로그인</a><a class="member-primary" href="/signup.html">회원가입</a></nav></header>
 <main class="help-guide" data-guide-situation="${guide.slug}">
 
 <div class="guide-intro"><span class="guide-icon" data-icon="${guide.icon}" aria-hidden="true"></span><h1>${esc(guide.title)}</h1><p>${esc(guide.intro)}</p></div>
@@ -27,7 +27,7 @@ ${coverage?'':`<p class="guide-note">보험사·상품·청구 항목에 따라 
 <p class="guide-note">이 화면에서는 신분증·진단서 등 개인정보를 입력하거나 제출하지 않습니다.</p></div></details>
 <section class="guide-trust"><h2>비용과 보험 가입</h2><p>보험소의 가입·탐색·상담 신청은 무료이며 보험 가입 의무는 없습니다. 별도 비용이 필요한 업무는 진행 전에 전문가에게 범위와 비용을 확인하세요.</p></section>
 <p class="guide-note">실제 보험금 지급 여부와 지급금액은 가입한 보험상품의 약관 및 보험사의 심사 결과에 따라 달라질 수 있습니다.</p>
-<a class="guide-back" href="/#situations">← 다른 상황 선택</a>
+<a class="guide-back" href="/situations.html">← 다른 상황 선택</a>
 <section class="company-info" data-company-info aria-label="운영 정보"></section></main>
 <footer class="policy-footer"><a href="/terms.html">이용약관</a> · <a href="/privacy.html">개인정보처리방침</a> · <a href="/support.html">문의하기</a></footer>
 <nav class="customer-nav" data-customer-nav="home" aria-label="주 메뉴"></nav><script src="/ui-icons.js"></script><script src="/help-guide.js"></script><script type="module" src="/assets/member.js"></script><script type="module" src="/company-info.js"></script></body></html>

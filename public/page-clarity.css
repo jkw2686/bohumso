@@ -57,7 +57,7 @@ body:is([data-account-page="reset"],[data-account-page="phone"],.phone-page){--p
 body:has(.policy-page),body:has(.help-guide){--page-width:var(--reading-width)}
 body.customer-requests,body.resources-page{--page-width:var(--workspace-width)}
 body:not(.map-page)>.nav{min-height:var(--ui-header);height:auto;box-sizing:border-box;padding-block:var(--space-2);gap:var(--space-4);flex-wrap:wrap;box-shadow:none;border-bottom:var(--surface-rule);background:var(--card)}
-body:not(.map-page)>.nav .brand-logo{width:168px;height:auto;max-height:none}
+body:not(.map-page)>.nav .brand-logo{height:32px;width:auto;max-height:none}
 body:not(.home-page):not(.map-page) main h1{font-size:var(--ui-title);line-height:1.35;font-weight:750;margin-top:0;margin-bottom:var(--page-title-gap)}
 body main :is(h2,.card h2){font-size:var(--ui-section);line-height:1.45}
 body main h3{font-size:var(--ui-subsection);line-height:1.5}
@@ -145,7 +145,7 @@ body .policy-page{max-width:var(--reading-width);margin-inline:auto}
  body .notification-item{grid-template-columns:minmax(0,1fr)}
  body .notification-item .btn{grid-column:1;grid-row:auto;justify-self:start;margin-top:var(--space-3)}
  body .account-links{grid-template-columns:1fr}
- body:not(.map-page)>.nav .brand-logo{width:140px}
+ body:not(.map-page)>.nav .brand-logo{height:28px}
 }
 body [data-management-priority] .urgent-panel,body .work-availability .urgent-panel{max-width:none;margin-inline:0}
 body[data-account-page] .compact-work-menu a.btn{border:0;border-radius:0;box-shadow:none;border-bottom:var(--surface-rule);background:transparent;justify-content:space-between;text-align:left}

@@ -1,9 +1,19 @@
 
 
 :root {
-  --blue:#1E4FD6;--brand:var(--blue);
-  --brand-dark: #123a99;
-  --brand-soft: #eef2ff;
+  /* 브랜드 색은 여기와 design-system.md 에만 정의한다. */
+  --brand-ink: #01404B;         /* 주 버튼·강조 제목 */
+  --brand-teal: #019D9C;        /* 아이콘·지도 핀·선택 테두리 (본문 글자에 쓰지 않는다) */
+  --brand-teal-strong: #0A7A78; /* 링크·작은 강조 */
+  --brand-teal-soft: #E6F4F3;
+  --brand-orange: #F99526;      /* 화면당 핵심 버튼 1개. 위 글자는 --brand-ink, 흰 글자 금지 */
+  --brand-orange-soft: #FFF3E6;
+  --navy: #062F36;
+  /* 아래는 기존 이름을 새 토큰에 연결한 것이다. 새 코드에서는 위 이름을 쓴다. */
+  --blue: var(--brand-ink);--brand: var(--brand-ink);
+  --accent: var(--brand-teal-strong);
+  --brand-dark: #012F37;
+  --brand-soft: var(--brand-teal-soft);
   --danger: #d64545;
   /* --danger 는 흰 배경에서 4.38:1 이라 본문 글자에 못 쓴다. 글자용은 이 토큰을 쓴다(6.65:1). */
   --danger-text: #b42318;
