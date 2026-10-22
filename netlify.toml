@@ -72,3 +72,8 @@ status = 200
 from = "/support"
 to = "/support.html"
 status = 200
+
+[[redirects]]
+from = "/situations"
+to = "/situations.html"
+status = 200

@@ -1,5 +1,41 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-22 — 우리보험소 로고·명칭 전환 + 홈 단순화
+
+### 로고 (A1·A2)
+- 원본 `public/brand/source/woori-bohumso-logo3-master.svg` (바탕화면 bohumso-work 에서 가져옴). **지시서 sha256 과 다르다**(`39b5049c…` vs `eeeb0a4a…`). 구조는 지시서와 정확히 일치(viewBox 0 0 1562 434, path#ring #019D9C / path#door #F99526 / path#wordmark #01404B)해 대표 확인을 받고 이 파일로 진행했다.
+- `scripts/build-brand-assets.mjs` 신규. 원본에서 viewBox·path 선택만으로 파생물을 만들고 PNG 는 저장소의 Playwright Chromium 으로 렌더링한다(새 패키지 없음). **두 번 실행해 전 파일 바이트 동일**을 확인했다. 심볼 bbox 는 getBBox 로 실측(x 0.96, w 432.01, h 434), 가로형 여백은 심볼 높이의 12%(52.08).
+- 신규: logo-horizontal-reverse.svg, logo-symbol.svg, favicon.svg, app-icon-maskable-512.png. `logo-stacked*`·`logo-wordmark*` 는 `docs/brand-legacy/` 로 옮겼고 이를 쓰던 `src/test-flow/signup.js` 는 가로형으로 바꿨다. google-g.png 유지.
+
+### 명칭 (A3)
+- "우리곁에 보험소" → "우리보험소". 55개 파일 교체. 최종 grep 결과 정책 7쪽의 의도된 `우리보험소(구 '우리곁에 보험소')` 와 HANDOFF·docs 과거 기록만 남는다. 병기는 제목 태그가 아니라 본문 첫 언급(상단 홈 링크)에 둔다.
+- manifest: name·short_name "우리보험소", background_color #FFFFFF, theme_color #01404B, maskable 512 추가. 모든 페이지 theme-color 를 #01404B 로 통일(20쪽).
+- 헤더 로고 `<img class="brand-logo">`: alt "우리보험소", 치수 속성은 **파일 실제 비율 1665×538**(12% 여백 포함)로 두고 CSS 에서 높이 모바일 28px·데스크톱 32px·width auto. 지시서의 1562:434 를 속성에 그대로 넣으면 찌그러지므로 내부 비율만 보존했다.
+- send-sms-hook 문구: `[우리보험소] 인증번호 ${otp} (타인에게 알려주지 마세요)`.
+
+### 색 토큰 (A4)
+- `public/styles.css :root` 와 `design-system.md` 에만 정의: --brand-ink #01404B, --brand-teal #019D9C, --brand-teal-strong #0A7A78, --brand-teal-soft #E6F4F3, --brand-orange #F99526, --brand-orange-soft #FFF3E6, --navy #062F36. 기존 --blue/--brand/--brand-soft/--accent 는 새 토큰에 연결, --brand-dark #012F37.
+- CSS 7개 파일의 하드코딩 파랑 12건을 토큰으로 바꿨다. 성공·경고·오류 색은 그대로.
+
+### 홈 (B)
+- 홈은 헤더 + 지도 + 버튼 2개 + 하단 탭·푸터만. 390px 에서 두 버튼이 하단 탭 위에 모두 보인다(버튼 하단 638px, 탭 상단 772px). 주황은 화면당 1개, 글자는 --brand-ink.
+- `public/situations.html` 신규: "어떤 상황이세요?" + "가까운 전문가가 보험사 청구를 함께 도와드려요." + 기존 상황 6개(문구·순서·링크 그대로). 홈에서 뺀 빠른 도움 메뉴·이용방법·가입 패널·분쟁 상담 안내와, 히어로에 있던 세무 상담·보험소 방문 예약 진입도 여기로 옮겼다. 전문가 참여 안내는 `partner.html` 첫 화면으로 옮겼다.
+- 딥링크: `/#situations` → `/situations.html` 리다이렉트(홈 인라인 스크립트). 가이드 6쪽의 "← 다른 상황 선택" 은 생성기에서 새 경로로. netlify.toml 에 `/situations` 추가.
+- **"알림을 켜야 지도에 노출됩니다" 안내는 코드에 없다**(푸시 필수 노출 미구현). 없는 문구를 새로 만들지 않았다.
+
+### 검증
+- build 통과. 단위 207개 중 **206 통과 / 1 실패** — 실패는 `expert-management`(마이그레이션 체인) 하나로, 073_insurer_contacts 를 올린 다른 세션 작업분이 이 작업본에 섞여 있는 상태에서 난다. 이번 변경에는 SQL·expert-management 코드가 없다.
+- 브라우저: compact-ui(8폭)·brand·help-entry(4폭)·claim-help(5폭×2)·map-empty-waitlist 통과. 홈 구조 변경에 맞춰 brand·help-entry·claim-help·trust-ux 의 기대값을 갱신했다.
+- 필수 흐름 22쪽 렌더링 일괄 점검: 로고 높이·비율, theme-color, 토큰 적용, 가로 넘침, 주황 버튼 수를 확인. **기존 문제 1건 발견 — `/admin-requests.html` 390px 에서 16px 가로 넘침**(`main.container.admin-main` 이 width 390 에 좌우 16px 마진). 관리자 화면은 이번 지시의 변경 금지 대상이라 손대지 않았다.
+- 실제 계정 생성·문자/메일 발송·DB 쓰기·배포는 하지 않았다.
+
+### 대표가 직접 해야 할 일 (저장소 밖)
+1. Supabase 인증 메일 발신자·본문의 서비스명을 "우리보험소" 로 변경
+2. 구글·카카오 OAuth 동의화면 앱 이름을 "우리보험소" 로 변경
+3. Solapi 발신 프로필·발신 표기를 "우리보험소" 로 변경
+4. 앱 아이콘·파비콘 교체 반영 확인(배포 후 홈 화면 추가 아이콘 캐시)
+
+
 ## 2026-10-20 — compact-ui 선행 실패 정리
 
 - `tests/compact-ui-browser.mjs`가 오래된 기대값 때문에 계속 실패하고 있었다(분류표 6번). 화면이 바뀐 것을 따라가지 못한 것이고 제품 쪽 결함은 아니었다. 8개 폭(320/360/390/412/430/768/1024/1440) 전부 통과로 되돌렸다.

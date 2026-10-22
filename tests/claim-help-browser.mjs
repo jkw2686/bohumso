@@ -31,7 +31,7 @@ try{
   for(const width of [320,360,390,768,1440]){
    await page.setViewportSize({width,height:844});
    for(let i=0;i<routes.length;i++){
-    const slug=routes[i];await page.goto('https://fixture.test/');await page.locator('.situation-cards a[href="/help/'+slug+'.html"]').click();
+    const slug=routes[i];await page.goto('https://fixture.test/situations.html');await page.locator('.situation-cards a[href="/help/'+slug+'.html"]').click();
     await expect(page).toHaveURL('https://fixture.test/help/'+slug+'.html');await expect(page.getByRole('heading',{level:1,name:titles[i],exact:true})).toBeVisible();
     await expect(page.locator('.guide-steps li')).toHaveCount(3);await expect(page.locator('.guide-icon')).toBeHidden();await expect(page.locator('.guide-method')).not.toHaveAttribute('open','');await page.locator('.guide-method summary').click();await expect(page.locator('.guide-steps')).toBeVisible();
     await expect(page.locator('.member-header')).toContainText(signedIn?'내 정보':'일반회원 로그인');
@@ -40,7 +40,7 @@ try{
     await expect(page.locator('#documents')).toHaveAttribute('open','');await expect(page.locator('#documents summary')).toBeFocused();
     await expect(page.locator('#documents li')).toHaveCount(3);
     const bounds=await page.locator('#documents summary').boundingBox(),nav=await page.locator('.customer-nav').boundingBox();expect(bounds.y+bounds.height).toBeLessThanOrEqual(nav.y+1);
-    await page.getByRole('link',{name:'← 다른 상황 선택',exact:true}).click();await expect(page).toHaveURL('https://fixture.test/#situations');
+    await page.getByRole('link',{name:'← 다른 상황 선택',exact:true}).click();await expect(page).toHaveURL('https://fixture.test/situations.html');
     await page.locator('.situation-cards a[href="/help/'+slug+'.html"]').click();
     if(width===390&&!signedIn&&slug==='cancer')await page.screenshot({path:'artifacts/claim-help-cancer-mobile.png',fullPage:true});
     await page.locator('[data-guide-primary]').click();

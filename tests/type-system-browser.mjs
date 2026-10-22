@@ -3,7 +3,7 @@ import {chromium,expect} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 import {build} from 'esbuild';
 import path from 'node:path';
-const phone=(await build({stdin:{contents:`import {renderPhoneVerification} from './src/phone-verification-ui.js';const root=document.querySelector('#accountContent');root.hidden=false;document.querySelector('#accountNotice').textContent='운영: 우리곁에 보험소 · 문의: jkw2686@gmail.com';await renderPhoneVerification({client:{rpc:async()=>({data:{verified:!location.search}})},config:{phoneVerificationEnabled:true},root});`,resolveDir:process.cwd()},bundle:true,format:'esm',write:false})).outputFiles[0].text;
+const phone=(await build({stdin:{contents:`import {renderPhoneVerification} from './src/phone-verification-ui.js';const root=document.querySelector('#accountContent');root.hidden=false;document.querySelector('#accountNotice').textContent='운영: 우리보험소 · 문의: jkw2686@gmail.com';await renderPhoneVerification({client:{rpc:async()=>({data:{verified:!location.search}})},config:{phoneVerificationEnabled:true},root});`,resolveDir:process.cwd()},bundle:true,format:'esm',write:false})).outputFiles[0].text;
 const browser=await chromium.launch(PW_LAUNCH);
 try{
  const page=await browser.newPage();
