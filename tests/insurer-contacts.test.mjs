@@ -175,3 +175,72 @@ test('받은 39개사 CSV가 스키마 제약을 모두 통과한다', async () 
       if (row[key]) assert.match(row[key], /^[0-9-]{3,20}$/, row.name + ' ' + key);
   }
 });
+
+test('승인 전 전문가와 정지·철회된 전문가는 볼 수 없다', async () => {
+  const f = await setup();
+  try {
+    await f.login(ids.admin);
+    await call(f, 'save', sample);
+
+    for (const status of ['pending', 'rejected', 'suspended', 'withdrawn']) {
+      await f.db.exec('reset role');
+      await f.db.query('update public.partner_applications set status=$2 where user_id=$1', [ids.planner, status]);
+      await f.login(ids.planner);
+      await assert.rejects(call(f, 'list'), /insurer_access_required/, status + ' 상태는 열람 불가');
+      await assert.rejects(call(f, 'favorite', {id: 'any'}), /insurer_access_required/, status + ' 상태는 즐겨찾기 불가');
+    }
+
+    await f.db.exec('reset role');
+    await f.db.query("update public.partner_applications set status='approved' where user_id=$1", [ids.planner]);
+    await f.login(ids.planner);
+    assert.equal((await call(f, 'list')).contacts.length, 1, '승인되면 다시 보인다');
+  } finally { await f.db.close(); }
+});
+
+test('관리자와 전문가가 받는 것이 다르다', async () => {
+  const f = await setup();
+  try {
+    await f.login(ids.admin);
+    await call(f, 'save', {...sample, memo: '내부 메모'});
+    await call(f, 'save', {name: '숨긴손보', category: '손해', is_active: false, memo: '비공개'});
+
+    const admin = await call(f, 'list');
+    assert.equal(admin.admin, true);
+    assert.equal(admin.contacts.length, 2, '관리자는 숨긴 항목도 본다');
+    assert.equal(admin.contacts.find(c => c.name === '삼성생명').memo, '내부 메모');
+
+    await f.login(ids.planner);
+    const expert = await call(f, 'list');
+    assert.equal(expert.admin, false, '전문가에게는 관리자 표시가 내려가지 않는다');
+    assert.equal(expert.contacts.length, 1, '전문가는 노출된 항목만 본다');
+    assert.equal(expert.contacts[0].memo, null, '관리자 메모는 전문가에게 내려가지 않는다');
+    for (const operation of ['save', 'delete', 'set_active', 'import'])
+      await assert.rejects(call(f, operation, {id: expert.contacts[0].id, rows: []}), /admin_required/, operation + '은 관리자 전용');
+  } finally { await f.db.close(); }
+});
+
+test('보험소 운영자 계정도 승인된 전문가면 읽기만 된다', async () => {
+  const f = await setup();
+  try {
+    await f.login(ids.admin);
+    await call(f, 'save', sample);
+    await f.db.exec('reset role');
+    await f.db.query("update public.partner_applications set profession='office' where user_id=$1", [ids.planner]);
+    await f.login(ids.planner);
+    assert.equal((await call(f, 'list')).contacts.length, 1);
+    await assert.rejects(call(f, 'save', {name: 'x', category: '생명'}), /admin_required/);
+  } finally { await f.db.close(); }
+});
+
+test('로그인하지 않았거나 신청 이력이 없는 회원은 아무것도 못 받는다', async () => {
+  const f = await setup();
+  try {
+    await f.login(ids.admin);
+    await call(f, 'save', sample);
+    await f.login(ids.customer);
+    for (const operation of ['list', 'favorite', 'save', 'delete', 'set_active', 'import'])
+      await assert.rejects(call(f, operation, {rows: []}), /insurer_access_required/, '소비자 ' + operation);
+    await f.login(null, 'anon');
+    await assert.rejects(call(f, 'list'), /permission denied|insurer_access_required/, '비로그인 조회');
+  } finally { await f.db.close(); }
+});

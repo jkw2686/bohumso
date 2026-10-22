@@ -2,7 +2,7 @@ import {build} from 'esbuild';import {mkdir,readdir,readFile,writeFile} from 'no
 import {buildHelpGuides} from './build-help-guides.mjs';
 await buildHelpGuides();
 await mkdir('public/assets',{recursive:true});
-await build({entryPoints:{menu:'src/menu.js',growth:'src/growth.js','support-badge':'src/support-badge.js',rights:'src/member-rights.js',account:'src/account.js',visit:'src/visit.js',member:'src/member-entry.js',urgent:'src/urgent.js'},bundle:true,format:'esm',platform:'browser',target:['es2020'],outdir:'public/assets',minify:true});
+await build({entryPoints:{menu:'src/menu.js',growth:'src/growth.js','support-badge':'src/support-badge.js',rights:'src/member-rights.js',account:'src/account.js',visit:'src/visit.js',member:'src/member-entry.js',urgent:'src/urgent.js',insurers:'src/insurer-contacts.js'},bundle:true,format:'esm',platform:'browser',target:['es2020'],outdir:'public/assets',minify:true});
 await build({entryPoints:['src/test-flow/ui.js'],bundle:true,format:'esm',platform:'browser',target:['es2022'],outfile:'artifacts/test-flow.js',minify:true});
 await mkdir('artifacts/deploy-functions',{recursive:true});
 const functions=(await readdir('netlify/functions')).filter(f=>/\.(mts|mjs)$/.test(f)).map(f=>'netlify/functions/'+f);

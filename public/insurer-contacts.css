@@ -1,0 +1,57 @@
+/* 전문가 보험사 연락처. 색은 모두 기존 토큰에서 파생한다(새 색상값을 만들지 않는다). */
+.insurer-page main.container{padding-bottom:48px}
+.insurer-intro{color:var(--muted);margin:0 0 var(--space-5)}
+
+.insurer-tools{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:flex-end;margin-bottom:var(--space-4)}
+.insurer-tabs{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.insurer-tab{min-height:var(--touch-target);padding:10px var(--space-4);border:1px solid var(--border);
+ border-radius:999px;background:var(--card);color:var(--text);font:inherit;font-size:15px;cursor:pointer}
+.insurer-tab[aria-selected=true]{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-dark);font-weight:700}
+.insurer-tab:focus-visible{outline:var(--focus-width) solid var(--brand);outline-offset:2px}
+.insurer-search{margin:0;flex:1 1 180px;min-width:0}
+.insurer-search input{width:100%;box-sizing:border-box;min-height:var(--touch-target);font-size:16px}
+
+.insurer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}
+@media(min-width:760px){.insurer-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4)}}
+@media(min-width:1180px){.insurer-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+.insurer-card{display:flex;flex-direction:column;gap:var(--space-2);padding:var(--space-4);min-width:0;
+ background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
+.insurer-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-2)}
+.insurer-card-head>div{min-width:0;display:flex;flex-direction:column;gap:6px}
+.insurer-card h2{margin:0;font-size:16px;line-height:1.4;word-break:keep-all;overflow-wrap:anywhere}
+
+.insurer-badge{--tone:var(--brand);align-self:flex-start;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700;
+ background:color-mix(in srgb,var(--tone) 12%,var(--card));color:color-mix(in srgb,var(--tone) 74%,black);
+ border:1px solid color-mix(in srgb,var(--tone) 30%,var(--card))}
+.insurer-badge[data-category="손해"]{--tone:var(--ok)}
+.insurer-badge[data-category="공제"]{--tone:var(--warn)}
+
+.insurer-star{flex:0 0 auto;min-width:var(--touch-target);min-height:var(--touch-target);border:0;background:transparent;
+ color:var(--muted);font-size:22px;line-height:1;cursor:pointer;border-radius:12px}
+.insurer-star[aria-pressed=true]{color:var(--warn)}
+.insurer-star:focus-visible{outline:var(--focus-width) solid var(--brand);outline-offset:2px}
+
+.insurer-card .btn{width:100%;box-sizing:border-box;text-align:center;text-decoration:none}
+.insurer-portal{min-height:48px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.insurer-links{display:flex;gap:var(--space-2)}
+.insurer-links .btn{min-height:var(--touch-target);font-size:14px;padding:8px 10px}
+.insurer-card .is-empty{opacity:.45;cursor:not-allowed;background:var(--bg);color:var(--muted);border-color:var(--border)}
+
+.insurer-tels{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px var(--space-2);margin:var(--space-2) 0 0;font-size:13px}
+.insurer-tels dt{color:var(--muted);white-space:nowrap}
+.insurer-tels dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.insurer-tels a{color:var(--brand);font-weight:700;text-decoration:none}
+.insurer-none{color:var(--muted)}
+.insurer-home{color:var(--brand);font-size:13px;text-decoration:none;min-height:var(--touch-target);display:flex;align-items:center}
+.insurer-asof{margin:0;color:var(--muted);font-size:12px}
+.insurer-empty,.insurer-notice{color:var(--muted);margin:var(--space-4) 0 0}
+
+/* 2열 카드에서는 라벨과 번호를 한 칸에 넣기 좁다. 줄을 나눠 번호가 꺾이지 않게 한다. */
+@media(max-width:759px){
+ .insurer-tels{grid-template-columns:minmax(0,1fr);gap:0}
+ .insurer-tels dt{font-size:12px;margin-top:6px}
+ .insurer-tels dd{font-size:14px}
+ .insurer-tels dd a{white-space:nowrap}
+}
+@media(max-width:360px){.insurer-grid{grid-template-columns:minmax(0,1fr)}}
