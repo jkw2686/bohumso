@@ -21,6 +21,6 @@ export async function renderAdminAccess({client,host}){
   }catch(e){status.textContent=({owner_required:'대표자만 변경할 수 있습니다.',registered_account_required:'먼저 회원가입을 완료한 계정이어야 합니다.',verified_active_member_required:'이메일 확인과 회원가입을 완료한 계정이어야 합니다.',owner_protected:'대표자 계정은 해제할 수 없습니다.',invalid_email:'이메일을 확인해 주세요.'})[e.message]||'저장하지 못했습니다. 입력과 연결 상태를 확인해 주세요.';}
   finally{busy=false;box.querySelectorAll('button').forEach(b=>b.disabled=false);}
  };
- function draw(rows){list.replaceChildren();for(const row of rows){const line=el('p',row.email+(row.owner?' · 대표자':''),list);if(!row.owner){const remove=el('button','권한 해제',line);remove.type='button';remove.className='btn ghost';remove.onclick=()=>run('remove',row.email);}}}
+ function draw(rows){list.replaceChildren();for(const row of rows){const line=el('p',(row.email||(row.owner?'휴대전화 로그인':'계정'))+(row.owner?' · 대표자':''),list);if(!row.owner){const remove=el('button','권한 해제',line);remove.type='button';remove.className='btn ghost';remove.onclick=()=>run('remove',row.email);}}}
  add.onclick=()=>run('add',email.value.trim());draw(data);
 }

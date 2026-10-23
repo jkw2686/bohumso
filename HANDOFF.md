@@ -1,5 +1,16 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-23 — 관리자 UI 운영 배포 및 대표 로그인 제한 적용
+- bc82e9d main 푸시, Netlify 6adb2a6284f84df2cced4a66 ready(해당 commit 일치). 운영 메뉴 비로그인 관리자 링크 없음. admin.html/admin-requests.html 최초 화면은 권한 확인 안내만, 이후 login next 복귀 확인. artifacts/admin-menu-production-20261023.png 및 admin-initial-production-20261023.png(로컬 ignored).
+- 사용자 추가 승인 후 운영 SQL Editor에서 대표 로그인 제한만 적용. 기존 이메일 대표와 인증·가입 완료된 별도 전화 계정을 UUID로 고정한 private.admin_owner_logins 등록부 사용. 개인식별값/운영 UUID는 공개 코드에 넣지 않음.
+- scripts/admin-owner-logins.sql: 기존 회원/ACTIVE 조건 유지 + 대표 식별자 현재 인증 확인 또는 대표의 최신 ADD 감사기록 요구. 기존 admin_access_command 재사용, 대표 둘 보호, 미래 운영자는 기존 가입/이메일 확인 후 대표가 이메일·사유로 명시 추가. 임의 멤버십 행/메타데이터만으로 관리자 불가.
+- 운영 적용 결과 대표 로그인2/관리자 멤버십2/그 외0, 원장 admin_owner_logins_20261023.sql 기록. 후속 read-only SQL에서 양 대표 is_admin/is_owner/my_membership.admin/active_member=true, 다른 계정·익명=false, registry anon/authenticated SELECT 거부 검증.
+- 첫 실행용 SQL 문자열 구분자 오류로 실패 후 수정. 전체 운영 SQL을 격리 fixture(대상 식별자 치환)에서 검증한 뒤 재실행 성공. 계정·필수동의·예약·전문가 승인·결제·발송 변경 없음.
+- 최신 번호 SQL의 일괄 실행으로 미승인073이 섞이지 않게 명시적인 scripts/ 수동 SQL로 분리. 기존 migrate 워크플로·연결 설정은 변경 안 함. 404 두 RPC는 pg_proc상 실제 미존재 확인, 011/073 적용 안 함.
+- src/admin-access.js 전화 대표의 null 이메일 대신 휴대전화 로그인 표시. 신규 DB2+기존 owner-admin2 검사, 전체 실행SQL 격리1, admin-access 모의 브라우저, build 통과. 기존 Google 로그인으로 이메일 대표의 실제 admin 본문 접근 확인. 휴대전화 OTP·실기기는 미확인(실제 발송 안 함).
+- 상세 docs/admin-owner-logins-20261023.md. 표시 보완 배포 결과는 후속 기록 참조.
+
+
 ## 2026-10-23 — 관리자 메뉴 인증 동기화와 초기 표시 차단 (미배포)
 - src/menu.js: 인증/다른 탭 storage/복귀 변경 시 이름·역할 메뉴 즉시 제거, 서버 역할 재조회, request revision으로 오래된 결과 무효화. src/member-access.js에 진행 중 역할 요청 무효화 API 추가.
 - public/admin.html, public/admin-requests.html 및 src/admin-page-access.js: 초기 HTML부터 운영 영역 전체 숨김, 권한 확인 안내만 노출. src/account.js: 관리자만 표시, 계정 변경 시 숨김·데이터 제거, 같은 계정 인증 변경도 서버 재조회. 기존 서버/DB 권한 검사 유지.

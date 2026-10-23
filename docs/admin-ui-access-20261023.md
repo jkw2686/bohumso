@@ -58,3 +58,8 @@ where name in ('011_expert_onboarding.sql','073_insurer_contacts.sql');
 - 격리 검사 명령: node tests/admin-ui-auth-browser.mjs (전체), --gates-only / --menus-only (기능별 분할), --history-only (뒤로가기). 상세 결과 artifacts/admin-ui-auth-20261023/*-report.json (로컬 ignored).
 - BFCache는 PageTransitionEvent persisted 모의 수명주기를 검사. 별도로 관리자 메뉴를 떠난 뒤 로그아웃하고 브라우저 뒤로가기로 돌아오는 회귀 검사를 제공한다. 실제 BFCache 캐시 적중을 보장하는 시험은 아님. 실제 기기/Android 및 실제 운영 로그인 계정은 미확인.
 - 운영에서 확인한 것은 공개 설정 및 두 RPC의 읽기 전용 404 응답과 GitHub 실행 로그. 수정된 UI가 운영에 반영됐다는 의미가 아님.
+
+## 후속 운영 확인
+- bc82e9d 푸시 및 Netlify 6adb2a6284f84df2cced4a66 ready 확인. 실제 비로그인 메뉴 관리자 링크 없음, 두 admin 경로 초기 표시 권한 확인 안내만, 이어서 login next 복귀 확인.
+- 사용자 후속 DB 승인으로 별도 대표 로그인 제한을 적용함. 상세 docs/admin-owner-logins-20261023.md. 이전 ‘DB 미변경/미배포’는 최초 수정 단계 기록이며 후속 단계와 구분.
+- 운영 pg_proc에서 expert_admin_list 및 insurer_contacts_command 자체가 없음 확인. 이제 캐시 단독 문제가 아닌 실제 함수 미존재로 확인됐고, 해당 SQL은 적용하지 않음.
