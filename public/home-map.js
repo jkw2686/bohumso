@@ -12,7 +12,6 @@
   });
   var offices=[],experts=[],markers=[],expertMarkers=new Map(),officeLoading=false,expertLoading=false;
   var EXPAND_ZOOM=16,expanded={},zoomBound=false;
-  var expertPanel=document.getElementById('homeExperts'),expertList=document.getElementById('homeExpertList');
   function hasPoint(s){return Number.isFinite(s.latitude)&&Number.isFinite(s.longitude);}
   function expertURL(s){return '/map.html?view=experts&region='+encodeURIComponent(s.region||'')+'&planner='+encodeURIComponent(s.id);}
   function expertContent(s){
@@ -58,26 +57,6 @@
       if(s.expert)expertMarkers.set(s.id,marker);markers.push(marker);
     });});
   }
-  function renderExperts(){
-    if(!expertPanel||!expertList)return;
-    expertList.replaceChildren();expertPanel.hidden=!experts.length;
-    experts.forEach(function(s){
-      var item=document.createElement(hasPoint(s)?'button':'a');item.className='btn ghost';item.textContent=s.name+' · '+s.region;
-      if(hasPoint(s)){
-        item.type='button';item.setAttribute('aria-label',s.name+' · '+s.region+' 활동지역 보기');
-        item.addEventListener('click',function(){
-        // 이 전문가 핀이 묶음 안에 있으면 먼저 펼쳐 핀을 지도에 올린다(3-6).
-        // experts 는 latitude/longitude 로 정규화되어 있다(아래 catalog 매핑 참고).
-        // renderExperts 는 다시 부르지 않는다. 지금 누른 목록 항목이 교체되면 포커스가 날아간다.
-        if(!expertMarkers.get(s.id)?.getElement()&&Number.isFinite(s.latitude)&&Number.isFinite(s.longitude)){
-          expanded[s.latitude.toFixed(4)+','+s.longitude.toFixed(4)]=true;drawMarkers();
-        }
-        var marker=expertMarkers.get(s.id);if(!marker)return;
-        map.setView(marker.getLatLng(),13,{animate:false});marker.openPopup();host.scrollIntoView({block:'center',behavior:'instant'});marker.getElement()?.focus({preventScroll:true});});
-      }else item.href=expertURL(s);
-      expertList.appendChild(item);
-    });
-  }
   async function actualOffices(){
     if(officeLoading||!window.bohumsoOffices)return;officeLoading=true;
     try{offices=(await window.bohumsoOffices()).filter(function(o){return o.status==='active'&&hasPoint(o);});drawMarkers();}catch{}finally{officeLoading=false;}
@@ -87,7 +66,7 @@
     try{
       var catalog=await window.bohumsoCatalog('','');
       experts=(catalog.planners||[]).filter(function(p){return !p.is_sample&&p.profession==='planner';}).map(function(p){return {id:p.id,name:p.name,region:p.region,organization:p.organization,photo_url:p.photo_url,biography:p.biography,profession:p.profession,profession_name:p.profession_name,fee_notice:p.fee_notice,insurance_types:p.insurance_types,help_tasks:p.help_tasks,offices:p.offices,available:!!p.available,newRequestsRestricted:!!p.newRequestsRestricted,latitude:p.profession==='tax'&&p.office_coordinates_verified?p.office_latitude:p.area_latitude,longitude:p.profession==='tax'&&p.office_coordinates_verified?p.office_longitude:p.area_longitude,expert:true};});
-      var openId;expertMarkers.forEach(function(marker,id){if(marker.isPopupOpen())openId=id;});drawMarkers();renderExperts();if(openId)expertMarkers.get(openId)?.openPopup();window.BohumsoProfile.refreshDetail(experts);
+      var openId;expertMarkers.forEach(function(marker,id){if(marker.isPopupOpen())openId=id;});drawMarkers();if(openId)expertMarkers.get(openId)?.openPopup();window.BohumsoProfile.refreshDetail(experts);
     }catch{}finally{expertLoading=false;}
   }
   function loadPublicMap(){actualOffices();publicExperts();}

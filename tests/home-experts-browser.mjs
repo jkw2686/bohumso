@@ -27,17 +27,17 @@ try{
  }
  for(const width of [320,360,390,1440]){
   await page.setViewportSize({width,height:844});await page.goto('https://fixture.test/index.html');
-  await expect(page.locator('#homeExpertList')).toBeEmpty();await providers();
+  // 첫 렌더가 끝난 뒤 공급자를 끼운다(예전에는 목록 단언이 이 대기 역할을 했다).
+  await expect(page.locator('#homeMap .leaflet-marker-icon').first()).toBeVisible();
+  await providers();
   // 3-6: 전문가 활동지역과 보험소가 같은 좌표라 처음에는 숫자 묶음 하나로 보인다.
   await expect(page.locator('.spot-cluster')).toHaveCount(1);
-  await expect(page.locator('.spot-cluster')).toHaveText('3');  // 전문가 + 보험소 + 샘플 전문가
-  await expect(page.locator('#homeExpertList .btn')).toHaveCount(2);
+  await expect(page.locator('.spot-cluster')).toHaveText('3',{timeout:15000});  // 전문가 + 보험소 + 샘플 전문가
   await expect(page.getByText('예시 전문가',{exact:true})).toHaveCount(0);
-  await expect(page.locator('#homeExpertList a')).toHaveAttribute('href','/map.html?view=experts&region='+encodeURIComponent('경기 하남시')+'&planner=no-point');
-  // 목록에서 전문가를 고르면 묶음이 펼쳐지고 그 핀으로 포커스가 간다.
-  await page.getByRole('button',{name:'김포 전문가 · 경기 김포시 활동지역 보기',exact:true}).press('Enter');
+  // 묶음을 누르면 펼쳐지고 전문가 핀이 드러난다. 팝업은 그 핀을 눌러 연다.
+  await page.locator('.spot-cluster').click();
   await expect(page.locator('.home-expert-pin')).toHaveCount(1);
-  await expect(page.locator('#homeMap .home-expert-pin')).toBeFocused();
+  await page.locator('#homeMap .home-expert-pin').click();
   const popup=page.locator('#homeMap .leaflet-popup');
   await expect(popup).toContainText('김포 전문가');await expect(popup).toContainText('공개 소속');await expect(popup).toContainText('경기 김포시');
   await expect(popup).toContainText('현재 위치나 방문할 사무실 주소가 아닙니다.');
@@ -57,12 +57,12 @@ try{
  // 보험소 조회가 실패해도 전문가 핀은 남는다. 개설 예정 거점과 같은 좌표라 처음에는 묶여 보인다(3-6).
  await page.goto('https://fixture.test/index.html');await providers({officeError:true});
  await expect(page.locator('.spot-cluster')).toHaveText('2');
- await page.getByRole('button',{name:'김포 전문가 · 경기 김포시 활동지역 보기',exact:true}).press('Enter');
+  await page.locator('.spot-cluster').click();
  await expect(page.locator('.home-expert-pin')).toHaveCount(1);
  // 전문가 조회가 실패해도 보험소 핀은 남는다. 개설 예정 거점과 겹쳐 묶음으로 보이고, 누르면 펼쳐진다.
  await page.goto('https://fixture.test/index.html');await providers({catalogError:true});
  await expect(page.locator('.spot-cluster')).toHaveText('2');
  await page.locator('.spot-cluster').click();
- await expect(page.locator('[title="공개 보험소 · 운영 중"]')).toHaveCount(1);await expect(page.locator('#homeExperts')).toBeHidden();
+ await expect(page.locator('[title="공개 보험소 · 운영 중"]')).toHaveCount(1);
  expect(errors).toEqual([]);console.log('PASS independent catalog failures, late service readiness, no duplicate pins. No live data changed.');
 }finally{await browser.close();}
