@@ -14,14 +14,14 @@
 
 <header class="map-nav">
   <a class="logo" href="/index.html"><img class="brand-logo" src="/brand/logo-horizontal-transparent.svg" alt="우리보험소" width="1665" height="538"></a>
-  <a class="map-list-link" id="listLink" href="/find.html">목록으로 →</a>
-</header>
+  <button class="btn ghost" id="regionToggle" type="button" aria-expanded="false" aria-controls="regionPicker">지역 검색</button>
+<button class="locate-fab" id="locateFab" type="button" aria-label="내 위치에서 찾기">
+  <svg viewBox="0 0 24 24" aria-hidden="true" width="22" height="22"><path fill="currentColor" d="M12 8a4 4 0 100 8 4 4 0 000-8zm0-6a1 1 0 011 1v1.06A8.01 8.01 0 0119.94 11H21a1 1 0 110 2h-1.06A8.01 8.01 0 0113 19.94V21a1 1 0 11-2 0v-1.06A8.01 8.01 0 014.06 13H3a1 1 0 110-2h1.06A8.01 8.01 0 0111 4.06V3a1 1 0 011-1zm0 4a6 6 0 100 12 6 6 0 000-12z"/></svg><span>내 위치</span>
+</button></header><p class="region-title map-location-status" role="status"></p>
 
 <!-- 위치 거부 시: 지역 직접 선택 -->
-<div class="region-picker" id="regionPicker">
-  <div class="region-toolbar"><p class="region-title" role="status">내 위치를 누르거나 지역을 선택하세요.</p><button class="locate-fab" id="locateFab" type="button" aria-label="내 위치에서 찾기">
-  <svg viewBox="0 0 24 24" aria-hidden="true" width="22" height="22"><path fill="currentColor" d="M12 8a4 4 0 100 8 4 4 0 000-8zm0-6a1 1 0 011 1v1.06A8.01 8.01 0 0119.94 11H21a1 1 0 110 2h-1.06A8.01 8.01 0 0113 19.94V21a1 1 0 11-2 0v-1.06A8.01 8.01 0 014.06 13H3a1 1 0 110-2h1.06A8.01 8.01 0 0111 4.06V3a1 1 0 011-1zm0 4a6 6 0 100 12 6 6 0 000-12z"/></svg><span>내 위치</span>
-</button></div>
+<div class="region-picker" id="regionPicker" hidden>
+
   <div class="region-row">
     <label class="sr-only" for="regionCity">시/도</label>
     <select id="regionCity" aria-label="시/도 선택">
@@ -39,16 +39,16 @@
 </div>
 
 <!-- 지도: 화면 세로의 큰 비중(65dvh) -->
-<a class="urgent-map-link" href="/urgent.html">지금 방문 가능한 전문가 찾기 →</a><p class="map-key" aria-label="지도 아이콘 안내"><span><i data-icon="home"></i>보험소 거점</span><span><i data-icon="person"></i>보험설계사 활동지역</span><span><i data-icon="tax"></i>세무사 거점 · 현재 위치 아님</span></p><main class="map-stage" id="mapStage">
+<main class="map-stage" id="mapStage">
 <div id="map" role="application" aria-label="내 주변 보험소 지도"></div>
 <p class="map-credit">지도 © OpenStreetMap 기여자</p>
 
 
 
 <!-- 하단 전문가 목록 바텀시트 (드래그: 위로=목록↑, 아래로=지도↑) -->
-<section class="list-sheet" id="listSheet" data-sheet-state="collapsed" aria-label="주변 보험소 목록">
+<section class="list-sheet" id="listSheet" hidden data-sheet-state="closed" aria-label="주변 보험소 목록">
   <div class="sheet-toolbar"><button class="sheet-resize" id="listGrip" type="button" aria-label="목록 크기 조절" aria-expanded="false" aria-controls="listBody">목록 펼치기 ⌃</button><button class="sheet-close" id="listClose" type="button" aria-label="목록 닫기">×</button></div>
-  <div class="list-head">
+  <a class="urgent-map-link" href="/urgent.html">지금 방문 가능한 전문가 찾기 →</a><p class="map-key" aria-label="지도 아이콘 안내"><span><i data-icon="home"></i>보험소 거점</span><span><i data-icon="person"></i>보험설계사 활동지역</span><span><i data-icon="tax"></i>세무사 거점 · 현재 위치 아님</span></p><a id="listLink" class="map-list-link" href="/find.html">전체 목록 페이지</a><div class="list-head">
     <strong id="listCount">주변 보험소</strong><label class="profession-filter">직군<select id="professionFilter" aria-label="지도 직군 선택"><option value="">전체</option><option value="planner">보험설계사</option><option value="tax">세무사</option><option value="office">보험소 거점</option></select></label>
     <div class="sort-tabs" role="tablist" aria-label="정렬 기준">
       <button role="tab" data-sort="distance" aria-selected="true">거리순</button>
@@ -65,7 +65,7 @@
 </div>
 <div class="card-scrim" id="cardScrim" hidden></div>
 
-<button id="listReopen" class="list-reopen" type="button" hidden aria-controls="listSheet">주변 목록 보기 ↑</button>
+<button id="listReopen" class="list-reopen" type="button" aria-controls="listSheet">목록 보기</button>
 </main>
 <script src="/expert-profile-card.js"></script><script src="/office-slot.js"></script><script src="/location.js"></script>
 <script src="/vendor/leaflet.js"></script>

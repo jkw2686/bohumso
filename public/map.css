@@ -257,3 +257,18 @@
 
 /* 헤더 로고는 모바일 28px / 데스크톱 32px. 뒤에 오는 규칙이 이기도록 파일 끝에 둔다. */
 @media(max-width:480px){.map-page .brand-logo{height:28px;width:auto}}
+/* Map-first surface: panels are opened only by an explicit user action. */
+.map-page #listSheet[hidden],.map-page #regionPicker[hidden],.map-page #listReopen[hidden]{display:none!important}
+.map-page .map-nav{gap:var(--space-2)}
+.map-page .map-nav .logo{margin-right:auto;min-width:0}
+.map-page .map-nav .brand-logo{max-width:100%;object-fit:contain}
+.map-page .map-nav .locate-fab{position:static;display:flex;align-items:center;justify-content:center;gap:var(--space-1);width:auto;min-width:var(--touch-target);height:var(--touch-target);padding:var(--space-2);flex:none;box-shadow:none;font:inherit;font-size:var(--type-small)}
+.map-page #regionToggle{width:auto;white-space:nowrap;min-height:var(--touch-target);padding:var(--space-2);font-size:var(--type-small);flex:none}
+.map-page .map-location-status{margin:0;padding:var(--space-1) var(--space-4);font-size:var(--type-small);flex:none}
+.map-page .map-location-status:empty{display:none}
+.map-page #listSheet.open{overflow-y:auto;max-height:calc(100% - var(--space-4)*2)}
+.map-page #listSheet .list-body{overflow:visible;max-height:none;flex:none}
+.map-page #listSheet :is(.urgent-map-link,.map-key,.map-list-link,.purpose-chip){position:static;margin:var(--space-2) var(--space-4);padding:0;flex:none}
+.map-page #listSheet .map-key{display:flex;flex-wrap:wrap;font-size:var(--type-small)}
+.map-page #listSheet .sort-tabs{display:flex;flex-wrap:wrap}
+.map-page #listReopen{font-size:var(--type-small);padding:var(--space-2) var(--space-4);min-height:var(--touch-target)}

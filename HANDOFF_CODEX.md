@@ -214,3 +214,10 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 - 신규 tests/profile-fullscreen-browser.mjs: 360/390/430/1440 핀→프로필→뒤로, 공개 전화 조건, 예약 대상 보존. 배포 최종 상태는 후속 기록 참조.
 - 최종 운영 배포 완료: 6dc19a10b091280d2861881604c21a86c7b8d643 / Netlify 6adb6482c8d1337eefb27249 / 2026-10-23 22:43:49 KST. map.js·page-clarity.css·expert-profile-card.js·terms.html 공개 응답 200 및 새 내용 확인.
 - 최신 링크 https://bohumso.netlify.app/map?view=experts . 새 동의 예약만 같은 시간 수락 즉시 확정. 기존 무동의 예약은 종전 고객 확인 유지.
+
+## 2026-10-23 지도 단순화 (후속 최신 지침)
+- public/map.html,map.css,map.js: 기본 목록·필터 숨김. 지역 검색 펼치기·내 위치·목록 보기·확대축소만. 기존 직군/정렬/전문가·보험소/방문 링크는 목록 내부.
+- 전문가 마커는 현재 확대에서 48px 사진 영역이 겹치는 연결군만 숫자로 묶음. 숫자 선택 시에만 최대19까지 분리 가능한 확대 수준 계산. 동일 좌표/최대 확대 미분리는 해당 필터의 전문가 목록. 임의 좌표 이동/사진 부채꼴 배치 제거.
+- 마커/목록 선택→짧은 카드→이름·사진 클릭 시 전체 프로필(직전 핀 즉시 전체화면 지침을 이번 요청으로 대체). 지도 pan/fitBounds 자동 갱신 제거. 예약/연락처 권한/DB 변경 없음.
+- tests/map-simple-browser.mjs: 360/390/430 × 1/10/100 × 동일/상이 좌표 PASS. 갱신 후 화면/패널 유지, 필터 인원 일치, 최대 확대, 짧은 카드/전체 프로필 복귀, 보험소 날짜/가능시간 버튼 PASS. 실제 예약 생성 없음. 타일은 격리 테스트에서 외부 호출 차단.
+- tests/profile-fullscreen-browser.mjs: 360/390/430/1440 및 200% 긴 본문/공개전화 조건 PASS. 프로덕션 빌드 PASS.
