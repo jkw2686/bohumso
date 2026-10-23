@@ -1,3 +1,19 @@
+# 현재 상태 — 예약 수신 진단 및 화면 개선 (2026-10-23)
+
+이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
+
+- 작업 위치: C:/Users/AdMins/Documents/bohumso-booking-receipt, branch fix/booking-receipt-20261023. 기존 main 작업과 분리. node_modules는 signup-fix의 junction, 대상 삭제/재설치 금지.
+- 완료: 지정 예약 읽기 전용 진단, 소비자/전문가 목록 UI, 격리 브라우저 및 PGlite2/build. 세부 파일/증거/제한은 docs/booking-receipt-20261023.md.
+- 결론: Google 승인 전문가 UUID로 예약/알림 정상 생성. 현재 전화 로그인 UUID는 다른 계정. 푸시 SENT1/UNREGISTERED1. 앱/OS 실제 알림 확인은 미완료.
+- 운영 DB/권한/알림정책 미수정, 예약 생성/수락/취소/재발송/병합 없음. 공개 배포 없음.
+- 다음: 사용자 요청 시 배포 전 최신 main 충돌 확인·빌드 후 운영 Google 세션 UI 확인(15~30분). 실제 휴대전화 알림 확인은 기기 소유자 필요. 서버200건 범위 확장은 별도 변경(1~2시간 추정), 자동 적용 금지.
+- 테스트: PLAYWRIGHT_CHANNEL=msedge node tests/booking-overview-browser.mjs; node --test tests/booking-hardening.test.mjs; npm run build.
+- 재현 자료: artifacts/booking-receipt-before / artifacts/booking-overview (ignored, 가상 데이터). 새 CSS는 예약 두 페이지에만 적용.
+- 되돌리기: 이번 UI 커밋 revert. DB 원복 필요 없음. 이전 운영 성능 개선·180초 인증 설정은 유지.
+- 전체 npm test/verify 미실행. 과거 handoff의 관련 없는 실제 사용자 데이터 조회금지 유지. 이번 사용자가 지정한 예약만 대조함.
+
+--- 이전 작업 상태 (보존) ---
+
 # 최신 작업 — 2026-10-23 화면 전환 성능 개선
 
 ## 현재 진행·재현·남은 일

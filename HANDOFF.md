@@ -1026,3 +1026,9 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 
 ## 2026-10-17 13:52:18 KST 운영 배포
 사용자가 main 반영·운영 배포를 명시 승인하여 3bc42758b9ab42683809f65821a6bb391e4715ef를 origin/main에 반영. Netlify 6ad2fef3be0db24fff59e3cb ready, published_at=2026-10-17T04:52:18.345Z, error=null. 운영 https://bohumso.netlify.app / 고정 https://6ad2fef3be0db24fff59e3cb--bohumso.netlify.app . 공개 page-clarity.css와 assets/account.js HTTP200 및 로컬과 정규화 본문 일치 확인. 실제 회원·이충경 자료 접근/발송 없음. 잔여 크레딧은 도구에 제공되지 않고 Netlify UI 로그인이 필요하여 미확인(Pro 요금제만 확인).
+
+## 2026-10-23 — 예약 수신 진단 / 예약 카드 정리 (Codex)
+- 독립 worktree bohumso-booking-receipt, branch fix/booking-receipt-20261023, base48897bc. 기존 다른 AI 작업 수정 안 함.
+- 지정 예약은 Google 전문가에게 정상 연결, 현재 전화 운영자와 별도 UUID. 양측 알림 생성, 전문가 푸시SENT1/UNREGISTERED1. 세 역할 조회 함수에서 대상 ID 확인. 운영 변경/재발송 없음.
+- 예약 목록 요약/단일 상세/더보기/조회실패 구분 구현. 상세 docs/booking-receipt-20261023.md.
+- 격리 브라우저·PGlite2·build 검증. 배포/실기기 푸시 확인은 별도.

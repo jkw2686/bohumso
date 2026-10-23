@@ -1,0 +1,20 @@
+/* Booking pages only: reuse the home palette, type and touch tokens. */
+body:is(.customer-requests,.partner-bookings) .booking-card-summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--space-2) var(--space-4)}
+body:is(.customer-requests,.partner-bookings) .booking-card-summary h2{margin:0;font-size:var(--ui-section,1.25rem);color:var(--brand-ink)}
+body:is(.customer-requests,.partner-bookings) .booking-card-summary p{margin:0;font-size:var(--ui-body,1rem);line-height:1.6}
+body:is(.customer-requests,.partner-bookings) .booking-card-summary>.btn{grid-column:2;grid-row:1/span 3;align-self:center;width:auto;min-height:var(--touch-target);margin:0}
+body:is(.customer-requests,.partner-bookings) :is(.booking-list-heading,.work-heading){display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap;margin:0 0 var(--space-3);padding:0}
+body:is(.customer-requests,.partner-bookings) :is(.booking-list-heading,.work-heading) h1{margin:0}
+body:is(.customer-requests,.partner-bookings) :is(.booking-task-count,.booking-load-status){margin:var(--space-2) 0;color:var(--ink-body)}
+body:is(.customer-requests,.partner-bookings) :is(.booking-load-status,#workflowSummary,#accountNotice):empty{display:none}
+body:is(.customer-requests,.partner-bookings) .booking-views{margin:var(--space-3) 0;gap:var(--space-2)}
+body:is(.customer-requests,.partner-bookings) .request-filters{margin-block:var(--space-4)}
+body:is(.customer-requests,.partner-bookings) .booking-card{padding:var(--space-5);margin-block:var(--space-3);border:1px solid var(--border);border-radius:var(--radius);background:var(--card)}
+body:is(.customer-requests,.partner-bookings) .booking-more{margin-block:var(--space-3)}
+body:is(.customer-requests,.partner-bookings) .booking-more[hidden]{display:none}
+body:is(.customer-requests,.partner-bookings) .booking-detail-body{border-top:1px solid var(--border);margin-top:var(--space-4);padding-top:var(--space-4)}
+@media(max-width:600px){
+ body:is(.customer-requests,.partner-bookings) .booking-card-summary{grid-template-columns:minmax(0,1fr)}
+ body:is(.customer-requests,.partner-bookings) .booking-card-summary>.btn{grid-column:1;grid-row:auto;justify-self:start;margin-top:var(--space-2)}
+ body:is(.customer-requests,.partner-bookings) .booking-card{padding:var(--space-4)}
+}
