@@ -31,3 +31,20 @@ body .notification-settings-inline{padding:var(--space-4);margin-bottom:var(--sp
 body .notification-settings-inline button[hidden]{display:none}
 body .notification-settings-inline>h2{margin-top:0}
 body .notification-settings-inline .supporting-details{margin-bottom:0}
+
+/* Received requests: one reading column, one action per closed card. */
+body.partner-bookings .work-layout{grid-template-columns:minmax(0,1fr)}
+body.partner-bookings .work-heading{border:0}
+body.partner-bookings .work-heading button{border:0;box-shadow:none;padding:var(--space-2);background:transparent}
+body.partner-bookings .booking-views{display:flex;gap:var(--space-2)}
+body.partner-bookings .booking-views button{flex:1;min-height:var(--touch-target)}
+body.partner-bookings .booking-card-summary{padding:0;gap:var(--space-2) var(--space-4)}
+body.partner-bookings .booking-card-summary .request-status{font-weight:500;color:var(--brand-teal-strong)}
+body.partner-bookings .booking-card-summary .booking-summary-time{font-weight:400;color:var(--ink-body)}
+body.partner-bookings .booking-card-summary>.btn{background:var(--brand-ink);color:var(--card);border-color:var(--brand-ink)}
+body.partner-bookings .booking-card-summary>.btn:hover{background:var(--brand-dark)}
+body.partner-bookings .booking-card>.booking-detail{border:0;padding:0;margin:0}
+body.partner-bookings .work-tools{border-top:1px solid var(--border);padding-block:var(--space-3)}
+body.partner-bookings .work-tools>summary{min-height:var(--touch-target);display:list-item;align-content:center;cursor:pointer;color:var(--ink-muted)}
+body.partner-bookings .work-tools .work-settings{border:0;padding-top:var(--space-3)}
+body.partner-bookings .notification-summary{font-size:var(--ui-small);color:var(--ink-muted)}

@@ -173,3 +173,10 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 - consultation_workspace 원본은 최신 200건 제한. UI 더보기는 반환된 자료 내부 페이징이며 전체 DB 페이징이 아님. src/workflow.js에 200건 도달 시 조회 범위 안내, 해당 범위의 빈 목록 문구 추가. DB/API/권한/알림 정책 변경 없음.
 - tests/booking-overview-browser.mjs: 200건 경고/199건 해제/지난예약 빈 범위, 기존 5폭·200%·권한·상세·오류 검사 PASS. npm run build PASS. 운영 예약/발송 변경 없음. 이번 변경은 로컬 저장, 미배포.
 - 다음: 서버 페이지네이션 설계·격리 검증(별도 DB 변경 검토); 실휴대전화 알림 탭→화면 확인은 사용자 기기에서만 가능. 기존 제외 계정 조회 금지 유지.
+
+
+## 2026-10-23 받은 요청 화면 간소화
+- public/partner-work.html: 자료·업무 설정을 기본 접힘으로 변경(기존 data-work-settings 및 동적 설정 마운트 보존). 이전 이력 제목 간결화.
+- public/service-clarity.css: partner-bookings 범위만 단일 열, 현재/지난 예약 균등 탭, 상태/시간 강조 완화, 홈 청록색 주요 버튼, 닫힌 상세의 빈 여백 제거. 인증/예약/지도/DB 변경 없음.
+- booking-overview-browser.mjs PASS(모바일360/390/430·데스크톱·기존 소비자200%·상세·실패·더보기), 프로덕션 빌드 PASS. 격리 합성자료로 캡처: artifacts/booking-overview/partner-before-simple-390.png, partner-390.png. 실제 운영계정/휴대전화 새 UI 검수는 미실시.
+- 로컬 커밋 완료 대상, 운영 미배포. 다음: 이번 디자인 및 직전 조회상한 안내 배포 후 운영 표시 확인. 휴대전화 푸시 도착은 이전 사용자 확인 유지; 실제 탭 후 진입은 미확인.
