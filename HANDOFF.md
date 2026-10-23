@@ -1,6 +1,7 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
 ## 2026-10-23 — 화면 전환 성능 개선
+- 운영 완료:코드c0b28fa main 푸시, Netlify6adb3a5642b637db4e3b05bb ready/커밋 일치,19:43:53KST 게시. JS17개 HTTP200/로컬hash일치, 해시chunk immutable/진입 revalidate 확인. 공개설정1243→83/92ms(연속캐시hit), 실제 전화대표 메뉴2링크/admin초기gate→본문 및 홈 확인. DB/권한/SMS 설정 변경·업무처리 없음.
 - 공통 SDK/회원 모듈 esbuild splitting, 해시 chunk 캐시, 기본 메뉴 먼저 표시, 성공한 공개 설정만 CDN10초 캐시(브라우저 no-store). 홈/지도/메뉴 gzip JS199023→85666 /139997→85329 /126664→68936바이트. 계정234612→184302바이트. 전체 화면시간 개선율을 의미하지 않는다.
 - 관리자 초기 표시 순서를 변경하려던 시도는 인증 재확인 충돌로 철회. 기존 권한/초기 숨김/세대 검사 유지. DB·권한 정책·SMS180초 설정 변경 없음. 공개 서비스 설정은 캐시로 최대10초 늦게 반영될 수 있다.
 - build, 공개 설정 단위3, 관리자 게이트12/메뉴11, 소비자 목적복원/전문가신청 help-login, 부가조회지연/로그아웃2 통과. docs/navigation-performance-20261023.md 참고. 운영 배포/추가 검수 결과는 완료 후 아래 기록.

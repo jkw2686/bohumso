@@ -33,4 +33,9 @@
 - 실제 예약·승인·삭제·결제·발송 시험 없음. 전체 npm test/npm run verify 및 실휴대전화 성능 측정은 이번 작업 범위에서 재수행하지 않았다.
 
 ## 배포 및 잔여
-최종 코드 푸시/운영 배포/운영 화면 확인은 완료 후 별도 기록. 기존 테스트 수정 `tests/early-access-browser.mjs`, 디버그 파일 및 outputs는 이번 커밋에 포함하지 않는다. 011/073 운영 RPC 누락과 기존 회원/알림 검수 미확인 사항은 별도 과제로 유지한다.
+- 코드 `c0b28faed5cca927e92b0bb377bd464457a12004` main 푸시, Netlify `6adb3a5642b637db4e3b05bb` ready/published2026-10-23T10:43:53.133Z(19:43:53KST), 커밋 일치, 배포 오류 없음.
+- 운영 JS17개(진입9/공통8) 모두 HTTP200·검수 로컬 빌드 SHA256 일치. 공통 모듈은1년immutable, 진입은max-age0/must-revalidate. ignored `artifacts/navigation-performance/production-probe.json` 증거.
+- 운영 `/api/config`3회1243/83/92ms. 첫 응답 stored, 다음 두 응답 실제 Netlify Edge hit(ttl10/9). 브라우저 no-store 유지. 콜드 요청 지연은 남고 측정값은 짧은 연속 요청의 예시이며 화면 전환시간 전체 개선율을 뜻하지 않는다.
+- 실제 로그인된 전화 대표 메뉴 새로고침 후 관리자 화면/예약 관리 링크 정상. admin.html 새로고침 직후 권한확인 안내만, 이후 승인관리 본문 표시 확인. 홈 회원 메뉴/지도/두 도움 버튼 정상. 기존 알림 안내는 나중에로 닫았으며 권한 허용/구독 저장/발송 안 함. 로그인 유지, 업무 버튼 실행 없음.
+- 개인정보 없는 운영 홈 캡처 `artifacts/navigation-performance/home-production.png`(ignored). 새 실휴대전화 브라우저 성능 측정은 미수행.
+- 기존 테스트 수정 `tests/early-access-browser.mjs`, 디버그 파일 및 outputs는 이번 커밋에 포함하지 않는다. 011/073 운영 RPC 누락과 기존 회원/알림 검수 미확인 사항은 별도 과제로 유지한다.
