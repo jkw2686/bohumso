@@ -188,3 +188,9 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 - PASS: booking-overview(설정 펼침/보조처리 접근 포함), notification-settings(5폭/권한/OFF/계정전환, 합성푸시), booking-selection(6화면크기/선택·변경·서버실패·중복없음·완료), build.
 - service-ui 전체검사 홈지도 높이 기대280 vs 실제240에서 중단. 지도는 사용자 제외 범위여서 수정하지 않음. QA_NON_MAP_ONLY 옵션으로 분리한 help/resources/menu/login 360/390/768/1440 검사 PASS. 전체검사 통과로 표기 금지. 실제 운영/휴대전화 새 UI 미검수.
 - 다음: 변경분 배포 시 운영 화면 확인, 홈 지도 높이의 기존 요구/현행 디자인 불일치 별도 검토. 서버 200건 이상 페이지네이션 및 실제 푸시 탭은 미확인 유지.
+
+
+## 2026-10-23 21:56:58 KST 전체 수정 배포 완료
+- 사용자 전체 배포 승인. main4005092479bdda4599dda00f194bdbd740ffad01, Netlify6adb59841ffe99f1407ef323 ready/published2026-10-23T12:56:58.305Z, error=null.
+- 예약조회 상한 안내1594bb4, 목록 간소화382a046, 상세 정리4005092 모두 반영. 공개 partner-work/requests/notifications HTTP200, partner work-tools 및 service-clarity 새규칙 확인. 실제 운영 예약·알림 변경 없이 정적 제공 검증.
+- https://bohumso.netlify.app/partner-work.html / https://bohumso.netlify.app/requests.html . 격리 테스트 결과 유지, 실제 사용자 휴대전화의 새화면·알림 탭은 별도 미확인. 홈 지도 높이 기존검사 불일치와 200건 초과 서버 페이징은 남은 항목.
