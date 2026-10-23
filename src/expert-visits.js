@@ -78,7 +78,7 @@ export async function renderUrgentWorkspace(client,root){
   if(compact){applyView();if(position){const card=[...body.querySelectorAll('[data-booking-id]')].find(n=>n.dataset.bookingId===position.id);if(card)window.scrollBy(0,card.getBoundingClientRect().top-position.top);}}
  }finally{busy=false;}};
  const applyView=()=>{const past=document.querySelector('[data-booking-view]')?.dataset.bookingView==='past';if(lastView!==null&&lastView!==past){opened.clear();for(const d of body.querySelectorAll('details'))d.open=false;}lastView=past;const legacy=document.getElementById('legacyRequests')?.closest('details');if(legacy){legacy.hidden=!past;legacy.querySelector('summary').textContent='이전 예약 보기';}for(const c of body.querySelectorAll('[data-visit-archive]'))c.hidden=!opened.has(c.dataset.bookingId)&&(c.dataset.visitArchive==='true')!==past;panel.hidden=![...body.querySelectorAll('[data-visit-archive]')].some(c=>!c.hidden);};if(compact)window.addEventListener('bohumso-booking-view',applyView);
- if(!compact)button('내역 새로고침',panel,load,true);else document.getElementById('refreshRequests')?.addEventListener('click',()=>load().catch(()=>{panel.hidden=false;status(panel,'방문상담을 불러오지 못했어요. 새로고침해 주세요.');}));try{await load();}catch{panel.hidden=false;status(panel,'내역을 불러오지 못했어요. 새로고침해 주세요.');}
+ if(!compact)button('내역 새로고침',root,load,true);else document.getElementById('refreshRequests')?.addEventListener('click',()=>load().catch(()=>{panel.hidden=false;status(panel,'방문상담을 불러오지 못했어요. 새로고침해 주세요.');}));try{await load();}catch{panel.hidden=false;status(panel,'내역을 불러오지 못했어요. 새로고침해 주세요.');}
  const timer=setInterval(()=>{if(!panel.isConnected){clearInterval(timer);return;}if(document.visibilityState==='visible'&&!document.querySelector('dialog[open]')&&!document.activeElement?.closest('form'))load().catch(()=>{});},30000);
 }
 async function customerPage(client,root){
@@ -99,7 +99,7 @@ async function customerPage(client,root){
   const rows=await catalog(client,query());if(version!==revision)return;
   if(selectedId&&!rows.some(p=>p.id===selectedId)){el('p','선택한 전문가는 지금 방문 가능 목록에 없습니다. 전화·다른 시간 상담을 확인하거나 아래에서 다른 전문가를 직접 선택하세요.',browse,'visit-hint');link('선택한 전문가의 전화·상담 시간 확인','/requests.html?'+new URLSearchParams({help:params.get('help')||'',profession:params.get('profession')||'',planner:selectedId,region:area.id,method:'phone',purpose:params.get('purpose')||'claim',situation:params.get('situation')||''}),browse);}
   rows.sort((a,b)=>Number(b.id===selectedId)-Number(a.id===selectedId));
-  if(!rows.length){link('이 지역 전문가 보기','/map.html?'+new URLSearchParams({view:'experts',region:area.id,help:params.get('help')||'',profession:params.get('profession')||'',purpose:params.get('purpose')||'claim'}),browse);
+  if(!rows.length){link('이 지역 전문가 보기','/map.html?'+new URLSearchParams({view:'experts',region:area.id,help:params.get('help')||'',profession:params.get('profession')||'',purpose:params.get('purpose')||'claim',situation:params.get('situation')||''}),browse);
    el('p','지금 방문 가능한 전문가가 없어요.',browse);
    const [registered,offices]=await Promise.all([client.rpc('planner_catalog',{area:area.id,wanted:''}),client.rpc('office_catalog')]);if(version!==revision)return;
    const publicProfiles=(registered.data?.planners||[]).filter(p=>!p.is_sample&&(!params.get('help')||p.profession===(params.get('help')==='tax'?'tax':'planner')));
