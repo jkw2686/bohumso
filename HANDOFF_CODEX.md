@@ -1,5 +1,14 @@
 # 최신 작업 — 2026-10-23 관리자 UI 인증 표시 최소 수정
 
+## 2026-10-23 — 최종 운영 검증 완료 범위
+- 최종 코드 0ac7731 main 푸시/Netlify 6adb2e94dc2277cc1a50426e ready, commit 일치. 운영 assets/menu.js 및 assets/account.js SHA-256 로컬 검수 빌드와 일치. 두 실제 admin HTML 초기 gate 확인.
+- 실제 Google 로그인으로 지정 이메일 대표 admin 본문/운영 관리 메뉴 표시 확인. 최신 배포의 관리자 계정 관리 패널에서 이메일 대표·휴대전화 대표 표시 및 관리자 추가 입구 확인(추가/해제 실행 안 함).
+- 실제 다른 탭의 기존 로그아웃 버튼 실행 후 메뉴 새로고침 없이 이전 이름·관리자 링크 제거, 열려 있던 관리자 본문도 로그인으로 이동 확인. 로그인 후 전문가 승인·문의 열기·저장·발송·결제 실행 없음.
+- 운영 권한 제한: 대표2/그 외 관리자0, email/phone owner의 active/my_membership.admin/is_admin/is_owner 및 다른 계정/익명 거부/등록부 비공개를 SQL로 확인. 실제 휴대전화 OTP 로그인/실기기/일반회원으로 실제 계정 전환은 미확인. 해당 상태는 격리 검사로 보완.
+- artifacts/admin-owner-menu-production-20261023.png, admin-initial-production-20261023.png(로컬 ignored): 개인정보 없는 실제 화면 증거. docs/admin-owner-logins-20261023.md 참조.
+- 남은 작업: 실휴대전화 대표 로그인 확인(사용자가 OTP 직접 수행, 약5~10분), 011/073 함수 누락은 별도 검토(미적용 유지). 이번 두 대표/명시 운영자 제한 외 DB·권한 변경 없음.
+
+
 ## 2026-10-23 — 관리자 UI 운영 배포 및 대표 로그인 제한 적용
 - bc82e9d main 푸시, Netlify 6adb2a6284f84df2cced4a66 ready(해당 commit 일치). 운영 메뉴 비로그인 관리자 링크 없음. admin.html/admin-requests.html 최초 화면은 권한 확인 안내만, 이후 login next 복귀 확인. artifacts/admin-menu-production-20261023.png 및 admin-initial-production-20261023.png(로컬 ignored).
 - 사용자 추가 승인 후 운영 SQL Editor에서 대표 로그인 제한만 적용. 기존 이메일 대표와 인증·가입 완료된 별도 전화 계정을 UUID로 고정한 private.admin_owner_logins 등록부 사용. 개인식별값/운영 UUID는 공개 코드에 넣지 않음.
