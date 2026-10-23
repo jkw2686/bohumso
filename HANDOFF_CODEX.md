@@ -231,3 +231,10 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 - 운영 정적 JS 내용은 줄바꿈/청크명 차이 제외 일치. 계정 청크HTTP200. HTML은 Netlify pretty URL(/insurer-contacts.html→/insurer-contacts) 변환 확인.
 - 실세무사 계정 예약·기기알림 조작 없이 격리검증. 남은 공식 원문15곳은 재확인 필요.
 - 다음: 추가 사용자 요청부터. 현재 작업 중단 지점 없음. 지도/확정 후 연락처 정책 유지.
+
+## 2026-10-24 00:14 KST 전문가 홈 필수 정리
+- 사용자 용량 제한 요청에 따라 필수만 배포: 161c0b76bdf454ea73ad28e2f0b66986b60e631d, Netlify6adb79b27c7217f31e1a2139 ready, 2026-10-23T15:14:17.242Z.
+- 홈/설정 route분리, 프로필·독립 활동토글·예약1건, 자격 자료 접기, 서류 제출 단일화.
+- 075_expert_map_preferences 운영 적용; toggle_ready/RLS=true, 직접SELECT/anonRPC=false. 기존 예약·과금·방문상태 미변경.
+- 홈4폭/토글새로고침/계정상태, 서류batch·API2, DB preference 격리검사, build통과. docs/expert-home-20261024.md.
+- 남은 것: 기존 세부 설정의 모든 설명·저장버튼/연락처 편집·구독 상세까지 전면 간소화한 것은 아님. 실제 사용자 설정변경/서류 업로드는 조작하지 않음. 이어받을 때 PROJECT_BRIEF/CLAUDE/design-system/HANDOFF 확인.
