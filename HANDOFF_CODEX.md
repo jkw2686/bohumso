@@ -222,3 +222,12 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 - tests/map-simple-browser.mjs: 360/390/430 × 1/10/100 × 동일/상이 좌표 PASS. 갱신 후 화면/패널 유지, 필터 인원 일치, 최대 확대, 짧은 카드/전체 프로필 복귀, 보험소 날짜/가능시간 버튼 PASS. 실제 예약 생성 없음. 타일은 격리 테스트에서 외부 호출 차단.
 - tests/profile-fullscreen-browser.mjs: 360/390/430/1440 및 200% 긴 본문/공개전화 조건 PASS. 프로덕션 빌드 PASS.
 - 운영 배포 완료 dca563ea94dd85e8c6bcba62714dbd8152c3404e / 6adb6a13e57e69022529eeec / 2026-10-23 23:07:33 KST. 실제 공개 지도 타일·사진 마커 표시, 목록 기본 숨김 확인. artifacts/map-simple-production.png.
+
+## 2026-10-23 23:36 KST — 직군별 전문가 화면 배포 완료
+- 코드 d4e096044eb81769780e056e5d573c818163cc51, Netlify 6adb70c027f789da69971871 ready, 2026-10-23T14:36:12.774Z 게시.
+- 설계사/세무사 메뉴·첫 화면 분리, 설계사 미팅 안내, 세무사 사무실 예약·비용 안내, 팩스 복사. DB/권한/요금/과금 변경 없음.
+- 공식 자료26곳 점검:11곳 상세 확인,15곳 확인 필요 유지. docs/resource-audit-20261023.md 참고.
+- build, 예약 목록5폭/200%/직군 안내, 직군2종×모바일3폭, 보험사23검사, 자료검색2검사, 프로필4폭/공개번호/세무사 방문 연결 통과.
+- 운영 정적 JS 내용은 줄바꿈/청크명 차이 제외 일치. 계정 청크HTTP200. HTML은 Netlify pretty URL(/insurer-contacts.html→/insurer-contacts) 변환 확인.
+- 실세무사 계정 예약·기기알림 조작 없이 격리검증. 남은 공식 원문15곳은 재확인 필요.
+- 다음: 추가 사용자 요청부터. 현재 작업 중단 지점 없음. 지도/확정 후 연락처 정책 유지.
