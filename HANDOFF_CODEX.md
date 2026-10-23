@@ -1,3 +1,16 @@
+# 최신 작업 — 2026-10-23 전문가 신청/지역 소식 분리
+
+## 2026-10-23 — 전문가 활동신청과 지역 활동 소식 분리
+- public/office-slot.js, public/map.js, src/region-waitlist.js: 오픈 예정 보험소·빈 지도·방문 탐색의 전문가 활동신청을 /partner.html?roleIntent=expert&region=... 실제 신청 링크로 변경. 비로그인 가입/로그인과 기존 신청/관리 분기를 재사용한다. 신규 신청 화면·데이터·권한 자동 변경 없음.
+- 별도 보조 버튼 '이 지역 활동 소식 받기'; 제목 '지역 활동 소식 받기', 설명 '이 지역의 서비스 오픈·활동 준비 소식을 알려드려요.', 제출 '활동 소식 신청', '전문가 등록 신청과는 별개입니다.' 표시. 전문가 팝업만 도움 유형 제거·need=null. 기존 consumer/planner 역할값·연락처 정규화·동의·RPC·기록 유지.
+- 지역은 URL과 인증 복귀 next로 유지. 기존 전문가 신청서에는 region URL 자동 입력 기능이 없으므로 지역을 임의 저장/덮어쓰기하지 않는다. 신청서에서 활동지역을 직접 선택한다.
+- public/map.css: 데스크톱 빈 시트 버튼 2열로 배치해 늘어난 항목과 기존 방문 링크가 모두 들어오게 함.
+- 검수: build 및 diff --check 통과. help-login(비로그인·일반회원·신청중·승인 + 지역 유지·저장0), region-waitlist(6폭 팝업·동의·consumer 유지·planner need null), map-empty-waitlist(5폭), home-popup(6폭), region-waitlist-connected(격리 DB 저장) 통과. 샌드박스 내 Edge 시작 실패 후 허용된 격리 브라우저로 재실행.
+- 운영 DB 쓰기/실제 신청/실문자·메일/푸시 발송/배포 없음. 실휴대전화 미확인. 기존 미커밋 tests/early-access-browser.mjs 및 디버그·outputs는 이번 변경에 포함하지 않는다.
+
+다음: 운영 배포는 별도 승인 시 진행. 실휴대전화 확인 필요(예상 10~15분). 되돌리기: 이번 변경 커밋 revert, DB 원복 불필요.
+
+--- 이전 인수인계 ---
 # 현재 상태 — 전체 페이지 간결화 (2026-10-17)
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 다음 할 일부터 진행.
 

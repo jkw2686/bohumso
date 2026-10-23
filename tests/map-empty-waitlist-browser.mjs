@@ -67,17 +67,17 @@ for (const [width, label] of [[360, '360'], [390, '390'], [430, '430'], [768, '7
   page.on('pageerror', e => { failed++; console.log('FAIL 콘솔 오류: ' + e.message); });
   await openMap(page);
 
-  // 1) 빈 지역 → 문구 + 버튼 3개
+  // 1) 빈 지역 → 문구 + 항목 4개
   await pickRegion(page, '서울', '종로구');
   const text = await page.textContent('#listSheet');
   check(text.includes('아직 이 지역에 등록된 전문가가 없어요'), `${label}px 빈 지역 문구`);
   const labels = await page.$$eval('#listSheet .empty-actions .btn', e => e.map(x => x.textContent.trim()));
-  check(labels.length === 3 && labels[0] === '오픈 알림 신청' && labels[1] === '이 지역에서 활동하고 싶어요'
-    && labels[2] === '전체 지역 전문가 보기', `${label}px 버튼 3개 (${labels.join(' / ')})`);
+  check(labels.length === 4 && labels[0] === '오픈 알림 신청' && labels[1] === '전문가 활동신청'
+    && labels[2] === '이 지역 활동 소식 받기' && labels[3] === '전체 지역 전문가 보기', `${label}px 항목 4개 (${labels.join(' / ')})`);
   // 1-b) 접힌 기본 상태에서 세 버튼 + 기존 방문 링크가 모두 시트 안에 보인다
   let vis = await visibleActions(page);
-  check(vis.length === 3 && vis.every(v => v.h >= 48 && v.inSheet && v.inView),
-    `${label}px 기본(접힌) 상태에서 안내 3개 모두 보임 (${vis.map(v => v.text + ':' + v.h + (v.inSheet ? '' : '/시트밖') + (v.inView ? '' : '/화면밖')).join(' | ')})`);
+  check(vis.length === 4 && vis.every(v => v.h >= 48 && v.inSheet && v.inView),
+    `${label}px 기본(접힌) 상태에서 안내 4개 모두 보임 (${vis.map(v => v.text + ':' + v.h + (v.inSheet ? '' : '/시트밖') + (v.inView ? '' : '/화면밖')).join(' | ')})`);
   const areaBox = await page.$eval('#areaRequest', n => {
     const r = n.getBoundingClientRect(), sheet = document.getElementById('listSheet').getBoundingClientRect();
     return {h: Math.round(r.height), parent: n.parentElement.id,
@@ -100,7 +100,9 @@ for (const [width, label] of [[360, '360'], [390, '390'], [430, '430'], [768, '7
 
   // 3) 활동 신청 → planner
   await page.evaluate(() => { window.__waitlist = null; });
-  await page.click('#listSheet .empty-actions .btn >> nth=1');
+  const apply=page.getByRole('link',{name:'전문가 활동신청',exact:true});
+  check(new URL(await apply.getAttribute('href'),'https://fixture.test').searchParams.get('region')==='서울 종로구', `${label}px 등록 링크 지역 유지`);
+  await page.getByRole('button',{name:'이 지역 활동 소식 받기',exact:true}).click();
   sent = await page.evaluate(() => window.__waitlist);
   check(sent && sent.region === '서울 종로구' && sent.role === 'planner', `${label}px 활동 신청 role`);
 
