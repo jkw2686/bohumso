@@ -28,6 +28,12 @@ await page.evaluate(()=>window.failRead=true);await page.locator('#refreshReques
 await page.evaluate(()=>{window.failRead=false;window.rows=[];});await page.locator('#refreshRequests').click();await expect(page.locator('.booking-empty')).toBeVisible();await expect(page.locator('.booking-load-status')).toBeEmpty();
 await page.goto(origin+'/partner-work.html?workspace=partner');await expect(card(1)).toBeVisible();await expect(page.locator('.booking-task-count')).toContainText('확인할 요청 6건');await page.screenshot({path:'artifacts/booking-overview/partner-390.png'});
 await card(1).getByRole('button',{name:'요청 확인',exact:true}).click();await expect(card(1).getByRole('button',{name:'상담 목적 확인·수락',exact:true})).toBeVisible();await expect(card(1).getByRole('button',{name:'동의하고 일정 확정',exact:true})).toHaveCount(0);
+await expect(card(1).locator('.booking-detail-body>.request-status')).toHaveCount(0);
+await expect(page.locator('.work-tools')).not.toHaveAttribute('open','');
+await page.locator('.work-tools>summary').click();await expect(page.locator('.work-tools a[href="/partner.html"]')).toBeVisible();await page.locator('.work-tools>summary').click();
+const secondary=card(1).locator('details.booking-secondary-actions');if(await secondary.count()){await expect(secondary).not.toHaveAttribute('open','');await secondary.locator('summary').click();await expect(secondary.getByRole('button').first()).toBeVisible();}
+await page.screenshot({path:'artifacts/booking-overview/partner-detail-simple-390.png',fullPage:false});
+
 await page.evaluate(()=>{const base=window.rows[0];window.rows=Array.from({length:25},(_,n)=>({...base,id:'50000000-0000-4000-8000-'+String(n+1).padStart(12,'0')}));});await page.locator('#refreshRequests').click();await expect(page.locator('#requestList>[data-booking-id]')).toHaveCount(10);await page.getByRole('button',{name:/예약 더 보기/}).click();await expect(page.locator('#requestList>[data-booking-id]')).toHaveCount(20);await expect(page.locator('.booking-task-count')).toContainText('25건');expect(await page.evaluate(()=>calls.filter(c=>c.name==='consultation_command').length)).toBe(0);
 await page.evaluate(()=>{const base=window.rows[0];window.rows=Array.from({length:200},(_,n)=>({...base,id:'50000000-0000-4000-8000-'+String(n+1).padStart(12,'0')}));});
 await page.locator('#refreshRequests').click();await expect(page.locator('.booking-load-status')).toContainText('최근 예약 200건');

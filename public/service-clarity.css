@@ -48,3 +48,10 @@ body.partner-bookings .work-tools{border-top:1px solid var(--border);padding-blo
 body.partner-bookings .work-tools>summary{min-height:var(--touch-target);display:list-item;align-content:center;cursor:pointer;color:var(--ink-muted)}
 body.partner-bookings .work-tools .work-settings{border:0;padding-top:var(--space-3)}
 body.partner-bookings .notification-summary{font-size:var(--ui-small);color:var(--ink-muted)}
+
+/* Keep closed details from adding empty space to customer cards as well. */
+body.customer-requests .booking-card>.booking-detail{border:0;padding:0;margin:0}
+body.partner-bookings .booking-secondary-actions>summary{cursor:pointer;min-height:var(--touch-target);align-content:center;color:var(--ink-muted)}
+body.partner-bookings .booking-detail-body>.booking-next-action{background:var(--brand-teal-soft);padding:var(--space-3);border-radius:var(--ui-radius);color:var(--brand-ink)}
+body.partner-bookings .booking-detail-body>h2{font-size:var(--ui-body);margin-block:var(--space-3)}
+body.partner-bookings .booking-detail-body>.btn:last-child{background:transparent;border:0;box-shadow:none;padding-inline:0;color:var(--brand-ink)}

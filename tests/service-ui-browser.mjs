@@ -47,14 +47,14 @@ try{
  if(!adminOnly){
  for(const width of [360,390,768,1440]){
   await page.setViewportSize({width,height:900});
-  for(const route of ['/','/help/claim.html','/claim-resources.html?view=consumer','/map.html?view=experts','/menu.html','/login.html']){
+  for(const route of ['/','/help/claim.html','/claim-resources.html?view=consumer','/map.html?view=experts','/menu.html','/login.html'].filter(route=>!process.env.QA_NON_MAP_ONLY||(route!=='/'&&!route.startsWith('/map')))){
    await page.goto(base+route);await expect(page.locator('body')).toBeVisible();
    await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
    if(width===360||width===390||width===1440)await page.screenshot({path:output+'/'+(route.split('?')[0].replaceAll('/','-')||'home')+'-'+width+'.png',fullPage:true});
    if(route==='/'){await expect(page.locator('#homeMap')).toBeVisible();expect(await page.locator('#homeMap').evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(280);expect(await page.locator('.home-help').evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);await page.screenshot({path:`${output}/home-${width}.png`});}
    if(route.includes('/map')){await expect(page.locator('#map')).toBeVisible();expect(await page.locator('#map').evaluate(e=>e.getBoundingClientRect().height)).toBeGreaterThan(200);await page.screenshot({path:`${output}/map-${width}.png`});}
   }
-  check('home/help/resources/map/menu/login layout '+width);
+  check((process.env.QA_NON_MAP_ONLY?'help/resources/menu/login layout ':'home/help/resources/map/menu/login layout ')+width);
  }
  if(!process.env.QA_LAYOUT_ONLY){
  await page.setViewportSize({width:390,height:844});

@@ -180,3 +180,11 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 - public/service-clarity.css: partner-bookings 범위만 단일 열, 현재/지난 예약 균등 탭, 상태/시간 강조 완화, 홈 청록색 주요 버튼, 닫힌 상세의 빈 여백 제거. 인증/예약/지도/DB 변경 없음.
 - booking-overview-browser.mjs PASS(모바일360/390/430·데스크톱·기존 소비자200%·상세·실패·더보기), 프로덕션 빌드 PASS. 격리 합성자료로 캡처: artifacts/booking-overview/partner-before-simple-390.png, partner-390.png. 실제 운영계정/휴대전화 새 UI 검수는 미실시.
 - 로컬 커밋 완료 대상, 운영 미배포. 다음: 이번 디자인 및 직전 조회상한 안내 배포 후 운영 표시 확인. 휴대전화 푸시 도착은 이전 사용자 확인 유지; 실제 탭 후 진입은 미확인.
+
+
+## 2026-10-23 예약 상세 추가 정리 및 다른 화면 검사
+- 전문가 상세: 카드와 중복 상태·시간·본인 담당자·지역 문구 제거, 취소/패스는 접힌 보조 처리. 비용/연락처 권한/수락/변경/신고 보존. 소비자 카드의 닫힌 상세 빈 여백도 제거.
+- 변경 src/booking-overview.js, src/workflow.js, public/service-clarity.css 및 브라우저 검사2개. 예약/DB/권한 로직 변경 없음. 로컬 저장·미배포.
+- PASS: booking-overview(설정 펼침/보조처리 접근 포함), notification-settings(5폭/권한/OFF/계정전환, 합성푸시), booking-selection(6화면크기/선택·변경·서버실패·중복없음·완료), build.
+- service-ui 전체검사 홈지도 높이 기대280 vs 실제240에서 중단. 지도는 사용자 제외 범위여서 수정하지 않음. QA_NON_MAP_ONLY 옵션으로 분리한 help/resources/menu/login 360/390/768/1440 검사 PASS. 전체검사 통과로 표기 금지. 실제 운영/휴대전화 새 UI 미검수.
+- 다음: 변경분 배포 시 운영 화면 확인, 홈 지도 높이의 기존 요구/현행 디자인 불일치 별도 검토. 서버 200건 이상 페이지네이션 및 실제 푸시 탭은 미확인 유지.
