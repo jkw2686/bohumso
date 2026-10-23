@@ -1,3 +1,4 @@
+import {renderExpertHome} from './expert-home.js';
 import {renderExpertNavigation} from './expert-navigation.js';
 import {adminPage, lockAdminPage, grantAdminPage, adminPageCurrent} from './admin-page-access.js';
 import {mountExpertOverview} from './expert-overview.js';
@@ -162,6 +163,7 @@ async function start(){
  if(mode==="payment")await renderPaymentResult(client,message);
  if(mode==="phone")await renderPhoneVerification({client,config,root:$("accountContent")});
  if(mode==="account"){await renderAccount();$("accountContent").hidden=false;if(membership.member)await mountNotificationSettings({client,host:$("accountContent"),user});}
+ if(mode==="partner"&&membership.profession!=='office'&&membership.beta_role!=='EXPERT'&&new URLSearchParams(location.search).get('profession')!=='office'){if(await renderExpertHome({client,host:$("accountContent"),user,membership,config,message})){$("accountContent").hidden=false;simplifyServiceChrome();return;}}
  if(mode==="partner"&&membership.beta_role==="EXPERT"){await renderBetaExpert(client,$("accountContent"));const quick=document.createElement('div');$("accountContent").prepend(quick);await renderInstant(client,quick);await mountExpertOverview({client,host:$("accountContent"),user,membership});$("accountContent").hidden=false;return;}
  if(mode==="partner"){const applicationStatus=await renderPartner();
   // ① 지금 방문 상담 카드를 신청 정보 카드보다 위에 둔다. partner-work 와 같은 renderInstant 를

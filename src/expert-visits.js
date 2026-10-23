@@ -25,7 +25,7 @@ export function instantDisplay(data,now=Date.now()){
  const active=enabled&&data.eligible===true&&fresh&&expires>now;
  return {enabled,active,label:active?'ON · 방문 상담 가능 · '+time(expires)+'까지':enabled?'방문 연결 중지 · 위치·이용 조건 확인 필요':'OFF · 방문 상담 중지 · 필요할 때만 켜세요'};
 }
-export async function renderInstant(client,root){
+export async function renderInstant(client,root,{compact=false}={}){
  const card=el('section','',root,'card urgent-panel');card.dataset.instantSettings='';let timer;
  const load=async()=>{const data=await rpc(client,'settings');const guideOpen=card.querySelector('.location-explanation')?.open;card.replaceChildren();el('h2',!data.eligible?'방문 상담 이용 조건':data.instant?.enabled?'지금 방문 상담 가능':'지금 방문 상담을 받으시겠어요?',card);const display=instantDisplay(data),active=display.enabled;
   el('strong',display.label,card);
@@ -45,6 +45,14 @@ export async function renderInstant(client,root){
     button('닫기',dialog,()=>{dialog.close();dialog.remove();},true);dialog.addEventListener('cancel',()=>dialog.remove());dialog.showModal();});start.disabled=!data.eligible;button('나중에',card,()=>{start.textContent='방문 가능 켜기';card.querySelector('h2').textContent='지금 방문 상담 가능';status(card,'방문 가능은 OFF로 유지됩니다. 아래에서 일반 예약을 관리할 수 있습니다.');},true);
   }
   const guide=el('details','',card,'supporting-details location-explanation');guide.open=!!guideOpen;el('summary','위치 사용 안내',guide);el('p','현재 위치를 기준으로 가까운 고객의 요청을 받습니다. 정확한 위치나 이동경로는 고객에게 공개되지 않아요.',guide);el('p','브라우저를 닫으면 위치가 갱신되지 않습니다. 30분 이상 지난 위치는 검색에 사용하지 않아요. 끄더라도 접수한 상담은 유지됩니다.',guide,'visit-hint');
+  if(compact){
+   card.classList.add('instant-compact');card.querySelector('h2').textContent='방문 가능';
+   const actions=[...card.querySelectorAll('button')],main=actions.find(b=>/방문 가능 끄기|위치 허용하고 방문 가능 켜기/.test(b.textContent));
+   for(const n of card.querySelectorAll('p,strong,details,a'))n.hidden=true;
+   for(const b of actions)if(b!==main)b.hidden=true;
+   if(main){main.textContent=display.active?'ON':'OFF';main.setAttribute('role','switch');main.setAttribute('aria-label','방문 가능');main.setAttribute('aria-checked',String(display.active));}
+   link(!data.eligible?'방문 조건 확인 필요 · 확인하기':display.enabled&&!display.active?'위치 확인 필요 · 확인하기':'방문·위치 설정','/partner.html?screen=visit',card).className='text-button';
+  }
   clearTimeout(timer);timer=setTimeout(()=>{if(card.isConnected&&document.visibilityState==='visible')load().catch(()=>{});},60000);
  };
  // 지금 방문 카드는 partner.html·partner-work.html 양쪽에 있고, 다른 화면에서 상태를 바꾸고

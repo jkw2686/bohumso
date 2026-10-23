@@ -1,0 +1,24 @@
+.expert-simple main.container{max-width:720px;padding-top:var(--space-4,16px)}
+.expert-page-heading{display:flex;align-items:center;gap:var(--space-3,12px);margin-bottom:var(--space-4,16px)}
+.expert-page-heading h1{flex:1;margin:0;font-size:var(--text-xl,26px)}
+.expert-page-heading a{min-height:44px;display:inline-flex;align-items:center}
+.expert-screen-content>section,.expert-home-links{margin:0;padding:var(--space-4,16px) 0;border:0;border-bottom:1px solid var(--border);border-radius:0;box-shadow:none;background:transparent}
+.expert-home-profile{display:flex;align-items:center;gap:var(--space-3,12px)}
+.expert-home-profile .expert-avatar{width:64px;height:64px;flex-shrink:0}
+.expert-screen-content h2{font-size:var(--text-lg,20px);margin:0 0 var(--space-2,8px)}
+.expert-screen-content p{margin:var(--space-2,8px) 0}
+.expert-toggle-row,.expert-setting-row{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3,12px);min-height:56px}
+.expert-setting-row{padding:var(--space-3,12px) 0;border-bottom:1px solid var(--border);text-decoration:none;color:var(--text)}
+.expert-setting-row small{color:var(--muted);text-align:right;overflow-wrap:anywhere}
+.expert-simple [role=switch]{width:auto;min-width:72px;min-height:44px;margin:0;background:var(--bg);color:var(--text);border:1px solid var(--border)}
+.expert-simple [role=switch][aria-checked=true]{background:var(--brand-ink);color:var(--card)}
+.expert-simple .instant-compact{display:grid;grid-template-columns:1fr auto;align-items:center;gap:var(--space-2,8px);padding:0;margin:0;border:0;box-shadow:none;background:transparent}
+.expert-simple .instant-compact h2{font-size:inherit;font-weight:inherit;margin:0}
+.expert-simple .instant-compact>a{grid-column:1/-1;font-size:var(--text-sm,14px)}
+.expert-home-links{display:flex;gap:var(--space-4,16px);flex-wrap:wrap}
+.expert-simple .expert-screen-content .card{box-shadow:none;border:0;background:transparent;margin:0;padding:var(--space-3,12px) 0}
+.expert-simple .expert-screen-content form button[type=submit]{width:100%;min-height:48px}
+.expert-simple .settings-row{border:0;padding:0}
+.expert-simple [hidden]{display:none!important}
+.expert-simple .expert-screen-content{padding-bottom:var(--space-4,16px)}
+.expert-simple .expert-screen-content input,.expert-simple .expert-screen-content select{max-width:100%}
