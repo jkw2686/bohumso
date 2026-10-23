@@ -162,3 +162,7 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 - 사용자 휴대전화 보험소 아이콘에서 시험 버튼 실행: DB last_test_at 12:20:42Z, RESERVATION_PUSH_TEST SENT/error null 12:21:06Z. 사용자가 “테스트 알림왔어”로 실제 도착 확인. 현재 활성 구독1.
 - 사용자 알림을 닫아 휴대전화에서 탭→목록→예약 상세 이동은 미확인. 추가 시험 발송/실예약 조작 안 함. 데스크톱 앱 내 링크 및 격리 서비스워커 클릭 경로는 앞서 검증. 시험 알림은 예약 생성 없이 알림 목록으로 이동하도록 설계. 모든 기기 수신 보장으로 확대 해석 금지.
 - 방문상담 수정 b9308ed, Netlify6adb51368f441f86d25481c3 ready/published 2026-10-23T12:21:30.572Z(21:21KST). 코드·빌드·격리 통합 검증·배포 완료.
+
+## 2026-10-23 홈 화면 현재 로고 갱신
+- manifest icons 5개와 21개 HTML apple-touch-icon에 v=20261023 적용. 현재 청록/주황 심볼 그대로 재사용, 새 그림/브랜드 변경 없음. 설치 identity/start_url/scope 변경 없음.
+- PNG192/512/1024 치수·파일 존재, 일반/Apple/maskable 시각 확인, 프로덕션 빌드 통과. 이미 설치된 휴대전화 아이콘 OS 캐시 갱신은 기기에서 별도 확인 필요.
