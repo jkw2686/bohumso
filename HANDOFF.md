@@ -1055,3 +1055,8 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 - NODE_OPTIONS=--max-old-space-size=4096, node tests/expert-visits-browser.mjs 단독 실행 통과. 격리 DB+실제 번들: 익명 탐색→위치 동의→1인 선택→요청→수락→고객 확정→출발→도착→완료. 확정 전 주소 비공개/후 공개, 4폭, 지도 상황값 유지 확인. 부가 appointment_care/알림 RPC는 이 구형 fixture에 없어 fallback 사용; 해당 신규 부가기능 전체 DB 검증으로 확대 해석하지 않음.
 - 실제 결함 수정: 빈 방문 내역 패널 숨김 시 수동 새로고침까지 숨던 문제(버튼을 root에 배치), 전문가 지도 복귀 situation 보존. tests 선택자는 현행 문구 반영.
 - 운영 지정 구글 계정 읽기 진단: 활성1개(21:18KST 갱신), 오늘 시험 기록 없음. 과거 BOOKING_ACCEPTED의 만료 구독 UNREGISTERED와 BOOKING_REQUESTED SENT/UNREGISTERED 병존. 사용자에게 현재 휴대전화 시험 버튼 1회 요청, 응답 대기. 실발송/표시 미확인, 임의 시험·예약 변경 없음.
+
+## 2026-10-23 21:21 실휴대전화 시험 알림 확인
+- 사용자 휴대전화 보험소 아이콘에서 시험 버튼 실행: DB last_test_at 12:20:42Z, RESERVATION_PUSH_TEST SENT/error null 12:21:06Z. 사용자가 “테스트 알림왔어”로 실제 도착 확인. 현재 활성 구독1.
+- 사용자 알림을 닫아 휴대전화에서 탭→목록→예약 상세 이동은 미확인. 추가 시험 발송/실예약 조작 안 함. 데스크톱 앱 내 링크 및 격리 서비스워커 클릭 경로는 앞서 검증. 시험 알림은 예약 생성 없이 알림 목록으로 이동하도록 설계. 모든 기기 수신 보장으로 확대 해석 금지.
+- 방문상담 수정 b9308ed, Netlify6adb51368f441f86d25481c3 ready/published 2026-10-23T12:21:30.572Z(21:21KST). 코드·빌드·격리 통합 검증·배포 완료.
