@@ -221,3 +221,4 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 - 마커/목록 선택→짧은 카드→이름·사진 클릭 시 전체 프로필(직전 핀 즉시 전체화면 지침을 이번 요청으로 대체). 지도 pan/fitBounds 자동 갱신 제거. 예약/연락처 권한/DB 변경 없음.
 - tests/map-simple-browser.mjs: 360/390/430 × 1/10/100 × 동일/상이 좌표 PASS. 갱신 후 화면/패널 유지, 필터 인원 일치, 최대 확대, 짧은 카드/전체 프로필 복귀, 보험소 날짜/가능시간 버튼 PASS. 실제 예약 생성 없음. 타일은 격리 테스트에서 외부 호출 차단.
 - tests/profile-fullscreen-browser.mjs: 360/390/430/1440 및 200% 긴 본문/공개전화 조건 PASS. 프로덕션 빌드 PASS.
+- 운영 배포 완료 dca563ea94dd85e8c6bcba62714dbd8152c3404e / 6adb6a13e57e69022529eeec / 2026-10-23 23:07:33 KST. 실제 공개 지도 타일·사진 마커 표시, 목록 기본 숨김 확인. artifacts/map-simple-production.png.
