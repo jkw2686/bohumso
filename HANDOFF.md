@@ -1032,3 +1032,6 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 - 지정 예약은 Google 전문가에게 정상 연결, 현재 전화 운영자와 별도 UUID. 양측 알림 생성, 전문가 푸시SENT1/UNREGISTERED1. 세 역할 조회 함수에서 대상 ID 확인. 운영 변경/재발송 없음.
 - 예약 목록 요약/단일 상세/더보기/조회실패 구분 구현. 상세 docs/booking-receipt-20261023.md.
 - 격리 브라우저·PGlite2·build 검증. 배포/실기기 푸시 확인은 별도.
+
+## 2026-10-23 예약 화면 운영 배포 완료
+사용자 요청으로 main69a2a1d 배포. Netlify6adb43c6628655378ca7f46b 20:24KST ready. 소비자/전문가 페이지200·새CSS·공통8모듈·새UI코드 확인. DB/권한/알림 정책 변경 없음. docs/booking-receipt-20261023.md 참조.

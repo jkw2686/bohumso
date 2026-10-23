@@ -134,3 +134,6 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 
 ## 2026-10-17 13:52:18 KST 운영 배포
 사용자가 main 반영·운영 배포를 명시 승인하여 3bc42758b9ab42683809f65821a6bb391e4715ef를 origin/main에 반영. Netlify 6ad2fef3be0db24fff59e3cb ready, published_at=2026-10-17T04:52:18.345Z, error=null. 운영 https://bohumso.netlify.app / 고정 https://6ad2fef3be0db24fff59e3cb--bohumso.netlify.app . 공개 page-clarity.css와 assets/account.js HTTP200 및 로컬과 정규화 본문 일치 확인. 실제 회원·이충경 자료 접근/발송 없음. 잔여 크레딧은 도구에 제공되지 않고 Netlify UI 로그인이 필요하여 미확인(Pro 요금제만 확인).
+
+## 최신 배포 갱신 — 2026-10-23
+위의 미배포 상태는 해소됨. 사용자 요청으로 main69a2a1d, deploy6adb43c6628655378ca7f46b 20:24KST published. 운영 양쪽 예약 페이지/새CSS/참조8모듈200 확인. 실제 계정 전환·예약 행동·기기 푸시 검증은 미실시. 로컬/CI JS 해시 동일성 주장 금지. 최신 링크 /requests.html, /partner-work.html.

@@ -37,3 +37,10 @@
 
 ## 배포 진행 — 2026-10-23
 사용자 승인으로 수정 커밋 fc1787a를 기존 Netlify main 자동배포에 반영. 운영 결과는 배포 완료 후 기록한다.
+
+## 운영 배포 완료 — 2026-10-23 20:24 KST
+- 사용자 배포 요청으로 main69a2a1d 반영. Netlify6adb43c6628655378ca7f46b ready/published 2026-10-23T11:24:06.275Z, 배포 오류 없음.
+- /requests.html, /partner-work.html HTTP200. 새 booking-management.css 연결, 제목1개, 검색이 목록 다음임 확인. CSS 내용 일치.
+- 운영 account.js가 참조하는 공통8개 모듈 모두200. booking-task-count/booking-more 및 조회실패 안내 코드 반영 확인. CI 결과와 로컬 생성 번들의 바이트 동일성은 성립하지 않아 동일 해시로 보고하지 않는다.
+- 운영 로그인 계정 전환/예약 변경/푸시 재발송 없이 정적 자산 검증. 로그인 후 실사용 전체 검증은 기존 보고서의 미확인 항목 유지.
+- 링크: https://bohumso.netlify.app/requests.html / https://bohumso.netlify.app/partner-work.html
