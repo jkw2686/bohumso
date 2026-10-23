@@ -51,7 +51,11 @@ for(const help of ['claim','tax']){const next='/requests.html?help='+help+'&prof
 expect(saveCalls).toBe(0);
 const anonContext=await browser.newContext();await anonContext.route('**/*',routeHandler);const anon=await anonContext.newPage();
 const next='/partner.html?'+new URLSearchParams({roleIntent:'expert',region:'서울 종로구'});await anon.goto(origin+next);await anon.waitForURL('**/login.html?**');expect(new URL(anon.url()).searchParams.get('next')).toBe(next);
-await expect(anon.locator('a[href*="signup"]')).not.toHaveCount(0);await anonContext.close();
+await expect(anon.locator('a[href*="signup"]')).not.toHaveCount(0);
+await anon.goto(origin+'/signup.html?next='+encodeURIComponent(next));await expect(anon.locator('#publicLoginLink')).toBeVisible();
+expect(new URL(new URL(await anon.locator('#publicLoginLink').getAttribute('href'),origin).searchParams.get('next'),origin).searchParams.get('region')).toBe('서울 종로구');
+await anon.getByLabel('전문가 직군',{exact:true}).selectOption('planner');
+const afterChoice=new URL(new URL(await anon.locator('#publicLoginLink').getAttribute('href'),origin).searchParams.get('next'),origin);expect(afterChoice.searchParams.get('region')).toBe('서울 종로구');expect(afterChoice.searchParams.get('profession')).toBe('planner');await anonContext.close();
 console.log('PASS anonymous login return and member/pending/approved expert routing preserve region without saving.');
 console.log('PASS authenticated callback preserves both booking purposes and expert-management entry for 3 roles.');
 expect(errors).toEqual([]);console.log('PASS built partner.html beta, approved and pending integration; isolated responses only.');}finally{await browser.close();}
