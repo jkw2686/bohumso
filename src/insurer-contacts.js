@@ -84,8 +84,7 @@ export function renderInsurerContacts({host, contacts, onFavorite}) {
       el('dt', label, list);
       const value = el('dd', undefined, list);
       if (contact[key]) {
-        const link = el('a', contact[key], value);
-        link.href = 'tel:' + contact[key].replace(/-/g, '');
+        if(key==='fax_claim'){const copy=el('button',contact[key]+' 복사',value);copy.type='button';copy.className='text-button';const status=el('span','',value);status.setAttribute('role','status');copy.onclick=async()=>{try{await navigator.clipboard.writeText(contact[key]);status.textContent=' 복사했어요';}catch{status.textContent=' 복사하지 못했어요. 번호를 길게 눌러 복사해 주세요.';}};}else{const link = el('a', contact[key], value);link.href = 'tel:' + contact[key].replace(/-/g, '');}
       } else { el('span', '정보 없음', value).className = 'insurer-none'; }
     }
     if (contact.homepage_url) anchor(box, '홈페이지 →', contact.homepage_url, 'insurer-home');

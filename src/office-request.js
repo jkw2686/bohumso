@@ -17,7 +17,7 @@ export function renderOfficeRequest({form,command,refresh,message,selectedOffice
  const situation=situationLabels[params.get('situation')]||'',name=selectedOffice?.name||selectedPlanner?.name||'';
  // 세무 상담은 고객이 세무사 사무실로 방문한다. 보험소 방문과 같은 장소 유형으로 묶지 않는다.
  const taxOfficeVisit=selectedPlanner?.profession==='tax'&&method!=='phone';
- const direction=selectedOffice?'고객이 보험소에 방문 · '+(selectedOffice.address||selectedOffice.region):taxOfficeVisit?'고객이 세무사 사무실에 방문 · 정확한 주소는 예약 확정 후 안내':methodLabels[method];
+ const direction=selectedOffice?'고객이 보험소에 방문 · '+(selectedOffice.address||selectedOffice.region):taxOfficeVisit?'세무사 사무실 방문 · 정확한 주소는 예약 확정 후 안내':methodLabels[method];
  const mapURL=view=>'/map.html?'+new URLSearchParams({view,region,purpose,...(help&&view==='experts'?{help,profession:help==='tax'?'tax':'planner'}:{}),situation:params.get('situation')||''});
  function reselect(parent){const a=el('a',selectedOffice?'다른 보험소 선택':'다른 전문가 선택',parent);a.href=mapURL(selectedOffice?'offices':'experts');a.className='text-button';return a;}
  function remember(){params.set('region',region);for(const [key,value]of [['date',date],['time',time]])if(value)params.set(key,value);else params.delete(key);history.replaceState(null,'',location.pathname+'?'+params);}
@@ -27,7 +27,8 @@ export function renderOfficeRequest({form,command,refresh,message,selectedOffice
  if(!selectedOffice&&!selectedPlanner){form.replaceChildren();el('h2','누구에게 도움받으실까요?',form);el('p','전문가나 방문할 보험소를 직접 선택해 주세요.',form);for(const [label,view]of [['가까운 전문가 선택','experts'],['방문할 보험소 선택','offices']]){const a=el('a',label,form);a.className='btn'+(view==='offices'?' ghost':'');a.href=mapURL(view);}return;}
  function render(){
   remember();checking=false;form.replaceChildren();const progress=el('p',step===1?'1/3 날짜':'2/3 시간',form);progress.className='step-dots';progress.setAttribute('aria-label',step===1?'현재 단계: 날짜 선택':'현재 단계: 시간 선택');
-  el('h2','상담 시간을 골라주세요',form);el('p',name+' · '+(selectedOffice?'보험소 방문':method==='phone'?'전화상담':'방문상담'),form).className='wizard-context';if(selectedPlanner?.profession==='tax')el('p',selectedPlanner.fee_notice||'방문 전 상담료 확인이 필요합니다',form);
+  el('h2','상담 시간을 골라주세요',form);el('p',name+' · '+(selectedOffice?'보험소 방문':method==='phone'?'전화상담':taxOfficeVisit?'세무사 사무실 방문':'방문상담'),form).className='wizard-context';if(selectedPlanner?.profession==='tax')el('p',selectedPlanner.fee_notice||'방문 전 상담료 확인이 필요합니다',form);
+  if(selectedPlanner?.profession==='tax'){el('small','앱 예약 신청은 무료입니다. 세무 상담료는 별도로 확인해 주세요.',form);if(taxOfficeVisit&&selectedPlanner.office_address)el('p',selectedPlanner.office_address,form);}
   if(step===1){
 
    const choices=el('div',undefined,form);choices.className='choice-grid booking-date-chips';

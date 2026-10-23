@@ -1,3 +1,4 @@
+import {expertNavigation} from './expert-navigation.js';
 import {MEMBER, memberService, memberState, invalidateMemberState, authURL} from './member-access.js';
 import '../public/expert-profile-card.js';
 
@@ -61,10 +62,10 @@ function group(title, items) {
   for (const [label, href, symbol] of items) row(node('li', '', list), label, href, symbol);
   return section;
 }
-function common(expert, billing) {
+function common(expert, billing, tax=false) {
   group('이용 안내', [
     ['고객센터', destination('support'), 'support'],
-    ['이용·결제 정보', billing && expert ? destination('partner-work', 'workflowSummary') : '/payment-policy.html', 'card'],
+    ...(tax?[]:[['이용·결제 정보', billing && expert ? destination('partner-work', 'workflowSummary') : '/payment-policy.html', 'card']]),
     ['계정 설정', account, 'settings'],
   ]);
 }
@@ -124,7 +125,8 @@ async function load() {
     const role = approved ? '전문가' : member.partner_status ? '전문가 신청 · 심사 현황 확인' : member.member ? '일반 회원' : '가입 마무리가 필요해요';
     profile(name, role);
     if (approved) {
-      group('상담 관리', [
+      group('주요 업무',expertNavigation(member.profession).map(([label,href],i)=>[label,href,['calendar','clock','person'][i]]));
+      if(member.profession!=='tax')group('상담 관리', [
         ['상담 요청', destination('partner-work', 'workflowFilters').replace('?from=menu', '?from=menu&state=requested'), 'support'],
         ['예약 내역', destination('partner-work', 'workflowFilters'), 'calendar'],
         ...(planner ? [['상담 가능 설정', destination('partner', 'consult-settings'), 'clock']] : []),
@@ -135,10 +137,10 @@ async function load() {
         ['활동 지역', destination('partner', 'activity-area'), 'pin'],
         ['등록·심사 정보', destination('partner', 'partnerState'), 'shield'],
       ]);
-      resources = group('업무 자료', [
+      if(member.profession!=='tax')resources = group('업무 자료', [
         ['청구 안내', destination('claim-resources'), 'document'],
       ]);
-      common(true, config.paymentsEnabled !== false);
+      common(true, config.paymentsEnabled !== false,member.profession==='tax');
     } else {
       publicMenus();
       group('내 활동', [[member.partner_status ? '전문가 신청 현황' : '전문가로 활동하기', destination('partner'), 'person']]);
@@ -153,7 +155,7 @@ async function load() {
     // Role menus are usable before optional profile/catalog/library lookups finish.
     const lookupResults = await Promise.allSettled([
       planner ? client.rpc('expert_optional_profile', {operation: 'get'}) : null,
-      approved ? client.rpc('growth_command', {operation: 'capabilities', payload: {}}) : null,
+      approved&&member.profession==='planner' ? client.rpc('growth_command', {operation: 'capabilities', payload: {}}) : null,
       approved ? client.rpc('planner_catalog', {area: '', wanted: ''}) : null,
     ]);
     if (current !== revision) return;

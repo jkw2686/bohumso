@@ -1,11 +1,13 @@
+import {renderExpertNavigation} from './expert-navigation.js';
 /** Move existing UI nodes; never recreate inputs or change stored settings. */
-export function arrangeExpertManagement(root,{approved=!!root?.querySelector('[data-instant-settings]')}={}){
+export function arrangeExpertManagement(root,{approved=!!root?.querySelector('[data-instant-settings]'),profession}={}){
  if(!root)return;
  root.dataset.managementState=approved?'approved':'registration';
  const instant=root.querySelector('[data-management-priority]')||root.querySelector('[data-instant-settings]')?.parentElement;
  const consult=root.querySelector('.consult-settings'),area=root.querySelector('[data-service-area-settings]');
  let menu=root.querySelector('[data-management-menu]');
- if(!menu){menu=document.createElement('nav');menu.dataset.managementMenu='';menu.className='compact-work-menu';menu.setAttribute('aria-label','전문가 업무 메뉴');for(const [title,url]of [['자료실','/claim-resources.html'],['보험사 연락처','/insurer-contacts.html'],['청구 도움 대화·만화','/claim-resources.html#claimScripts'],['받은 요청·예약','/partner-work.html']]){const a=document.createElement('a');a.className='btn ghost';a.textContent=title;a.href=url;menu.append(a);}}
+ if(!menu){menu=document.createElement('nav');menu.dataset.managementMenu='';menu.className='compact-work-menu';menu.setAttribute('aria-label','전문가 업무 메뉴');}
+ renderExpertNavigation(menu,profession);
  const old=root.querySelector('[data-work-link]');if(old)old.hidden=true;
  if(!approved){menu.querySelector('a[href="/partner-work.html"]')?.remove();const summary=root.querySelector('[data-application-summary]');if(summary)root.prepend(summary);if(instant)root.append(instant);root.append(menu);return;}
  const main=document.createElement('section'),side=document.createElement('section');main.className='management-primary';side.className='management-secondary';main.setAttribute('aria-label','상담·지역·프로필 설정');side.setAttribute('aria-label','등록 정보와 업무 자료');

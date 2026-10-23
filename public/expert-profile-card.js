@@ -35,7 +35,7 @@
  }
  function requestActions(parent,p,context){
   var actions=node('div','',parent,'expert-card-actions'),vq=query(p,context);
-  if(p.available){var request=node('a','상담 요청',actions,'btn');request.href='/requests.html?'+vq+'&method=phone';}
+  if(p.available){var request=node('a','상담 요청',actions,'btn');request.href='/requests.html?'+vq+'&method='+(p.profession==='tax'?'scheduled':'phone');}
   function loadPhone(){if(!window.bohumsoPublicExpertPhone||!actions.isConnected)return;Promise.resolve().then(function(){return window.bohumsoPublicExpertPhone(p.id);}).then(function(contact){if(!actions.isConnected||contact?.id!==p.id||!/^(0[1-9][0-9]{7,10}|1[568][0-9]{6})$/.test(contact.phone||''))return;var phone=node('a','전화하기',null,'btn ghost');phone.href='tel:'+contact.phone;actions.prepend(phone);}).catch(function(){/* No explicit public contact: no phone button. */});}
   if(window.bohumsoPublicExpertPhone)loadPhone();else window.addEventListener('bohumso-member-ready',loadPhone,{once:true});
   return actions;

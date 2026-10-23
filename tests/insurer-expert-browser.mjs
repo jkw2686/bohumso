@@ -89,6 +89,11 @@ try {
     '주소가 없으면 전산 접속 버튼을 쓸 수 없다');
   check(await cards.nth(1).locator('.insurer-links .is-empty').count() === 1, '약관 주소가 없으면 그 버튼만 비활성');
 
+  check(await cards.first().locator('a[href="tel:027518001"]').count() === 0, '팩스는 전화 링크가 아님');
+  await expect(cards.first().getByRole('button',{name:'02-751-8001 복사'})).toBeVisible();
+  await env.page.evaluate(()=>{Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.copiedFax=text;}}});});
+  await cards.first().getByRole('button',{name:'02-751-8001 복사'}).click();
+  check(await env.page.evaluate(()=>window.copiedFax)==='02-751-8001','팩스 번호 복사 동작');
   // 전화번호는 tel: 링크, 없으면 '정보 없음'
   check(await cards.first().locator('dd a[href="tel:15883114"]').count() === 1, '고객센터는 tel 링크');
   check(await cards.first().locator('.insurer-none').count() === 1, '빈 항목은 정보 없음으로 표시');

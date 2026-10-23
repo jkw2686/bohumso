@@ -11,6 +11,7 @@ export async function renderProfessionApplication({client,config,message}) {
  let personal=workspace.data.profile,office=workspace.data.office_profile,profile=personal||office,step=1,busy=false;
  const initial=p=>({profession:p?.profession||'',display_name:p?.display_name||'',organization:p?.organization||'',registration_reference:p?.registration_reference||'',office_address:p?.office_address||'',office_name:p?.office_name||'',address:p?.address||'',phone:p?.phone||'',fee_mode:p?.fee_mode||'unknown',fee_basis:p?.fee_basis||'',primary_area:p?.primary_area||'',secondary_areas:p?.secondary_areas||[],specialties:p?.specialties||[],weekdays:p?.weekdays||[1,2,3,4,5],start_hour:p?.start_hour??9,end_hour:p?.end_hour??18,firstMeetingConfirmed:false,customerInitiatedConfirmed:false,consent:false,agreement_version:PROFESSION_VERSION});
  const drafts=new Map();let values=initial(profile);const chosen=new URLSearchParams(location.search).get('profession');if(PROFESSION_CONFIG[chosen]?.intake&&(!personal||chosen==='office')){profile=chosen==='office'?office:personal;values=initial(profile);values.profession=chosen;}
+ if(profile?.profession==='tax'&&new URLSearchParams(location.search).get('edit')==='hours')step=3;
  state.textContent=states[profile?.status]||'직군을 선택하고 시작하세요';form.hidden=false;
  await renderPhoneSignupPanel({client,config,before:form});
  const el=(tag,text,parent=form)=>{const n=document.createElement(tag);if(text)n.textContent=text;parent.append(n);return n;};

@@ -1,3 +1,4 @@
+import {renderExpertNavigation} from './expert-navigation.js';
 import {adminPage, lockAdminPage, grantAdminPage, adminPageCurrent} from './admin-page-access.js';
 import {mountExpertOverview} from './expert-overview.js';
 import {arrangeExpertManagement} from './expert-management-layout.js';
@@ -151,9 +152,10 @@ async function start(){
   const tools=document.createElement('div'),quick=document.createElement('div');
   const settings=$("accountContent").querySelector("[data-work-settings]")||$("accountContent");settings.append(tools);const quickDetails=document.createElement("details");const quickTitle=document.createElement("summary");quickTitle.textContent="방문 가능 설정";quickDetails.append(quickTitle,quick);settings.append(quickDetails);quick.className="work-availability";
   const resources=$("accountContent").querySelector('[data-expert-resources]');
-  if(resources){const heading=settings.querySelector("h2");if(heading)heading.after(resources);else settings.prepend(resources);}
+  renderExpertNavigation(resources,membership.profession);if(membership.profession==='tax'){const title=document.querySelector('.work-heading h1');if(title)title.textContent='받은 예약';quickTitle.textContent='고객에게 찾아가는 상담 (선택)';}
+  if(resources)$("accountContent").querySelector(".work-heading")?.after(resources);
   await renderInstant(client,quick);
-  await renderServiceArea(client,tools);await renderUrgentWorkspace(client,$("accountContent").querySelector("[data-work-primary]")||tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
+  await renderServiceArea(client,tools);await renderUrgentWorkspace(client,membership.profession==='tax'?quick:$("accountContent").querySelector("[data-work-primary]")||tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
  if(mode==='requests'&&document.body.dataset.workspace==='admin')await renderWaitlistCounts(client,document.getElementById('regionWaitlistHost'));
  if(mode==='requests'&&document.body.dataset.workspace!=='admin'){void mountNotificationSummary({client,host:$('accountContent'),user});}
  if(mode==='requests'&&document.body.dataset.workspace!=='admin')await renderCareCases(client,$('accountContent'),document.body.dataset.workspace);
@@ -170,10 +172,10 @@ async function start(){
   if(applicationStatus!=='office'&&membership.partner_status&&membership.profession!=='office')await renderServiceArea(client,$("accountContent"));
   if(["planner","tax"].includes(membership.profession)&&applicationStatus==="approved")await renderProfileEditor(client,$("accountContent"));
 
-  const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink){workLink.hidden=membership.profession==='office'||applicationStatus==='office';$("accountContent").append(workLink);}if(membership.profession!=='office'&&applicationStatus!=='office')arrangeExpertManagement($("accountContent"),{approved:applicationStatus==="approved"});}
+  const workLink=$("accountContent").querySelector('[data-work-link]');if(workLink){workLink.hidden=membership.profession==='office'||applicationStatus==='office';$("accountContent").append(workLink);}if(membership.profession!=='office'&&applicationStatus!=='office')arrangeExpertManagement($("accountContent"),{approved:applicationStatus==="approved",profession:membership.profession});}
  if(mode==="partner")await mountExpertOverview({client,host:$("accountContent"),user,membership});
  if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
- if((mode==='partner'||document.body.dataset.workspace==='partner')&&membership.profession!=='office'&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('[data-management-menu]');if(resources)resources.append(entry);else {const menu=$('accountContent').querySelector('[data-management-menu]');if(menu)menu.append(entry);else $('accountContent').append(entry);}}
+
  if(!grantAdminPage(adminTicket))return;
  adminReady=adminPage;
  $("accountContent").hidden=false;

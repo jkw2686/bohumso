@@ -1,7 +1,7 @@
 // Official link directory. No customer information.
 export const resourceTypes={"hospital":"병원 기록 발급","insurer":"보험사 전체","life":"생명보험","nonlife":"손해보험","post":"우체국보험","service":"실손24","inheritance":"사망·보험 조회","funeral":"장례 정보","pension":"연금보험 · 별도 범위","other":"보증·재보험 · 별도 범위"};
 export const applicantTypes={"self":"환자 본인","family":"친족","agent":"지정 대리인","death":"환자 사망","other":"미성년·기타 사유"};
-export const resourceScope={"hospital":"제5기(2024~2026) 상급종합병원 47곳. 전국 모든 병원 목록이 아님. 기존 다른 병원 목록 유지·병합 권장.","designationSource":"https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000","recheckAfter":"2026-12-31","date":"2026-10-10","summary":{"hospital":47,"life":21,"nonlife":16,"post":1,"pension":1,"other":2,"detail":44,"homepage":21,"check":26,"preserved":["삼성서울병원","서울아산병원","분당서울대학교병원","삼성화재","DB손해보험","실손24","내보험찾아줌 · 상속인 조회 안내","e하늘 장사정보서비스"]}};
+export const resourceScope={"hospital":"제5기(2024~2026) 상급종합병원 47곳. 전국 모든 병원 목록이 아님. 기존 다른 병원 목록 유지·병합 권장.","designationSource":"https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000","recheckAfter":"2026-12-31","date":"2026-10-10","summary":{"hospital":47,"life":21,"nonlife":16,"post":1,"pension":1,"other":2,"detail":55,"homepage":21,"check":15,"preserved":["삼성서울병원","서울아산병원","분당서울대학교병원","삼성화재","DB손해보험","실손24","내보험찾아줌 · 상속인 조회 안내","e하늘 장사정보서비스"]}};
 export const resources=[
   {
     "id": "smc",
@@ -285,25 +285,25 @@ export const resources=[
     "url": "https://www.kuh.ac.kr/guide/request5.do",
     "alternateUrl": "https://www.kuh.ac.kr/main.do",
     "menu": "공식 홈페이지에서 의무기록·영상 사본 발급 안내 확인",
-    "method": "세부 방법과 이용 가능한 접수·발급 경로는 연결된 공식 페이지를 확인하세요.",
+    "method": "본인·친족·대리인 및 사망 등 동의 불가 상황별 구비서류를 공식 안내에서 확인하세요. 영상자료만 신청하는 경우 지하 1층 영상의학과 절차가 안내되어 있습니다.",
     "forms": "별도 양식 주소는 확인되지 않았습니다. 공식 안내 안에서 양식 메뉴를 확인하세요.",
     "checklist": [
       "필요한 기록의 종류와 기간을 상담 후 정하세요.",
       "신청 관계에 맞는 구비서류와 수령 방법을 병원 공식 안내에서 확인하세요."
     ],
-    "checkedAt": "2026-10-10",
-    "verification": "상세 안내 확인 필요",
-    "reviewStatus": "check",
-    "urlLabel": "공식 안내 · 확인 필요",
+    "checkedAt": "2026-10-23",
+    "verification": "안내 제목·본문 연결 확인",
+    "reviewStatus": "detail",
+    "urlLabel": "발급 안내",
     "insuranceClass": null,
     "aliases": [
       "건국대병원"
     ],
     "scopeSource": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000",
     "importedVerification": "공식검색확인",
-    "sourceNote": "공식 안내 페이지 검색 결과 확인. 로그인·신청·발급은 실행하지 않음.",
+    "sourceNote": "본인·친족·대리인 및 환자 동의 불가 시 구비서류와 영상자료 사본 발급 절차를 확인했습니다.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "공식 안내 본문을 확인했습니다. 로그인·신청·발급·접수 실행과 모든 서식 다운로드를 검증한 것은 아닙니다.",
     "applicants": {
       "self": "환자 본인에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
       "family": "친족에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
@@ -503,23 +503,23 @@ export const resources=[
     "url": "https://mokdong.eumc.ac.kr/guide/medicalRecord.do",
     "alternateUrl": "https://mokdong.eumc.ac.kr/",
     "menu": "공식 홈페이지에서 의무기록·영상 사본 발급 안내 확인",
-    "method": "세부 방법과 이용 가능한 접수·발급 경로는 연결된 공식 페이지를 확인하세요.",
+    "method": "의무기록·영상자료는 2층 21·22·23번 창구에서 수납 후 교부합니다. 우편·팩스 발급은 불가하므로 신청인별 구비서류를 확인하세요.",
     "forms": "별도 양식 주소는 확인되지 않았습니다. 공식 안내 안에서 양식 메뉴를 확인하세요.",
     "checklist": [
       "필요한 기록의 종류와 기간을 상담 후 정하세요.",
       "신청 관계에 맞는 구비서류와 수령 방법을 병원 공식 안내에서 확인하세요."
     ],
-    "checkedAt": "2026-10-10",
-    "verification": "상세 안내 확인 필요",
-    "reviewStatus": "check",
-    "urlLabel": "공식 안내 · 확인 필요",
+    "checkedAt": "2026-10-23",
+    "verification": "안내 제목·본문 연결 확인",
+    "reviewStatus": "detail",
+    "urlLabel": "발급 안내",
     "insuranceClass": null,
     "aliases": [],
     "scopeSource": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000",
     "importedVerification": "공식검색확인",
-    "sourceNote": "공식 안내 페이지 검색 결과 확인. 로그인·신청·발급은 실행하지 않음.",
+    "sourceNote": "의무기록·영상자료 창구, 신청인별 구비서류와 우편·팩스 발급 불가 안내를 확인했습니다.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "공식 안내 본문을 확인했습니다. 로그인·신청·발급·접수 실행과 모든 서식 다운로드를 검증한 것은 아닙니다.",
     "applicants": {
       "self": "환자 본인에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
       "family": "친족에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
@@ -556,7 +556,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "공식 안내 페이지 검색 결과 확인. 로그인·신청·발급은 실행하지 않음.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "2026-10-23 재확인: web 도구 응답이 ERR_TOO_MANY_REDIRECTS 안내여서 상세 본문을 확인하지 못했습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "applicants": {
       "self": "환자 본인에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
       "family": "친족에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
@@ -593,7 +593,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "공식 안내 페이지 검색 결과 확인. 로그인·신청·발급은 실행하지 않음.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "2026-10-23 재확인: JavaScript 활성화 요구 안내만 반환되어 상세 본문을 확인하지 못했습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "applicants": {
       "self": "환자 본인에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
       "family": "친족에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
@@ -668,7 +668,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "의무기록사본 안내와 홈페이지 공식 검색 확인. 홈페이지 직접 열기는 도구 오류; 링크 고장으로 단정하지 않음.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "2026-10-23 재확인: 기존 상세 주소가 web 도구에서 시간 초과되었습니다. 공식 류마티스병원 경로의 온라인 발급 안내는 별도로 확인했습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "applicants": {
       "self": "환자 본인에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
       "family": "친족에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
@@ -743,7 +743,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "공식 안내 페이지 검색 결과 확인. 로그인·신청·발급은 실행하지 않음.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "2026-10-23 재확인: JavaScript 활성화 요구 안내만 반환되어 상세 본문을 확인하지 못했습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "applicants": {
       "self": "환자 본인에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
       "family": "친족에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
@@ -1458,16 +1458,16 @@ export const resources=[
     "url": "https://www.dcmc.co.kr/content/02treatment/07_04.asp",
     "alternateUrl": "https://www.dcmc.co.kr/",
     "menu": "공식 홈페이지에서 의무기록·영상 사본 발급 안내 확인",
-    "method": "세부 방법과 이용 가능한 접수·발급 경로는 연결된 공식 페이지를 확인하세요.",
+    "method": "외래 일반 환자는 S(스텔라)관 3층 진료기록·영상 사본 발급창구에서 신청·발급·수납합니다. 입원 환자는 병동 간호사실에 먼저 신청하며 정신건강의학과는 별도 절차를 확인하세요.",
     "forms": "별도 양식 주소는 확인되지 않았습니다. 공식 안내 안에서 양식 메뉴를 확인하세요.",
     "checklist": [
       "필요한 기록의 종류와 기간을 상담 후 정하세요.",
       "신청 관계에 맞는 구비서류와 수령 방법을 병원 공식 안내에서 확인하세요."
     ],
-    "checkedAt": "2026-10-10",
-    "verification": "상세 안내 확인 필요",
-    "reviewStatus": "check",
-    "urlLabel": "공식 안내 · 확인 필요",
+    "checkedAt": "2026-10-23",
+    "verification": "안내 제목·본문 연결 확인",
+    "reviewStatus": "detail",
+    "urlLabel": "발급 안내",
     "insuranceClass": null,
     "aliases": [
       "대구가톨릭대병원",
@@ -1475,9 +1475,9 @@ export const resources=[
     ],
     "scopeSource": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000",
     "importedVerification": "본문확인",
-    "sourceNote": "진료기록 사본발급 안내.",
+    "sourceNote": "진료기록·영상 사본 발급 절차와 신청인별 구비서류를 확인했습니다.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "공식 안내 본문을 확인했습니다. 로그인·신청·발급·접수 실행과 모든 서식 다운로드를 검증한 것은 아닙니다.",
     "applicants": {
       "self": "환자 본인에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
       "family": "친족에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
@@ -1496,25 +1496,25 @@ export const resources=[
     "url": "https://yumc.ac.kr/PageLink.do?link=yumc%2F01_clinicinfo%2Fissue_02",
     "alternateUrl": "https://yumc.ac.kr/",
     "menu": "공식 홈페이지에서 의무기록·영상 사본 발급 안내 확인",
-    "method": "세부 방법과 이용 가능한 접수·발급 경로는 연결된 공식 페이지를 확인하세요.",
+    "method": "본인 신청은 발급 완료 후 우편·팩스·방문 수령이 가능하며, 친족·대리인 신청은 구비서류 지참 후 방문 수령만 가능합니다.",
     "forms": "별도 양식 주소는 확인되지 않았습니다. 공식 안내 안에서 양식 메뉴를 확인하세요.",
     "checklist": [
       "필요한 기록의 종류와 기간을 상담 후 정하세요.",
       "신청 관계에 맞는 구비서류와 수령 방법을 병원 공식 안내에서 확인하세요."
     ],
-    "checkedAt": "2026-10-10",
-    "verification": "상세 안내 확인 필요",
-    "reviewStatus": "check",
-    "urlLabel": "공식 안내 · 확인 필요",
+    "checkedAt": "2026-10-23",
+    "verification": "안내 제목·본문 연결 확인",
+    "reviewStatus": "detail",
+    "urlLabel": "발급 안내",
     "insuranceClass": null,
     "aliases": [
       "영남대병원"
     ],
     "scopeSource": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000",
     "importedVerification": "본문확인",
-    "sourceNote": "진료기록·영상CD 사본발급 및 동의서·위임장 안내.",
+    "sourceNote": "진료기록·영상CD 발급 절차, 수령 방법, 신청인별 구비서류와 서식 링크를 확인했습니다.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "공식 안내 본문을 확인했습니다. 로그인·신청·발급·접수 실행과 모든 서식 다운로드를 검증한 것은 아닙니다.",
     "applicants": {
       "self": "환자 본인에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
       "family": "친족에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
@@ -1551,7 +1551,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "공식 검색에서 의료영상CD·진료기록 발급 안내 확인. 본문 열기는 도구 오류. 경북대학교병원 본원과 구분.",
     "sourceDate": "2026-10-10",
-    "checkNote": "연결·보안 인증서 확인에 실패했습니다. 다른 공식 경로를 확인하세요.",
+    "checkNote": "2026-10-23 재확인: 기존 상세 주소가 web 도구에서 반복 시간 초과되어 본문을 확인하지 못했습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "applicants": {
       "self": "환자 본인에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
       "family": "친족에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
@@ -1570,25 +1570,25 @@ export const resources=[
     "url": "https://www.kosinmed.or.kr/use/use_62.php",
     "alternateUrl": "https://www.kosinmed.or.kr/",
     "menu": "공식 홈페이지에서 의무기록·영상 사본 발급 안내 확인",
-    "method": "세부 방법과 이용 가능한 접수·발급 경로는 연결된 공식 페이지를 확인하세요.",
+    "method": "사본발급 창구에서 신분증과 구비서류를 제출하고 필요한 진료과·진료일·기록 종류를 상담한 뒤 수납하고 사본을 수령합니다.",
     "forms": "별도 양식 주소는 확인되지 않았습니다. 공식 안내 안에서 양식 메뉴를 확인하세요.",
     "checklist": [
       "필요한 기록의 종류와 기간을 상담 후 정하세요.",
       "신청 관계에 맞는 구비서류와 수령 방법을 병원 공식 안내에서 확인하세요."
     ],
-    "checkedAt": "2026-10-10",
-    "verification": "상세 안내 확인 필요",
-    "reviewStatus": "check",
-    "urlLabel": "공식 안내 · 확인 필요",
+    "checkedAt": "2026-10-23",
+    "verification": "안내 제목·본문 연결 확인",
+    "reviewStatus": "detail",
+    "urlLabel": "발급 안내",
     "insuranceClass": null,
     "aliases": [
       "고신대복음병원"
     ],
     "scopeSource": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000",
     "importedVerification": "본문확인",
-    "sourceNote": "신청인별 구비서류·동의서·위임장 안내.",
+    "sourceNote": "방문 신청 절차, 신청인 유형별 구비서류와 동의서·위임장 다운로드 링크를 확인했습니다.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "공식 안내 본문을 확인했습니다. 로그인·신청·발급·접수 실행과 모든 서식 다운로드를 검증한 것은 아닙니다.",
     "applicants": {
       "self": "환자 본인에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
       "family": "친족에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
@@ -1607,25 +1607,25 @@ export const resources=[
     "url": "https://www.damc.or.kr/04/01_1_2017.php",
     "alternateUrl": "https://www.damc.or.kr/main/main_2017.php",
     "menu": "공식 홈페이지에서 의무기록·영상 사본 발급 안내 확인",
-    "method": "세부 방법과 이용 가능한 접수·발급 경로는 연결된 공식 페이지를 확인하세요.",
+    "method": "본관 1층 고객지원센터 내 의무기록발급창구에서 방문 신청합니다. 입원 중인 환자는 병동·응급실 의료진에게 신청하세요.",
     "forms": "별도 양식 주소는 확인되지 않았습니다. 공식 안내 안에서 양식 메뉴를 확인하세요.",
     "checklist": [
       "필요한 기록의 종류와 기간을 상담 후 정하세요.",
       "신청 관계에 맞는 구비서류와 수령 방법을 병원 공식 안내에서 확인하세요."
     ],
-    "checkedAt": "2026-10-10",
-    "verification": "상세 안내 확인 필요",
-    "reviewStatus": "check",
-    "urlLabel": "공식 안내 · 확인 필요",
+    "checkedAt": "2026-10-23",
+    "verification": "안내 제목·본문 연결 확인",
+    "reviewStatus": "detail",
+    "urlLabel": "발급 안내",
     "insuranceClass": null,
     "aliases": [
       "동아대병원"
     ],
     "scopeSource": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1479568&mid=a10503000000",
     "importedVerification": "본문확인",
-    "sourceNote": "의무기록 사본발급 절차·구비서류 안내.",
+    "sourceNote": "외래·입원·보험사 대리인별 신청 절차와 신청인별 구비서류 표를 확인했습니다.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "공식 안내 본문을 확인했습니다. 로그인·신청·발급·접수 실행과 모든 서식 다운로드를 검증한 것은 아닙니다.",
     "applicants": {
       "self": "환자 본인에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
       "family": "친족에 해당하는 구비서류·신청 자격은 병원별 공식 안내에서 확인하세요. 다른 병원의 요건을 그대로 적용하지 마세요.",
@@ -1866,22 +1866,22 @@ export const resources=[
     "url": "https://www.hanwhalife.com/static/main/myPage/insurance/accident/document/MY_INAPADC_T10000.jsp",
     "alternateUrl": "http://www.hanwhalife.com",
     "menu": "공식 홈페이지에서 보험금 청구·필요서류 안내 확인",
-    "method": "세부 방법과 이용 가능한 접수·발급 경로는 연결된 공식 페이지를 확인하세요.",
+    "method": "사고보험금 신청서류에서 공통서류와 해당 청구 유형 메뉴를 확인하세요. 추가서류는 대표전화 1588-6363으로 확인하도록 안내합니다.",
     "forms": "별도 양식 주소는 확인되지 않았습니다. 공식 안내 안에서 양식 메뉴를 확인하세요.",
     "checklist": [
       "청구 항목별 필요서류와 가능한 접수 방법을 해당 보험사에서 확인하세요."
     ],
-    "checkedAt": "2026-10-10",
-    "verification": "상세 안내 확인 필요",
-    "reviewStatus": "check",
-    "urlLabel": "공식 안내 · 확인 필요",
+    "checkedAt": "2026-10-23",
+    "verification": "안내 제목·본문 연결 확인",
+    "reviewStatus": "detail",
+    "urlLabel": "청구 안내",
     "insuranceClass": "life",
     "aliases": [],
     "scopeSource": "https://www.hanwhalife.com/static/main/myPage/insurance/accident/document/MY_INAPADC_T10000.jsp",
     "importedVerification": "공식검색확인",
-    "sourceNote": "공통·사망·장해·진단·수술·입원·통원 탭",
+    "sourceNote": "공통 신청서류, 청구인 실명 확인서류, 가족관계·위임·재해 추가서류와 청구 유형별 메뉴를 확인했습니다.",
     "sourceDate": "2026-10-10",
-    "checkNote": "연결·보안 인증서 확인에 실패했습니다. 다른 공식 경로를 확인하세요.",
+    "checkNote": "공식 안내 본문을 확인했습니다. 로그인·신청·발급·접수 실행과 모든 서식 다운로드를 검증한 것은 아닙니다.",
     "regionGroup": "전국"
   },
   {
@@ -1908,7 +1908,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "사고보험금 구비서류",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "2026-10-23 재확인: 공식 사이트의 한시적 해외 접속 제한 안내가 반환되어 청구서류 본문을 확인하지 못했습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "regionGroup": "전국"
   },
   {
@@ -2016,7 +2016,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "사고보험금 서류안내",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "2026-10-23 재확인: 기존 상세 주소가 web 도구에서 502 Bad Gateway로 반환되었습니다. 별도 공식 심사절차 안내는 확인했습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "formsUrl": "https://www.imlifeins.co.kr/BB/BB_D030.do",
     "regionGroup": "전국"
   },
@@ -2152,7 +2152,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "공식 고객서비스 페이지의 필요서류 > 보험금 링크 확인. 목적지 동적 본문 미추출",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "2026-10-23 재확인: 기존 상세 주소에서 추출된 본문이 없어 구비서류를 확인하지 못했습니다. 원인은 확정하지 않았습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "regionGroup": "전국"
   },
   {
@@ -2273,22 +2273,22 @@ export const resources=[
     "url": "https://www.cardif.co.kr/customer-center/hcwgi001.do",
     "alternateUrl": "https://www.cardif.co.kr/",
     "menu": "공식 홈페이지에서 보험금 청구·필요서류 안내 확인",
-    "method": "세부 방법과 이용 가능한 접수·발급 경로는 연결된 공식 페이지를 확인하세요.",
+    "method": "보험금청구 안내에서 개인보험·단체보험을 구분하고 지급 사유에 맞는 구비서류를 확인하세요.",
     "forms": "공식 양식 안내 링크에서 최신 서식을 확인하세요.",
     "checklist": [
       "청구 항목별 필요서류와 가능한 접수 방법을 해당 보험사에서 확인하세요."
     ],
-    "checkedAt": "2026-10-10",
-    "verification": "상세 안내 확인 필요",
-    "reviewStatus": "check",
-    "urlLabel": "공식 안내 · 확인 필요",
+    "checkedAt": "2026-10-23",
+    "verification": "안내 제목·본문 연결 확인",
+    "reviewStatus": "detail",
+    "urlLabel": "청구 안내",
     "insuranceClass": "life",
     "aliases": [],
     "scopeSource": "https://www.cardif.co.kr/customer-center/hcwgi001.do",
     "importedVerification": "공식검색확인",
-    "sourceNote": "보험금 청구 및 서류 안내",
+    "sourceNote": "개인·단체보험 구분, 공통서류 및 사망·입원·장해·진단·골절·수술 구비서류 본문을 확인했습니다.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "공식 안내 본문을 확인했습니다. 로그인·신청·발급·접수 실행과 모든 서식 다운로드를 검증한 것은 아닙니다.",
     "formsUrl": "https://www.cardif.co.kr/customer-center/hcfdw001.do",
     "regionGroup": "전국"
   },
@@ -2343,7 +2343,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "사고보험금청구 안내",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "2026-10-23 재확인: 공식 사고보험금 안내 새 경로로 이동했으나 추출된 본문이 없어 상세 안내를 확인하지 못했습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "regionGroup": "전국"
   },
   {
@@ -2398,7 +2398,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "사고보험금 청구 서류안내",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "2026-10-23 재확인: 기존 상세 주소와 공식 모바일 구비서류 대체 경로 모두 web 도구에서 시간 초과되었습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "regionGroup": "전국"
   },
   {
@@ -2479,7 +2479,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "공식 필요서류 안내. 본문은 자동수집에서 충분히 확인되지 않아 브라우저 재확인 필요.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "2026-10-23 재확인: 공식 www 주소로 이동했으나 바로가기 링크만 반환되어 필요서류 본문을 확인하지 못했습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "regionGroup": "전국"
   },
   {
@@ -2511,7 +2511,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "공식 페이지 제목 질병보험금/필요서류안내 확인. 본문 동적 렌더링으로 상세 재확인 필요.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "2026-10-23 재확인: 공식 상세 페이지와 홈페이지 모두 웹 방화벽 보안정책 차단 안내를 반환했습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "legacyUrl": "https://ad.carrotins.com/",
     "legacyLabel": "기존 캐롯 서비스",
     "successorNote": "캐롯손해보험 2025-10-01 흡수합병 종료 공시 확인. 독립 보험사 수 중복 계산 금지. 기존 캐롯 이용자는 별도 캐롯 서비스 채널 확인.",
@@ -2541,7 +2541,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "공식 모바일 필요서류·접수처. 직접 열기는 실패, 검색본문 확인.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "2026-10-23 재확인: 기존 상세 주소와 공식 질병·상해 필요서류 대체 주소 모두 web 도구에서 시간 초과되었습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "regionGroup": "전국"
   },
   {
@@ -2580,22 +2580,22 @@ export const resources=[
     "url": "https://www.hi.co.kr/serviceAction.do?menuId=100631",
     "alternateUrl": null,
     "menu": "공식 홈페이지에서 보험금 청구·필요서류 안내 확인",
-    "method": "세부 방법과 이용 가능한 접수·발급 경로는 연결된 공식 페이지를 확인하세요.",
+    "method": "질병·일반상해 필요서류에서 청구 유형을 선택하세요. 홈페이지·모바일웹·앱 청구 시 공통 보험금청구서와 청구인 신분증 사본 제출은 불필요하다고 안내합니다.",
     "forms": "별도 양식 주소는 확인되지 않았습니다. 공식 안내 안에서 양식 메뉴를 확인하세요.",
     "checklist": [
       "청구 항목별 필요서류와 가능한 접수 방법을 해당 보험사에서 확인하세요."
     ],
-    "checkedAt": "2026-10-10",
-    "verification": "상세 안내 확인 필요",
-    "reviewStatus": "check",
-    "urlLabel": "공식 안내 · 확인 필요",
+    "checkedAt": "2026-10-23",
+    "verification": "안내 제목·본문 연결 확인",
+    "reviewStatus": "detail",
+    "urlLabel": "청구 안내",
     "insuranceClass": "nonlife",
     "aliases": [],
     "scopeSource": "https://www.hi.co.kr/serviceAction.do?menuId=100631",
     "importedVerification": "공식검색확인",
-    "sourceNote": "질병·일반상해 필요서류. 추가 진단/사망/장해 등 탭 확인 필요.",
+    "sourceNote": "질병·일반상해 공통서류, 실손·진단·입원·수술·사망 등 청구 유형별 필요서류 본문을 확인했습니다.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "공식 안내 본문을 확인했습니다. 로그인·신청·발급·접수 실행과 모든 서식 다운로드를 검증한 것은 아닙니다.",
     "regionGroup": "전국"
   },
   {
@@ -2704,7 +2704,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "공식 보험금청구 서류안내 모바일 페이지.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "2026-10-23 재확인: 기존 모바일 주소는 바로가기·입력 요소만 반환되어 서류안내 본문을 확인하지 못했습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "regionGroup": "전국"
   },
   {
@@ -2802,15 +2802,15 @@ export const resources=[
     "url": "https://www.yebyeol.co.kr/RW191010MM.scp?menuId=MN5105002",
     "alternateUrl": "https://www.yebyeol.co.kr/HO011010DM.scp",
     "menu": "공식 홈페이지에서 보험금 청구·필요서류 안내 확인",
-    "method": "세부 방법과 이용 가능한 접수·발급 경로는 연결된 공식 페이지를 확인하세요.",
+    "method": "공통서류와 청구 유형별 추가서류를 함께 확인하세요. 청구 내용에 따라 추가서류를 요청할 수 있다고 안내합니다.",
     "forms": "별도 양식 주소는 확인되지 않았습니다. 공식 안내 안에서 양식 메뉴를 확인하세요.",
     "checklist": [
       "청구 항목별 필요서류와 가능한 접수 방법을 해당 보험사에서 확인하세요."
     ],
-    "checkedAt": "2026-10-10",
-    "verification": "상세 안내 확인 필요",
-    "reviewStatus": "check",
-    "urlLabel": "공식 안내 · 확인 필요",
+    "checkedAt": "2026-10-23",
+    "verification": "안내 제목·본문 연결 확인",
+    "reviewStatus": "detail",
+    "urlLabel": "청구 안내",
     "insuranceClass": "nonlife",
     "aliases": [
       "MG손해보험",
@@ -2820,9 +2820,9 @@ export const resources=[
     ],
     "scopeSource": "https://www.yebyeol.co.kr/RW191010MM.scp?menuId=MN5105002",
     "importedVerification": "공식검색확인",
-    "sourceNote": "구 MG 계약 관리 창구. 공식 검색본문에 구비서류·관련서식 확인. 사이트 자동 접근 방화벽 차단 가능.",
+    "sourceNote": "질병·상해 공통서류, 위임 및 실손·입원·사망·장해·진단·수술 추가서류 본문을 확인했습니다. 계약 이전 사실은 이번 검증 범위에 포함하지 않았습니다.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "공식 안내 본문을 확인했습니다. 로그인·신청·발급·접수 실행과 모든 서식 다운로드를 검증한 것은 아닙니다.",
     "successorNote": "MG손해보험 계약이 예별손해보험으로 이전됨. 단순 상호변경으로 설명하지 않음.",
     "regionGroup": "전국"
   },
@@ -2850,7 +2850,7 @@ export const resources=[
     "importedVerification": "공식검색확인",
     "sourceNote": "보상 신청 안내에 상품별 필요서류. 본문 동적 렌더링, 공식 검색본문 확인.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "2026-10-23 재확인: 기존 주소와 상품 선택 대체 주소에서 추출된 본문이 없어 상세 안내를 확인하지 못했습니다. 원인은 확정하지 않았습니다. 상세 안내 확인 필요 상태와 기존 확인일을 유지합니다.",
     "regionGroup": "전국"
   },
   {
@@ -2862,22 +2862,22 @@ export const resources=[
     "url": "https://www.epostlife.go.kr/PYIMRD0002.do",
     "alternateUrl": null,
     "menu": "공식 홈페이지에서 보험금 청구·필요서류 안내 확인",
-    "method": "세부 방법과 이용 가능한 접수·발급 경로는 연결된 공식 페이지를 확인하세요.",
+    "method": "지급 → 보험금지급안내 → 구비서류안내에서 공통서류와 해당 보험금 종류의 서류를 확인하세요.",
     "forms": "별도 양식 주소는 확인되지 않았습니다. 공식 안내 안에서 양식 메뉴를 확인하세요.",
     "checklist": [
       "청구 항목별 필요서류와 가능한 접수 방법을 해당 보험사에서 확인하세요."
     ],
-    "checkedAt": "2026-10-10",
-    "verification": "상세 안내 확인 필요",
-    "reviewStatus": "check",
-    "urlLabel": "공식 안내 · 확인 필요",
+    "checkedAt": "2026-10-23",
+    "verification": "안내 제목·본문 연결 확인",
+    "reviewStatus": "detail",
+    "urlLabel": "청구 안내",
     "insuranceClass": "post",
     "aliases": [],
     "scopeSource": "https://www.epostlife.go.kr/PYIMRD0002.do",
     "importedVerification": "공식검색확인",
-    "sourceNote": "민영 생명보험 회원사와 별도. 공식 구비서류 안내.",
+    "sourceNote": "공통서류와 실손·입원·수술·골절·진단 등 보험금별 구비서류 본문을 확인했습니다.",
     "sourceDate": "2026-10-10",
-    "checkNote": "동적 화면 또는 모바일 이동으로 상세 본문을 확인하지 못했습니다.",
+    "checkNote": "공식 안내 본문을 확인했습니다. 로그인·신청·발급·접수 실행과 모든 서식 다운로드를 검증한 것은 아닙니다.",
     "regionGroup": "전국"
   },
   {

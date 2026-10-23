@@ -49,8 +49,9 @@ export async function renderWorkflow({client,membership,workspace,message,action
    if(!care&&workspace!=='partner'){const fixed=['confirmed','scheduled','awaiting_completion','completed'].includes(row.state);el('p',(fixed?'확정시간 · ':'희망시간 · ')+kst(row.preferred_at)+' KST',card);
    el('p',row.office_id?'고객이 보험소에 방문 · '+(row.office_name||'선택한 보험소')+(row.office_address?' · '+row.office_address:''):({phone:'전화상담',nearby:'전문가가 고객에게 방문 · 장소·일정 조율',scheduled:'전문가와 상담 장소·일정 조율'}[row.method]),card);}
    if(workspace!=='partner')el('p',row.planner_name?(row.planner_sample?'테스트 설계사: ':'담당 전문가: ')+row.planner_name+' · '+row.organization:(row.allocation_mode==='office'?'선택한 보험소에서 요청 확인 중':'전문가를 다시 선택해 주세요'),card);
+   if(workspace==='partner'&&membership.profession==='planner'&&['requested','coordinating','confirmed','scheduled'].includes(row.state)){const note=el('aside',undefined,card);note.className='meeting-guidance';el('p','오늘은 보험 가입을 권유하지 말고, 요청받은 청구 도움에 집중해 주세요. 청구를 마친 뒤 일주일쯤 지나 고객이 추가 상담을 원하면, 별도 약속을 잡아주세요.',note);el('small','일주일은 권장 시점입니다. 시간이 지나도 고객이 원하지 않는 가입 권유는 하지 않습니다.',note);}
    if(row.contact)el('p','예약자 '+row.contact.name+(!care?' · '+row.contact.phone:''),card);
-   if(!care&&workspace==='customer'&&row.planner_phone)link(card,'설계사에게 전화하기','tel:'+row.planner_phone);
+   if(!care&&workspace==='customer'&&row.planner_phone)link(card,'전문가에게 전화하기','tel:'+row.planner_phone);
    if(workspace==='customer'&&row.state==='unmatched')link(card,'다른 전문가 직접 선택','/map.html?'+new URLSearchParams({view:'experts',region:row.region||'',purpose:row.purpose||'claim'})).className='btn ghost';
    if(row.state==='dispute'||row.state==='no_show')el('p','관리자 확인 중입니다. 상담 문제 신고는 광고 구독 결제와 별도로 처리합니다.',card);
    if(row.needs_admin_review)el('p','고객 완료 확인 미응답 · 관리자 확인 대상',card);

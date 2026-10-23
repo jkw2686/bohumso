@@ -20,6 +20,7 @@ export async function mountExpertOverview({client,host,user,membership}){
  if(officeMode||p.profession==='tax'){
  el('p',(officeMode?'보험소 주소: ':'사무소 주소: ')+(p.address||p.office_address||'확인 필요'),status);
  el('p',officeMode?'고정 사업장 기준 · 휴대전화 위치와 별개':p.office_coordinates_verified?'사무소 좌표 확인 완료 · '+kst(p.office_coordinates_checked_at):'사무소 좌표 확인 필요 · 지도에는 활동지역 중심점으로 표시됩니다.',status);
+ if(!officeMode){el('p',p.fee_mode==='free'?'세무 상담료: 무료':p.fee_mode==='paid'&&p.fee_basis?'세무 상담료: '+p.fee_basis:'방문 전 상담료 확인 필요',status);el('small','앱 예약 신청은 무료이며, 세무 상담료와 별개입니다.',status);}
  if(!officeMode)el('p',`상담 시간: ${p.start_hour??'미설정'}${p.end_hour!=null?'–'+p.end_hour+'시':''}`,status);
  link(status,'주소·자격 확인','/partner.html'+(officeMode?'?profession=office':'')+'#partnerState');
  if(officeMode&&p.status==='APPROVED')await mountOfficeManagement({client,host:status,isCurrent:()=>!changed});
@@ -30,12 +31,12 @@ export async function mountExpertOverview({client,host,user,membership}){
  await mountNotificationSummary({client,host:root,user});if(changed)return;
  link(root,'앱 내 예약 알림','/notifications.html');
  const canWork=membership.partner_status==='approved'&&membership.profession!=='office'&&!officeMode;
- if(canWork){const tasks=el('section',undefined,root);tasks.className='management-tasks';
+ if(canWork){const menu=host.querySelector('[data-management-menu]');if(menu)root.prepend(menu);const tasks=el('section',undefined,root);tasks.className='management-tasks';root.prepend(tasks);
  try{const workspace=await readRpc(client,'consultation_workspace',{workspace:'partner'});if(changed)return;
  const bookings=workspace.bookings||[],today=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'});
- for(const [heading,rows]of [['답변할 요청',bookings.filter(r=>r.state==='requested')],['오늘 예약',bookings.filter(r=>['confirmed','scheduled'].includes(r.state)&&new Date(r.preferred_at).toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'})===today)]]){
+ for(const [heading,rows]of [['답변할 요청',bookings.filter(r=>r.state==='requested')],[p?.profession==='tax'?'오늘 사무실 방문예약':'오늘 상담',bookings.filter(r=>['confirmed','scheduled'].includes(r.state)&&(p?.profession!=='tax'||r.method==='scheduled')&&new Date(r.preferred_at).toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'})===today)]]){
  el('h2',heading,tasks);if(!rows.length)el('p','해당 예약이 없습니다.',tasks);
- for(const row of rows){const item=el('div',undefined,tasks);item.className='management-task-row';el('p',(states[row.state]||'상태 확인 필요')+' · '+(row.preferred_at?kst(row.preferred_at):'일정 조율 필요'),item);link(item,'예약 확인','/notifications.html?reservation='+encodeURIComponent(row.id));}
+ for(const row of rows.slice(0,3)){const item=el('div',undefined,tasks);item.className='management-task-row';el('p',(states[row.state]||'상태 확인 필요')+' · '+(row.preferred_at?kst(row.preferred_at):'일정 조율 필요'),item);link(item,'예약 확인','/notifications.html?reservation='+encodeURIComponent(row.id));}
  }
  link(tasks,'전체 요청·예약','/partner-work.html');
  }catch{el('p','요청·예약을 불러오지 못했습니다. 업무 화면에서 다시 확인해 주세요.',tasks);link(tasks,'요청·예약 확인','/partner-work.html');}
