@@ -7,8 +7,8 @@
     if(!office.expert)add('h2',office.name);
     if(office.expert){
       var content=add('div');content.className='expert-card-content';window.BohumsoProfile.identity(content,office,{interactive:true,summary:true,context:office});
-      add('p',office.region+' · 공개 활동지역 기준',content);add('p','현재 GPS 위치가 아닙니다.',content);
-      if(office.available)add('p','상담 요청 가능 · 통화 후 일정 조율',content);
+      add('p',office.region,content);
+      if(office.available)add('p','상담 요청 가능',content);
       else add('p',office.newRequestsRestricted?'현재 새 상담 요청을 받을 수 없습니다.':'현재 상담 요청을 받지 않습니다. 다른 전문가나 보험소를 확인해 주세요.',content);
       window.BohumsoProfile.requestActions(host,office,office);
       return;

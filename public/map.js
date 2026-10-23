@@ -124,8 +124,8 @@
       var icon=pinIcon(false,s.planned||s.office,s.planned,s);
       if(group.length>1){var index=group.indexOf(s),columns=Math.min(group.length,4),row=Math.floor(index/columns),rowCount=Math.ceil(group.length/columns);icon.options.iconAnchor=[icon.options.iconAnchor[0]-(index%columns-(Math.min(columns,group.length-row*columns)-1)/2)*56,icon.options.iconAnchor[1]-(row-(rowCount-1)/2)*56];}
       s._marker = L.marker([s.lat, s.lng], { icon: icon, title: s.name+(s.planned?' · 개설 예정 보험소':s.office?' · 보험소':(s.officeCoordinatesVerified?' · 확인된 세무사 사무소':' · 전문가 활동지역')) }).addTo(map);
-      s._marker.on('click', function () { openCard(s); });
-      s._marker.getElement().addEventListener('keydown',function(event){if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();openCard(s);}});
+      s._marker.on('click', function () { openCard(s,false,true); });
+      s._marker.getElement().addEventListener('keydown',function(event){if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();openCard(s,false,true);}});
       spotMarkers.push(s._marker);
     });
     // 전문가 위치에 맞춰 범위 자동 조정(위치 권한 허용 시 locate가 다시 내 위치로 이동)
@@ -263,10 +263,12 @@
   }
 
   /* 마커/목록 탭 → 하단 카드(요약). 다른 마커 탭하면 내용만 교체. */
-  function openCard(s,preserveView) {
+  function openCard(s,preserveView,fullProfile) {
     if(!s.planned&&!s.office)window.bohumsoTrack?.('expert_viewed');
     current = s;spotMarkers.forEach(function(m){m.getElement()?.classList.toggle('is-selected',m===s._marker);m.setZIndexOffset(m===s._marker?900:0);});var context=new URLSearchParams(location.search);if(!s.planned&&!s.office)context.set('planner',s.id);else context.delete('planner');history.replaceState(history.state,'',location.pathname+'?'+context);
-    window.renderOfficeSlot($('cardBody'),{name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned&&!s.office,help:helpIntent,purpose:PURPOSE,situation:SITUATION,newRequestsRestricted:s.newRequestsRestricted,available:s.available,organization:s.job,specialty:s.specialty,photo_url:s.photo,biography:s.biography,profession:s.profession,profession_name:s.profession_name,fee_notice:s.fee_notice,insurance_types:s.insurance_types,help_tasks:s.help_tasks,offices:s.offices});
+    var profile={name:s.name,region:s.region,planned:s.planned,id:s.id,expert:!s.planned&&!s.office,help:helpIntent,purpose:PURPOSE,situation:SITUATION,newRequestsRestricted:s.newRequestsRestricted,available:s.available,organization:s.organization,specialty:s.specialty,photo_url:s.photo,biography:s.biography,profession:s.profession,profession_name:s.profession_name,fee_notice:s.fee_notice,insurance_types:s.insurance_types,help_tasks:s.help_tasks,offices:s.offices};
+    window.renderOfficeSlot($('cardBody'),profile);
+    if(fullProfile&&!s.planned&&!s.office){window.BohumsoProfile.openDetail(profile,profile);return;}
     $('cardSheet').classList.toggle('expert-card-sheet',!s.planned&&!s.office);if(!preserveView)showCard();
   }
   function showCard(){
@@ -328,7 +330,7 @@
       var spots = list.map(function (p) {
         return {
           id: p.id, name: (p.beta?'[베타] ':'')+(p.name || p.organization || '보험소'),
-          job: [window.BohumsoProfile.professionLabel(p)||p.profession_name,p.organization].filter(Boolean).join(' · ') || '전문가',
+          organization:p.organization,job: [window.BohumsoProfile.professionLabel(p)||p.profession_name,p.organization].filter(Boolean).join(' · ') || '전문가',
           specialty: (Array.isArray(p.specialties) && p.specialties.length ? p.specialties.map(function (x) { return SPECIALTY[x] || x; }).join('·') : '상담'),
           region: p.region || '', officeCoordinatesVerified: !!p.office_coordinates_verified,
           lat: p.profession==='tax'&&p.office_coordinates_verified?p.office_latitude:Number.isFinite(p.area_latitude) ? p.area_latitude : null, lng: p.profession==='tax'&&p.office_coordinates_verified?p.office_longitude:Number.isFinite(p.area_longitude) ? p.area_longitude : null,

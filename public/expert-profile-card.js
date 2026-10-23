@@ -25,12 +25,12 @@
   if(options.interactive)photoParent.setAttribute('aria-label',(p.name||'전문가')+' 프로필 사진·상세보기');avatar(photoParent,p);
   var text=node('div','',head),title=node('h2','',text);
   if(options.interactive)profileLink(title,p,options.context,p.name||'전문가');else title.textContent=p.name||'전문가';
-  var label=professionLabel(p)||(p.profession==='tax'?'세무사':'');if(label)node('p',label,text,'expert-profession');if(p.fee_notice)node('p',p.fee_notice,root,'expert-profile-note');
-  if(p.organization)node('p',p.organization,text,'expert-organization');
+  var label=professionLabel(p)||(p.profession==='tax'?'세무사':'');if(label&&!options.summary)node('p',label,text,'expert-profession');if(p.region&&!options.summary)node('p',p.region,text,'expert-region');if(p.fee_notice&&!options.summary)node('p',p.fee_notice,root,'expert-profile-note');
+  if(p.organization&&!options.summary)node('p',p.organization,text,'expert-organization');
   var chosen=(p.insurance_types||[]).filter(function(k){return types[k];});
-  if(chosen.length){var badges=node('div','',root,'expert-badges');badges.setAttribute('aria-label','보험 취급 구분 · 본인 선택');chosen.forEach(function(k){node('span',types[k],badges);});node('p','보험 취급 구분 · 본인 선택',root,'expert-profile-note');}
+  if(chosen.length&&!options.summary){var badges=node('div','',root,'expert-badges');badges.setAttribute('aria-label','보험 취급 구분 · 본인 선택');chosen.forEach(function(k){node('span',types[k],badges);});}
   var help=(p.help_tasks||[]).filter(function(k){return tasks[k]&&(k!=='office_consultation'||p.offices?.some(function(o){return o.available===true;}));}).slice(0,3);
-  if(help.length&&!options.summary){var jobs=node('div','',root,'expert-help-tasks');jobs.setAttribute('aria-label','도움 가능한 업무');help.forEach(function(k){node('span',tasks[k],jobs);});}
+  if(help.length){var jobs=node('div','',root,'expert-help-tasks');jobs.setAttribute('aria-label','도움 가능한 업무');help.forEach(function(k){node('span',tasks[k],jobs);});}
   if(p.biography&&!options.summary)node('p',p.biography,root,'expert-introduction'+(options.summary?' is-summary':''));return root;
  }
  function requestActions(parent,p,context){
@@ -44,21 +44,22 @@
   if(activeDetail){activeDetail.replace(p,context);return;}
   var opener=document.activeElement,dialog=node('dialog','',document.body,'card expert-detail'),header=node('div','',dialog,'expert-detail-header');
   var label=node('h2','전문가 프로필',header);label.id='expertDetailTitle';dialog.setAttribute('aria-labelledby',label.id);
-  var close=node('button','닫기',header,'btn ghost');close.type='button';close.setAttribute('aria-label','프로필 닫고 이전 화면으로');
+  var close=node('button','뒤로',header,'btn ghost');close.type='button';close.setAttribute('aria-label','프로필 닫고 이전 화면으로');
+  header.prepend(close);
   var body=node('div','',dialog,'expert-detail-body'),token=crypto.randomUUID(),oldOverflow=document.body.style.overflow;
-  function render(profile,ctx){body.replaceChildren();identity(body,profile);if(profile.region)node('p',profile.region+' · 공개 활동지역 기준',body,'expert-profile-note');
-   node('p',profile.available?'상담 요청 가능 · 통화 후 일정 조율':profile.newRequestsRestricted?'현재 새 상담 요청을 받을 수 없습니다.':'현재 상담 요청을 받지 않습니다.',body,'expert-detail-status');
+  function render(profile,ctx){body.replaceChildren();identity(body,profile);
+   node('p',profile.available?'상담 요청 가능':profile.newRequestsRestricted?'현재 새 상담 요청을 받을 수 없습니다.':'현재 상담 요청을 받지 않습니다.',body,'expert-detail-status');
    (profile.offices||[]).filter(function(o){return !o.available;}).forEach(function(o){node('p',o.name+' · 방문예약 중지',body,'expert-profile-note');});
    dialog.querySelector('.expert-detail-actions')?.remove();
    requestActions(dialog,profile,ctx).classList.add('expert-detail-actions');body.scrollTop=0;
   }
   render(p,context);history.pushState(Object.assign({},history.state,{bohumsoExpertDetail:token}),'');
-  function finish(){window.removeEventListener('popstate',pop);dialog.close();dialog.remove();document.body.style.overflow=oldOverflow;activeDetail=null;if(opener?.isConnected)opener.focus({preventScroll:true});}
+  function finish(){window.removeEventListener('popstate',pop);dialog.close();dialog.remove();document.body.style.overflow=oldOverflow;document.body.classList.remove('expert-detail-open');activeDetail=null;if(opener?.isConnected)opener.focus({preventScroll:true});}
   function pop(){if(history.state?.bohumsoExpertDetail!==token)finish();}
   var closing=false;function dismiss(){if(closing)return;closing=true;if(history.state?.bohumsoExpertDetail===token)history.back();else finish();}
   window.addEventListener('popstate',pop);close.onclick=dismiss;dialog.addEventListener('cancel',function(e){e.preventDefault();dismiss();});
   dialog.addEventListener('click',function(e){if(e.target!==dialog)return;var b=dialog.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)dismiss();});
-  activeDetail={id:p.id,replace:function(next,ctx){activeDetail.id=next.id;render(next,ctx||context);}};document.body.style.overflow='hidden';dialog.showModal();close.focus();
+  activeDetail={id:p.id,replace:function(next,ctx){activeDetail.id=next.id;render(next,ctx||context);}};document.body.style.overflow='hidden';document.body.classList.add('expert-detail-open');dialog.showModal();close.focus();
  }
  function onChange(callback){
   function version(){try{return localStorage.getItem('bohumso-profile-updated')||'';}catch{return '';}}

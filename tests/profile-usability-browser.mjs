@@ -86,7 +86,7 @@ try{
   await map.locator('#cardBody h2 a').click();await expect(detail).toBeVisible();await map.goBack();await expect(detail).toHaveCount(0);await expect(map.locator('#cardBody h2')).toHaveText(profile.name);
   await map.locator('#cardBody .expert-profile-head>.expert-profile-link').click();await expect(detail).toBeVisible();await map.keyboard.press('Escape');await expect(detail).toHaveCount(0);await expect(map.locator('#cardSheet')).toBeVisible();
   await map.locator('.expert-map-marker[title="'+other.name+' · 전문가 활동지역"]').click();await expect(map.locator('#cardBody h2')).toHaveText(other.name);await expect(map.locator('#cardBody .expert-avatar img')).toHaveCount(0);await map.locator('#cardBody h2 a').click();await expect(detail.locator('.expert-introduction')).toHaveText(other.biography);await map.keyboard.press('Escape');
-  await marker.click();await expect(map.locator('#cardBody h2')).toHaveText(profile.name);if(width===390)await map.screenshot({path:'artifacts/profile-map-390.png'});
+  await marker.click();await expect(map.getByRole('dialog')).toBeVisible();await map.keyboard.press('Escape');await expect(map.locator('#cardBody h2')).toHaveText(profile.name);if(width===390)await map.screenshot({path:'artifacts/profile-map-390.png'});
   console.log('PASS editor/map/detail, full legacy text, portrait marker, repeated selection and back',width);
  }
  brokenPhoto=true;await map.reload();await expect(map.locator('#cardBody .expert-avatar svg')).toBeVisible();await expect(map.locator('#cardBody .expert-avatar img')).toHaveCount(0);brokenPhoto=false;

@@ -204,3 +204,11 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 - 알려진제한: 운영DB/관리자FAQ·자유입력소개 미조회, DB072직군표시명 수정 별도승인, 실운영새예약/휴대전화 검수 안함. 074 운영적용 및 새배포는 승인 없이 실행하지 않음. 원격 main push는 배포 트리거라 이번 미실시. 기존외부배포4005092 유지.
 
 최종 검증: 청구안내6경로 × 320/360/390/768/1440 × 로그인전후, 문서/뒤로가기/지도맥락/선택/예약 인증진입 모두 PASS. 최종074 SQL 기능조회 구분자 수정 후 격리DB 재검증 PASS. 프로덕션 build PASS. 운영 DB/배포 미실행.
+
+## 2026-10-23 운영 반영 및 프로필 후속 작업
+- 사용자 DB/전체 배포 승인 후 074 적용. 최초 시도는 운영에 055 appointment_care가 없어 트랜잭션 실패/rollback; 055를 추가 적용하지 않고 선택적 호환으로 수정.
+- 운영 SQL 검증: capability true, migration 기록 true, consent RLS true, authenticated direct SELECT false, anonymous RPC execute false. 기존 예약/고객/알림 변경·시험발송 없음.
+- 운영 planner 표시명 이미 보험설계사. FAQ 이름 테이블 없음. 사용자 자유입력 전체의 법률 적합성 검증을 의미하지 않음.
+- a08dfb5 배포 ready: 6adb62a8a39db3ccbe3d9c71, 2026-10-23T13:35:53.049Z.
+- 프로필 후속: 전문가 핀 클릭 즉시 전체화면, 사진/이름 진입 유지, 공개 허용 전화만 표시, 상담 요청 조건 유지, 본문 독립 스크롤, 하단 메뉴 숨김, 뒤로 지도 유지.
+- 신규 tests/profile-fullscreen-browser.mjs: 360/390/430/1440 핀→프로필→뒤로, 공개 전화 조건, 예약 대상 보존. 배포 최종 상태는 후속 기록 참조.

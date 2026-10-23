@@ -53,7 +53,9 @@
         title:s.name+(s.expert?' · 전문가 활동지역':s.planned?'':' · 운영 중'),
         zIndexOffset:s.expert?100:0,
         icon:icon
-      }).addTo(map).bindPopup(content,{maxWidth:280,minWidth:220,autoPanPaddingTopLeft:[16,16],autoPanPaddingBottomRight:[16,24]});
+      }).addTo(map);
+      if(s.expert)marker.on('click',function(){window.BohumsoProfile.openDetail(s,{});});
+      else marker.bindPopup(content,{maxWidth:280,minWidth:220,autoPanPaddingTopLeft:[16,16],autoPanPaddingBottomRight:[16,24]});
       if(s.expert)expertMarkers.set(s.id,marker);markers.push(marker);
     });});
   }
