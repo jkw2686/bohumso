@@ -140,3 +140,9 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 
 ## 2026-10-23 예약·알림 간소화
 - docs/service-clarity-20261023.md 참고. 화면/격리검증/빌드 완료, 사용자 배포 승인. 실제 휴대전화 미도착 보고: 시험 생성 기록 없음, 수신 해결 완료 아님. 다음: 배포 확인 및 사용자 기기 구독/시험 발송/표시 검증. DB·권한 변경 없음.
+
+## 배포 확인 2026-10-23 21:05 KST
+- 코드 07f377db1a2089bc51395ba946e64603af2b2d6c, Netlify 6adb4d85d40d2993ba4c7141 ready/published 2026-10-23T12:05:47.263Z.
+- 운영 CSS는 LF 정규화 후 로컬과 일치. account/urgent JS 본문은 환경별 청크 해시 이름 제외 후 일치. 공개 push config enabled=true.
+- 운영 구글 계정 재로그인 후 새 알림 설정, 받은 요청·예약 카드(10/26 09시 전화, 고객 일정 확정 대기), 방문 가능 설정 접기 확인. 운영 스크린샷 artifacts/service-clarity/production-after.png.
+- 실제 휴대전화 수신 미확인. 휴대전화 브라우저 종류 질문 대기. 사용자의 실제 기기에서 구독/시험 버튼 실행 및 도착 확인 필요. 이 단계 서버 시험 발송·예약 변경 없음.
