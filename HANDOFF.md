@@ -1044,3 +1044,7 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 - 운영 CSS는 LF 정규화 후 로컬과 일치. account/urgent JS 본문은 환경별 청크 해시 이름 제외 후 일치. 공개 push config enabled=true.
 - 운영 구글 계정 재로그인 후 새 알림 설정, 받은 요청·예약 카드(10/26 09시 전화, 고객 일정 확정 대기), 방문 가능 설정 접기 확인. 운영 스크린샷 artifacts/service-clarity/production-after.png.
 - 실제 휴대전화 수신 미확인. 휴대전화 브라우저 종류 질문 대기. 사용자의 실제 기기에서 구독/시험 버튼 실행 및 도착 확인 필요. 이 단계 서버 시험 발송·예약 변경 없음.
+
+## 2026-10-23 예약 알림 화면에서 직접 켜기
+- notifications 목록 최상단에 기존 기기 설정 컴포넌트를 compact 모드로 재사용. 연결 전 켜기, 연결 후 시험 알림, 끄기/다시확인/기기해제는 도움말에 배치. OFF 재활성은 본문 유지. 예약 딥링크는 설정 조회와 독립.
+- notification-settings-browser: 기존 권한·OFF·계정변경 + compact 연결/시험 전환·390px 통과. DB/서버 정책 변경·실제 시험 발송 없음. 사진에서 사용자 기기 구독 연결 완료 확인, 실제 도착은 미확인.

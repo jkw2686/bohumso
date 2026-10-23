@@ -26,3 +26,8 @@ body .foreground-notice a,body .foreground-notice button{min-height:var(--touch-
 body .request-wizard .booking-review{background:transparent;border:0;box-shadow:none;padding:var(--space-2) 0;border-radius:0}
 body .request-wizard .booking-review:focus{outline-offset:var(--space-2)}
 body .request-wizard .booking-review dl{margin-block:var(--space-3)}
+
+body .notification-settings-inline{padding:var(--space-4);margin-bottom:var(--space-4)}
+body .notification-settings-inline button[hidden]{display:none}
+body .notification-settings-inline>h2{margin-top:0}
+body .notification-settings-inline .supporting-details{margin-bottom:0}

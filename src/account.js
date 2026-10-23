@@ -140,9 +140,9 @@ async function start(){
  if(['requests','account','notifications'].includes(mode)&&membership.member&&document.body.dataset.workspace!=='admin')void mountForegroundNotice({client,host:$('accountContent'),user});
  if(mode==='notifications'){
   // Resolve reservation links and show the inbox independently of device settings.
+  if(!new URLSearchParams(location.search).has('reservation'))void mountNotificationSettings({client,host:$('accountContent'),user,compact:true});
   const page=renderNotificationPage({client,root:$('accountContent')});
-  if(!new URLSearchParams(location.search).has('reservation')){await page;const settings=document.createElement('a');settings.href='/account.html#notificationSettings';settings.className='btn ghost';settings.textContent='알림 설정';$('accountContent').append(settings);}
-  else await page;
+  await page;
   simplifyServiceChrome();return;
  }
  if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config:{...config,viewerId:user.id}});$('accountContent').hidden=false;if($('requestList'))focusBooking($('requestList'));if(document.body.dataset.workspace==='partner'){
