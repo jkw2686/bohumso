@@ -1,0 +1,7 @@
+import {readFile,writeFile,mkdir} from 'node:fs/promises';import {gzipSync} from 'node:zlib';import path from 'node:path';
+const meta=JSON.parse(await readFile('artifacts/client-metafile.json','utf8'));
+const pages={home:['member','visit','support-badge'],map:['member','support-badge'],menu:['menu','support-badge'],account:['account','support-badge'],support:['rights','support-badge']};
+function dependencies(entries){const visited=new Set();function visit(key){if(visited.has(key))return;if(!meta.outputs[key])throw Error('Missing generated module '+key);visited.add(key);for(const item of meta.outputs[key].imports){if(item.external)continue;visit(meta.outputs[item.path]?item.path:path.posix.join(path.posix.dirname(key),item.path));}}for(const name of entries)visit('public/assets/'+name+'.js');return visited;}
+async function size(files){let raw=0,gzip=0;for(const file of files){const b=await readFile(file);raw+=b.length;gzip+=gzipSync(b).length;}return {raw,gzip,files:files.size};}
+const home=dependencies(pages.home),report={};for(const [name,entries]of Object.entries(pages)){const files=dependencies(entries);report[name]={...await size(files),additionalAfterHome:await size(new Set([...files].filter(f=>!home.has(f))))};}
+await mkdir('artifacts/navigation-performance',{recursive:true});await writeFile('artifacts/navigation-performance/after-assets.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));

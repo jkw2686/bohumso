@@ -1,5 +1,12 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-23 — 화면 전환 성능 개선
+- 공통 SDK/회원 모듈 esbuild splitting, 해시 chunk 캐시, 기본 메뉴 먼저 표시, 성공한 공개 설정만 CDN10초 캐시(브라우저 no-store). 홈/지도/메뉴 gzip JS199023→85666 /139997→85329 /126664→68936바이트. 계정234612→184302바이트. 전체 화면시간 개선율을 의미하지 않는다.
+- 관리자 초기 표시 순서를 변경하려던 시도는 인증 재확인 충돌로 철회. 기존 권한/초기 숨김/세대 검사 유지. DB·권한 정책·SMS180초 설정 변경 없음. 공개 서비스 설정은 캐시로 최대10초 늦게 반영될 수 있다.
+- build, 공개 설정 단위3, 관리자 게이트12/메뉴11, 소비자 목적복원/전문가신청 help-login, 부가조회지연/로그아웃2 통과. docs/navigation-performance-20261023.md 참고. 운영 배포/추가 검수 결과는 완료 후 아래 기록.
+- 기존 tests/early-access-browser.mjs 변경, outputs/help-entry-20261018 및 tests/_dbg-*는 보존/커밋 제외. 실예약/승인/삭제/결제/발송 없음. 전체 npm test/verify·실휴대전화 성능은 재수행하지 않음.
+- 추가 auth-options(전화가입/동의/Google콜백/4폭 격리DB), help-entry(4폭 홈/지도 목적/프로필/필터) 통과. 구형 map-controls:21은 현재 두 링크를 하나로 가정한 기존 선택자 불일치로 실패/미수정; 지도 코드 변경 없음.
+
 ## 2026-10-23 — SMS OTP 유효시간 3분 적용
 - 사용자 요청으로 운영 Supabase Auth > Sign In / Providers > Phone의 SMS OTP Expiry만 60→180초 저장.
 - 페이지 새로고침 후 Phone 설정을 다시 열어 Expiry=180, Length=6, Save 비활성(저장 완료) 재확인. 재발송 간격·문자 Hook·관리자 권한 정책·가입/동의 조건 변경 없음.

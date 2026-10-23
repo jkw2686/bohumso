@@ -1,4 +1,15 @@
-# 최신 작업 — 2026-10-23 관리자 UI 인증 표시 최소 수정
+# 최신 작업 — 2026-10-23 화면 전환 성능 개선
+
+## 현재 진행·재현·남은 일
+- [x] 해시 공통 JS 모듈 분리/캐시, 기본 메뉴의 부가 조회 대기 해소, 익명 공개 설정 CDN10초 캐시. 서버 역할/관리자 판정은 캐시하지 않는다. 상세 docs/navigation-performance-20261023.md.
+- [x] build, 설정 단위3, admin-ui-auth --gates-only12 / --menus-only11, help-login, navigation-performance2 통과. 생성 자산은 ignored. `node scripts/measure-client-assets.mjs`로 현재 번들 측정.
+- [x] auth-options 격리DB/4폭 및 help-entry4폭 통과. map-controls:21 기존 단일 링크 선택자 실패는 범위 외로 기록/미수정.
+- [ ] 최종 운영 배포 및 공개 캐시/실제 화면 확인(완료 기록 아래 추가). 다음 확인 약5~10분. 실제 휴대전화 성능·전체 npm test/verify는 재수행하지 않음.
+- 판단: 관리자 본문 선표시 변경은 인증 재확인 충돌로 철회, 기존 gate 순서 보존. auth180초/DB/권한 변경 없음. 향후 공개 설정 긴급 변경 시 CDN10초 반영 지연 고려.
+- 되돌리기: 이번 성능 코드 커밋 revert 후 빌드/배포, DB 원복 불필요. 새 해시 모듈은 빌드에서 생성, 로컬 미커밋 생성물을 배포하지 않는다.
+- 아직 깨끗하지 않은 것: 기존 tests/early-access-browser.mjs 수정, outputs/help-entry-20261018/, tests/_dbg-066.mjs 및 _dbg-early.mjs 보존·제외. 011/073 운영 RPC 누락은 별도 과제. 이충경 실제 계정·예약·알림 조회/변경/발송 금지.
+
+--- 이전 작업 기록 ---
 
 ## 2026-10-23 — SMS OTP 유효시간 3분 적용
 - 사용자 요청으로 운영 Supabase Auth > Sign In / Providers > Phone의 SMS OTP Expiry만 60→180초 저장.

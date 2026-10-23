@@ -59,6 +59,7 @@ function group(title, items) {
   section.setAttribute('aria-labelledby', heading.id);
   const list = node('ul', '', section);
   for (const [label, href, symbol] of items) row(node('li', '', list), label, href, symbol);
+  return section;
 }
 function common(expert, billing) {
   group('이용 안내', [
@@ -118,21 +119,10 @@ async function load() {
     const {membership: member, user} = auth;
     const approved = member.member && member.partner_status === 'approved' && member.profession !== 'office';
     const planner = approved && ['planner','tax'].includes(member.profession);
-    const results = await Promise.all([
-      planner ? client.rpc('expert_optional_profile', {operation: 'get'}) : null,
-      approved ? client.rpc('growth_command', {operation: 'capabilities', payload: {}}) : null,
-      approved ? client.rpc('planner_catalog', {area: '', wanted: ''}) : null,
-    ]);
-    if (current !== revision) return;
-    const [optional, growth, catalog] = results;
-    const own = optional?.error ? null : optional?.data;
-    const publicProfile = catalog?.error ? null : catalog?.data?.planners?.find(p => p.id === own?.id && !p.is_sample);
-    const name = own?.name || user.user_metadata?.full_name || user.user_metadata?.name || '회원님';
+    let resources;
+    const name = user.user_metadata?.full_name || user.user_metadata?.name || '회원님';
     const role = approved ? '전문가' : member.partner_status ? '전문가 신청 · 심사 현황 확인' : member.member ? '일반 회원' : '가입 마무리가 필요해요';
-    profile(name, role, own);
-    if (publicProfile) {
-      row(node('div', '', identity, 'menu-profile-action'), '내 프로필 보기', '/find.html?' + new URLSearchParams({planner: publicProfile.id, region: publicProfile.region || '', from: 'menu'}) + '#profile-' + encodeURIComponent(publicProfile.id));
-    }
+    profile(name, role);
     if (approved) {
       group('상담 관리', [
         ['상담 요청', destination('partner-work', 'workflowFilters').replace('?from=menu', '?from=menu&state=requested'), 'support'],
@@ -145,12 +135,8 @@ async function load() {
         ['활동 지역', destination('partner', 'activity-area'), 'pin'],
         ['등록·심사 정보', destination('partner', 'partnerState'), 'shield'],
       ]);
-      group('업무 자료', [
+      resources = group('업무 자료', [
         ['청구 안내', destination('claim-resources'), 'document'],
-        ...(growth?.data?.expert ? [
-          ['상담 자료', destination('growth', 'growthLibrary'), 'search'],
-          ['실천 기록', destination('growth', 'growthPractice'), 'check'],
-        ] : []),
       ]);
       common(true, config.paymentsEnabled !== false);
     } else {
@@ -164,6 +150,30 @@ async function load() {
       ['관리자 화면', destination('admin'), 'shield'],
       ['예약 관리', destination('admin-requests'), 'calendar'],
     ]);
+    // Role menus are usable before optional profile/catalog/library lookups finish.
+    const lookupResults = await Promise.allSettled([
+      planner ? client.rpc('expert_optional_profile', {operation: 'get'}) : null,
+      approved ? client.rpc('growth_command', {operation: 'capabilities', payload: {}}) : null,
+      approved ? client.rpc('planner_catalog', {area: '', wanted: ''}) : null,
+    ]);
+    if (current !== revision) return;
+    const results = lookupResults.map(result => result.status === 'fulfilled' ? result.value : {error: result.reason});
+    const [optional, growthResult, catalog] = results;
+    const extra = optional?.error ? null : optional?.data;
+    if (extra) {
+      if (extra.name) identity.querySelector('.menu-name').textContent = extra.name;
+      const head = identity.querySelector('.menu-profile-row');
+      const oldAvatar = head.querySelector('.expert-avatar');
+      const updatedAvatar = window.BohumsoProfile.avatar(head, extra);
+      if (oldAvatar) oldAvatar.replaceWith(updatedAvatar);
+      const published = catalog?.error ? null : catalog?.data?.planners?.find(p => p.id === extra.id && !p.is_sample);
+      if (published) row(node('div', '', identity, 'menu-profile-action'), '내 프로필 보기', '/find.html?' + new URLSearchParams({planner: published.id, region: published.region || '', from: 'menu'}) + '#profile-' + encodeURIComponent(published.id));
+    }
+    if (growthResult?.data?.expert && resources) {
+      const list = resources.querySelector('ul');
+      row(node('li', '', list), '상담 자료', destination('growth', 'growthLibrary'), 'search');
+      row(node('li', '', list), '실천 기록', destination('growth', 'growthPractice'), 'check');
+    }
     if (results.some(result => result?.error)) {
       status.textContent = '일부 내 정보를 불러오지 못했어요. 다시 확인해 주세요.';
       retry.hidden = false;
