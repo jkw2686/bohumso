@@ -1035,3 +1035,6 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 
 ## 2026-10-23 예약 화면 운영 배포 완료
 사용자 요청으로 main69a2a1d 배포. Netlify6adb43c6628655378ca7f46b 20:24KST ready. 소비자/전문가 페이지200·새CSS·공통8모듈·새UI코드 확인. DB/권한/알림 정책 변경 없음. docs/booking-receipt-20261023.md 참조.
+
+## 2026-10-23 예약·알림 간소화
+- docs/service-clarity-20261023.md 참고. 화면/격리검증/빌드 완료, 사용자 배포 승인. 실제 휴대전화 미도착 보고: 시험 생성 기록 없음, 수신 해결 완료 아님. 다음: 배포 확인 및 사용자 기기 구독/시험 발송/표시 검증. DB·권한 변경 없음.

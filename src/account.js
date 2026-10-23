@@ -2,6 +2,8 @@ import {adminPage, lockAdminPage, grantAdminPage, adminPageCurrent} from './admi
 import {mountExpertOverview} from './expert-overview.js';
 import {arrangeExpertManagement} from './expert-management-layout.js';
 import {signupNext} from './signup-next.js';
+import {simplifyServiceChrome} from './service-clarity.js';
+import {mountForegroundNotice} from './foreground-notice.js';
 import {mountNotificationSettings,mountNotificationSummary} from './notification-settings.js';
 import {maybePromptReservationPush} from './notification-prompt.js';
 import {renderNotificationPage,focusBooking} from './booking-notifications.js';
@@ -135,24 +137,25 @@ async function start(){
  if((mode==='admin'||document.body.dataset.workspace==='admin')&&!membership.admin){message('관리자 권한이 필요합니다.');lockAdminPage('관리자 권한이 필요합니다.');return;}
  if(document.body.dataset.workspace==='partner'&&(membership.partner_status!=='approved'||membership.profession==='office')){message('승인된 전문가만 이용할 수 있습니다.');return;}
  if(mode==="reset"){$("accountContent").hidden=false;onForm("passwordForm",async d=>{const {error}=await client.auth.updateUser({password:String(d.get("password"))});fail(error);message("비밀번호를 변경했습니다. 내 계정에서 계속 이용할 수 있습니다.");});return;}
+ if(['requests','account','notifications'].includes(mode)&&membership.member&&document.body.dataset.workspace!=='admin')void mountForegroundNotice({client,host:$('accountContent'),user});
  if(mode==='notifications'){
   // Resolve reservation links and show the inbox independently of device settings.
   const page=renderNotificationPage({client,root:$('accountContent')});
   if(!new URLSearchParams(location.search).has('reservation')){await page;const settings=document.createElement('a');settings.href='/account.html#notificationSettings';settings.className='btn ghost';settings.textContent='알림 설정';$('accountContent').append(settings);}
   else await page;
-  return;
+  simplifyServiceChrome();return;
  }
  if(mode==="requests"){await renderRequests({client,membership,workspace:document.body.dataset.workspace,message,action,config:{...config,viewerId:user.id}});$('accountContent').hidden=false;if($('requestList'))focusBooking($('requestList'));if(document.body.dataset.workspace==='partner'){
   // 업무와 설정의 DOM 순서도 모바일 읽는 순서와 같게 유지한다.
   // 자료실은 정적 카드라 await 전에 먼저 옮겨 두어야 늦게 올라오며 깜빡이지 않는다.
   const tools=document.createElement('div'),quick=document.createElement('div');
-  const settings=$("accountContent").querySelector("[data-work-settings]")||$("accountContent");settings.append(tools);$("accountContent").prepend(quick);quick.className="work-availability";
+  const settings=$("accountContent").querySelector("[data-work-settings]")||$("accountContent");settings.append(tools);const quickDetails=document.createElement("details");const quickTitle=document.createElement("summary");quickTitle.textContent="방문 가능 설정";quickDetails.append(quickTitle,quick);settings.append(quickDetails);quick.className="work-availability";
   const resources=$("accountContent").querySelector('[data-expert-resources]');
   if(resources){const heading=settings.querySelector("h2");if(heading)heading.after(resources);else settings.prepend(resources);}
   await renderInstant(client,quick);
   await renderServiceArea(client,tools);await renderUrgentWorkspace(client,$("accountContent").querySelector("[data-work-primary]")||tools);}else if(document.body.dataset.workspace!=='admin'){await renderUrgentWorkspace(client,$("accountContent"));}}
  if(mode==='requests'&&document.body.dataset.workspace==='admin')await renderWaitlistCounts(client,document.getElementById('regionWaitlistHost'));
- if(mode==='requests'&&document.body.dataset.workspace!=='admin')void mountNotificationSummary({client,host:$('accountContent'),user});
+ if(mode==='requests'&&document.body.dataset.workspace!=='admin'){void mountNotificationSummary({client,host:$('accountContent'),user});}
  if(mode==='requests'&&document.body.dataset.workspace!=='admin')await renderCareCases(client,$('accountContent'),document.body.dataset.workspace);
  if(mode==="payment")await renderPaymentResult(client,message);
  if(mode==="phone")await renderPhoneVerification({client,config,root:$("accountContent")});
@@ -175,6 +178,7 @@ async function start(){
  adminReady=adminPage;
  $("accountContent").hidden=false;
  if(mode==='requests'&&$('requestList'))focusBooking($('requestList'));
+ simplifyServiceChrome();
  openMenuDestination();
 }
 // 로딩 그림 자리(3-6)는 내용이 떴거나 오류 안내가 나오면 감춘다. 안 붙어 있는 화면도 있어 없으면 넘어간다.

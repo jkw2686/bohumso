@@ -137,3 +137,6 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 
 ## 최신 배포 갱신 — 2026-10-23
 위의 미배포 상태는 해소됨. 사용자 요청으로 main69a2a1d, deploy6adb43c6628655378ca7f46b 20:24KST published. 운영 양쪽 예약 페이지/새CSS/참조8모듈200 확인. 실제 계정 전환·예약 행동·기기 푸시 검증은 미실시. 로컬/CI JS 해시 동일성 주장 금지. 최신 링크 /requests.html, /partner-work.html.
+
+## 2026-10-23 예약·알림 간소화
+- docs/service-clarity-20261023.md 참고. 화면/격리검증/빌드 완료, 사용자 배포 승인. 실제 휴대전화 미도착 보고: 시험 생성 기록 없음, 수신 해결 완료 아님. 다음: 배포 확인 및 사용자 기기 구독/시험 발송/표시 검증. DB·권한 변경 없음.

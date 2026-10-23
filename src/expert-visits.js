@@ -1,3 +1,4 @@
+import {simplifyServiceChrome} from './service-clarity.js';
 import {maybePromptReservationPush} from './notification-prompt.js';
 import {memberService,memberState,requireActiveMember,MEMBER} from './member-access.js';
 import {PROFESSION_CONFIG} from './profession-config.js';
@@ -56,8 +57,8 @@ export async function renderInstant(client,root){
 }
 export async function renderUrgentWorkspace(client,root){
  const compact=document.body.dataset.accountPage==='requests',opened=new Set();if(!compact)void client.auth.getUser().then(({data})=>maybePromptReservationPush({client,user:data?.user,context:'reservation'})).catch(()=>{});
- const panel=el('section','',root,'card urgent-panel');el('h2','전문가 방문상담 내역',panel);const body=el('div','',panel);let busy=false,lastView=null,focused=false;
- const load=async()=>{if(busy)return;busy=true;try{const rows=await rpc(client,'workspace');const anchor=compact?[...body.querySelectorAll('[data-booking-id]')].find(n=>n.getBoundingClientRect().bottom>0):null,position=anchor?{id:anchor.dataset.bookingId,top:anchor.getBoundingClientRect().top}:null;body.replaceChildren();if(!rows.length)el('p','접수한 방문상담이 없습니다.',body);
+ const panel=el('section','',root,'card urgent-panel');panel.dataset.visitHistory='';const heading=el('h2','방문상담',panel);const body=el('div','',panel);let busy=false,lastView=null,focused=false;
+ const load=async()=>{if(busy)return;busy=true;try{const rows=await rpc(client,'workspace');const anchor=compact?[...body.querySelectorAll('[data-booking-id]')].find(n=>n.getBoundingClientRect().bottom>0):null,position=anchor?{id:anchor.dataset.bookingId,top:anchor.getBoundingClientRect().top}:null;body.replaceChildren();panel.hidden=!rows.length;if(!rows.length)el('p','방문상담 내역이 없습니다.',body);
   for(const r of rows){const care=r.mine||r.assigned?await getCareSafe(client,'visit',r.id):null;const c=el('article','',body,'urgent-request');c.dataset.bookingId=r.id;el('h3',(r.purpose==='other'?'세무 상담':purposes[r.purpose]||'보험 상담')+' · 전문가 방문',c);
    el('strong',r.rejected?labels.REJECTED:r.confirmed&&r.state==='ACCEPTED'?labels.CONFIRMED:labels[r.state],c);
    el('p',r.region+(r.distanceKm!=null?' · 검색 기준 '+distance(r.distanceKm):''),c);if(r.expertName)el('p',r.expertName+' 전문가',c);
@@ -71,13 +72,13 @@ export async function renderUrgentWorkspace(client,root){
    if(r.assigned&&r.confirmed){if(['ACCEPTED','PREPARING'].includes(r.state))act('출발 알리기','trip',{state:'DEPARTED'});if(['DEPARTED','EN_ROUTE'].includes(r.state))act('도착 알리기','trip',{state:'ARRIVED'});if(r.state==='ARRIVED')act('상담 완료','trip',{state:'COMPLETED'});}
    if(care)renderCare({client,root:c,data:care,refresh:load,inline:compact});
    else if((r.mine||r.assigned)&&!['COMPLETED','CANCELLED','EXPIRED'].includes(r.state))button('요청 취소',c,async()=>{if(!confirm('이 방문상담 요청을 취소할까요?'))return;await rpc(client,'cancel',{id:r.id});await load();});
-   if(compact){const archived=['COMPLETED','CANCELLED','EXPIRED'].includes(r.state)||r.rejected;c.dataset.visitArchive=String(archived);const detail=document.createElement('details');detail.className='booking-visit-detail';const summary=document.createElement('summary');summary.textContent=(r.expertName||'전문가 방문상담')+' · '+(r.rejected?labels.REJECTED:r.confirmed&&r.state==='ACCEPTED'?labels.CONFIRMED:labels[r.state])+(r.preferredAt?' · '+time(r.preferredAt):'');detail.append(summary);const inner=document.createElement('div');while(c.firstChild)inner.append(c.firstChild);detail.append(inner);const primary=[...inner.querySelectorAll('button')].find(b=>!/취소|거절/.test(b.textContent));primary?.classList.add('booking-primary-action');if(r.region)el('p','방문 지역 · '+r.region,c);if(r.details?.place)el('p','만날 장소 · '+r.details.place,c);if(r.fee_notice){const fee=[...inner.children].find(n=>n.tagName==='P'&&n.textContent===r.fee_notice);if(fee)c.append(fee);}c.append(detail);detail.open=opened.has(r.id);detail.addEventListener('toggle',()=>{if(detail.open)opened.add(r.id);else opened.delete(r.id);});c.addEventListener('click',()=>{if(detail.open)opened.add(r.id);});}
+   if(compact){const archived=['COMPLETED','CANCELLED','EXPIRED'].includes(r.state)||r.rejected;c.dataset.visitArchive=String(archived);const detail=document.createElement('details');detail.className='booking-visit-detail';const summary=document.createElement('summary');summary.textContent=r.state==='REQUESTED'?(r.mine?'요청 상세':'요청 확인'):r.state==='ACCEPTED'&&!r.confirmed?'일정 확인':'예약 보기';detail.append(summary);const inner=document.createElement('div');while(c.firstChild)inner.append(c.firstChild);detail.append(inner);const primary=[...inner.querySelectorAll('button')].find(b=>!/취소|거절/.test(b.textContent));primary?.classList.add('booking-primary-action');el('h3',r.mine?(r.expertName||'담당 전문가'):'상담 요청 고객',c);el('p',r.rejected?labels.REJECTED:r.confirmed&&r.state==='ACCEPTED'?labels.CONFIRMED:labels[r.state],c);el('p',(r.preferredAt?(r.confirmed?'확정 · ':'희망 · ')+time(r.preferredAt):'일정 확인 필요')+' · 전문가 방문',c);c.append(detail);detail.open=opened.has(r.id);detail.addEventListener('toggle',()=>{if(detail.open){for(const other of document.querySelectorAll('details.booking-visit-detail[open],details[data-booking-detail][open]'))if(other!==detail)other.open=false;opened.clear();opened.add(r.id);}else opened.delete(r.id);});c.addEventListener('click',()=>{if(detail.open)opened.add(r.id);});}
   }
   if(!focused){const target=new URLSearchParams(location.search).get('request');const card=[...body.querySelectorAll('[data-booking-id]')].find(n=>n.dataset.bookingId===target);if(card){opened.add(target);const details=card.querySelector('details');if(details)details.open=true;card.tabIndex=-1;requestAnimationFrame(()=>{card.focus({preventScroll:true});card.scrollIntoView({block:'center'});});focused=true;}}
   if(compact){applyView();if(position){const card=[...body.querySelectorAll('[data-booking-id]')].find(n=>n.dataset.bookingId===position.id);if(card)window.scrollBy(0,card.getBoundingClientRect().top-position.top);}}
  }finally{busy=false;}};
- const applyView=()=>{const past=document.querySelector('[data-booking-view]')?.dataset.bookingView==='past';if(lastView!==null&&lastView!==past){opened.clear();for(const d of body.querySelectorAll('details'))d.open=false;}lastView=past;for(const c of body.querySelectorAll('[data-visit-archive]'))c.hidden=!opened.has(c.dataset.bookingId)&&(c.dataset.visitArchive==='true')!==past;};if(compact)window.addEventListener('bohumso-booking-view',applyView);
- button('내역 새로고침',panel,load,true);try{await load();}catch{status(panel,'내역을 불러오지 못했어요. 새로고침해 주세요.');}
+ const applyView=()=>{const past=document.querySelector('[data-booking-view]')?.dataset.bookingView==='past';if(lastView!==null&&lastView!==past){opened.clear();for(const d of body.querySelectorAll('details'))d.open=false;}lastView=past;const legacy=document.getElementById('legacyRequests')?.closest('details');if(legacy){legacy.hidden=!past;legacy.querySelector('summary').textContent='이전 예약 보기';}for(const c of body.querySelectorAll('[data-visit-archive]'))c.hidden=!opened.has(c.dataset.bookingId)&&(c.dataset.visitArchive==='true')!==past;panel.hidden=![...body.querySelectorAll('[data-visit-archive]')].some(c=>!c.hidden);};if(compact)window.addEventListener('bohumso-booking-view',applyView);
+ if(!compact)button('내역 새로고침',panel,load,true);else document.getElementById('refreshRequests')?.addEventListener('click',()=>load().catch(()=>{panel.hidden=false;status(panel,'방문상담을 불러오지 못했어요. 새로고침해 주세요.');}));try{await load();}catch{panel.hidden=false;status(panel,'내역을 불러오지 못했어요. 새로고침해 주세요.');}
  const timer=setInterval(()=>{if(!panel.isConnected){clearInterval(timer);return;}if(document.visibilityState==='visible'&&!document.querySelector('dialog[open]')&&!document.activeElement?.closest('form'))load().catch(()=>{});},30000);
 }
 async function customerPage(client,root){
@@ -85,8 +86,8 @@ async function customerPage(client,root){
  const params=new URLSearchParams(location.search);let searchPoint=null,area=null,revision=0;const drafts=new Map();
  let selectedId=params.get('planner')||'';
  function continuation(id){return '/urgent.html?'+new URLSearchParams({region:area.id,planner:id,purpose:params.get('purpose')||'claim',situation:params.get('situation')||'claim',help:params.get('help')||''});}
- el('h1','내 근처 전문가 찾기',root);el('p','방문 가능한 전문가 한 명을 직접 선택하세요. 요청 → 전문가 수락 → 고객 일정 확정 순서로 진행합니다.',root);
- link('내가 보험소에 방문할게요','/map.html?'+new URLSearchParams({view:'offices',region:params.get('region')||'',situation:params.get('situation')||'',purpose:params.get('purpose')||'claim'}),root);
+ el('h1','지금 방문 가능한 전문가',root);simplifyServiceChrome();
+
  const browse=el('section','',root,'card urgent-panel'),tracking=el('div','',root);
  const query=()=>({area:area.id,help:params.get('help')||'',...(searchPoint||{})});
  const selectArea=()=>{revision++;searchPoint=null;browse.replaceChildren();el('h2','어디를 기준으로 찾을까요?',browse);
@@ -94,25 +95,25 @@ async function customerPage(client,root){
   const search=field(browse,'지역 직접 선택');search.placeholder='강남구, 김포시, 분당…';const options=el('div','',browse,'area-options');
   const render=()=>{options.replaceChildren();for(const a of list.filter(a=>(a.region+' '+a.name).includes(search.value.trim())).slice(0,12))button(a.region+' '+a.name,options,async()=>{area=a;searchPoint=null;await show();},true);if(!options.children.length){el('p','아직 서비스 지역에 없는 시·군·구라면 오픈 알림을 신청할 수 있어요.',options);if(search.value.trim().length>=2)waitlistActions(options,search.value.trim(),client);}};search.oninput=render;render();
  };
- const show=async()=>{const version=++revision;browse.replaceChildren();el('h2','지금 방문 가능한 전문가',browse);el('p',searchPoint?'내 위치 기준 · 실제 만날 주소는 별도로 입력해요.':area.region+' '+area.name+' 중심 기준 · 실제 거리와 다를 수 있어요.',browse);el('p','거리·시간은 검색 위치까지의 직선거리 추정입니다. 실제 방문 주소·교통 상황에 따라 달라져요.',browse,'visit-hint');
+ const show=async()=>{const version=++revision;browse.replaceChildren();el('p',searchPoint?'현재 위치 기준':area.region+' '+area.name,browse);const locationGuide=el('details','',browse);el('summary','위치 안내',locationGuide);el('p','검색 위치 기준의 직선거리 추정입니다. 실제 방문 주소·교통 상황과 다를 수 있어요.',locationGuide,'visit-hint');
   const rows=await catalog(client,query());if(version!==revision)return;
   if(selectedId&&!rows.some(p=>p.id===selectedId)){el('p','선택한 전문가는 지금 방문 가능 목록에 없습니다. 전화·다른 시간 상담을 확인하거나 아래에서 다른 전문가를 직접 선택하세요.',browse,'visit-hint');link('선택한 전문가의 전화·상담 시간 확인','/requests.html?'+new URLSearchParams({help:params.get('help')||'',profession:params.get('profession')||'',planner:selectedId,region:area.id,method:'phone',purpose:params.get('purpose')||'claim',situation:params.get('situation')||''}),browse);}
   rows.sort((a,b)=>Number(b.id===selectedId)-Number(a.id===selectedId));
-  if(!rows.length){
-   el('p','이 주변에서 지금 방문 가능한 전문가가 없습니다.',browse);
+  if(!rows.length){link('이 지역 전문가 보기','/map.html?'+new URLSearchParams({view:'experts',region:area.id,help:params.get('help')||'',profession:params.get('profession')||'',purpose:params.get('purpose')||'claim'}),browse);
+   el('p','지금 방문 가능한 전문가가 없어요.',browse);
    const [registered,offices]=await Promise.all([client.rpc('planner_catalog',{area:area.id,wanted:''}),client.rpc('office_catalog')]);if(version!==revision)return;
    const publicProfiles=(registered.data?.planners||[]).filter(p=>!p.is_sample&&(!params.get('help')||p.profession===(params.get('help')==='tax'?'tax':'planner')));
    if(!registered.error&&publicProfiles.length){
     el('p','등록된 활동지역 전문가: '+publicProfiles.map(p=>p.name).join(', ')+'. 현재 방문 가능 상태와는 별도입니다.',browse,'visit-hint');
-    const mapQuery=new URLSearchParams({view:'experts',region:area.id,help:params.get('help')||'',profession:params.get('profession')||'',purpose:params.get('purpose')||'claim'});if(params.get('situation'))mapQuery.set('situation',params.get('situation'));
-    link('이 지역 전문가 지도 보기','/map.html?'+mapQuery,browse);
+
+
    }else if(!registered.error&&!offices.error&&!(offices.data||[]).some(o=>o.status==='active'&&o.region===area.id))waitlistActions(browse,area.id,client);
-   if(params.get('help')!=='tax')link('보험소 방문 예약 알아보기','/map.html?view=offices&region='+encodeURIComponent(area.id),browse);
+   if(params.get('help')!=='tax')link('보험소 방문예약','/map.html?view=offices&region='+encodeURIComponent(area.id),browse);
   }
   for(const p of rows){const card=el('article','',browse,'card visit-candidate');el('h3',p.name+' · '+(PROFESSION_CONFIG[p.profession]?.name||p.profession_name||'전문가'),card);if(p.fee_notice){el('p',p.fee_notice,card);el('p','전문가 상담료 · 플랫폼 이용료와 별개',card,'visit-hint');}if(p.id===selectedId)el('p','지도에서 선택한 전문가',card,'visit-verification');el('strong',distance(p.distanceKm)+' · 약 '+p.etaMin+'~'+p.etaMax+'분 거리',card);el('p',(p.specialties||[]).map(x=>PROFESSION_CONFIG[p.profession]?.specialties?.[x]||purposes[x]||x).join(' · '),card);
    const checks=[p.registrationVerified&&'자격 확인',p.organizationVerified&&'소속 확인'].filter(Boolean);if(checks.length)el('p',checks.map(x=>'✓ '+x).join(' · '),card,'visit-verification');
    el('p',p.stale?'방문 가능 · 위치 확인 10분 이상 경과':'지금 방문 가능',card);button('이 전문가에게 방문상담 요청',card,async()=>{if(!await requireActiveMember({client,next:continuation(p.id)}))return;const release=await client.rpc('release_status');if(release.error)throw release.error;if(!release.data.phoneVerified){status(card,'휴대전화 인증을 마치면 요청할 수 있어요.');link('휴대전화 인증하기','/phone-verification.html?next='+encodeURIComponent(continuation(p.id)),card);return;}requestFlow(p);});
-  }button('검색 위치 변경',browse,selectArea,true);button('목록 새로고침',browse,show,true);
+  }const tools=el('div','',browse,'visit-search-tools');button('지역 변경',tools,selectArea,true);button('새로고침',tools,show,true);
  };
  function requestFlow(expert){const draft=drafts.get(expert.id)||{};selectedId=expert.id;history.replaceState(null,'',continuation(expert.id));browse.replaceChildren();el('h2',expert.name+' 전문가에게 요청',browse);el('p','전문가가 고객에게 방문합니다. 검색 기준: '+(searchPoint?'내 현재 위치':area.region+' '+area.name)+' · 실제 방문 장소는 아래에서 정해 주세요.',browse);
   const pl=el('label','상담 분야',browse,'field'),purpose=el('select','',pl);for(const [v,t] of Object.entries(expert.profession==='tax'?{other:'세무 상담'}:purposes)){const o=el('option',t,purpose);o.value=v;}purpose.value=({cancer:'illness',hospitalization:'medical'})[params.get('situation')]||params.get('situation')||'claim';if(expert.profession==='tax'){purpose.value='other';el('p',expert.fee_notice||'방문 전 상담료 확인이 필요합니다',browse);el('p','플랫폼 이용료와 별도인 전문가 상담료입니다. 민감한 세무내용·고객서류는 이 화면에 입력하지 마세요.',browse,'visit-hint');}else if(!purpose.value)purpose.value='claim';
