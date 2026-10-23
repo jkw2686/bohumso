@@ -212,3 +212,5 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 - a08dfb5 배포 ready: 6adb62a8a39db3ccbe3d9c71, 2026-10-23T13:35:53.049Z.
 - 프로필 후속: 전문가 핀 클릭 즉시 전체화면, 사진/이름 진입 유지, 공개 허용 전화만 표시, 상담 요청 조건 유지, 본문 독립 스크롤, 하단 메뉴 숨김, 뒤로 지도 유지.
 - 신규 tests/profile-fullscreen-browser.mjs: 360/390/430/1440 핀→프로필→뒤로, 공개 전화 조건, 예약 대상 보존. 배포 최종 상태는 후속 기록 참조.
+- 최종 운영 배포 완료: 6dc19a10b091280d2861881604c21a86c7b8d643 / Netlify 6adb6482c8d1337eefb27249 / 2026-10-23 22:43:49 KST. map.js·page-clarity.css·expert-profile-card.js·terms.html 공개 응답 200 및 새 내용 확인.
+- 최신 링크 https://bohumso.netlify.app/map?view=experts . 새 동의 예약만 같은 시간 수락 즉시 확정. 기존 무동의 예약은 종전 고객 확인 유지.
