@@ -1,4 +1,4 @@
-import {MEMBER, memberService, memberState, authURL} from './member-access.js';
+import {MEMBER, memberService, memberState, invalidateMemberState, authURL} from './member-access.js';
 import '../public/expert-profile-card.js';
 
 const identity = document.getElementById('menuIdentity');
@@ -7,7 +7,29 @@ const status = document.getElementById('menuStatus');
 const retry = document.getElementById('menuRetry');
 const destination = (page, hash = '') => `/${page}.html?from=menu${hash ? '#' + hash : ''}`;
 const account = destination('account');
-let loading = false;
+let revision = 0, observedClient;
+function clearIdentity() {
+  ++revision;
+  identity.replaceChildren();
+  content.replaceChildren();
+  status.textContent = '';
+  content.setAttribute('aria-busy', 'true');
+  retry.disabled = true;
+}
+function recheck() {
+  clearIdentity();
+  if (observedClient) invalidateMemberState(observedClient);
+  const pending = revision;
+  // Supabase auth callbacks must return before another auth request acquires its lock.
+  setTimeout(() => { if (pending === revision) void load(); }, 0);
+}
+function observeAuth(client) {
+  if (observedClient === client) return;
+  observedClient = client;
+  client.auth.onAuthStateChange(event => {
+    if (event !== 'INITIAL_SESSION') recheck();
+  });
+}
 
 function node(tag, text, parent, className) {
   const element = document.createElement(tag);
@@ -75,8 +97,8 @@ function guest() {
   publicMenus();
 }
 async function load() {
-  if (loading) return;
-  loading = true;
+  clearIdentity();
+  const current = revision;
   content.setAttribute('aria-busy', 'true');
   retry.disabled = true;
   status.textContent = '';
@@ -86,7 +108,10 @@ async function load() {
   node('p', '내 정보를 확인하고 있어요.', identity);
   try {
     const {client, config} = await memberService();
+    if (current !== revision) return;
+    observeAuth(client);
     const auth = await memberState(client);
+    if (current !== revision) return;
     content.replaceChildren();
     retry.hidden = true;
     if (auth.state === MEMBER.anonymous) { guest(); return; }
@@ -98,6 +123,7 @@ async function load() {
       approved ? client.rpc('growth_command', {operation: 'capabilities', payload: {}}) : null,
       approved ? client.rpc('planner_catalog', {area: '', wanted: ''}) : null,
     ]);
+    if (current !== revision) return;
     const [optional, growth, catalog] = results;
     const own = optional?.error ? null : optional?.data;
     const publicProfile = catalog?.error ? null : catalog?.data?.planners?.find(p => p.id === own?.id && !p.is_sample);
@@ -143,6 +169,7 @@ async function load() {
       retry.hidden = false;
     }
   } catch {
+    if (current !== revision) return;
     identity.replaceChildren();
     node('p', '내 정보를 불러오지 못했어요.', identity);
     content.replaceChildren();
@@ -150,9 +177,10 @@ async function load() {
     status.textContent = '연결을 확인하고 다시 시도해 주세요.';
     retry.hidden = false;
   } finally {
-    content.setAttribute('aria-busy', 'false');
-    loading = false;
-    retry.disabled = false;
+    if (current === revision) {
+      content.setAttribute('aria-busy', 'false');
+      retry.disabled = false;
+    }
   }
 }
 retry.addEventListener('click', load);
@@ -165,5 +193,9 @@ new ResizeObserver(() => {
 document.addEventListener('click', event => {
   if (event.target.closest('a[href]')) history.replaceState({...history.state, menuScroll: scrollY}, '');
 });
-window.addEventListener('pageshow', event => { if (event.persisted) void load(); });
+window.addEventListener('pagehide', clearIdentity);
+window.addEventListener('pageshow', event => { if (event.persisted) recheck(); });
+window.addEventListener('storage', event => {
+  if (event.key === 'woori-account' || event.key === null) recheck();
+});
 void load().then(() => { if (history.state?.menuScroll) scrollTo(0, history.state.menuScroll); });

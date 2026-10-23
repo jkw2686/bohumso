@@ -1,5 +1,13 @@
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-23 — 관리자 메뉴 인증 동기화와 초기 표시 차단 (미배포)
+- src/menu.js: 인증/다른 탭 storage/복귀 변경 시 이름·역할 메뉴 즉시 제거, 서버 역할 재조회, request revision으로 오래된 결과 무효화. src/member-access.js에 진행 중 역할 요청 무효화 API 추가.
+- public/admin.html, public/admin-requests.html 및 src/admin-page-access.js: 초기 HTML부터 운영 영역 전체 숨김, 권한 확인 안내만 노출. src/account.js: 관리자만 표시, 계정 변경 시 숨김·데이터 제거, 같은 계정 인증 변경도 서버 재조회. 기존 서버/DB 권한 검사 유지.
+- 404 별도 조사: expert_admin_list()=011, insurer_contacts_command(operation text,payload jsonb default '{}')=073. 현재 호출 인수와 저장소 정의 일치. 운영 정확 인수 조회도 두 함수 404 PGRST202. 운영 earlyAccess=true라 expert_admin_list는 구 분기. 최신 migrate run39874687094는 성공이나 SQL 단계 skipped(DATABASE_URL 미확인 경고); 073 적용 증거가 아님. 운영 pg_proc/원장 대조 전까지 함수 누락/운영 시그니처/캐시 원인 확정 금지.
+- 최종 검수: build 통과; 관리자 UI 고유22항목(분할 gates12/menus11, 뒤로가기1 중복) 통과; help-login 기존 소비자 목적/전문가 상태·지역 복귀 통과; access/member-gate/admin-redeploy 격리 단위5/5 통과; node --check와 diff --check 통과. 전체 npm test/npm run verify는 이번 최소 수정에서 재실행하지 않음.
+- 상세 변경/읽기 전용 후속 SQL/영향: docs/admin-ui-access-20261023.md. SQL 적용·권한 확대·실제 승인/삭제/결제/발송 없음. 운영 미배포, 실계정/실휴대전화 미확인.
+
+
 ## 2026-10-23 — 전문가 신청/지역 소식 운영 검수 완료
 - 709a14e 및 가입 복귀 region 보완 4c8ac25를 origin/main에 푸시했고 Netlify 운영 반영 완료. 운영 /assets/account.js SHA-256이 로컬 검수 빌드와 일치.
 - 운영 지도 김포보험소 카드에서 전문가 활동신청 → 기존 전문가 가입(전문가 선택됨) → 로그인 연결을 직접 클릭. signup 초기화 후와 login next에 경기 김포시 유지 확인. 가입/로그인 제출은 하지 않음.

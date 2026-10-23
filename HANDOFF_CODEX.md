@@ -1,3 +1,20 @@
+# 최신 작업 — 2026-10-23 관리자 UI 인증 표시 최소 수정
+
+## 2026-10-23 — 관리자 메뉴 인증 동기화와 초기 표시 차단 (미배포)
+- src/menu.js: 인증/다른 탭 storage/복귀 변경 시 이름·역할 메뉴 즉시 제거, 서버 역할 재조회, request revision으로 오래된 결과 무효화. src/member-access.js에 진행 중 역할 요청 무효화 API 추가.
+- public/admin.html, public/admin-requests.html 및 src/admin-page-access.js: 초기 HTML부터 운영 영역 전체 숨김, 권한 확인 안내만 노출. src/account.js: 관리자만 표시, 계정 변경 시 숨김·데이터 제거, 같은 계정 인증 변경도 서버 재조회. 기존 서버/DB 권한 검사 유지.
+- 404 별도 조사: expert_admin_list()=011, insurer_contacts_command(operation text,payload jsonb default '{}')=073. 현재 호출 인수와 저장소 정의 일치. 운영 정확 인수 조회도 두 함수 404 PGRST202. 운영 earlyAccess=true라 expert_admin_list는 구 분기. 최신 migrate run39874687094는 성공이나 SQL 단계 skipped(DATABASE_URL 미확인 경고); 073 적용 증거가 아님. 운영 pg_proc/원장 대조 전까지 함수 누락/운영 시그니처/캐시 원인 확정 금지.
+- 최종 검수: build 통과; 관리자 UI 고유22항목(분할 gates12/menus11, 뒤로가기1 중복) 통과; help-login 기존 소비자 목적/전문가 상태·지역 복귀 통과; access/member-gate/admin-redeploy 격리 단위5/5 통과; node --check와 diff --check 통과. 전체 npm test/npm run verify는 이번 최소 수정에서 재실행하지 않음.
+- 상세 변경/읽기 전용 후속 SQL/영향: docs/admin-ui-access-20261023.md. SQL 적용·권한 확대·실제 승인/삭제/결제/발송 없음. 운영 미배포, 실계정/실휴대전화 미확인.
+
+## 다음 할 일
+- 격리 회귀 결과 및 커밋은 HANDOFF.md의 최신 기록 확인. 배포는 이번 작업에서 수행하지 않음.
+- 운영 DB 함수 진단은 docs/admin-ui-access-20261023.md의 읽기 전용 SQL부터. 마이그레이션 자동 적용/캐시 갱신/권한 확대 임의 실행 금지. 예상 15~30분(운영 SQL 읽기 접근 필요).
+- 배포 후 관리자/일반회원/전문가 실계정·실휴대전화·실제 BFCache 확인 필요(20~30분). 운영 쓰기 불필요.
+- 되돌리기는 이번 UI 변경 커밋 revert, DB 원복 없음.
+- 손대지 말 것: 기존 tests/early-access-browser.mjs 미커밋, tests/_dbg-066.mjs, tests/_dbg-early.mjs, outputs/help-entry-20261018/. 이번 커밋에서 제외.
+
+--- 이전 작업 참고 ---
 # 최신 작업 — 2026-10-23 전문가 신청/지역 소식 분리
 
 ## 2026-10-23 — 전문가 신청/지역 소식 운영 검수 완료

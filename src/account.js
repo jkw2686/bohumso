@@ -1,3 +1,4 @@
+import {adminPage, lockAdminPage, grantAdminPage, adminPageCurrent} from './admin-page-access.js';
 import {mountExpertOverview} from './expert-overview.js';
 import {arrangeExpertManagement} from './expert-management-layout.js';
 import {signupNext} from './signup-next.js';
@@ -23,10 +24,10 @@ import {renderWorkflow as renderRequests,renderPaymentResult} from "./workflow.j
 import {renderDirectory} from "./directory.js";
 import {renderProfileEditor} from "./profile-editor.js";
 import {openMenuDestination} from './menu-destinations.js';
-import {memberService,memberConfig,memberState,MEMBER,pendingAction,rememberAction,clearAction,authURL,accountReturn} from "./member-access.js";
+import {memberService,memberConfig,memberState,invalidateMemberState,MEMBER,pendingAction,rememberAction,clearAction,authURL,accountReturn} from "./member-access.js";
 const $=id=>document.getElementById(id);const mode=document.body.dataset.accountPage;
 let client,config,user,membership;
-let justCompleted=false;
+let justCompleted=false,adminReady=false;
 const status={pending:"심사 대기",approved:"승인 완료",rejected:"반려",suspended:"활동 정지",withdrawn:"신청 철회"};
 const jobs={planner:"보험설계사(청구전문가)",adjuster:"손해사정사",lawyer:"변호사",corporate:"기업보험 컨설턴트",tax:"세무사",office:"거점 운영자"};
 function message(text){$("accountMessage").textContent=text;}
@@ -73,15 +74,45 @@ async function renderAdmin(){if(!membership.admin)throw {message:'admin_required
  // 보험사 연락처. 073 미적용 환경에서는 조용히 숨기고 다른 운영 화면을 막지 않는다.
  document.querySelector('[data-insurer-admin]')?.remove();try{await mountInsurerAdmin({client,host:$('accountContent')});}catch(e){if(!['PGRST202','42883'].includes(e.code)){const p=document.createElement('p');p.textContent='보험사 연락처 운영을 불러오지 못했습니다.';$('accountContent').append(p);}}}
 async function start(){
+ const adminTicket=lockAdminPage();
  // 백엔드(Functions) 미배포·미설정 시 에러 대신 '준비 중'으로 degrade. 정적 공유 배포에서도 화면이 깨지지 않는다.
  config=await memberConfig();
  if(!config.enabled&&mode==="directory"){await renderDirectory(null);return;}
  if(!config.enabled){
+ if(adminPage)lockAdminPage('접근 권한을 확인하지 못했습니다. 새로고침해 주세요.');
  const local=['127.0.0.1','localhost'].includes(location.hostname);
  $("accountNotice").textContent=local?'디자인 미리보기입니다. 실제 가입·로그인은 공개 사이트에서 진행해 주세요.':config.message||'회원 서비스 연결을 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.';
  if(local&&['signup','login','account'].includes(mode)){const a=document.createElement('a');a.className='btn';a.href='https://bohumso.netlify.app/'+(mode==='signup'?'signup.html':'login.html');a.textContent=mode==='signup'?'실제 사이트에서 가입하기':'실제 사이트에서 로그인하기';$("accountNotice").append(a);}return;
 }
  ({client,config}=await memberService());
+ if(adminPage){
+  const initialIdentity=(await client.auth.getSession()).data.session?.user?.id||null;
+  let leaving=false;
+  client.auth.onAuthStateChange((event,session)=>{
+   if(event==='INITIAL_SESSION'||leaving)return;
+   const sameIdentity=!!session?.user&&session.user.id===initialIdentity;
+   // SDK recovery can emit SIGNED_IN during initialization. The pending server
+   // membership lookup already covers that identity; do not start a reload loop.
+   if(!adminReady&&(session?.user?.id||null)===initialIdentity)return;
+   const ticket=lockAdminPage();
+   invalidateMemberState(client);
+   if(sameIdentity){
+    setTimeout(async()=>{
+     try{const current=await memberState(client);if(!adminPageCurrent(ticket))return;
+      if(current.membership?.admin){grantAdminPage(ticket);return;}
+     }catch{if(!adminPageCurrent(ticket))return;}
+     $('accountContent').hidden=true;$('accountContent').replaceChildren();
+     document.getElementById('legacyRequests')?.replaceChildren();
+     lockAdminPage('접근 권한을 확인하지 못했습니다. 새로고침해 주세요.');
+    },0);
+    return;
+   }
+   leaving=true;
+   $('accountContent').hidden=true;$('accountContent').replaceChildren();
+   document.getElementById('legacyRequests')?.replaceChildren();clearAction();
+   setTimeout(()=>location.replace(session?.user?'/account.html':'/login.html'),0);
+  });
+ }
  if(config.visitMetrics){try{const day=new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul"}).format(new Date());const key="bohumso-visit-"+day;let id=sessionStorage.getItem(key);if(!id){id=crypto.randomUUID();sessionStorage.setItem(key,id);}client.rpc("record_visit_session",{session_id:id}).catch(()=>{});}catch{}}
  $("accountNotice").textContent=[config.operator&&"운영: "+config.operator,config.contact&&"문의: "+config.contact].filter(Boolean).join(" · ");
  if(mode==="directory"){$("accountContent").hidden=false;await renderDirectory(client);return;}
@@ -98,10 +129,10 @@ async function start(){
  $("resendConfirmation")?.addEventListener("click",()=>action($("loginForm"),async()=>{const email=$("loginForm").elements.email;if(!email.reportValidity())return;const {error}=await client.auth.resend({type:"signup",email:email.value.trim(),options:{emailRedirectTo:PRODUCTION_ORIGIN+accountReturn()}});fail(error);message("인증 대기 중인 이메일이면 안내 메일이 발송됩니다.");}));
  $("resetPassword").onclick=()=>action($("loginForm"),async()=>{const email=$("loginForm").elements.email;if(!email.reportValidity())return;const {error}=await client.auth.resetPasswordForEmail(email.value,{redirectTo:PRODUCTION_ORIGIN+"/reset-password.html"});fail(error);message("등록된 이메일이면 비밀번호 재설정 안내가 발송됩니다.");});return;
  }
- const auth=await memberState(client);if(auth.state===MEMBER.anonymous){const next=rememberAction(location.pathname+location.search+location.hash);location.replace(authURL(next,'login'));return;}user=auth.user;membership=auth.membership;
- client.auth.onAuthStateChange((event,session)=>{if(event==='INITIAL_SESSION'||session?.user?.id===user.id)return;$("accountContent").hidden=true;$("accountContent").style.display="none";message('계정이 변경되어 회원 정보를 다시 확인합니다.');clearAction();setTimeout(()=>location.replace(session?.user?'/account.html':'/login.html'),0);});
+ const auth=await memberState(client);if(!adminPageCurrent(adminTicket))return;if(auth.state===MEMBER.anonymous){const next=rememberAction(location.pathname+location.search+location.hash);location.replace(authURL(next,'login'));return;}user=auth.user;membership=auth.membership;
+ if(!adminPage)client.auth.onAuthStateChange((event,session)=>{if(event==='INITIAL_SESSION'||session?.user?.id===user.id)return;$("accountContent").hidden=true;$("accountContent").style.display="none";message('계정이 변경되어 회원 정보를 다시 확인합니다.');clearAction();setTimeout(()=>location.replace(session?.user?'/account.html':'/login.html'),0);});
  if(auth.state===MEMBER.incomplete&&!['account','reset'].includes(mode)){const next=rememberAction(location.pathname+location.search+location.hash);location.replace(accountReturn(next));return;}
- if((mode==='admin'||document.body.dataset.workspace==='admin')&&!membership.admin){message('관리자 권한이 필요합니다.');return;}
+ if((mode==='admin'||document.body.dataset.workspace==='admin')&&!membership.admin){message('관리자 권한이 필요합니다.');lockAdminPage('관리자 권한이 필요합니다.');return;}
  if(document.body.dataset.workspace==='partner'&&(membership.partner_status!=='approved'||membership.profession==='office')){message('승인된 전문가만 이용할 수 있습니다.');return;}
  if(mode==="reset"){$("accountContent").hidden=false;onForm("passwordForm",async d=>{const {error}=await client.auth.updateUser({password:String(d.get("password"))});fail(error);message("비밀번호를 변경했습니다. 내 계정에서 계속 이용할 수 있습니다.");});return;}
  if(mode==='notifications'){
@@ -140,6 +171,8 @@ async function start(){
  if(mode==="partner")await mountExpertOverview({client,host:$("accountContent"),user,membership});
  if(mode==="admin"){if(config.betaInvitesEnabled)await renderBetaAdmin(client,$("accountContent"));await renderAdmin();$("refreshAdmin").onclick=()=>action($("accountContent"),renderAdmin);}
  if((mode==='partner'||document.body.dataset.workspace==='partner')&&membership.profession!=='office'&&(membership.partner_status||membership.state?.startsWith('EXPERT'))){const entry=document.createElement('a');entry.href='/growth.html';entry.className='btn ghost';entry.textContent='성장·실천';entry.setAttribute('data-growth-entry','');const resources=$('accountContent').querySelector('[data-expert-resources]')||$('accountContent').querySelector('[data-management-menu]');if(resources)resources.append(entry);else {const menu=$('accountContent').querySelector('[data-management-menu]');if(menu)menu.append(entry);else $('accountContent').append(entry);}}
+ if(!grantAdminPage(adminTicket))return;
+ adminReady=adminPage;
  $("accountContent").hidden=false;
  if(mode==='requests'&&$('requestList'))focusBooking($('requestList'));
  openMenuDestination();
@@ -154,7 +187,8 @@ let startupFailed=false;
 function offerStartupRetry(){if(document.getElementById('memberStartupRetry'))return;const retry=document.createElement('button');retry.type='button';retry.className='btn ghost';retry.id='memberStartupRetry';retry.textContent='연결 다시 확인';retry.onclick=()=>location.reload();$("accountNotice").append(' ',retry);}
 const startupTimer=setTimeout(()=>{
  if(!$("accountContent")?.hidden)return;
+ if(adminPage)document.getElementById('adminAccessNotice').textContent='접근 권한 확인이 지연되고 있습니다. 새로고침해 주세요.';
  $("accountNotice").textContent='로그인·회원 정보 확인이 지연되고 있습니다. 연결을 다시 확인해 주세요. 예약은 새로 생성되지 않습니다.';
  offerStartupRetry();if(loadingArt)loadingArt.hidden=true;
 },15000);
-start().catch(e=>{startupFailed=true;message(safeError(e));$("accountContent").hidden=true;$("accountNotice").textContent="회원 서비스 연결 상태를 확인할 수 없습니다.";offerStartupRetry();if(loadingArt)loadingArt.hidden=true;}).finally(()=>{clearTimeout(startupTimer);const retry=document.getElementById('memberStartupRetry');if(!startupFailed&&retry){retry.remove();if(!$("accountContent").hidden)$("accountNotice").textContent=[config?.operator&&'운영: '+config.operator,config?.contact&&'문의: '+config.contact].filter(Boolean).join(' · ');}});
+start().catch(e=>{if(adminPage)lockAdminPage('접근 권한을 확인하지 못했습니다. 새로고침해 주세요.');startupFailed=true;message(safeError(e));$("accountContent").hidden=true;$("accountNotice").textContent="회원 서비스 연결 상태를 확인할 수 없습니다.";offerStartupRetry();if(loadingArt)loadingArt.hidden=true;}).finally(()=>{clearTimeout(startupTimer);const retry=document.getElementById('memberStartupRetry');if(!startupFailed&&retry){retry.remove();if(!$("accountContent").hidden)$("accountNotice").textContent=[config?.operator&&'운영: '+config.operator,config?.contact&&'문의: '+config.contact].filter(Boolean).join(' · ');}});
