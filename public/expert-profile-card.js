@@ -15,7 +15,7 @@
  }
  function avatar(parent,p){var box=node('span','',parent,'expert-avatar');box.setAttribute('aria-hidden','true');box.dataset.profession=p.profession||'';setAvatar(box,photoURL(p.photo_url));return box;}
  // 직군 표시는 화면 라벨을 우선한다(shared/professions.json과 같은 값). DB 표시명이 달라도 화면은 일관되게 보인다.
- var PROFESSION_LABELS={planner:'보험설계사(청구전문가)',tax:'세무사',office:'보험소 운영자',adjuster:'손해사정사',lawyer:'변호사'};
+ var PROFESSION_LABELS={planner:'보험설계사',tax:'세무사',office:'보험소 운영자',adjuster:'손해사정사',lawyer:'변호사'};
  function professionLabel(p){return PROFESSION_LABELS[p&&p.profession]||(p&&p.profession_name)||'';}
  function query(p,context){return new URLSearchParams({planner:p.id,region:p.region||'',help:context?.help||(p.profession==='tax'?'tax':'claim'),profession:p.profession||'planner',purpose:p.profession==='tax'?'other':context?.purpose||'claim',situation:context?.situation||''});}
  function profileLink(parent,p,context,text){var a=node('a',text,parent,'expert-profile-link');a.href='/find.html?'+query(p,context)+'#profile-'+encodeURIComponent(p.id);a.addEventListener('click',function(e){if(e.button||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;e.preventDefault();openDetail(p,context);});return a;}

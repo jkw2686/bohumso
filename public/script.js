@@ -117,72 +117,8 @@ document.querySelectorAll('.options').forEach(group => {
   });
 });
 
-function calcScore() {
-  let total = 0;
-  let answered = 0;
-  document.querySelectorAll('.options').forEach(group => {
-    const sel = group.querySelector('.option.selected');
-    if (sel) {
-      total += Number(sel.dataset.v);
-      answered++;
-    }
-  });
-
-  if (answered < 3) {
-    alert('모든 질문에 답해 주세요.');
-    return;
-  }
-
-  const resultCard = document.getElementById('resultCard');
-  const badge = document.getElementById('scoreBadge');
-  const desc = document.getElementById('resultDesc');
-
-  resultCard.style.display = 'block';
-
-  let level;
-  if (total >= 6) {
-    level = 'high';
-    badge.textContent = '분쟁 가능성 높음';
-    badge.className = 'score-badge high';
-    desc.textContent = '유사 사례에서 지급 거절이 뒤집힌 사례가 다수 있습니다. 전문가 검토를 권장합니다.';
-  } else if (total >= 3) {
-    level = 'mid';
-    badge.textContent = '분쟁 가능성 중간';
-    badge.className = 'score-badge mid';
-    desc.textContent = '약관 해석에 따라 다툼 여지가 있습니다. 서류 검토가 필요합니다.';
-  } else {
-    level = 'low';
-    badge.textContent = '분쟁 가능성 낮음';
-    badge.className = 'score-badge low';
-    desc.textContent = '현재 입력 기준으로는 분쟁 소지가 크지 않아 보입니다.';
-  }
-
-  try { localStorage.setItem('woori_diag', JSON.stringify({ level: level, at: Date.now() })); } catch (e) {}
-
-  resultCard.scrollIntoView({ behavior: 'smooth' });
-}
-
-// 홈: 최근 진단이 분쟁 가능성 높음/중간이면 상담 넛지 노출
-function renderDiagNudge() {
-  const el = document.getElementById('diagNudge');
-  if (!el) return;
-  let diag = null;
-  try { diag = JSON.parse(localStorage.getItem('woori_diag') || 'null'); } catch (e) {}
-  if (!diag || (diag.level !== 'high' && diag.level !== 'mid')) return;
-  // 30일 이내 결과만 유효
-  if (diag.at && Date.now() - diag.at > 30 * 24 * 60 * 60 * 1000) return;
-
-  let office = '가까운 보험소';
-  try {
-    const c = JSON.parse(localStorage.getItem('woori_nearest') || 'null');
-    if (c && c.name) office = c.name;
-  } catch (e) {}
-
-  const label = diag.level === 'high' ? '분쟁 가능성 높음' : '분쟁 가능성 중간';
-  const txt = document.getElementById('diagNudgeText');
-  if (txt) txt.textContent = '샘플 체험 결과 ' + label + ' · ' + office + '에서 상담을 문의할 수 있습니다';
-  el.hidden = false;
-}
+// Retired dispute scoring. Preserve saved sample records without interpreting them.
+function renderDiagNudge(){const node=document.getElementById('diagNudge');if(node)node.hidden=true;}
 
 function togglePolicies() {
   const p3 = document.getElementById('policy3');

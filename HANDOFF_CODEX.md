@@ -194,3 +194,13 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 - 사용자 전체 배포 승인. main4005092479bdda4599dda00f194bdbd740ffad01, Netlify6adb59841ffe99f1407ef323 ready/published2026-10-23T12:56:58.305Z, error=null.
 - 예약조회 상한 안내1594bb4, 목록 간소화382a046, 상세 정리4005092 모두 반영. 공개 partner-work/requests/notifications HTTP200, partner work-tools 및 service-clarity 새규칙 확인. 실제 운영 예약·알림 변경 없이 정적 제공 검증.
 - https://bohumso.netlify.app/partner-work.html / https://bohumso.netlify.app/requests.html . 격리 테스트 결과 유지, 실제 사용자 휴대전화의 새화면·알림 탭은 별도 미확인. 홈 지도 높이 기존검사 불일치와 200건 초과 서버 페이징은 남은 항목.
+
+
+## 2026-10-23 예약 확정·후기 및 서비스 범위 정리 (미배포)
+- 최신 사용자 기준: 고객 선택 시간 그대로 수락하면 확정, 연락처는 확정 이후만. 신청시 명시동의·검증된번호 사용. 새074 migration 로컬 격리검증, 운영DB 적용 금지(사용자 별도승인 요구). 기존 무동의 예약 소급변경 없음. 다른시간/장소제안 기존 재확인 흐름 보존.
+- 별점 라디오1~5+한줄후기, 공개동의/완료예약 본인/중복평가 제한 보존. 빈후기는 서버 capability로만 활성화.
+- 보험설계사 청구전문가 명칭·분쟁점수·분쟁판단유도 정리, 공식청구자료/지도/예약/앱고객지원 보존. 상세 전후와 위치 docs/service-scope-audit-20261023.md. 월39000원/무료기간/가입정책 변경없음.
+- 테스트: same-time격리DB PASS, 신청6크기·동의·서버번호 PASS, 목록/별점 PASS, 지도4조건 PASS, 고객지원11검사 PASS. 최종빌드 PASS. 청구안내 로그인전후 검사는 후속기록.
+- 알려진제한: 운영DB/관리자FAQ·자유입력소개 미조회, DB072직군표시명 수정 별도승인, 실운영새예약/휴대전화 검수 안함. 074 운영적용 및 새배포는 승인 없이 실행하지 않음. 원격 main push는 배포 트리거라 이번 미실시. 기존외부배포4005092 유지.
+
+최종 검증: 청구안내6경로 × 320/360/390/768/1440 × 로그인전후, 문서/뒤로가기/지도맥락/선택/예약 인증진입 모두 PASS. 최종074 SQL 기능조회 구분자 수정 후 격리DB 재검증 PASS. 프로덕션 build PASS. 운영 DB/배포 미실행.

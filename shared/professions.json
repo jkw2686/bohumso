@@ -2,7 +2,7 @@
   "version": "expert-professions-2026-10-12-v1",
   "professions": {
     "planner": {
-      "name": "보험설계사(청구전문가)", "purpose": "보험금 청구 도움", "icon": "person", "intake": true,
+      "name": "보험설계사", "purpose": "보험금 청구 도움", "icon": "person", "intake": true,
       "documents": {"registration": "설계사 등록증", "appointment": "위촉·소속 확인자료"},
       "documentRule": "any", "documentHint": "설계사 등록증 또는 위촉·소속 확인자료 중 하나를 제출하세요.",
       "registryLabel": "보험모집 등록번호 (선택)",
