@@ -1048,3 +1048,5 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 ## 2026-10-23 예약 알림 화면에서 직접 켜기
 - notifications 목록 최상단에 기존 기기 설정 컴포넌트를 compact 모드로 재사용. 연결 전 켜기, 연결 후 시험 알림, 끄기/다시확인/기기해제는 도움말에 배치. OFF 재활성은 본문 유지. 예약 딥링크는 설정 조회와 독립.
 - notification-settings-browser: 기존 권한·OFF·계정변경 + compact 연결/시험 전환·390px 통과. DB/서버 정책 변경·실제 시험 발송 없음. 사진에서 사용자 기기 구독 연결 완료 확인, 실제 도착은 미확인.
+
+- 직접 켜기 배포 완료: f15a3ce / Netlify6adb4fbacdd764f13178e15b, 2026-10-23 21:15:10KST ready/published. 운영 notifications.html에서 휴대전화 알림·켜기·접힌 도움말이 기존 알림4건보다 먼저 표시 확인. 실제 시험 발송 없음.
