@@ -13,7 +13,7 @@ do $$begin
  if to_regprocedure('public.consultation_workspace_before_same_time(text)') is null then alter function public.consultation_workspace(text) rename to consultation_workspace_before_same_time;end if;
 end$$;
 create or replace function public.consultation_command(operation text,payload jsonb default '{}') returns jsonb language plpgsql security definer set search_path='' as $$
-declare result jsonb;c private.consultations;a private.appointment_care;s private.booking_request_consents;number text;begin
+declare result jsonb;c private.consultations;a jsonb;s private.booking_request_consents;number text;care boolean:=to_regclass('private.appointment_care') is not null;pending boolean:=false;begin
  if operation='request' and payload->>'confirmation_version'='same-time-v1' then
   if payload->'share_consent' is distinct from 'true'::jsonb or length(trim(coalesce(payload->>'name',''))) not between 2 and 60 then raise exception 'consent_required';end if;
   if private.verified_contact(auth.uid()) is null then raise exception 'phone_verification_required';end if;
@@ -22,18 +22,21 @@ declare result jsonb;c private.consultations;a private.appointment_care;s privat
  if operation='request' and payload->>'confirmation_version'='same-time-v1' and not coalesce((result->>'replay')::boolean,false) then
   select * into c from private.consultations where id=(result->>'id')::uuid;
   if c.customer_id is distinct from auth.uid() then raise exception 'request_forbidden';end if;
-  a:=private.appointment_sync('consultation',c.id);
+  if care then execute 'select to_jsonb(private.appointment_sync(''consultation'',$1))' into a using c.id;
+  else a:=jsonb_build_object('terms',jsonb_build_object('at',c.preferred_at,'method',c.method,'region',c.region,'office',c.office_id));end if;
   insert into private.booking_request_consents(consultation_id,customer_id,planner_id,office_id,customer_name,terms,version)
-  values(c.id,c.customer_id,c.planner_id,c.office_id,trim(payload->>'name'),a.terms,'same-time-v1') on conflict do nothing;
+  values(c.id,c.customer_id,c.planner_id,c.office_id,trim(payload->>'name'),(a->'terms'),'same-time-v1') on conflict do nothing;
  elsif operation='accept' then
   select * into c from private.consultations where id=(payload->>'id')::uuid for update;
   select * into s from private.booking_request_consents where consultation_id=c.id;
-  a:=private.appointment_sync('consultation',c.id);
+  if care then execute 'select to_jsonb(private.appointment_sync(''consultation'',$1))' into a using c.id;
+  else a:=jsonb_build_object('terms',jsonb_build_object('at',c.preferred_at,'method',c.method,'region',c.region,'office',c.office_id));end if;
+  if care then execute 'select exists(select 1 from private.appointment_changes where kind=''consultation'' and appointment_id=$1 and state=''pending'')' into pending using c.id;end if;
   if c.planner_id=auth.uid() and c.state='coordinating' and c.planner_ok and s.customer_id=c.customer_id
    and (s.planner_id=c.planner_id or s.planner_id is null and s.office_id=c.office_id)
-   and s.terms=a.terms and c.preferred_at=(s.terms->>'at')::timestamptz and c.method=s.terms->>'method'
-   and nullif(a.terms->>'place','') is not null
-   and not exists(select 1 from private.appointment_changes where kind='consultation' and appointment_id=c.id and state='pending')
+   and s.terms=(a->'terms') and c.preferred_at=(s.terms->>'at')::timestamptz and c.method=s.terms->>'method'
+   and (not care or nullif((a->'terms')->>'place','') is not null)
+   and not pending
    and not exists(select 1 from private.consultation_schedule_proposals where consultation_id=c.id and state='pending') then
    number:=private.verified_contact(c.customer_id);
    if number is null then raise exception 'phone_verification_required';end if;
@@ -42,10 +45,11 @@ declare result jsonb;c private.consultations;a private.appointment_care;s privat
    values(c.id,s.customer_name,number,c.planner_id,s.version,s.agreed_at)
    on conflict(consultation_id) do update set customer_name=excluded.customer_name,phone=excluded.phone,recipient=excluded.recipient,version=excluded.version,consented_at=excluded.consented_at;
    update private.consultations set customer_ok=true,state='scheduled' where id=c.id;
-   update private.appointment_care set confirmed=true,customer_agreed=true,expert_agreed=true,revision=revision+1 where kind='consultation' and id=c.id;
-   a:=private.appointment_sync('consultation',c.id);
+   if care then execute 'update private.appointment_care set confirmed=true,customer_agreed=true,expert_agreed=true,revision=revision+1 where kind=''consultation'' and id=$1' using c.id;end if;
+   if care then execute 'select to_jsonb(private.appointment_sync(''consultation'',$1))' into a using c.id;
+  else a:=jsonb_build_object('terms',jsonb_build_object('at',c.preferred_at,'method',c.method,'region',c.region,'office',c.office_id));end if;
    insert into private.consultation_events(consultation_id,actor,event,metadata) values(c.id,auth.uid(),'same_time_confirmed',jsonb_build_object('consent_version',s.version));
-   perform private.appointment_source_event(a,'same_time_confirmed','선택한 시간으로 예약이 확정되었습니다');
+   if care then execute 'select private.appointment_source_event(private.appointment_sync(''consultation'',$1),''same_time_confirmed'',''선택한 시간으로 예약이 확정되었습니다'')' using c.id;end if;
    result:=result||jsonb_build_object('confirmed',true);
   end if;
  end if;
