@@ -60,11 +60,13 @@ export async function renderExpertHome({client,host,user,membership,config,messa
  profile.style.cursor='pointer';profile.onclick=e=>{if(!e.target.closest('button'))preview.click();};
  if(membership.partner_status!=='approved'){const pending=el('section',undefined,root);el('h2',p?.status==='VERIFICATION_PENDING'?'자격 확인 심사 중':p?.status==='SUSPENDED'?'활동 정지 · 확인 필요':'자격 확인이 필요해요',pending);link(pending,'진행 상태 확인',url('qualification')).className='btn';return true;}
  const activity=el('section',undefined,root);activity.className='expert-home-activity';el('h2','활동 상태',activity);
- const mapRow=el('div',undefined,activity);mapRow.className='expert-toggle-row';el('span','지도에 표시',mapRow);const toggle=el('button','확인 중',mapRow);toggle.type='button';toggle.setAttribute('role','switch');toggle.setAttribute('aria-label','지도에 표시');toggle.disabled=true;
+ const mapRow=el('div',undefined,activity);mapRow.className='expert-toggle-row';const mapLabel=el('span',undefined,mapRow);mapLabel.className='toggle-label';el('b','지도에 표시',mapLabel);const mapState=el('span','확인 중',mapLabel);mapState.className='toggle-state';const toggle=el('button','확인 중',mapRow);toggle.type='button';toggle.className='toggle-action';toggle.disabled=true;
  const mapStatus=el('small','',activity);mapStatus.setAttribute('role','status');let shown=false;
- const paint=v=>{shown=v;toggle.setAttribute('aria-checked',String(v));toggle.textContent=v?'ON':'OFF';};
+ // 상태는 글자로 보여주고, 버튼에는 누르면 일어날 동작만 쓴다.
+ const paint=v=>{shown=v;mapState.textContent=v?'● 켜짐':'꺼짐';mapState.dataset.on=String(v);toggle.textContent=v?'끄기':'켜기';toggle.className='toggle-action'+(v?' ghost':'');toggle.setAttribute('aria-label','지도에 표시 '+(v?'끄기':'켜기'));};
+ const tellMap=t=>{mapStatus.textContent=t;clearTimeout(mapStatus.dataset.timer);mapStatus.dataset.timer=setTimeout(()=>{if(mapStatus.isConnected)mapStatus.textContent='';},2500);};
  try{const v=await readRpc(client,'expert_map_visibility',{operation:'get',enabled:null});if(current){paint(v.enabled);toggle.disabled=!v.can_change;if(!v.can_change)link(activity,'자격 확인 필요 · 확인하기',url('qualification'));}}catch{toggle.textContent='확인 필요';link(activity,'지도 설정 확인하기',url('settings'));}
- toggle.onclick=async()=>{if(toggle.disabled)return;toggle.disabled=true;try{const result=await client.rpc('expert_map_visibility',{operation:'set',enabled:!shown});if(result.error)throw result.error;const v=result.data;if(current){paint(v.enabled);mapStatus.textContent='저장했습니다.';}}catch{mapStatus.textContent='저장하지 못했습니다. 기존 상태를 유지합니다.';}finally{if(current)toggle.disabled=false;}};
+ toggle.onclick=async()=>{if(toggle.disabled)return;toggle.disabled=true;try{const result=await client.rpc('expert_map_visibility',{operation:'set',enabled:!shown});if(result.error)throw result.error;const v=result.data;if(current){paint(v.enabled);tellMap(v.enabled?'켰습니다.':'껐습니다.');}}catch{mapStatus.textContent='저장하지 못했습니다. 기존 상태를 유지합니다.';}finally{if(current)toggle.disabled=false;}};
  if(membership.partner_status==='approved'&&p?.profession==='planner')await renderInstant(client,activity,{compact:true});
  const reservations=el('section',undefined,root);reservations.className='expert-home-reservations';el('h2','상담 요청',reservations);
  if(membership.partner_status==='approved')try{

@@ -24,12 +24,12 @@ export async function mountNotificationSettings({client,host,user,compact=false}
  const updateControls=()=>{if(compact){if(enabled)guide.append(toggle);else root.insertBefore(toggle,enable);toggle.className=enabled?'btn ghost':'btn';test.hidden=!ready;}enable.hidden=(compact&&ready)||!pushSupported()||Notification.permission==='denied'||!enabled;guide.querySelector('summary').textContent=!pushSupported()?'지원 브라우저에서 여는 방법':Notification.permission==='denied'?'방법 보기':'알림 관리·도움말';disconnect.hidden=!ready;disconnect.disabled=busy||accountChanged;test.disabled=busy||!ready||accountChanged;toggle.disabled=busy||!saved||accountChanged;enable.disabled=busy||ready||!saved||!enabled||!config.enabled||!pushSupported()||Notification.permission==='denied'||accountChanged;enable.textContent=ready?'이 기기 연결 완료':'예약 알림 켜기';retry.disabled=busy||accountChanged;toggle.textContent=enabled?'예약 알림 끄기':'앱 내 예약 알림 다시 켜기';};
  const load=async()=>{
   saved=false;ready=false;app.textContent='앱 내 예약 알림을 확인하고 있습니다.';status.textContent='기기 연결 상태를 확인하고 있습니다.';updateControls();
-  try{const result=await rpc('get');if(accountChanged)return;enabled=result.enabled!==false;saved=result.saved===true;app.textContent='앱 내 예약 알림: '+(enabled?'켜짐':'OFF · 다시 켜면 새 예약 안내를 확인할 수 있어요.');}
+  try{const result=await rpc('get');if(accountChanged)return;enabled=result.enabled!==false;saved=result.saved===true;app.textContent='앱 내 예약 알림: '+(enabled?'켜짐':'꺼짐 · 다시 켜면 새 예약 안내를 확인할 수 있어요.');}
   catch{if(accountChanged)return;saved=false;app.textContent='예약 알림 설정을 불러오지 못했습니다. 기존 설정은 유지됩니다. 설정 다시 확인을 눌러주세요.';status.textContent='알림 설정 미확인 · 푸시 수신 준비 상태를 확인하지 못했습니다.';updateControls();return;}
   try{const r=await fetch('/api/reservation-push',{cache:'no-store',signal:AbortSignal.timeout(8000)});config=r.ok?await r.json():{enabled:false};}catch{config={enabled:false};}
   if(accountChanged)return;
   ready=false;
-  if(!enabled)status.textContent='예약 알림 설정 OFF · 푸시를 받지 않습니다.';
+  if(!enabled)status.textContent='예약 알림 설정 꺼짐 · 푸시를 받지 않습니다.';
   else if(!pushSupported())status.textContent='이 브라우저에서는 휴대전화 알림을 받을 수 없어요.';
   else if(Notification.permission==='denied')status.textContent='브라우저에서 알림 허용이 필요해요.';
   else if(!config.enabled)status.textContent='푸시 서버 연결 전 · 아직 수신 준비 완료가 아닙니다.';
