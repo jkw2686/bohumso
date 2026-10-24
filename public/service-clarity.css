@@ -102,3 +102,17 @@ body.customer-requests .request-filters>summary{padding-inline:0;font-size:var(-
 body.customer-requests .request-filters form{border:0;box-shadow:none;padding-inline:0;margin-top:0}
 body.customer-requests .notification-summary{border:0;padding-block:var(--space-2);margin:0}
 @media(max-width:600px){body.customer-requests .booking-card-summary>.btn{width:100%;justify-self:stretch}}
+
+/* Expert request details: action first, supplementary guidance stays available. */
+body.partner-bookings .booking-detail-body .meeting-guidance{padding:var(--space-3) 0;margin:var(--space-3) 0;border:0;background:transparent;box-shadow:none}
+body.partner-bookings .meeting-guidance p{margin:var(--space-2) 0;font-size:var(--ui-body)}
+body.partner-bookings .meeting-guidance details{border:0;padding:0;margin:0;background:transparent}
+body.partner-bookings .meeting-guidance summary{min-height:var(--touch-target);align-content:center;color:var(--ink-muted);font-size:var(--ui-small)}
+body.partner-bookings .booking-detail-body .review-actions{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-block:var(--space-3)}
+body.partner-bookings .booking-detail-body .review-actions button{flex:1;min-height:var(--touch-target);margin:0}
+body.partner-bookings .request-filters form{border:0;padding-inline:0;box-shadow:none;background:transparent}
+body.partner-bookings .request-filters>summary{padding-inline:0;color:var(--ink-muted)}
+body.partner-bookings .work-tools .compact-work-menu{display:flex;flex-direction:column;gap:0}
+body.partner-bookings .work-tools .compact-work-menu a{flex:auto;justify-content:flex-start;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;padding:var(--space-3) 0;box-shadow:none;min-height:var(--touch-target)}
+body.partner-bookings .booking-card-summary>.btn{min-height:var(--touch-target)}
+@media(max-width:600px){body.partner-bookings .booking-card-summary>.btn{width:100%;justify-self:stretch}}
