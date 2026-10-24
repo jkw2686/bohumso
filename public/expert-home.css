@@ -67,3 +67,10 @@
 .expert-simple .expert-screen-content .standalone-editor legend,.expert-simple .expert-screen-content .standalone-editor label{font-size:inherit}
 .expert-simple .expert-screen-content .profile-editor-preview{padding:0;border:0;margin:0}
 .expert-simple .expert-screen-content .profile-editor-preview>button{margin:0}
+
+/* Balanced identity row, with a separate full-width profile action. */
+.expert-simple .expert-screen-content>.expert-home-profile{display:grid;grid-template-columns:88px minmax(0,1fr);align-items:center;gap:var(--space-4,16px);padding:var(--space-4,16px) 0;text-align:left}
+.expert-simple .expert-home-profile .expert-avatar{width:88px;height:88px;border-radius:var(--radius);object-fit:cover}
+.expert-simple .expert-home-profile h2{margin:0 0 var(--space-2,8px);font-size:var(--text-lg,20px);line-height:1.35}
+.expert-simple .expert-home-profile p{margin:0 0 var(--space-2,8px)}
+.expert-simple .expert-home-profile .text-button{padding:0;min-height:44px;border:0;justify-content:flex-start;font-weight:600}

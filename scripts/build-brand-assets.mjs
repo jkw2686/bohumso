@@ -82,10 +82,10 @@ function iconSVG(ratio, {background = '#FFFFFF', ink = false} = {}) {
   const vb = `0 0 ${side} ${side}`;
   return svg(vb, (background ? rect(vb, background) : '') + g);
 }
-files['app-icon.svg'] = iconSVG(0.64);
-files['app-icon-transparent.svg'] = iconSVG(0.64, {background: null});
-files['app-icon-mono.svg'] = iconSVG(0.64, {ink: true});
-files['app-icon-mono-transparent.svg'] = iconSVG(0.64, {background: null, ink: true});
+files['app-icon.svg'] = iconSVG(0.9);
+files['app-icon-transparent.svg'] = iconSVG(0.9, {background: null});
+files['app-icon-mono.svg'] = iconSVG(0.9, {ink: true});
+files['app-icon-mono-transparent.svg'] = iconSVG(0.9, {background: null, ink: true});
 
 await mkdir(BRAND, {recursive: true});
 for (const [name, body] of Object.entries(files)) await writeFile(path.join(BRAND, name), body, 'utf8');
@@ -111,7 +111,7 @@ await pngWide('logo-horizontal.png', files['logo-horizontal-transparent.svg'], l
 await png('app-icon-1024.png', files['app-icon.svg'], 1024);
 await png('app-icon-color.png', files['app-icon.svg'], 1024);
 await png('app-icon-mono.png', files['app-icon-mono.svg'], 1024);
-await png('app-icon-maskable-512.png', iconSVG(0.5), 512);
+await png('app-icon-maskable-512.png', iconSVG(0.76), 512);
 await png('apple-touch-icon.png', files['app-icon.svg'], 180);
 for (const size of [32, 192, 512]) await png('favicon-' + size + '.png', files['favicon.svg'], size, {transparent: true});
 

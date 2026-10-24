@@ -2,3 +2,7 @@
 body.admin-home[data-account-page] .expert-review-actions .btn{min-height:48px;font-size:16px}
 
 .admin-home .admin-home-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.admin-home .admin-home-heading h1{margin:0}.admin-home .admin-home-heading button{min-height:44px;width:auto}.admin-home #accountNotice:empty{display:none}
+
+.admin-home [hidden]{display:none!important}.admin-home [data-admin-home-menu]{display:grid;gap:0}.admin-home [data-admin-home-menu] a{display:flex;align-items:center;min-height:56px;padding:var(--space-3,12px) 0;border-bottom:1px solid var(--border);font:inherit;font-weight:600;text-decoration:none;color:var(--brand-dark)}.admin-home [data-admin-home-menu] nav{display:grid;gap:0;margin:0}.admin-home .admin-section-back{font-weight:400}.admin-home .admin-home-heading button{background:var(--card);color:var(--brand-dark);border:1px solid var(--border);border-radius:var(--radius);font:inherit;padding:var(--space-2,8px) var(--space-3,12px)}
+
+.admin-home [data-admin-home-menu]>details>summary{display:flex;align-items:center;min-height:56px;color:var(--brand-dark);font-weight:600;cursor:pointer;border-bottom:1px solid var(--border)}

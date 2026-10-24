@@ -24,4 +24,5 @@ export async function renderEarlyExpertAdmin({client,host,message,notice}){
  for(const [op,label] of [['approve','승인 후 지도에 표시'],['suspend','활동 정지']]){const b=el('button',label,actions);b.type='button';b.className=op==='suspend'?'btn review-stop':'btn';b.onclick=()=>run(()=>change(op));}
  const content=[...card.children].slice(2),detail=el('details',null,card);detail.className='admin-review-detail';detail.dataset.userId=row.user_id;el('summary','서류·심사하기',detail);content.forEach(n=>detail.append(n));detail.open=opened===row.user_id;detail.addEventListener('toggle',()=>{if(detail.open)reviews.querySelectorAll('.admin-review-detail[open]').forEach(other=>{if(other!==detail)other.open=false;});});
  }
+ host.dispatchEvent(new CustomEvent('admin-sections-updated',{bubbles:true}));
 }

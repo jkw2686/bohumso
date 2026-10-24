@@ -3,16 +3,20 @@ import {chromium,expect} from '@playwright/test';
 import {build} from 'esbuild';
 import {readFile,writeFile} from 'node:fs/promises';
 import path from 'node:path';
-const bundle=(await build({stdin:{contents:`import {renderEarlyExpertAdmin} from './src/early-expert-admin.js';
+const bundle=(await build({stdin:{contents:`import {renderEarlyExpertAdmin} from './src/early-expert-admin.js';import {mountAdminHomeNavigation} from './src/admin-home-navigation.js';
 window.calls=[];const row={user_id:'fixture',display_name:'시험 전문가',primary_area:'경기 분당',status:'APPROVED',phoneVerified:true,documents:[]};
 const client={rpc:async(name,args)=>{window.calls.push({name,args});if(args?.operation==='approve'&&args.payload.reason==='전화 미확인 시험')return {error:{message:'phone_verification_required'}};if(name==='admin_access_command')return {error:{message:'owner_required'}};return {data:name==='early_expert_review'&&args.operation==='list'?[row]:[]};}};
-document.body.dataset.adminAccess='granted';document.querySelector('#accountContent').hidden=false;document.querySelector('#accountNotice').textContent='';renderEarlyExpertAdmin({client,host:document.querySelector('#applications'),message:t=>document.querySelector('#accountMessage').textContent=t});`,resolveDir:process.cwd()},bundle:true,format:'esm',write:false})).outputFiles[0].text;
+document.body.dataset.adminAccess='granted';document.querySelector('#accountContent').hidden=false;document.querySelector('#accountNotice').textContent='';renderEarlyExpertAdmin({client,host:document.querySelector('#applications'),message:t=>document.querySelector('#accountMessage').textContent=t}).then(()=>{mountAdminHomeNavigation(document.querySelector('#accountContent'));document.querySelector('#accountContent').addEventListener('admin-sections-updated',()=>mountAdminHomeNavigation(document.querySelector('#accountContent')));});`,resolveDir:process.cwd()},bundle:true,format:'esm',write:false})).outputFiles[0].text;
 const browser=await chromium.launch(PW_LAUNCH);const report=[];
 try{
  const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',async r=>{const u=new URL(r.request().url());if(u.pathname==='/assets/account.js')return r.fulfill({body:bundle,contentType:'text/javascript; charset=utf-8'});if(u.origin!=='https://fixture.test')return r.abort();try{return r.fulfill({body:await readFile(path.resolve('public','.'+u.pathname)),contentType:u.pathname.endsWith('.woff2')?'font/woff2':u.pathname.endsWith('.css')?'text/css':u.pathname.endsWith('.svg')?'image/svg+xml':'text/html; charset=utf-8'});}catch{return r.fulfill({status:404,body:''});}});
  for(const width of [320,360,390,430,768,1440]){
   await page.setViewportSize({width,height:844});await page.goto('https://fixture.test/admin.html');
+  await expect(page.getByRole('link',{name:'전문가 확인 · 1명 ›'})).toBeVisible();
+  await expect(page.locator('.expert-review-card')).toBeHidden();
+  if(width===390)await page.screenshot({path:'artifacts/admin-home-menu-390.png',fullPage:true});
+  await page.getByRole('link',{name:'전문가 확인 · 1명 ›'}).click();
   await expect(page.getByText('경기 분당 · 승인 완료')).toBeVisible();
   await expect(page.locator('.admin-review-detail')).not.toHaveAttribute('open','');
   if(width===390)await page.screenshot({path:'artifacts/admin-home-simple-390.png',fullPage:true});
