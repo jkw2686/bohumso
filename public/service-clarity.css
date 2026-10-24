@@ -82,3 +82,23 @@ body .connection-request .connection-consent{display:grid;grid-template-columns:
 body .connection-request .connection-consent input{width:var(--space-5);height:var(--space-5);margin:var(--space-1) 0;min-height:0;accent-color:var(--brand-ink)}
 body .connection-request>button,body .connection-request>.btn{width:100%;min-height:var(--touch-target)}
 body .booking-next-action[hidden]{display:none!important}
+
+/* Consumer history: home-like rhythm, no repeated panels above the first request. */
+body.customer-requests #accountContent{gap:var(--space-2)}
+body.customer-requests .booking-list-heading{margin-bottom:var(--space-2)}
+body.customer-requests .refresh-bookings{border:0;background:transparent;box-shadow:none;font-size:var(--ui-body)}
+body.customer-requests .booking-task-count:empty,body.customer-requests .booking-task-count[hidden]{display:none}
+body.customer-requests .booking-views{display:flex;gap:var(--space-2);margin-block:var(--space-2) var(--space-4)}
+body.customer-requests .booking-views button{flex:1}
+body.customer-requests #requestList .booking-card{box-shadow:none;padding:var(--space-4);margin-bottom:var(--space-3)}
+body.customer-requests .booking-card-summary{gap:var(--space-2) var(--space-4)}
+body.customer-requests .booking-card-summary>.btn{background:var(--brand-ink);border-color:var(--brand-ink);color:var(--card)}
+body.customer-requests .booking-card-summary>.btn:hover{background:var(--brand-dark)}
+body.customer-requests .booking-detail-body{padding-bottom:0}
+body.customer-requests .booking-detail-body>h2{font-size:var(--ui-body);margin-block:var(--space-3)}
+body.customer-requests .booking-detail-body>.btn:last-child{background:transparent;border:0;box-shadow:none;padding-inline:0;color:var(--brand-ink)}
+body.customer-requests .booking-secondary-actions{border:0;box-shadow:none;padding:0;background:transparent}
+body.customer-requests .request-filters>summary{padding-inline:0;font-size:var(--ui-body);color:var(--ink-muted)}
+body.customer-requests .request-filters form{border:0;box-shadow:none;padding-inline:0;margin-top:0}
+body.customer-requests .notification-summary{border:0;padding-block:var(--space-2);margin:0}
+@media(max-width:600px){body.customer-requests .booking-card-summary>.btn{width:100%;justify-self:stretch}}
