@@ -6,7 +6,7 @@ create or replace function public.expert_map_visibility(operation text default '
 declare actor uuid:=auth.uid();allowed boolean;value boolean;
 begin
  if actor is null then raise exception 'login_required';end if;
- select exists(select 1 from private.expert_profiles p where p.user_id=actor and p.status='APPROVED' and p.profession in ('planner','tax')) into allowed;
+ select private.planner_eligible(actor) into allowed;
  if operation='set' then
   if not allowed or enabled is null then raise exception 'expert_approval_required';end if;
   insert into private.expert_map_preferences(user_id,enabled) values(actor,enabled) on conflict(user_id) do update set enabled=excluded.enabled,updated_at=now();

@@ -238,3 +238,5 @@ QA_INLINE=1 node tests/appointment-care-browser.mjs
 - 075_expert_map_preferences 운영 적용; toggle_ready/RLS=true, 직접SELECT/anonRPC=false. 기존 예약·과금·방문상태 미변경.
 - 홈4폭/토글새로고침/계정상태, 서류batch·API2, DB preference 격리검사, build통과. docs/expert-home-20261024.md.
 - 남은 것: 기존 세부 설정의 모든 설명·저장버튼/연락처 편집·구독 상세까지 전면 간소화한 것은 아님. 실제 사용자 설정변경/서류 업로드는 조작하지 않음. 이어받을 때 PROJECT_BRIEF/CLAUDE/design-system/HANDOFF 확인.
+
+- 운영 최종 점검에서 기존 승인 예외 계정의 토글이 비활성화되는 문제를 발견해 수정. 새 자격 기준을 만들지 않고 private.planner_eligible(actor)의 기존 서버 판정을 재사용하도록 075 RPC를 갱신·운영 적용. DB 격리검사 재통과.
