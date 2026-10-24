@@ -11,3 +11,5 @@
 @media(min-width:700px){.brand-story-auth{min-height:250px}.brand-story>div{padding:24px}.brand-story-family h2{font-size:24px}}
 @media(max-width:390px){.brand-story-auth{min-height:200px}.brand-story h2{font-size:22px}.brand-story-family h2{font-size:20px}.brand-story-family>div{width:74%}}
 @media(max-height:740px){.brand-story-auth{min-height:160px}}
+
+.brand-story-nearby{white-space:nowrap}
