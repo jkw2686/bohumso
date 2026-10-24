@@ -75,22 +75,24 @@
   window.BohumsoProfile.onChange(publicExperts);
   drawMarkers();window.addEventListener('bohumso-member-ready',loadPublicMap,{once:true});loadPublicMap();
   var button=document.getElementById('homeLocate'),notice=document.getElementById('homeLocationStatus'),me,circle;
+  // 위치 안내는 '내 위치'를 누른 뒤에만 보여준다.
+  var asked=false;function tell(text){if(asked)notice.textContent=text;}
   function locate(){
     button.disabled=true;
-    window.findBohumsoLocation({progress:function(text){notice.textContent=text;},error:function(text){notice.textContent=text;button.disabled=false;},success:function(pos){
+    window.findBohumsoLocation({progress:function(text){tell(text);},error:function(text){tell(text);button.disabled=false;},success:function(pos){
       var point=[pos.coords.latitude,pos.coords.longitude];
       if(me)map.removeLayer(me);if(circle)map.removeLayer(circle);
       var approximate=pos.source==='network';
       me=L.circleMarker(point,{radius:8,color:'#1E4FD6',fillOpacity:approximate?0.15:1}).addTo(map).bindTooltip(approximate?'접속 지역 · 대략':pos.coords.accuracy>500?'기기 추정 위치':'내 위치');
       if(!approximate)circle=L.circle(point,{radius:pos.coords.accuracy,interactive:false}).addTo(map);
       map.setView(point,approximate||pos.coords.accuracy>500?10:13,{animate:false});
-      notice.textContent=approximate?'접속 지역 기준의 대략적인 지도예요. 정확한 위치는 브라우저·기기 위치 권한을 켜 주세요.':pos.coords.accuracy>500?'위치 오차가 약 '+Math.round(pos.coords.accuracy)+'m로 큽니다. 실제 위치와 다를 수 있어요.':'내 위치 · 오차 약 '+Math.round(pos.coords.accuracy)+'m';button.disabled=false;
+      tell(approximate?'접속 지역 기준의 대략적인 지도예요. 정확한 위치는 브라우저·기기 위치 권한을 켜 주세요.':pos.coords.accuracy>500?'위치 오차가 약 '+Math.round(pos.coords.accuracy)+'m로 큽니다. 실제 위치와 다를 수 있어요.':'내 위치 · 오차 약 '+Math.round(pos.coords.accuracy)+'m');button.disabled=false;
     }});
   }
-  button.addEventListener('click',locate);
+  button.addEventListener('click',function(){asked=true;locate();});
   window.startBohumsoLocation(locate,function(saved){
     var point=[saved.latitude,saved.longitude];map.setView(point,saved.source==='DEVICE'?13:11);
-    notice.textContent=saved.source==='MANUAL'?'선택한 지역 · '+(saved.label||'지도에서 확인'):saved.source==='NETWORK'?'최근 접속 지역 · 대략적인 위치예요.':'최근 확인한 내 위치예요. 위치 버튼으로 갱신할 수 있어요.';
+    tell(saved.source==='MANUAL'?'선택한 지역 · '+(saved.label||'지도에서 확인'):saved.source==='NETWORK'?'최근 접속 지역 · 대략적인 위치예요.':'최근 확인한 내 위치예요. 위치 버튼으로 갱신할 수 있어요.');
     if(saved.source==='DEVICE')me=L.circleMarker(point,{radius:8}).addTo(map).bindTooltip('최근 확인한 위치');
   });
   document.getElementById('homeMapResize').addEventListener('click',function(){var large=host.classList.toggle('large');this.textContent=large?'지도 작게':'지도 크게';this.setAttribute('aria-expanded',String(large));map.invalidateSize();});
