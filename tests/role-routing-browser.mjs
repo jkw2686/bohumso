@@ -16,7 +16,7 @@ for(const width of [360,390,430]){
   await page.reload();await page.waitForFunction(()=>document.documentElement.dataset.roleCheck==='ready');
   if(role!=='consumer'){await expect(page.locator('[data-customer-nav] a')).toHaveCount(3);await expect(page.getByRole('link',{name:'지도',exact:true})).toHaveCount(0);}
  }
- if(role!=='consumer'){await page.goto('https://role.test/map.html?preview=customer');await page.waitForFunction(()=>document.documentElement.dataset.roleCheck==='ready');await expect(page.getByText('고객 화면 미리보기 · 전문가 홈으로')).toBeVisible();expect(await page.evaluate(()=>localStorage.role)).toBe(role);}
+ if(role!=='consumer'){await page.goto('https://role.test/map.html?preview=profile&planner='+role);await page.waitForFunction(()=>document.documentElement.dataset.roleCheck==='ready');await expect(page.getByText('내 프로필 지도 · 전문가 홈으로')).toBeVisible();expect(await page.evaluate(()=>localStorage.role)).toBe(role);}
  }
  console.log('PASS role routing mobile',width);
 }

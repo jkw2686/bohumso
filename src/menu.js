@@ -152,7 +152,7 @@ async function load() {
       const updatedAvatar = window.BohumsoProfile.avatar(head, extra);
       if (oldAvatar) oldAvatar.replaceWith(updatedAvatar);
       const published = catalog?.error ? null : catalog?.data?.planners?.find(p => p.id === extra.id && !p.is_sample);
-      if (published) row(node('div', '', identity, 'menu-profile-action'), '내 프로필 보기', '/map.html?' + new URLSearchParams({preview:'customer',planner: published.id, region: published.region || '', from: 'menu'}) + '#profile-' + encodeURIComponent(published.id));
+      if (published) row(node('div', '', identity, 'menu-profile-action'), '내 프로필 보기', '/map.html?' + new URLSearchParams({preview:'profile',planner: published.id, region: published.region || '', from: 'menu'}) + '#profile-' + encodeURIComponent(published.id));
     }
     if (growthResult?.data?.expert && resources) {
       const list = resources.querySelector('ul');

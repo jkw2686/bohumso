@@ -16,11 +16,11 @@ async function check(){
  const current=++revision;lock();
  try{
   const service=await memberService();client=service.client;if(observedClient!==client){observedClient=client;client.auth.onAuthStateChange(event=>{if(event==='INITIAL_SESSION')return;lock();setTimeout(check,0);});}const auth=await memberState(client);if(current!==revision)return;
-  const preview=new URLSearchParams(location.search).get('preview')==='customer';
+  const query=new URLSearchParams(location.search);const preview=query.get('preview')==='profile'&&query.get('planner')===auth.user?.id;
   const next=roleDestination(auth.membership,location.pathname+location.search,{preview});
   if(next){location.replace(next);return;}
   document.querySelectorAll('.role-preview-banner').forEach(n=>n.remove());menu(auth.membership);release();
-  if(preview&&isExpertMember(auth.membership)){const b=document.createElement('a');b.textContent='고객 화면 미리보기 · 전문가 홈으로';b.href='/partner.html';b.className='role-preview-banner';document.querySelector('main')?.prepend(b);}
+  if(preview&&isExpertMember(auth.membership)){const b=document.createElement('a');b.textContent='내 프로필 지도 · 전문가 홈으로';b.href='/partner.html';b.className='role-preview-banner';document.querySelector('main')?.prepend(b);}
  }catch(error){
   if(current!==revision)return;if(error?.message==='account_changed'){setTimeout(check,0);return;}const root=document.getElementById('roleLoading');if(root){root.replaceChildren(document.createTextNode('회원 정보를 확인하지 못했어요.'));const retry=document.createElement('button');retry.textContent='다시 확인';retry.onclick=check;root.append(retry);}
  }
