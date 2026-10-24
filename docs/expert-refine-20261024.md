@@ -8,3 +8,8 @@
 - DB·공개권한·알림·요금·실예약 데이터 미변경. 기존 help6 줄바꿈·outputs 제외. 캡처 artifacts/booking-overview/partner-before-refine-390.png, partner-detail-simple-390.png, partner-390.png.
 
 - 전문가 홈 검수 최종 통과:4폭/독립토글 저장·새로고침/신규·심사·승인·세무사/프로필·연락처·지역 저장/실패초안/상담시간 저장/뒤로·200%/과금없음.
+
+## 운영 배포 완료
+- code55874778c16c1c10930e1c57be82d94a823fb195 / Netlify6adc75221d03bbad97490832 ready / 2026-10-24T09:06:55.789Z.
+- 운영 service-clarity.css/account.js HTTP200·검수본 일치. partner-work HTML은 Netlify pretty URL 자동변환(.html 제거·따옴표/속성순서) 차이이며 전문가 홈 /partner 링크 반영 확인.
+- 이번 화면 정리 완료. 실예약/설정/전화/푸시 조작 없음. 다음 사용자 요청부터 진행. 문서 저장은 배포 생략.
