@@ -1188,3 +1188,8 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 - 캡처 artifacts/booking-overview/before-calm-390.png → list-390.png (동일 격리 데이터). 운영 실예약 변경/전화/푸시 없음. DB·권한·과금·알림 정책 변경 없음.
 - 직전 사용자가 실제 상담 요청/수락 양측 알림 수신, 클릭 화면 및 전화 앱 열림을 직접 확인했다고 보고함. 기기 검증의 근거는 사용자 확인이며 에이전트 직접 관측 아님.
 - 배포: Git CD 진행, 결과 후속 기록. 기존 help6 줄바꿈/outputs 제외.
+
+## 배포 검증 완료
+- 운영 코드 f54d7c4fc055ff07aac29f322a8b378c19140dc0, Netlify6adc725afceecbda8dcdce78 ready, 2026-10-24T08:55:04.716Z. 운영 CSS HTTP200/로컬 파일 일치.
+- 로그인 운영 /requests에서 현재/지난 예약, 불필요한 상시 문구 없음, 접힌 조건 검색, 실제0건 정상 표시 확인. 운영 계정에는 소비자 예약이 없어 카드 내용은 격리 데이터 검수 결과로 구분. production-calm.png 저장.
+- 완료. 다음 사용자 요청부터 진행. 이 문서 커밋은 배포 생략.
