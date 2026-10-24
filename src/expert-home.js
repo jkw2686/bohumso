@@ -34,7 +34,7 @@ export async function renderExpertHome({client,host,user,membership,config,messa
  const values=new Map();for(const [name,route,value]of rows){const a=link(root,'',url(route));a.className='expert-setting-row';el('span',name,a);values.set(route,el('small',value+' ›',a));}if(p?.profession==='planner')link(root,'청구 자료실 ›','/claim-resources.html').className='expert-setting-row';const results=await Promise.allSettled([readRpc(client,'expert_public_contact',{operation:'get'}),readRpc(client,'reservation_notification_settings',{operation:'get',payload:{}})]);if(!current)return true;const contact=results[0],notification=results[1];values.get('contact').textContent=contact.status==='fulfilled'?(contact.value.public?'공개 중 ›':'비공개 ›'):'확인 필요 ›';values.get('notifications').textContent=notification.status==='fulfilled'?(notification.value.enabled?'켜짐 ›':'꺼짐 ›'):'확인 필요 ›';return true;
  }
  if(screen==='profile'||screen==='contact'){
- await (screen==='profile'?renderOptionalProfile:renderPublicContact)(client,root,{standalone:true});if(screen==='contact')link(root,'예약 연락처 변경','/phone-verification.html?next='+encodeURIComponent(url('contact'))).className='text-button';
+ await (screen==='profile'?renderOptionalProfile:renderPublicContact)(client,root,{standalone:true});if(screen==='contact')link(root,'이름·연락처 변경','/account.html?next='+encodeURIComponent(url('contact'))).className='text-button';
  return true;
  }
  if(screen==='area'){await renderServiceArea(client,root,{standalone:true});for(const b of root.querySelectorAll('button[type=submit]'))b.textContent='저장하기';return true;}

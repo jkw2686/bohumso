@@ -1,26 +1,37 @@
 // Navigation only: existing authenticated management components and handlers are retained.
-export function mountAdminHomeNavigation(host){
+export function mountAdminHomeNavigation(host,client){
  const old=host.querySelector('[data-admin-home-menu]');if(old){for(const n of old.querySelectorAll('.admin-home-shortcuts,[data-promotion-admin-links]'))host.append(n);old.remove();}
  const applications=host.querySelector('#applications');
  const nodes=[...(applications?.children||[]),...host.children].filter(n=>n!==applications&&!n.matches('.admin-home-shortcuts,[data-promotion-admin-links],[data-admin-home-menu]'));
  const menu=document.createElement('nav');menu.dataset.adminHomeMenu='';menu.setAttribute('aria-label','관리 업무');host.prepend(menu);
  const back=document.createElement('a');back.href='#home';back.textContent='‹ 관리자 홈';back.className='admin-section-back';menu.append(back);
- const tools=document.createElement('details'),toolsTitle=document.createElement('summary');toolsTitle.textContent='운영 도구';tools.append(toolsTitle);
+ const groups={};for(const [key,title]of [['members','회원 관리'],['consultations','상담 관리'],['operations','운영 관리'],['security','설정·보안']]){const box=document.createElement('details'),heading=document.createElement('summary');box.dataset.adminGroup=key;heading.textContent=title;box.append(heading);menu.append(box);groups[key]=box;}
+ const tools=groups.operations;
  const entries=[];
  for(const [i,node] of nodes.entries()){
-  if(node.matches('.admin-open-summary'))continue;
+  if(node.matches('.admin-open-summary,[data-admin-summary],[data-admin-consultation-index]')){node.hidden=true;continue;}
   const title=node.querySelector('h2,h3,summary')?.textContent?.trim()||'기타 운영 안내';
-  const link=document.createElement('a');link.href='#section-'+i;link.textContent=title+' ›';(/전문가|문의/.test(title)?menu:tools).append(link);entries.push({node,link,id:'section-'+i,title});
+  const link=document.createElement('a');link.href='#section-'+i;link.textContent=title+' ›';(/회원 관리|전문가.*심사|전문가.*확인/.test(title)?groups.members:/권한|계정 관리|개인정보|기록/.test(title)?groups.security:tools).append(link);entries.push({node,link,id:'section-'+i,title});
  }
- const external=host.querySelector('.admin-home-shortcuts');if(external)menu.append(external);
- const promotions=host.querySelector('[data-promotion-admin-links]');if(promotions)menu.append(promotions);
- if(tools.children.length>1)menu.append(tools);
+ const external=host.querySelector('.admin-home-shortcuts');if(external)groups.consultations.append(external);
+ const promotions=host.querySelector('[data-promotion-admin-links]');if(promotions)groups.operations.append(promotions);
+ const summary=document.createElement('section');summary.dataset.adminSummary='';menu.before(summary);host.querySelectorAll('[data-admin-summary]').forEach(n=>{if(n!==summary)n.remove();});
+ const memberSummary=document.createElement('section');summary.append(memberSummary);if(client)void loadSummary();
+ async function loadSummary(){memberSummary.textContent='회원 현황을 불러오고 있어요.';try{const r=await client.rpc('admin_members',{operation:'summary'});if(r.error)throw r.error;if(!['total','consumer','expert','pending','today'].every(k=>Number.isInteger(r.data?.[k])&&r.data[k]>=0))throw Error('invalid_summary');memberSummary.replaceChildren();const h=document.createElement('h2');h.textContent='회원 현황';memberSummary.append(h);const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(new Date());for(const [key,label,filter]of [['total','전체 회원',{}],['consumer','소비자',{type:'consumer'}],['expert','전문가',{type:'expert'}],['pending','전문가 승인 대기',{pending:'true'}],['today','오늘 가입',{from:today,to:today}]]){const b=document.createElement('button');b.type='button';b.textContent=label+' '+r.data[key]+'명';b.onclick=()=>{const entry=entries.find(e=>e.node.matches('[data-admin-members]'));if(entry){entry.node.requestedFilters=filter;if(location.hash==='#'+entry.id)void entry.node.loadMembers(filter);else location.hash=entry.id;}};memberSummary.append(b);}}
+ catch(e){memberSummary.textContent=e.message==='mfa_required'?'회원 현황은 다중요소 인증 후 확인할 수 있어요.':'회원 현황을 조회하지 못했어요.';}}
+ const operationSummary=document.createElement('section');summary.append(operationSummary);
+ async function operations(period='today'){operationSummary.textContent='상담 현황을 불러오고 있어요.';try{const r=await client.rpc('admin_operations_summary',{period});if(r.error)throw r.error;if(!Array.isArray(r.data?.tasks)||!['waiting','progress','completed'].every(k=>Number.isInteger(r.data?.[k])&&r.data[k]>=0))throw Error('invalid_summary');operationSummary.replaceChildren();const h=document.createElement('h2');h.textContent='상담 현황';operationSummary.append(h);const select=document.createElement('select');select.setAttribute('aria-label','집계 기간');for(const [v,t]of [['today','오늘'],['month','이번 달'],['all','전체']]){const o=document.createElement('option');o.value=v;o.textContent=t;select.append(o);}select.value=period;select.onchange=()=>operations(select.value);operationSummary.append(select);for(const [key,label,state]of [['waiting','연결 대기','requested'],['progress','진행 중','coordinating'],['completed','완료','completed']]){const a=document.createElement('a');a.textContent=label+' '+r.data[key]+'건';a.href='#consultations';a.onclick=()=>void showConsultations(period,key);operationSummary.append(a);}const title=document.createElement('h2');title.textContent='처리할 일';operationSummary.append(title);if(!r.data.tasks.length){const p=document.createElement('p');p.textContent='처리할 일이 없습니다.';operationSummary.append(p);}for(const task of r.data.tasks){const a=document.createElement('a');a.textContent=task.title;a.href=task.href;operationSummary.append(a);}}catch{operationSummary.textContent='상담 현황을 조회하지 못했어요.';}}
+ if(client)void operations();
+ let consultationPage=0,consultationPeriod='today',consultationBucket='waiting',consultationsLoaded=false;
+ host.querySelectorAll('[data-admin-consultation-index]').forEach(n=>n.remove());const consultationList=document.createElement('section');consultationList.hidden=true;menu.after(consultationList);consultationList.dataset.adminConsultationIndex='';
+ async function showConsultations(period,bucket,page=0){consultationsLoaded=true;consultationPeriod=period;consultationBucket=bucket;consultationPage=page;summary.hidden=true;consultationList.hidden=false;consultationList.textContent='상담 목록을 불러오고 있어요.';try{const r=await client.rpc('admin_consultation_index',{period,bucket,page});if(r.error||!Number.isInteger(r.data?.total)||!Array.isArray(r.data?.rows))throw Error('invalid_list');consultationList.replaceChildren();const h=document.createElement('h2');h.textContent='상담 관리 · '+r.data.total+'건';consultationList.append(h);for(const row of r.data.rows){const a=document.createElement('a');a.href='/admin-requests.html?request='+row.id;a.textContent=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'short',timeStyle:'short'}).format(new Date(row.created_at))+' · 요청 상세';consultationList.append(a);}if(!r.data.rows.length)consultationList.append(document.createTextNode('해당 상담이 없습니다.'));for(const [label,next,disabled]of [['이전',page-1,page===0],['다음',page+1,(page+1)*25>=r.data.total]]){const b=document.createElement('button');b.type='button';b.textContent=label;b.disabled=disabled;b.onclick=()=>showConsultations(period,bucket,next);consultationList.append(b);}}catch{consultationList.textContent='상담 목록을 조회하지 못했어요.';}}
+ const settings=document.querySelector('[data-admin-settings]');if(settings)settings.onclick=()=>{location.hash='security';groups.security.open=true;};
  const paint=()=>{
-  const selected=entries.find(e=>location.hash==='#'+e.id);back.hidden=!selected;tools.hidden=!!selected;
+  const groupKey=Object.keys(groups).find(k=>location.hash==='#'+k);if(groupKey==='consultations'&&!consultationsLoaded&&client)void showConsultations(consultationPeriod,consultationBucket,consultationPage);consultationList.hidden=location.hash!=='#consultations';const selected=entries.find(e=>location.hash==='#'+e.id);for(const [key,group]of Object.entries(groups))if(location.hash==='#'+key)group.open=true;back.hidden=!selected&&!groupKey;for(const [key,group]of Object.entries(groups))group.hidden=!!selected||!!groupKey&&key!==groupKey;summary.hidden=!!selected||!!groupKey;entries.forEach(e=>{if(e.node.matches('[data-admin-members]')&&e===selected)void e.node.loadMembers(e.node.requestedFilters||{});});
   entries.forEach(e=>{e.node.hidden=e!==selected;e.link.hidden=!!selected;});
   if(external)external.hidden=!!selected;if(promotions)promotions.hidden=!!selected;
-  applications?.querySelectorAll('.admin-open-summary').forEach(n=>n.hidden=!!selected);
-  const heading=document.querySelector('.admin-home-heading h1');if(heading)heading.textContent=selected?selected.title:'관리자 홈';
+  applications?.querySelectorAll('.admin-open-summary').forEach(n=>n.hidden=true);
+  const heading=document.querySelector('.admin-home-heading h1');if(heading)heading.textContent=selected?selected.title:groupKey?groups[groupKey].querySelector('summary').textContent:'관리자 홈';
  };
  host._adminNavCleanup?.();window.addEventListener('hashchange',paint);host._adminNavCleanup=()=>window.removeEventListener('hashchange',paint);paint();
 }

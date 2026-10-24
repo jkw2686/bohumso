@@ -11,6 +11,11 @@ export default async(request:Request)=>{
   const token=request.headers.get('authorization')?.replace(/^Bearer /,'');if(!token)return reply({error:'login_required'},401);
   const server=createClient(env('SUPABASE_URL')!,env('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
   const {data,error}=await server.auth.getUser(token);if(error||!data.user)return reply({error:'login_required'},401);
+  // Storage uses a service key, so explicitly carry the caller's verified JWT for MFA/scope checks.
+  const caller=createClient(env('SUPABASE_URL')!,env('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false},global:{headers:{Authorization:'Bearer '+token}}});
+  const access=await caller.rpc('member_admin_access');
+  if(access.error&&!['PGRST202','42883'].includes(access.error.code))return reply({error:'authorization_unavailable'},503);
+  if(access.data?.allowed&&(!access.data.mfa||access.data.scope==='statistics'))return reply({error:'admin_verification_required'},403);
   const release=await server.rpc('release_status');if(release.error)throw Error('service_unavailable');const early=['EARLY_ACCESS','PRODUCTION'].includes(release.data?.serviceStage);
   const subject=data.user.id,store=server.storage.from('expert-documents');
   const rpc=async(operation:string,payload:any)=>{const r=await server.rpc(early?'early_document_service':'expert_document_service',{subject,operation,payload});if(r.error)throw Error(r.error.message);return r.data;};

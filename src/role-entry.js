@@ -19,6 +19,7 @@ async function check(){
  try{
   const service=await memberService();client=service.client;if(observedClient!==client){observedClient=client;client.auth.onAuthStateChange(event=>{if(event==='INITIAL_SESSION')return;lock();setTimeout(check,0);});}const auth=await memberState(client);if(current!==revision)return;
   const query=new URLSearchParams(location.search);const preview=query.get('preview')==='profile'&&query.get('planner')===auth.user?.id;
+  if(auth.membership?.contact_required&&!/^\/(account|privacy|terms|support)(\.html)?$/.test(location.pathname)){location.replace('/account.html?next='+encodeURIComponent(location.pathname+location.search));return;}
   const next=roleDestination(auth.membership,location.pathname+location.search,{preview});
   if(next){location.replace(next);return;}
   document.querySelectorAll('.role-preview-banner').forEach(n=>n.remove());menu(auth.membership);release();

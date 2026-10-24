@@ -27,7 +27,7 @@ export async function renderProfessionApplication({client,config,message}) {
    if(personal?.profession)el('p','등록된 개인 직군 변경은 고객센터에서 별도 확인이 필요합니다. 기존 승인·자료는 다른 직군으로 옮겨지지 않습니다.');
   }
   if(step===2){
-   field('실명','display_name',true,60);el('p',NAME_RULE_HINT);const l=el('label','활동 지역'),s=el('select',null,l);s.required=true;s.setAttribute('aria-label','활동 지역');el('option','지역 선택',s).value='';for(const area of catalog.data)el('option',area.id,s).value=area.id;s.value=values.primary_area;s.onchange=()=>values.primary_area=s.value;
+   field('이름','display_name',true,60);el('p',NAME_RULE_HINT);const l=el('label','활동 지역'),s=el('select',null,l);s.required=true;s.setAttribute('aria-label','활동 지역');el('option','지역 선택',s).value='';for(const area of catalog.data)el('option',area.id,s).value=area.id;s.value=values.primary_area;s.onchange=()=>values.primary_area=s.value;
    if(values.profession==='office'){field('거점명','office_name');field('거점 주소','address',true,300);field('운영 연락처','phone',true,20).type='tel';el('p','거점 승인과 개인 전문가 자격은 별개입니다. 위치는 운영자가 주소를 확인한 뒤 등록합니다.');}
    else{field('소속 회사 또는 사무소','organization');field(d.registryLabel,'registration_reference',values.profession==='tax',60);if(values.profession==='tax')field('사무소 주소','office_address',true,300);}
    if(!settingsOnly)el('p','개인 연락처는 위 휴대전화 인증에서 확인합니다. 확인자료 승인 전에는 공개되거나 예약을 받지 않습니다.');

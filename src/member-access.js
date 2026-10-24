@@ -35,7 +35,7 @@ async function readMemberState(client){
  const result=await client.rpc('my_membership');if(epoch!==(stateEpochs.get(client)||0))throw Error('account_changed');if(result.error)throw result.error;return {accountState:result.data?.state,state:result.data?.member?MEMBER.active:MEMBER.incomplete,user:data.user,membership:result.data};
 }
 export async function requireActiveMember({next=location.pathname+location.search+location.hash,client,mode='signup'}={}){
- const result=await memberState(client||(await memberService()).client);if(result.state===MEMBER.active)return result;
+ const result=await memberState(client||(await memberService()).client);if(result.state===MEMBER.active&&!result.membership?.contact_required)return result;
  const path=rememberAction(next);location.assign(result.state===MEMBER.anonymous?authURL(path,mode):accountReturn(path));return null;
 }
 
