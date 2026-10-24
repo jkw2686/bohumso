@@ -1,5 +1,6 @@
 import {el,kst} from './consultation-ui.js';
 import {requestParams,stableRequestKey} from './request-intent.js';
+import {renderExpertConnection} from './expert-connection.js';
 const day=value=>new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Seoul'}).format(value);
 const shortDate=value=>new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'short',day:'numeric',weekday:'short'}).format(value);
 const purposeLabels={claim:'보험금 청구',coverage:'보장 확인',management:'내 보험 확인',new:'가입 상담',other:'기타 상담',corporate:'기업보험 상담'};
@@ -22,6 +23,7 @@ export function renderOfficeRequest({form,command,refresh,message,selectedOffice
  function reselect(parent){const a=el('a',selectedOffice?'다른 보험소 선택':'다른 전문가 선택',parent);a.href=mapURL(selectedOffice?'offices':'experts');a.className='text-button';return a;}
  function remember(){params.set('region',region);for(const [key,value]of [['date',date],['time',time]])if(value)params.set(key,value);else params.delete(key);history.replaceState(null,'',location.pathname+'?'+params);}
  if(help&&((help==='tax'&&(selectedOffice||selectedPlanner&&selectedPlanner.profession!=='tax'))||(help==='claim'&&selectedPlanner&&selectedPlanner.profession!=='planner'))){form.hidden=false;form.replaceChildren();el('p','선택한 도움 분야와 전문가가 다릅니다. 같은 분야의 전문가를 다시 선택해 주세요.',form);reselect(form);return;}
+ if(selectedPlanner&&!selectedOffice)return renderExpertConnection({form,command,message,selectedPlanner});
  form.classList.add('request-wizard');form.hidden=false;form.onsubmit=e=>e.preventDefault();
  function button(parent,label,fn,cls=''){const b=el('button',label,parent);b.type='button';b.className=cls;b.onclick=fn;return b;}
  if(!selectedOffice&&!selectedPlanner){form.replaceChildren();el('h2','누구에게 도움받으실까요?',form);el('p','전문가나 방문할 보험소를 직접 선택해 주세요.',form);for(const [label,view]of [['가까운 전문가 선택','experts'],['방문할 보험소 선택','offices']]){const a=el('a',label,form);a.className='btn'+(view==='offices'?' ghost':'');a.href=mapURL(view);}return;}

@@ -1,3 +1,4 @@
+import {connectionStatus} from './expert-connection.js';
 import {el,kst,states} from './consultation-ui.js';
 import {readRpc} from './read-rpc.js';
 import {renderInstant,renderServiceArea} from './urgent.js';
@@ -69,7 +70,7 @@ export async function renderExpertHome({client,host,user,membership,config,messa
  const rows=w.bookings||[],day=d=>new Date(d).toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'}),today=day(new Date());
  const pending=rows.filter(r=>!r.planner_ok&&['requested','coordinating'].includes(r.state));const upcoming=rows.filter(r=>['confirmed','scheduled'].includes(r.state)).sort((a,b)=>Date.parse(a.preferred_at)-Date.parse(b.preferred_at));
  el('p',`답변 대기 ${pending.length}건 · 오늘 예약 ${upcoming.filter(r=>day(r.preferred_at)===today).length}건`,reservations);
- const next=pending[0]||upcoming.find(r=>Date.parse(r.preferred_at)>=Date.now());if(next){el('p',(states[next.state]||'확인 필요')+' · '+kst(next.preferred_at),reservations);}else el('p','예정된 예약이 없습니다',reservations);
+ const next=pending[0]||upcoming.find(r=>Date.parse(r.preferred_at)>=Date.now());if(next){el('p',next.connection_only?connectionStatus(next)+' · 전화로 조율':(states[next.state]||'확인 필요')+' · '+kst(next.preferred_at),reservations);}else el('p','예정된 예약이 없습니다',reservations);
  const all=link(reservations,'예약 전체 보기','/partner-work.html'+(next?'?request='+encodeURIComponent(next.id):''));all.className='btn';
  }catch{el('p','예약을 불러오지 못했습니다.',reservations);link(reservations,'예약 전체 보기','/partner-work.html');}
  else{el('p','예정된 예약이 없습니다',reservations);link(reservations,'자격 확인',url('qualification'));}

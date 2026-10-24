@@ -1,0 +1,18 @@
+import {el,link,input} from './consultation-ui.js';
+import {stableRequestKey} from './request-intent.js';
+export function renderExpertConnection({form,command,message,selectedPlanner:expert}){
+ const params=new URLSearchParams(location.search),purpose=expert.profession==='tax'?'other':(['claim','coverage','management','new','corporate','other'].includes(params.get('purpose'))?params.get('purpose'):'claim');
+ form.classList.add('connection-request');form.setAttribute('aria-label','전문가 상담 요청');form.hidden=false;form.classList.add('request-wizard');form.replaceChildren();
+ el('h2','상담 요청',form);el('p',expert.name+' · '+expert.region,form).className='wizard-context';
+ el('p','상담을 요청하면 전문가가 확인 후 연락드립니다. 일정과 장소는 전화로 편하게 조율해 주세요.',form);
+ if(expert.profession==='tax'){el('p',expert.fee_notice||'방문 전 상담료 확인 필요',form);el('small','앱 상담 신청은 무료이며, 세무 상담료는 별도입니다.',form);}else el('small','소비자 이용 무료 · 보험 가입 의무 없음',form);
+ const consent=input(form,'상담 연결과 일정 조율을 위해 선택한 전문가에게 전화번호를 제공하는 데 동의합니다.','share_consent','checkbox');consent.required=true;consent.checked=false;const consentLabel=consent.parentElement,consentText=consentLabel.firstChild.textContent;consentLabel.className='connection-consent';const consentCopy=el('span',consentText);consentLabel.replaceChildren(consent,consentCopy);
+ const details=el('details',undefined,form);el('summary','연락처 제공 안내',details);el('p','제공받는 사람: '+expert.name+'. 수락 후 해당 전문가에게만 이름·전화번호를 제공합니다. 목적: 상담 연결과 일정 조율. 보유 기간과 삭제 방법은 개인정보처리방침에서 확인해 주세요.',details);link(details,'개인정보처리방침','/privacy.html');
+ const notice=el('p','',form);notice.setAttribute('role','status');const submit=el('button','상담 요청하기',form);submit.type='submit';submit.className='primary';submit.disabled=true;consent.onchange=()=>{submit.disabled=!consent.checked;};let busy=false,done=false;
+ form.onsubmit=async e=>{e.preventDefault();if(busy||done||!consent.checked)return;busy=true;submit.disabled=true;consent.disabled=true;notice.textContent='상담 요청을 보내고 있어요.';
+  const payload={connection_only:true,planner_id:expert.id,purpose,region:expert.region,method:'phone',share_consent:true,...(params.get('help')?{help_intent:params.get('help')}:{}),...(expert.profession==='tax'?{fee_ack:expert.fee_notice||'방문 전 상담료 확인이 필요합니다'}:{})};payload.request_key=stableRequestKey(payload,'expert-connection');
+  try{const result=await command('request',payload);if(!/^[0-9a-f-]{36}$/i.test(result?.id||''))throw Error('invalid_response');done=true;form.replaceChildren();el('h2','상담 요청 중',form);el('p',expert.name+' 전문가가 확인 후 연락드립니다.',form);el('p','일정과 장소는 전화로 편하게 조율해 주세요.',form);link(form,'내 요청 보기','/requests.html?request='+encodeURIComponent(result.id)).className='btn primary';message('');}
+  catch(error){if(error.message==='request_closed'){try{sessionStorage.removeItem('bohumso-request-expert-connection');}catch{}}notice.textContent=({request_closed:'이전 요청이 종료되었습니다. 다시 누르면 새 상담을 요청합니다.',phone_verification_required:'연락받을 휴대전화 번호를 확인해 주세요.',consent_required:'연락처 제공에 동의해 주세요.',request_limit:'진행 중인 상담 요청을 먼저 확인해 주세요.',invalid_partner:'지금은 요청할 수 없는 전문가입니다.',fee_confirmation_required:'상담료 안내가 변경되었습니다. 프로필에서 다시 확인해 주세요.'})[error.message]||'요청을 보내지 못했어요. 다시 시도해 주세요.';if(error.message==='phone_verification_required'&&!form.querySelector('[data-phone-recovery]')){const a=link(form,'휴대전화 확인하기','/phone-verification.html?next='+encodeURIComponent(location.pathname+location.search));a.dataset.phoneRecovery='true';}submit.disabled=!consent.checked;consent.disabled=false;}finally{busy=false;}
+ };
+}
+export const connectionStatus=row=>row.connection_status||({requested:'상담 요청 중',coordinating:'상담 연결 완료',unmatched:'상담 요청을 수락하지 못했습니다',cancelled:'상담 요청 취소'}[row.state]||'상태 확인 필요');

@@ -74,3 +74,11 @@ body.partner-bookings .booking-detail-body>.btn:last-child{background:transparen
 .booking-review-form .review-stars span{font-size:var(--ui-section);pointer-events:none}
 .booking-review-form .review-stars .selected{color:var(--brand-ink);background:var(--brand-teal-soft);border-color:var(--brand-ink)}
 .booking-review-form .review-stars label:focus-within{outline:var(--focus-width) solid var(--brand-ink);outline-offset:var(--space-2)}
+
+/* Direct connection intake has one action; history remains on the linked requests page. */
+body.customer-requests:has(#requestForm.connection-request) #accountContent>:not(#requestForm),
+body.customer-requests:has(#requestForm.connection-request) main+details{display:none}
+body .connection-request .connection-consent{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:var(--space-3);font-size:var(--ui-body);line-height:1.6;min-height:var(--touch-target)}
+body .connection-request .connection-consent input{width:var(--space-5);height:var(--space-5);margin:var(--space-1) 0;min-height:0;accent-color:var(--brand-ink)}
+body .connection-request>button,body .connection-request>.btn{width:100%;min-height:var(--touch-target)}
+body .booking-next-action[hidden]{display:none!important}
