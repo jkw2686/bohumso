@@ -6,7 +6,7 @@ async function sdk(){
  if(!loadingSdk)loadingSdk=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://js.tosspayments.com/v2/standard';s.onload=resolve;s.onerror=()=>{s.remove();loadingSdk=null;reject(Error('payment_sdk_unavailable'));};document.head.append(s);});
  await loadingSdk;
 }
-export async function renderAds({client,workspace,host,message,action}){
+export async function renderAds({client,workspace,host,message,action,compact=false}){
  const rpc=async(name,args={})=>{const {data,error}=await client.rpc(name,args);if(error)throw error;return data;};
  const pay=async body=>{const {data}=await client.auth.getSession();if(!data.session)throw Error('login_required');const r=await fetch('/api/payment',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+data.session.access_token},body:JSON.stringify(body)});const result=await r.json();if(!r.ok)throw Error(result.error);return result;};
  const check=(form,label,name)=>{const i=input(form,label,name,'checkbox');i.value='on';return i;};
@@ -72,10 +72,11 @@ export async function renderAds({client,workspace,host,message,action}){
    input(slot,'광고 노출 지역','region').required=true;input(slot,'설정 근거','reason').required=true;check(slot,'슬롯 사용 허용','enabled');el('button','슬롯 저장',slot).type='submit';
    submit(slot,d=>rpc('ad_admin_command',{operation:'slot',payload:{...Object.fromEntries(d),enabled:d.get('enabled')==='on'}}));
   }
+  const productHost=compact?el('details',undefined,host):host;if(compact){el('summary','이용 가능한 상품',productHost);host.querySelector('h2').hidden=true;}
   for(const code of ['basic','premium','regional_exclusive']){
    const plans=data.plans.filter(p=>p.code===code),enabled=plans.filter(p=>p.enabled);
    const p=enabled[0]||plans[0];if(!p)continue;
-   const card=el('section',undefined,host);card.className='card';card.dataset.planCode=code;
+   const card=el('section',undefined,productHost);card.className='card';card.dataset.planCode=code;
    el('h3',p.name,card);if(code==='regional_exclusive')el('p','해당 지역의 지역독점 광고 슬롯 1개에 적용됩니다. 일반 전문가 목록은 유지됩니다.',card);el('p',p.enabled?won(p.amount)+' / '+p.period_days+'일 · 약정 '+p.guaranteed_impressions+'회':'요금·기간·약정 노출수 확정 전',card);
    if(workspace!=='partner'||!p.enabled)continue;
    const slots=data.slots.filter(s=>s.code===code&&s.enabled);
@@ -102,7 +103,7 @@ export async function renderAds({client,workspace,host,message,action}){
     el('button','광고 구독 테스트 전액 환불',f).type='submit';
     submit(f,d=>pay({action:'refund',orderId:s.order_id,reason:d.get('reason'),platformFault:d.get('platform_fault')==='on'}));
    }
-   for(const e of s.events||[])el('p',kst(e.created_at)+' · '+e.event+' · '+(e.actor||'서버')+' · '+e.reason,card);
+   const history=compact&&s.events?.length?el('details',undefined,card):card;if(history!==card)el('summary','처리 이력',history);for(const e of s.events||[])el('p',kst(e.created_at)+' · '+e.event+' · '+(e.actor||'서버')+' · '+e.reason,history);
   }
  }
  await refresh();

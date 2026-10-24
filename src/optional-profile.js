@@ -4,8 +4,8 @@ import {el,input} from './consultation-ui.js';
 import {createPhotoCrop} from './profile-photo-crop.js';
 export {prepareProfilePhoto} from './profile-photo-crop.js';
 
-export async function renderOptionalProfile(client,parent){
- const result=await client.rpc('expert_optional_profile',{operation:'get'});if(result.error||!result.data)return;let p=result.data;
+export async function renderOptionalProfile(client,parent,{standalone=false}={}){
+ const result=await client.rpc('expert_optional_profile',{operation:'get'});if(result.error||!result.data){if(standalone)el('p','프로필을 불러오지 못했습니다. 다시 열어주세요.',parent);return;}let p=result.data;
  // ▶ 접힘 대신 '제목 + 한 줄 요약 + 전체 폭 버튼' 카드. 버튼을 누르면 같은 카드 안에서 폼이 펼쳐진다.
  // 폼 내부·사진 처리·초안 보존·저장 로직은 그대로 두고 바깥 껍데기만 바꾼다.
  const ui=window.BohumsoProfile,details=el('section',undefined,parent);details.className='card optional-profile';
@@ -88,7 +88,7 @@ export async function renderOptionalProfile(client,parent){
   const url=ui.photoURL(p.photo_url);if(!url)return;const version=p.photo_url;
   try{const {data}=await client.auth.getSession();if(!data.session)return;const u=new URL(url),response=await fetch(u.pathname+u.search,{headers:{Authorization:'Bearer '+data.session.access_token},cache:'no-store'});if(!response.ok)return;const blob=await response.blob();if(p.photo_url!==version||!details.isConnected)return;ownPhotoURL=URL.createObjectURL(blob);draw();}catch{}
  }
- form.addEventListener('input',()=>{draw();message.textContent=dirty()?'변경한 내용을 저장해 주세요.':'변경 사항이 없습니다.';});
+ form.addEventListener('input',()=>{draw();message.textContent=dirty()?'변경한 내용을 저장해 주세요.':'';});
  form.addEventListener('change',e=>{if(e.target!==file)draw();});
  file.onchange=async()=>{
   const chosen=file.files[0];file.value='';if(!chosen||busy||cropping||photoLoading)return;photoLoading=true;draw();
@@ -120,7 +120,7 @@ export async function renderOptionalProfile(client,parent){
    photo=null;removePhoto=false;
    if(previewURL){if(ownPhotoURL)URL.revokeObjectURL(ownPhotoURL);ownPhotoURL=previewURL;previewURL='';}else if(!p.photo_url&&ownPhotoURL){URL.revokeObjectURL(ownPhotoURL);ownPhotoURL='';}
    message.textContent=cleanup?'저장했습니다. 이전 사진 파일 정리는 운영자가 확인합니다.':'저장했습니다. 지도 공개 여부와 상담 가능 상태는 기존 설정이 유지됩니다.';
-   notifySaved();body.hidden=true;drawSummary();toggle.focus({preventScroll:true});
+   notifySaved();body.hidden=!standalone;drawSummary();if(!standalone)toggle.focus({preventScroll:true});
   }catch(e){if(textSaved)notifySaved();message.textContent=(textSaved?'소개·선택 항목은 저장했습니다. ':'')+(/[가-힣]/.test(e.message)?e.message:'저장하지 못했습니다. 입력은 유지되니 연결을 확인한 뒤 다시 시도해 주세요.');}
   finally{busy=false;draw();}
  };
@@ -131,5 +131,5 @@ export async function renderOptionalProfile(client,parent){
  function revealInput(){if(details.contains(document.activeElement)&&['INPUT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName))document.activeElement.scrollIntoView({block:'nearest'});}
  window.visualViewport?.addEventListener('resize',revealInput);
  window.addEventListener('pagehide',()=>window.visualViewport?.removeEventListener('resize',revealInput),{once:true});
- message.textContent='변경 사항이 없습니다.';draw();drawSummary();loadOwnPhoto().then(drawSummary,()=>{});
+ message.textContent='';if(standalone){body.hidden=false;details.classList.add('standalone-editor');details.querySelector('.settings-row').hidden=true;toggle.hidden=true;cancel.className='text-button';}draw();drawSummary();loadOwnPhoto().then(drawSummary,()=>{});
 }
