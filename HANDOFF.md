@@ -1170,3 +1170,12 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 
 ## 2026-10-24 전문가 전화 연결 (최신 사용자 지침)
 078 신규 connection_only 요청은 날짜 없음, 동의 후 수락한 전문가에게만 번호 공개. 수락은 상담 연결 완료이며 예약/상담 완료 아님. 보험소/기존 기록은 077 유지. 구현 및 격리 DB/브라우저/빌드 통과. docs/expert-phone-connection-20261024.md 참조. 운영 DB/배포 결과는 후속 기록.
+
+## 운영 완료 — 2026-10-24 15:41 KST
+- 코드 fb60da5cf7dd2f71041136a4b78d7f62b7687e40, Netlify 6adc53026bcfbe055ccb839f ready, published 2026-10-24T06:41:21.621Z, commit 일치.
+- 078 적용 및 private.schema_migrations 기록 성공. 사후 migration_applied/mode_constraint/consent_rls/raw_phone_denied/anonymous_command_denied/legacy_wrapper_denied/notification_copy=true, new_consents=0. 운영 신규 상담/동의/알림 시험 생성 없음.
+- assets/account.js 및 service-clarity.css HTTP200, 줄바꿈/chunk명 정규화 후 로컬 빌드와 일치. 운영 JS sha256 38412b84a8439af1bf41616289cddab7342e765beb2e68936dfc90cf471404c3.
+- 실제 로그인된 운영 /requests.html?planner=... 화면에서 대표 보험소장·지역, 날짜 입력 없음, 직접 체크 미선택, 상담 요청하기 비활성, 정확한 안내 확인. 제출하지 않음.
+- artifacts/expert-connection/request-production.png 및 production-db-verification.png (로컬 ignored). 모바일 request-390.png/accepted-390.png는 격리 화면.
+- 링크 https://bohumso.netlify.app/map?view=experts / https://bohumso.netlify.app/requests / https://bohumso.netlify.app/partner-work.html
+- 구현·DB·배포·운영 화면 확인 완료. 실휴대전화 통화/신규 푸시 도착 및 다중 DB 연결 부하만 미검증. 다음은 새 사용자 요청 기준. 운영 추가 데이터 조작 불필요.
