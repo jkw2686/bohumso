@@ -23,3 +23,12 @@ src/account.js, booking-notifications.js, member-rights.js, support-chat.js
 - 전 운영 화면: artifacts/calm-pages/account-before-production.png
 - 후 모의 화면: artifacts/account-calm-*.png, artifacts/notifications/list-*.png, artifacts/calm-pages/support-*.png
 - 운영 배포 식별자와 게시 확인은 HANDOFF의 최신 항목 참고.
+
+## 2026-10-24 14:41 KST — 계정·알림·고객센터 간소화 배포 완료
+- codea8a89fdf03bb652a54b35e4b2cbfb586a687f18f, Netlify6adc4516daeba12ade17bcc8 ready, published2026-10-24T05:41:55.398Z.
+- 내계정 중복 주요 버튼/대형 기기설정 정리, 알림10개씩 더보기·안내 접기, 고객센터 주요문의/이메일·안내 정리. 대화 입력창을 가리는 기존 상위숨김 CSS도 해결.
+- notifications5폭/링크권한/실패재시도/10→20→25개/무변경조회, signup/account4폭·동의·권한·직접링크, support레이아웃4폭/초안/200%, support격리DB 전체 고객·전문가·관리자·전송실패/답변/읽음/권한·4폭·200%, build 통과.
+- 운영 계정 로그인 화면에서 단일 주요 버튼/중복 관리자 링크 제거 확인. calm-pages.css/support.css/account/rights빌드 내용 일치(줄바꿈/청크명 제외).
+- DB/권한/요금정책/운영예약·문의저장/과금·푸시발송 변경 없음. 실제 고객센터·휴대전화 발송을 시험한 것은 아님.
+- 전후계정 artifacts/calm-pages/account-{before,after}-production.png; 모의 화면 artifacts/account-calm-*.png, notifications/list-*.png, calm-pages/support-*.png. docs/calm-pages-20261024.md 참고.
+- 이번 3화면 정리 완료. 다음 요청부터. 기존 help6개 줄바꿈·테스트가 생성한 outputs/signup-entry-20261018/는 커밋 제외. PROJECT_BRIEF/CLAUDE/design-system/HANDOFF 먼저 확인.
