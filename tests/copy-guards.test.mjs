@@ -69,10 +69,10 @@ test('상태 라벨은 support-status 한 곳에서만 정의한다', async () =
   assert.deepEqual(others, [], '상태 라벨을 따로 정의한 파일:\n' + others.join('\n'));
 });
 
-test('문의 접수 문구는 지정된 문장을 쓴다', async () => {
+test('문의 접수 완료는 짧게 알리고 답변 확인 경로를 안내한다', async () => {
   const text = await readFile('src/member-rights.js', 'utf8');
-  assert.ok(text.includes('문의가 접수됐어요. 내용을 검토한 뒤 답변드릴게요.'), '접수 문구');
-  assert.ok(text.includes('답변은 아래 문의 내역에서 확인하실 수 있어요.'), '문의 내역 안내');
+  assert.ok(text.includes('접수했습니다. 답변은 문의 내역에서 확인해 주세요.'), '접수 문구');
+  assert.ok(text.includes('접수하지 못했습니다. 잠시 후 다시 시도하거나 아래 이메일로 문의해 주세요.'), '실패를 접수 완료로 표시하지 않음');
   assert.ok(text.includes('검토 후 문의 내역으로 알려드릴게요'), '탈퇴 문구');
   assert.ok(!text.includes('처리 결과는 운영자가 안내합니다'), '옛 접수 문구 제거');
   assert.ok(!text.includes('자료 삭제 처리 결과는 운영자가 안내합니다'), '옛 탈퇴 문구 제거');
