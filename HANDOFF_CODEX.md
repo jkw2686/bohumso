@@ -1,6 +1,16 @@
 # 인수인계
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
+## 2026-10-25 — 홈 잔여 정리 · 켜기/끄기 버튼 · 로그인 종류 안내
+- 코드만 수정, DB/서버 권한/예약 상태 전이/결제/발송 로직 변경 없음. 운영 DB·마이그레이션 실행 안 함. 실계정 미사용.
+- 이 PC 사본이 origin/main보다 260커밋 뒤처져 있어 origin/main(a70af23) 기준으로 작업. 로컬 전용 14커밋은 backup/local-main-20261025 브랜치로 보존(원격 미반영 여부 별도 점검 필요).
+- aee823f 홈: .map-gesture-help 문구 삭제, #homeLocationStatus 초기 빈 값, 저장된 위치 복원 시에도 문구 미표시, '내 위치'를 누른 뒤에만 진행·오류·결과 문구. 지도·핀·버튼 2개 유지. #homeExperts 잔여 참조 0건.
+- 35ebc71 전문가: '지도에 표시'(expert-home.js)와 compact '방문 가능'(expert-visits.js)을 [항목 · 상태] [켜기/끄기] 한 줄로 교체. role=switch 제거, aria-label은 항목명+동작, 터치 44px, 켜기=채움(--brand-ink)/끄기=테두리, 켜짐은 ●+--brand-teal-strong, 꺼짐은 --muted. 끄면 확인창 없이 '껐습니다' 잠깐 표시. 화면 문구 'ON'/'OFF' 0건(알림 설정 문구 포함 정리).
+- d2a3d81 로그인: 로그인 링크에 as=customer/as=expert(기존 next 유지, index.html·menu.js·member-entry.js). as는 member-access.js가 기억하고 account.js가 roleDestination 직전에 비교(role-routing.js roleMismatch). 전문가계정+일반로그인→'전문가로 등록된 계정입니다.'[전문가 화면으로], 일반계정+전문가로그인→'일반회원으로 가입된 계정입니다.'[전문가로 등록하기][일반 화면으로]. 일치/as없음은 기존 이동 유지, 관리자(전문가 아님)는 안내 없음, 관리자+전문가는 전문가 규칙. 로그아웃시키지 않음. 로그인·가입 화면 미수정.
+- 검사: npm run build 통과. npm test 224/224 통과(1·2번 반영 시점). 신규 tests/role-login-notice.test.mjs 8건 통과(4조합+관리자+as없음). npm run verify는 실행마다 다른 파일이 1건 실패(promotion / insurer-contacts)하나 개별 실행 시 모두 통과 — 이 PC 메모리 문제로 판단, 신규 실패 아님. CI 재확인 필요.
+- 390x844 DOM 확인: 확대·축소 문구 0, 위치 문구 빈 값→'내 위치' 누른 뒤에만 표시, 지도+버튼 2개가 스크롤 없이 보임(하단 667<844), 가로 넘침 없음.
+- 미검수: 전문가 화면 꺼짐/켜짐 실제 캡처(로그인 계정 필요 — 실계정 사용 금지로 미실행), 실기기 검수. 지시서 3~7번(동의 1회, 시간 선택지, 084 노출 2단, 위치 자동 갱신, 30분 방치 자동 끔)은 아직 착수 전.
+
 ## 2026-10-24 운영 적용 및 배너 최종 배포
 - 운영 코드 ad0c2be757bbf2e497bcbd6af2cba6e7a62de404 / Netlify 6adc971ef3f63652b2723230 ready. https://bohumso.netlify.app/ 실제 HTML 새 배너 확인.
 - 홈/지도 배너: '청구까지,' 뒤 명시적 줄바꿈, '가까운 전문가' nowrap. 글꼴·색·사진 유지. 운영 HTML/CSS/이미지 360/390/430/1280 검수, 목록 응답은 격리해 개인정보 조회 회피. artifacts/release-20261024/banner-*.png.
