@@ -4,7 +4,7 @@ import {requestParams} from './request-intent.js';
 export const MEMBER={anonymous:'ANONYMOUS',incomplete:'AUTHENTICATED_INCOMPLETE',active:'ACTIVE_MEMBER',beta:'BETA_MEMBER',expertPending:'EXPERT_PENDING',expertApproved:'EXPERT_APPROVED',admin:'ADMIN'};
 const pendingKey='bohumso-pending-action';
 const returnPages=new Set('/ /index.html /map.html /requests.html /account.html /partner.html /partner-work.html /admin-requests.html /admin.html /phone-verification.html /notifications.html /urgent.html /find.html /consult.html /analysis.html /diagnosis.html /dashboard.html /support.html /growth.html /payment-result.html /my-reservations /reserve /consultation/new /pro /terms.html /privacy.html'.split(' '));
-returnPages.add('/menu.html');
+for(const page of ['/menu.html','/promotion.html','/admin-promotions.html','/recruitment-regions.html'])returnPages.add(page);
 for(const page of [...returnPages])if(page.endsWith('.html'))returnPages.add(page.slice(0,-5));
 export function safeNext(value,fallback='/account.html'){
  if(typeof value!=='string'||!value.startsWith('/')||value.startsWith('//')||/[\\\u0000-\u0020]/.test(value))return fallback;

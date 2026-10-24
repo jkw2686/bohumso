@@ -1149,3 +1149,11 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 - DB/권한/요금정책/운영예약·문의저장/과금·푸시발송 변경 없음. 실제 고객센터·휴대전화 발송을 시험한 것은 아님.
 - 전후계정 artifacts/calm-pages/account-{before,after}-production.png; 모의 화면 artifacts/account-calm-*.png, notifications/list-*.png, calm-pages/support-*.png. docs/calm-pages-20261024.md 참고.
 - 이번 3화면 정리 완료. 다음 요청부터. 기존 help6개 줄바꿈·테스트가 생성한 outputs/signup-entry-20261018/는 커밋 제외. PROJECT_BRIEF/CLAUDE/design-system/HANDOFF 먼저 확인.
+
+## 2026-10-24 — 무료 초대혜택·고객 최종확인 (배포 준비)
+- 최신 사용자 지침이 074의 같은 시간 수락 즉시 확정을 대체. 요청 → 전문가 확인/제안 → 고객 최종확인 → 확정. 077은 기존 확정·연락처·알림 기록을 수정/삭제하지 않음. 제안 미해결 시 이전 시간 확정 차단.
+- 076 초대 3개 입력·공유 링크·신규/기존 자동 적용·원자적 인원 제한·무료/유료 기간 보존. 관리 링크는 관리자만, 가입자 혜택 안내는 별도. 10명 집계/1회 소식·확인, 판교/분당 통합·상담/방문 OFF 무관.
+- 076/077 운영 Supabase 한 트랜잭션 적용/원장 기록 완료. 사후 RLS4/원본 SELECT 차단/익명 관리 RPC 차단/미래 알림 문구/최종 고객확인 정책 확인. 운영 초대0; 실회원/예약/혜택 적용·발송·결제 없음.
+- docs/promotion-booking-20261024.md: 변경 파일·검사·한계·전후 캡처. build와 격리 DB/신청·예약 목록·가입·지도 검수. 별도 staging 미발견; 실제 다중 PostgreSQL 연결 부하 시험/실휴대전화 새 플로우 미확인.
+- 다음: 최종 브라우저 통과 확인 → 코드 main push/Git CD → ready/커밋 대조 → 운영 새 관리자 화면 읽기 전용 확인. 적용된 076/077을 되돌려 074를 재실행하지 말 것.
+- PROJECT_BRIEF.md·CLAUDE.md·design-system.md 준수, 최신 직접 지시 우선. 운영 계정/실예약/전화번호 조회 확대 금지. 제외 사용자의 기록 접근 금지. 초기 help6 파일 줄바꿈 변경·outputs/signup-entry-20261018 보존/스테이징 제외.

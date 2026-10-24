@@ -1,6 +1,6 @@
 import {el,kst} from './consultation-ui.js';
 const archived=new Set(['completed','cancelled','unmatched']);
-const labels={requested:'요청 중 · 전문가 확인 전',coordinating:'요청 중 · 일정 확인 필요',confirmed:'예약 확정',scheduled:'예약 확정',awaiting_completion:'상담 완료 확인 대기',completed:'상담 완료',cancelled:'예약 취소',unmatched:'요청 종료',dispute:'문제 확인 중',no_show:'문제 확인 중'};
+const labels={requested:'상담 요청 중',coordinating:'일정 조율 중',confirmed:'예약 확정',scheduled:'예약 확정',awaiting_completion:'상담 완료 확인 대기',completed:'상담 완료',cancelled:'예약 취소',unmatched:'요청 종료',dispute:'문제 확인 중',no_show:'문제 확인 중'};
 function nextAction(row,workspace){
  if(row.schedule_proposal?.can_accept)return '제안된 변경 일정을 확인해 주세요.';
  if(row.state==='requested')return workspace==='partner'?'요청 내용을 확인하고 수락 여부를 선택해 주세요.':'전문가 확인을 기다려 주세요. 아직 확정 전입니다.';
@@ -30,7 +30,7 @@ export function bookingOverview({host,workspace,viewerId,refresh}){
   const details=document.createElement('details');details.className='booking-detail';details.dataset.bookingDetail=row.id;details.id='booking-detail-'+row.id;const summary=el('summary','요청 내용·처리·이력',details);summary.hidden=true;const body=el('div',undefined,details);body.className='booking-detail-body';while(card.firstChild)body.append(card.firstChild);card.append(details);
   const header=document.createElement('header');header.className='booking-card-summary';card.prepend(header);
   el('h2',workspace==='customer'?(row.planner_name||row.office_name||'담당자 확인 중'):(row.contact?.name||'상담 요청 고객'),header);
-  el('p',workspace==='partner'&&row.state==='requested'?'새 요청 · 확인 필요':row.state==='coordinating'&&row.planner_ok?(workspace==='partner'?'고객 일정 확정 대기':'요청 중 · 일정 확인 필요'):labels[row.state]||'상태 확인 필요',header).className='request-status';
+  el('p',labels[row.state]||'상태 확인 필요',header).className='request-status';
   const method=row.office_id?'보험소 방문':({phone:'전화상담',nearby:'전문가가 고객에게 방문',scheduled:'방문상담'}[row.method]||'방식 확인 필요');
   el('p',(['confirmed','scheduled','awaiting_completion','completed'].includes(row.state)?'확정 · ':'희망 · ')+kst(row.preferred_at)+' · '+method,header).className='booking-summary-time';
   const guidance=el('p',nextAction(row,workspace),body);guidance.className='booking-next-action';body.prepend(guidance);

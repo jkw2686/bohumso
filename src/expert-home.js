@@ -5,6 +5,7 @@ import {renderOptionalProfile} from './optional-profile.js';
 import {renderPublicContact} from './public-contact.js';
 import {renderProfessionApplication} from './profession-onboarding.js';
 import {renderEarlyDocuments} from './early-documents.js';
+import {mountPromotionBenefit} from './promotion.js';
 import {renderAds} from './ad-subscription.js';
 import {mountNotificationSettings} from './notification-settings.js';
 const url=s=>'/partner.html'+(s?'?screen='+s:'');
@@ -38,7 +39,7 @@ export async function renderExpertHome({client,host,user,membership,config,messa
  if(screen==='area'){await renderServiceArea(client,root,{standalone:true});for(const b of root.querySelectorAll('button[type=submit]'))b.textContent='저장하기';return true;}
  if(screen==='notifications'){await mountNotificationSettings({client,host:root,user,compact:true});return true;}
  if(screen==='visit'){await renderInstant(client,root,{settingsPage:true});return true;}
- if(screen==='subscription'){if(p?.profession==='tax'){el('p','세무 상담료는 상담시간·방식에서 안내할 수 있습니다.',root);link(root,'상담료 설정',url('schedule'));}else if(config.paymentsEnabled===false){el('p','현재 결제를 받지 않습니다.',root);el('p','이용료·무료혜택은 운영 안내에 따라 확인해 주세요.',root);link(root,'이용·결제 정책','/payment-policy.html');}else try{await renderAds({client,workspace:'partner',host:root,message,action:async(form,fn)=>{try{await fn();}catch{message('처리하지 못했습니다. 기존 내역을 확인한 뒤 다시 시도해 주세요.');}},compact:true});}catch{el('p','구독 내역을 불러오지 못했습니다. 다시 열어주세요.',root);link(root,'이용·결제 정책','/payment-policy.html');}return true;}
+ if(screen==='subscription'){await mountPromotionBenefit(client,root);if(p?.profession==='tax'){el('p','세무 상담료는 상담시간·방식에서 안내할 수 있습니다.',root);link(root,'상담료 설정',url('schedule'));}else if(config.paymentsEnabled===false){el('p','현재 결제를 받지 않습니다.',root);el('p','이용료·무료혜택은 운영 안내에 따라 확인해 주세요.',root);link(root,'이용·결제 정책','/payment-policy.html');}else try{await renderAds({client,workspace:'partner',host:root,message,action:async(form,fn)=>{try{await fn();}catch{message('처리하지 못했습니다. 기존 내역을 확인한 뒤 다시 시도해 주세요.');}},compact:true});}catch{el('p','구독 내역을 불러오지 못했습니다. 다시 열어주세요.',root);link(root,'이용·결제 정책','/payment-policy.html');}return true;}
  if(screen==='qualification'){
  el('p',verified(p)?'자격 확인 완료':p?.status==='VERIFICATION_PENDING'?'심사 중':p?.status==='SUSPENDED'?'활동 정지 · 확인 필요':'자격 확인 필요',root);
  if(p){const docs=verified(p)?el('details',undefined,root):root;if(docs!==root)el('summary','제출자료 관리',docs);await renderEarlyDocuments(client,docs,config,message,p.profession);link(root,'등록정보 확인·수정',url('registration'));return true;}

@@ -26,6 +26,17 @@ body .foreground-notice a,body .foreground-notice button{min-height:var(--touch-
 body .request-wizard .booking-review{background:transparent;border:0;box-shadow:none;padding:var(--space-2) 0;border-radius:0}
 body .request-wizard .booking-review:focus{outline-offset:var(--space-2)}
 body .request-wizard .booking-review dl{margin-block:var(--space-3)}
+body .request-wizard{box-shadow:none;border:0;background:transparent;padding:var(--space-3) 0}
+body .request-wizard .booking-review dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--space-3)}
+body .request-wizard .booking-review dt{color:var(--muted);font-weight:400}
+body .request-wizard .booking-review dd{margin:0;overflow-wrap:anywhere}
+body .request-wizard .booking-time-groups{display:grid;gap:var(--space-3)}
+body .request-wizard .booking-time-groups h3{margin-block:var(--space-2)}
+body .request-wizard label{margin-block:var(--space-3)}
+body .request-wizard input:not([type=checkbox]){width:100%;min-height:var(--touch-target);font-size:var(--ui-body)}
+body .request-wizard [hidden]{display:none!important}
+body .request-wizard .booking-review:focus{outline:0}
+body .request-wizard button.text-button{border:0;box-shadow:none;background:transparent;color:var(--brand-ink);padding:var(--space-3) 0;min-height:var(--touch-target)}
 
 body .notification-settings-inline{padding:var(--space-4);margin-bottom:var(--space-4)}
 body .notification-settings-inline button[hidden]{display:none}
