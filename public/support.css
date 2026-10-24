@@ -33,7 +33,7 @@
 /* A conversation takes the screen; its header and composer stay outside the message scroll. */
 body.support-chat-open{overflow:hidden;padding:0;background:var(--brand-soft)}
 body.support-chat-open>header,body.support-chat-open>.policy-footer,body.support-chat-open>.customer-nav,
-body.support-chat-open main.container>:not(#rightsContent),
+body.support-chat-open main.container>:not(#rightsContent):not(.support-layout),
 body.support-chat-open #rightsContent>:not(.support-chat-room){display:none}
 body.support-chat-open main.container,body.support-chat-open #rightsContent{margin:0;padding:0;border:0;box-shadow:none}
 .support-workspace .support-chat-room:not([hidden]){position:fixed;z-index:1100;inset-inline:0;top:var(--support-top,0px);height:var(--support-height,100dvh);width:min(100%,760px);margin-inline:auto;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;background:var(--brand-soft);overflow:hidden;box-sizing:border-box}

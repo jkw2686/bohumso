@@ -89,7 +89,7 @@ try{
  // Reauthentication reuses saved backend data, not a browser-local transcript.
  const again=await open(ids.customer);await again.page.goto(origin+'/support.html?thread='+customerId);await expect(again.page.getByText('종료한 문의를 다시 여는 질문',{exact:true})).toBeVisible();await again.context.close();
  const other=await open(ids.other);await other.page.goto(origin+'/support.html?thread='+customerId);await expect(other.page.getByText('이 문의를 확인할 권한이 없습니다.',{exact:true})).toBeVisible();await expect(other.page.getByText('가상 운영자 답변입니다.',{exact:true})).toHaveCount(0);
- await other.page.goto(origin+'/admin.html');await expect(other.page.getByText('관리자 권한이 필요합니다.',{exact:true})).toBeVisible();await expect(other.page.getByRole('heading',{name:'고객센터 문의',exact:true})).toHaveCount(0);await other.context.close();check('fresh login history, foreign ticket and actual non-admin page denied');
+ await other.page.goto(origin+'/admin.html');await expect(other.page.locator('#adminAccessNotice')).toBeVisible();await expect(other.page.getByRole('heading',{name:'고객센터 문의',exact:true})).toHaveCount(0);await other.context.close();check('fresh login history, foreign ticket and actual non-admin page denied');
  // Long conversation; preserve scroll when refreshing instead of forcing the last reply into view.
  for(let i=0;i<5;i++)await send(ids.customer,'message',{id:customerId,body:('긴문장https://example.test/'+i).repeat(40)});
  await c.getByRole('button',{name:'새로고침',exact:true}).click();await c.locator('#supportThread .support-scroll').evaluate(n=>n.scrollTop=0);

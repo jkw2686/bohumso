@@ -52,23 +52,23 @@ async function renderAccount(){
  if(config.closedBeta&&betaCode()&&!membership.beta){const done=await renderBetaFinish({client,root:$("accountContent"),onDone:async()=>{await refreshMembership();if(membership.beta_role==='EXPERT'){location.assign('/partner.html?next='+encodeURIComponent(pendingAction()));return;}await renderAccount();}});if(done){$("identity").textContent=user.email||user.phone||"내 계정";document.querySelector(".account-links").hidden=true;$("membershipForm").hidden=true;$("logout").onclick=async()=>{await client.auth.signOut();location.assign('/login.html');};return;}}
  const next=pendingAction();if(membership.member&&next!='/account.html'){clearAction();location.replace(next.startsWith('/partner.html?roleIntent=expert')&&membership.profession==='office'?'/partner.html?profession=office':next);return;}
  try{sessionStorage.removeItem("bohumso-signup-intent");}catch{}
- document.querySelector('h1').textContent=membership.state==='EXPERT_APPROVED'?'보험소 PRO':['EXPERT_PENDING','EXPERT_VERIFICATION_PENDING'].includes(membership.state)?'전문가 심사 중':membership.state==='EXPERT_DRAFT'?'보험소 PRO · 프로필':membership.member?'내 계정':'가입 마무리';
+ document.querySelector('h1').textContent=membership.member?'내 계정':'가입 마무리';
  document.querySelector('.account-links').hidden=!membership.member;
  if(membership.member){
   clearAction();
   const destination=signupNext(membership);let nextPanel=document.getElementById('accountNextAction');
   if(!nextPanel){nextPanel=document.createElement('section');nextPanel.id='accountNextAction';nextPanel.className='card';$('accountContent').prepend(nextPanel);}
   nextPanel.replaceChildren();
-  line(nextPanel,justCompleted?'가입이 완료됐어요.':'다음 할 일','h2');
-  if(destination.href.startsWith('/map'))line(nextPanel,'가까운 전문가를 찾아 필요한 도움을 받아보세요.');
+  if(justCompleted)line(nextPanel,'가입이 완료됐어요.','h2');
+
   const primary=document.createElement('a');primary.href=destination.href;primary.className='btn';primary.textContent=destination.label;nextPanel.append(primary);
-  const reservations=document.createElement('a');reservations.href='/requests.html';reservations.className='btn ghost';reservations.textContent='내 예약';nextPanel.append(reservations);
+  const identity=$('accountContent').querySelector('.account-identity');if(identity)$('accountContent').prepend(identity);
   const expertLink=document.querySelector('.account-links a[href="/partner.html"],.account-links a[href="/partner"]');if(expertLink&&!membership.partner_status){const label=expertLink.querySelector('span:last-child')||expertLink;label.textContent='전문가로 참여하기';expertLink.href='/partner.html?roleIntent=expert';}
  }
  if(membership.member&&!document.querySelector('[data-notification-entry]')){const a=document.createElement('a');a.href='/notifications.html';a.innerHTML=window.uiIcon?.('calendar')||'';a.append(document.createTextNode('예약 알림·설정'));a.dataset.notificationEntry='';document.querySelector('.account-links')?.append(a);}
  $("identity").textContent=user.email||user.phone||"내 계정";$("operator").textContent=config.operator;$("privacyContact").textContent=config.contact;
  $("membershipState").textContent=membership.member?(membership.beta?"베타 가입 완료 · "+(membership.phoneStatus==='UNVERIFIED'?'운영자 전화 확인 대기':'예약 이용 가능'):"회원 가입 완료"):"계정 인증 완료 · 가입 동의가 필요합니다.";
- $("membershipForm").hidden=membership.member||config.signupEnabled===false;if(!membership.member&&config.signupEnabled===false){$("membershipState").textContent="초대코드를 확인하면 베타 가입을 마칠 수 있어요.";if(!document.getElementById("accountInviteLink")){const a=document.createElement("a");a.id="accountInviteLink";a.className="btn";a.href="/signup.html?next="+encodeURIComponent(pendingAction());a.textContent="초대코드 입력";$("membershipState").after(a);}}$("adminLink").hidden=!membership.admin;
+ $("membershipForm").hidden=membership.member||config.signupEnabled===false;if(!membership.member&&config.signupEnabled===false){$("membershipState").textContent="초대코드를 확인하면 베타 가입을 마칠 수 있어요.";if(!document.getElementById("accountInviteLink")){const a=document.createElement("a");a.id="accountInviteLink";a.className="btn";a.href="/signup.html?next="+encodeURIComponent(pendingAction());a.textContent="초대코드 입력";$("membershipState").after(a);}}$("adminLink").hidden=!membership.admin;const primary=$("accountNextAction")?.querySelector('a');for(const a of document.querySelectorAll('.account-links a')){if(a.id==='adminLink'&&!membership.admin)continue;a.hidden=!!primary&&new URL(a.href).pathname.replace(/\.html$/,'')===new URL(primary.href).pathname.replace(/\.html$/,'');}
  bindMembershipConsent($("membershipForm"));$("membershipForm").noValidate=true;
  onForm("membershipForm",async d=>{for(const name of ['age','terms','privacy'])if(!checked(d,name))return flagInvalid($("membershipForm").elements[name],'필수약관에 동의해 주세요.');const {error}=await client.rpc("complete_membership",{terms_accepted:checked(d,"terms"),privacy_accepted:checked(d,"privacy"),age_accepted:checked(d,"age"),marketing_accepted:checked(d,"marketing")});fail(error);justCompleted=true;message("");await refreshMembership();await renderAccount();});
  $("logout").onclick=async()=>{const {error}=await client.auth.signOut();if(error){message("로그아웃하지 못했습니다. 다시 시도해 주세요.");return}location.replace("/login.html");};
@@ -162,7 +162,7 @@ async function start(){
  if(mode==='requests'&&document.body.dataset.workspace!=='admin')await renderCareCases(client,$('accountContent'),document.body.dataset.workspace);
  if(mode==="payment")await renderPaymentResult(client,message);
  if(mode==="phone")await renderPhoneVerification({client,config,root:$("accountContent")});
- if(mode==="account"){await renderAccount();$("accountContent").hidden=false;if(membership.member)await mountNotificationSettings({client,host:$("accountContent"),user});}
+ if(mode==="account"){await renderAccount();$("accountContent").hidden=false;if(membership.member){const preferences=document.createElement('details');preferences.dataset.accountNotifications='';const summary=document.createElement('summary');summary.textContent='알림 설정';preferences.append(summary);$("accountContent").append(preferences);let loading=false;const load=async()=>{if(loading||preferences.querySelector('[data-notification-settings]'))return;loading=true;try{await mountNotificationSettings({client,host:preferences,user,compact:true});}finally{loading=false;}};preferences.addEventListener('toggle',()=>{if(preferences.open)void load();});const reveal=()=>{if(location.hash==='#notificationSettings'){preferences.open=true;void load();}};window.addEventListener('hashchange',reveal);window.addEventListener('pagehide',()=>window.removeEventListener('hashchange',reveal),{once:true});if(location.hash==='#notificationSettings'){preferences.open=true;await load();}}}
  if(mode==="partner"&&membership.profession!=='office'&&membership.beta_role!=='EXPERT'&&new URLSearchParams(location.search).get('profession')!=='office'){if(await renderExpertHome({client,host:$("accountContent"),user,membership,config,message})){$("accountContent").hidden=false;simplifyServiceChrome();return;}}
  if(mode==="partner"&&membership.beta_role==="EXPERT"){await renderBetaExpert(client,$("accountContent"));const quick=document.createElement('div');$("accountContent").prepend(quick);await renderInstant(client,quick);await mountExpertOverview({client,host:$("accountContent"),user,membership});$("accountContent").hidden=false;return;}
  if(mode==="partner"){const applicationStatus=await renderPartner();

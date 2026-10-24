@@ -28,18 +28,19 @@ export async function mountBookingNotifications({client,host,expanded=false}){
  const section=el('section',undefined,host,'card booking-notifications');section.dataset.bookingNotifications='';
  const details=el('details',undefined,section);details.open=expanded;const title=el('summary','예약 알림',details),status=el('p','알림을 확인하고 있습니다.',details),list=el('div',undefined,details);status.setAttribute('role','status');
  const retry=el('button','재시도',details,'btn ghost');retry.type='button';retry.hidden=true;
- let busy=false,generation=0;
+ let busy=false,generation=0,limit=10,items=[];const more=el('button','알림 더 보기',details,'btn ghost');more.type='button';more.hidden=true;const help=el('details',undefined,section,'notification-list-help');el('summary','알림 안내',help);el('p','조회하거나 예약으로 이동해도 읽음 처리되지 않습니다.',help);const refresh=el('button','새로고침',section,'btn ghost notification-refresh');refresh.type='button';refresh.setAttribute('aria-label','알림 새로고침');
  const owner=(await client.auth.getUser()).data?.user?.id;
- client.auth.onAuthStateChange((event,session)=>{if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event)&&session?.user?.id!==owner){generation++;list.replaceChildren();title.textContent='예약 알림';status.textContent='계정이 변경되었습니다. 다시 확인합니다.';setTimeout(()=>location.reload(),0);}});
+ client.auth.onAuthStateChange((event,session)=>{if(['SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event)&&session?.user?.id!==owner){generation++;items=[];more.hidden=true;list.replaceChildren();title.textContent='예약 알림';status.textContent='계정이 변경되었습니다. 다시 확인합니다.';setTimeout(()=>location.reload(),0);}});
+ const draw=()=>{list.replaceChildren();   for(const n of items.slice(0,limit)){const card=el('article',undefined,list,'notification-item');el('h3',n.title,card);el('p',n.body,card);if(n.created_at)el('p',new Date(n.created_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}),card,'muted');el('span',n.read_at?'읽음':'읽음 기록 없음',card);
+    const id=reservationId(n.deep_link);if(id){const a=link(card,'해당 예약 확인','/notifications.html?reservation='+encodeURIComponent(id));a.dataset.memberAction='';}
+   }more.hidden=items.length<=limit;more.textContent='알림 더 보기 ('+Math.min(limit,items.length)+' / '+items.length+')';};more.onclick=()=>{limit+=10;draw();};
  const load=async()=>{if(busy)return;busy=true;retry.disabled=true;const version=++generation;
   try{const preference=notificationRpc(client,'reservation_notification_settings',{operation:'get',payload:{}}).catch(()=>null);const result=await notificationRpc(client,'notification_inbox',{operation:'list'});if(!section.isConnected||version!==generation)return;list.replaceChildren();retry.hidden=true;
-   const rows=Array.isArray(result?.items)?result.items:[],caption='예약 알림'+(result?.unread?' · 새 알림 '+result.unread+'건':'');title.textContent=caption;void preference.then(pref=>{if(section.isConnected&&version===generation)title.textContent=pref?.enabled===false?'예약 알림 · 설정 OFF':caption;});status.textContent=rows.length?'조회하거나 예약으로 이동해도 읽음 처리되지 않습니다.':'새로운 알림이 없습니다.';
-   for(const n of rows){const card=el('article',undefined,list,'notification-item');el('h3',n.title,card);el('p',n.body,card);if(n.created_at)el('p',new Date(n.created_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}),card,'muted');el('span',n.read_at?'읽음':'읽음 기록 없음',card);
-    const id=reservationId(n.deep_link);if(id){const a=link(card,'해당 예약 확인','/notifications.html?reservation='+encodeURIComponent(id));a.dataset.memberAction='';}
-   }
+   const rows=Array.isArray(result?.items)?result.items:[],caption=expanded?(result?.unread?'새 알림 '+result.unread+'건':'최근 알림'):'예약 알림'+(result?.unread?' · 새 알림 '+result.unread+'건':'');items=rows;refresh.disabled=false;title.textContent=caption;void preference.then(pref=>{if(section.isConnected&&version===generation)title.textContent=pref?.enabled===false?'예약 알림 · 설정 OFF':caption;});status.textContent=rows.length?'':'새로운 알림이 없습니다.';draw();
+
   }catch{if(section.isConnected){status.textContent='알림을 불러오지 못했습니다';retry.hidden=false;}}finally{busy=false;retry.disabled=false;}
  };
- retry.onclick=load;await load();
+ retry.onclick=load;refresh.onclick=load;await load();
  const preferenceChanged=()=>{if(section.isConnected)void load();else window.removeEventListener('bohumso-notification-preference',preferenceChanged);};window.addEventListener('bohumso-notification-preference',preferenceChanged);
  const timer=setInterval(()=>{if(!section.isConnected){clearInterval(timer);return;}if(!document.hidden&&details.open)void load();},60000);
  return {refresh:load,section};

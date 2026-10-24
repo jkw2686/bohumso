@@ -86,9 +86,9 @@ function transcript(parent,client,admin=false,onRead=()=>{}){
 }
 
 export async function mountSupportChat({client,host,userId,initialKind='INQUIRY',initialBody=''}){
- host.replaceChildren();host.classList.add('support-workspace');el('p',chatNotice,host);
- const privacy=el('p',sensitiveNotice,host);privacy.id='supportSensitiveNotice';privacy.className='support-sensitive';
- el('p','보험소 이용 문의입니다. 보험사 청구 접수나 전문가 상담·예약 신청과는 별개예요.',host).className='support-context';
+ host.replaceChildren();host.classList.add('support-workspace');const guidance=el('details',undefined,host);guidance.className='support-entry-guidance';el('summary','이용 안내',guidance);el('p',chatNotice,guidance);
+ const privacy=el('p',sensitiveNotice,guidance);privacy.id='supportSensitiveNotice';privacy.className='support-sensitive';
+ el('p','보험소 이용 문의입니다. 보험사 청구 접수나 전문가 상담·예약 신청과는 별개예요.',guidance).className='support-context';
  const nav=el('div',undefined,host);nav.className='review-actions';
  const createPane=el('section',undefined,host),historyPane=el('section',undefined,host),detailPane=el('section',undefined,host);
  createPane.id='supportNew';historyPane.id='supportHistory';detailPane.id='supportThread';createPane.className=detailPane.className='support-chat-room';detailPane.hidden=true;createPane.hidden=true;
@@ -97,7 +97,7 @@ export async function mountSupportChat({client,host,userId,initialKind='INQUIRY'
  const drafts=new Map(),offered=new Map();const createAttempt=attemptKey('support:create:'+userId);
  const newButton=button(nav,'1:1 문의',()=>show('new'));const historyButton=button(nav,'문의 내역',()=>show('history'),true);
  const refreshButton=button(nav,'새로고침',async()=>{const rows=await refreshList();if(selected)await updateThread();else await offerReply(rows);},true);
- newButton.setAttribute('aria-controls',createPane.id);historyButton.setAttribute('aria-controls',historyPane.id);
+ historyButton.hidden=true;host.prepend(nav);refreshButton.classList.add('support-list-refresh');newButton.setAttribute('aria-controls',createPane.id);historyButton.setAttribute('aria-controls',historyPane.id);
  const newHeader=el('header',undefined,createPane);newHeader.className='support-chat-header';chatIcon(newHeader,'‹','문의 내역으로 돌아가기',()=>show('history'));
  const newIdentity=el('div',undefined,newHeader);const newTitle=el('h2','보험소 고객센터',newIdentity);newTitle.tabIndex=-1;el('p','1:1 문의',newIdentity);
  chatIcon(newHeader,'×','대화창 닫기',()=>show('history'));
