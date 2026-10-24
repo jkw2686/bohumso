@@ -29,3 +29,9 @@
 - 개인정보 고지 개정과 운영 DB 변경은 같은 릴리스로 진행한다. 시행 전 현재 서비스와 다른 수집·보호 상태를 완료로 공지하지 않는다.
 
 공식 구현 참고: [Supabase MFA](https://supabase.com/docs/guides/auth/auth-mfa), [인증 요청 제한](https://supabase.com/docs/guides/auth/rate-limits). 이 작업으로 법적 준수가 모두 확인된 것은 아니다.
+
+## 최종 검증
+원격 verify #284 성공: npm ci / npm run build / npm test 모두 통과, 224 pass · 0 fail · 0 skip. 코드 445571ad297e3075d960c3e673bb229d9543f626. https://github.com/jkw2686/bohumso/actions/runs/40089272392 . 로컬 메모리 부족 파일도 단독 재실행 5/5 통과. 모바일 역할 3유형×3폭 9/9 및 관리자/연락처 4폭 검수 통과.
+화면 캡처: artifacts/member-admin/home-390.png, contact-390.png 및 360/430/1280 대응 파일. 격리 응답/DB 기준이며 실휴대전화·운영 데이터 검수와 구분한다.
+
+남은 범위: 운영 Auth/MFA/CAPTCHA/RLS/Storage 적용상태 검증, 담당자별 실제 권한 지정, 전체 보유기간/파기·다운로드 기록 검증. 신규 시간당 제한은 전문가 전화 연결 요청에 적용; 기존 보험소/즉시방문 경로까지 동일한 시간당 제한을 확대하는 일은 후속 확인 대상이다. 기존 상담 상세는 최근200건 조회 제한이 있으므로 오래된 개별 상담 상세의 직접 조회 확장도 후속 과제다. 전체 회원 목록은 새 API로 25명씩 끝까지 조회한다. 운영 미적용·미배포.
