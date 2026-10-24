@@ -23,3 +23,26 @@
 
 ## 운영 경계
 - 운영DB/권한/RLS/요금/결제/실제 상담 데이터 변경 없음. 실제 휴대전화 직접 조작 검증 아님.
+
+## 최종 검수 보완
+- 전문가 프로필 사진64px/이름·직군/상세 보기 한 줄 구성. 하단 메뉴가 원래 없던 전문가 페이지에도 홈/상담 요청/내 정보를 생성.
+- 고객 화면 미리보기 메뉴는 추가하지 않음. 본인 프로필 상세에서 지도 진입 시 서버 인증 user ID와 planner 파라미터가 일치하는 경우만 본인 지도 경로 허용.
+- 실제 빌드+격리 Auth 응답: 일반회원/심사중/승인 3역할 × 360/390/430px 통과. 실제 Google 계정 로그인 대행은 아님.
+- 메뉴 인증 11검사: 로그아웃/계정 변경/초기 지연응답/BFCache 실패/실제 두 탭 storage 로그아웃/뒤로가기 통과.
+- 상담 흐름 4폭+200%: 동의/시간 없는 요청/실패 재시도/중복 클릭/수락/담당자 전화 링크/양쪽 상태 일치 통과. 실제 운영 요청 생성 안 함.
+- 로그인·가입 실제 번들의 Google 버튼: 360/390/430px 첫 화면에 표시. 기존 로그인 동작 유지. 사진 실패 텍스트 표시.
+- 캡처: artifacts/role-final/{member,pending,expert}-{360,390,430}.png 및 login/signup-livebundle 폭별 이미지.
+- 보호해야 할 기존 public/help 6파일, outputs/signup-entry-20261018 변경을 커밋에 포함하지 않음.
+
+## 최종 전체 테스트
+- 코드 커밋: 07c82ad2c522254a072ccb8fbe75621154c386bf.
+- GitHub verify #282: https://github.com/jkw2686/bohumso/actions/runs/40085573741
+- npm ci / npm run build / npm test 성공, 221 pass / 0 fail / 0 skipped.
+- 심사 중: 실제 심사 상태와 진행 상태 확인만 표시. 활동토글/빈 상담 영역 없음.
+
+## 운영 배포 확인 완료
+- Netlify production ready: 6adc87505efb3e5d94c4875f, commit 07c82ad2c522254a072ccb8fbe75621154c386bf.
+- 최신 https://bohumso.netlify.app/ · 전문가 https://bohumso.netlify.app/partner · 일반회원 https://bohumso.netlify.app/map
+- 운영 파일 HTTP200. PNG 원본에서 변환한 WebP2개 byte 일치. CSS는 CRLF 정규화 후 일치.
+- account/role-entry 및 의존모듈13개: 빌드 플랫폼에 따른 chunk 해시명과 CRLF만 정규화해 전체 코드내용 일치 확인. 원본 바이트 비교에서는 해당 차이가 있었으므로 원본 바이트 완전 일치라고 보고하지 않음.
+- 운영 DB 변경/실제사용자 요청 생성/수락/전화/시험푸시를 실행하지 않음. 모바일검수는 Playwright 격리계정·응답 기준. 실폰 OS 시작로고 갱신 미확인 사항 유지.
