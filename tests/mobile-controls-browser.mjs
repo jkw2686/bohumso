@@ -6,7 +6,7 @@ import path from 'node:path';
 const bundle=(await build({stdin:{contents:`import {renderEarlyExpertAdmin} from './src/early-expert-admin.js';
 window.calls=[];const row={user_id:'fixture',display_name:'시험 전문가',primary_area:'경기 분당',status:'APPROVED',phoneVerified:true,documents:[]};
 const client={rpc:async(name,args)=>{window.calls.push({name,args});if(args?.operation==='approve'&&args.payload.reason==='전화 미확인 시험')return {error:{message:'phone_verification_required'}};if(name==='admin_access_command')return {error:{message:'owner_required'}};return {data:name==='early_expert_review'&&args.operation==='list'?[row]:[]};}};
-document.querySelector('#accountContent').hidden=false;document.querySelector('#accountNotice').textContent='';renderEarlyExpertAdmin({client,host:document.querySelector('#applications'),message:t=>document.querySelector('#accountMessage').textContent=t});`,resolveDir:process.cwd()},bundle:true,format:'esm',write:false})).outputFiles[0].text;
+document.body.dataset.adminAccess='granted';document.querySelector('#accountContent').hidden=false;document.querySelector('#accountNotice').textContent='';renderEarlyExpertAdmin({client,host:document.querySelector('#applications'),message:t=>document.querySelector('#accountMessage').textContent=t});`,resolveDir:process.cwd()},bundle:true,format:'esm',write:false})).outputFiles[0].text;
 const browser=await chromium.launch(PW_LAUNCH);const report=[];
 try{
  const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -14,6 +14,9 @@ try{
  for(const width of [320,360,390,430,768,1440]){
   await page.setViewportSize({width,height:844});await page.goto('https://fixture.test/admin.html');
   await expect(page.getByText('경기 분당 · 승인 완료')).toBeVisible();
+  await expect(page.locator('.admin-review-detail')).not.toHaveAttribute('open','');
+  if(width===390)await page.screenshot({path:'artifacts/admin-home-simple-390.png',fullPage:true});
+  await page.getByText('서류·심사하기',{exact:true}).click();
   const measurements=await page.locator('.expert-review-card').evaluate(card=>{const a=card.querySelector('.expert-review-actions'),buttons=[...a.querySelectorAll('button')],rects=buttons.map(b=>b.getBoundingClientRect());return {overflow:document.documentElement.scrollWidth>innerWidth+1,buttons:rects.map(r=>({height:r.height,width:r.width})),gap:rects[1].left-rects[0].right,inputs:[...card.querySelectorAll('input')].map(i=>({height:i.getBoundingClientRect().height,font:parseFloat(getComputedStyle(i).fontSize)})),differentColors:getComputedStyle(buttons[0]).backgroundColor!==getComputedStyle(buttons[1]).backgroundColor};});
   expect(measurements.overflow).toBe(false);expect(measurements.gap).toBeGreaterThanOrEqual(10);expect(measurements.differentColors).toBe(true);for(const b of measurements.buttons)expect(b.height).toBeGreaterThanOrEqual(48);for(const i of measurements.inputs){expect(i.height).toBeGreaterThanOrEqual(48);expect(i.font).toBeGreaterThanOrEqual(16);}
   report.push({width,...measurements});if([390,1440].includes(width))await page.locator('.expert-review-card').screenshot({path:`artifacts/admin-controls-${width}.png`});

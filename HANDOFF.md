@@ -1221,3 +1221,12 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 - code55874778c16c1c10930e1c57be82d94a823fb195 / Netlify6adc75221d03bbad97490832 ready / 2026-10-24T09:06:55.789Z.
 - 운영 service-clarity.css/account.js HTTP200·검수본 일치. partner-work HTML은 Netlify pretty URL 자동변환(.html 제거·따옴표/속성순서) 차이이며 전문가 홈 /partner 링크 반영 확인.
 - 이번 화면 정리 완료. 실예약/설정/전화/푸시 조작 없음. 다음 사용자 요청부터 진행. 문서 저장은 배포 생략.
+
+# 관리자 홈 간소화 — 2026-10-24
+
+- 전문가 확인 목록을 먼저 배치, 이름·직군·지역·상태 요약. 서류·심사 상세 한 건만 펼침.
+- 관리자 홈 제목과 새로고침 정렬. 기존 문의·통계·명단·무료초대/모집 경로 유지.
+- 변경: public/admin.html, public/admin-home.css, src/early-expert-admin.js, tests/mobile-controls-browser.mjs.
+- 격리 검수: 320/360/390/430/768/1440 폭, 넘침/터치/입력크기, 실패 초안 유지, 처리 payload 보존. 관리자 접근·계정변경·로그아웃 12건 통과.
+- 운영 DB/권한/실제 심사/요금/알림 미변경. 운영 신청 승인은 실행하지 않음.
+- 코드 검수와 운영 배포 상태는 아래 후속 기록 참고.
