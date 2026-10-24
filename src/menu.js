@@ -95,7 +95,7 @@ function guest() {
   const actions = node('div', '', identity, 'menu-login-actions');
   for (const [label, mode] of [['일반회원 로그인', 'login'], ['전문가 로그인', 'expert'], ['회원가입', 'signup']]) {
     const link = node('a', label, actions, mode === 'signup' ? 'btn' : 'btn ghost');
-    link.href = authURL(mode==='expert'?'/partner.html?roleIntent=expert':'/map.html?view=experts&profession=planner&help=claim&purpose=claim',mode==='expert'?'login':mode);
+    link.href = authURL(mode==='expert'?'/partner.html?roleIntent=expert':'/map.html?view=experts&profession=planner&help=claim&purpose=claim',mode==='expert'?'login':mode,mode==='expert'?'expert':mode==='login'?'customer':'');
   }
   publicMenus();
 }

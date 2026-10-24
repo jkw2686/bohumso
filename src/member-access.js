@@ -13,7 +13,11 @@ export function safeNext(value,fallback='/account.html'){
 export function rememberAction(next){let path=safeNext(next);const url=new URL(path,'https://internal.invalid');if(/^\/(requests|urgent)(\.html)?$/.test(url.pathname)){url.search=requestParams(url.search).toString();path=url.pathname+url.search+url.hash;}try{sessionStorage.setItem(pendingKey,JSON.stringify({next:path,at:Date.now()}));}catch{}return path;}
 export function pendingAction(){const query=new URLSearchParams(location.search).get('next')||new URLSearchParams(location.search).get('returnTo');if(query)return rememberAction(query);try{const value=JSON.parse(sessionStorage.getItem(pendingKey)||'null');if(value&&Number.isFinite(value.at)&&Date.now()>=value.at&&Date.now()-value.at<2*60*60*1000)return safeNext(value.next);clearAction();}catch{}return '/account.html';}
 export function clearAction(){try{sessionStorage.removeItem(pendingKey);sessionStorage.removeItem('bohumso-booking-return');sessionStorage.removeItem('bohumso-signup-choice');sessionStorage.removeItem('bohumso-signup-intent');}catch{}}
-export function authURL(next,mode='signup'){return '/'+(mode==='login'?'login':'signup')+'.html?next='+encodeURIComponent(safeNext(next));}
+export function authURL(next,mode='signup',as=''){return '/'+(mode==='login'?'login':'signup')+'.html?next='+encodeURIComponent(safeNext(next))+(as?'&as='+encodeURIComponent(as):'');}
+// 어느 로그인 버튼으로 들어왔는지(as). 로그인 화면에서 주소로 들어오고, 계정 화면에서 읽는다.
+const roleKey='bohumso-login-as';
+export function loginRole(){const v=new URLSearchParams(location.search).get('as');if(v==='customer'||v==='expert'){try{sessionStorage.setItem(roleKey,v);}catch{}return v;}try{return sessionStorage.getItem(roleKey)||'';}catch{return '';}}
+export function clearLoginRole(){try{sessionStorage.removeItem(roleKey);}catch{}}
 export function loginCallback(origin=location.origin,next=pendingAction()){return new URL('/account.html?next='+encodeURIComponent(safeNext(next)),origin).href;}
 export function accountReturn(next=pendingAction()){return '/account.html?next='+encodeURIComponent(next==='/account.html'?'/map.html':safeNext(next));}
 let service;

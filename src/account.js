@@ -1,5 +1,6 @@
 import {mountAdminMfa} from './admin-mfa.js';
-import {isExpertMember,roleDestination} from './role-routing.js';
+import {isExpertMember,roleDestination,roleMismatch} from './role-routing.js';
+import {loginRole,clearLoginRole} from './member-access.js';
 import {mountMemberContact} from './member-contact.js';
 import {mountAdminMembers} from './admin-member-directory.js';
 import {mountAdminHomeNavigation} from './admin-home-navigation.js';
@@ -36,6 +37,18 @@ import {renderProfileEditor} from "./profile-editor.js";
 import {openMenuDestination} from './menu-destinations.js';
 import {memberService,memberConfig,memberState,invalidateMemberState,MEMBER,pendingAction,rememberAction,clearAction,authURL,accountReturn} from "./member-access.js";
 const $=id=>document.getElementById(id);const mode=document.body.dataset.accountPage;
+loginRole(); // 로그인 화면에서 들어온 구분값을 먼저 기억해 둔다.
+function roleNotice(text,actions){
+ const host=$("accountContent");if(!host)return;
+ host.hidden=false;host.replaceChildren();
+ const card=document.createElement('section');card.className='card';card.dataset.roleNotice='';
+ const p=document.createElement('p');p.textContent=text;card.append(p);
+ for(const [label,fn,primary] of actions){const b=document.createElement('button');b.type='button';b.textContent=label;b.className='btn'+(primary?'':' ghost');b.onclick=fn;card.append(b);}
+ host.append(card);
+ document.querySelector('h1').textContent='로그인 확인';
+ document.querySelector('.account-links')?.setAttribute('hidden','');
+ const form=$("membershipForm");if(form)form.hidden=true;
+}
 let client,config,user,membership;
 let justCompleted=false,adminReady=false;
 const status={pending:"심사 대기",approved:"승인 완료",rejected:"반려",suspended:"활동 정지",withdrawn:"신청 철회"};
@@ -58,7 +71,15 @@ async function renderAccount(){
  if(contact.available&&!contact.complete){$("membershipForm").hidden=true;document.querySelector('.account-links').hidden=true;document.querySelector('h1').textContent='회원정보 보완';$("logout").onclick=async()=>{await client.auth.signOut();location.assign('/login.html');};return;}
  if(config.earlyAccess&&!membership.member&&await finishPublicSignup(client)){justCompleted=true;await refreshMembership();}
  if(config.closedBeta&&betaCode()&&!membership.beta){const done=await renderBetaFinish({client,root:$("accountContent"),onDone:async()=>{await refreshMembership();if(membership.beta_role==='EXPERT'){location.assign('/partner.html?next='+encodeURIComponent(pendingAction()));return;}await renderAccount();}});if(done){$("identity").textContent=user.email||user.phone||"내 계정";document.querySelector(".account-links").hidden=true;$("membershipForm").hidden=true;$("logout").onclick=async()=>{await client.auth.signOut();location.assign('/login.html');};return;}}
- const originalNext=pendingAction(),next=roleDestination(membership,originalNext)||originalNext;if(membership.member&&next!='/account.html'){clearAction();location.replace(next.startsWith('/partner.html?roleIntent=expert')&&membership.profession==='office'?'/partner.html?profession=office':next);return;}
+ const originalNext=pendingAction(),next=roleDestination(membership,originalNext)||originalNext;
+ if(membership.member&&next!='/account.html'){
+  const go=()=>{clearLoginRole();clearAction();location.replace(next.startsWith('/partner.html?roleIntent=expert')&&membership.profession==='office'?'/partner.html?profession=office':next);};
+  // 누른 로그인 버튼과 계정 종류가 다르면 이동하지 않고 안내만 한다. 로그아웃시키지 않는다.
+  const mismatch=roleMismatch(loginRole(),membership);
+  if(mismatch==='expert_account'){roleNotice('전문가로 등록된 계정입니다. 전문가 로그인으로 이용해 주세요.',[['전문가 화면으로',go,true]]);return;}
+  if(mismatch==='customer_account'){roleNotice('일반회원으로 가입된 계정입니다.',[['전문가로 등록하기',()=>{clearLoginRole();clearAction();location.assign('/partner.html?roleIntent=expert');},true],['일반 화면으로',go]]);return;}
+  go();return;
+ }
  try{sessionStorage.removeItem("bohumso-signup-intent");}catch{}
  document.querySelector('h1').textContent=membership.member?'내 계정':'가입 마무리';
  document.querySelector('.account-links').hidden=!membership.member;
