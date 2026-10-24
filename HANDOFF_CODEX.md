@@ -1,26 +1,15 @@
 # 인수인계
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 '다음 할 일'부터 진행.
 
-## 2026-10-24 관리자·가입·연락처 보호 통합 작업
-- 최신 사용자 기준을 docs/member-admin-policy-20261024.md로 반영. 이전 본인확인 의무화 지침 대체.
-- 관리자 홈 회원/상담 요약·최대5 할 일·4개 메뉴, 회원 검색/필터/25명 페이지/상세/개인정보 처리 기록. 실패를 0으로 표시하지 않음.
-- member-contact: 로그인 계정에 이름/번호 직접 저장, 필수 수집 동의, 기존 값 채움, 번호 변경 확인상태 초기화. social/email 인증은 기존 그대로; 신분증/주민번호/필수 SMS/외부 본인확인 미추가.
-- 상담 수락 후 담당자 통화 결과 기록, 다른 전문가 접근 차단, 회당 재시도 중복 방지 유지, 계정별 10회/시간 신청 제한. 전화 조율/보험소 방문예약 유지.
-- SQL079~083: 연락처 별도 private 테이블/RLS, admin support/statistics 분리, admin AAL2, 자료 endpoint MFA 검사, 가입 보완 gate. 운영 미적용.
-- 개인정보 안내 개정 후보와 이전 고지 보관. 새 연락처 탈퇴 삭제; 기존 상담·서류 임의삭제 안 함.
-- 신규 핵심 파일: src/member-contact.js, src/admin-member-directory.js, src/admin-mfa.js, supabase/079~083, tests/member-contact.test.mjs, tests/member-admin-browser.mjs. 기존 account/admin nav/workflow/role/서류 endpoint 연결 수정.
-- 보존: public/help 6파일, outputs/signup-entry-20261018/, 빌드산출 public/assets/. 다른 작업분 포함 커밋 금지.
-
-### 검증/운영 상태
-- 격리 DB: 계정 격리, 같은 번호 별도 회원 허용, 수락 전 연락처 비공개, 번호 변경 초기화, 반복요청 제한, 관리자 MFA/통계 접근 차단, 목록/합계/페이지 일치, 탈퇴 새연락처 삭제 검증.
-- 브라우저: 360/390/430/1280px 회원/요약/상세/페이지/조회실패/보완저장/MFA 잘못된코드 차단 검증. artifacts/member-admin/*.png. 실제 운영 회원 데이터나 휴대전화 조작 아님.
-- 전체 테스트 최종 결과: 원격 verify #284 성공: npm ci / npm run build / npm test 모두 통과, 224 pass · 0 fail · 0 skip. 코드 445571ad297e3075d960c3e673bb229d9543f626. https://github.com/jkw2686/bohumso/actions/runs/40089272392 . 로컬 메모리 부족 파일도 단독 재실행 5/5 통과. 모바일 역할 3유형×3폭 9/9 및 관리자/연락처 4폭 검수 통과.. 마지막 빌드 성공(운영 배포 없음).
-- 실제 Netlify Supabase 설정 이름 존재 확인, 키값 비출력. 운영 Auth rate-limit/CAPTCHA/TOTP 설정/운영 RLS 적용상태는 미확인.
-
-### 다음 할 일
-1. 검증 완료. 운영 DB와 관리자 MFA 준비 확인 후 079~083 및 프런트/개인정보 고지를 함께 릴리스.
-2. 운영과 동일한 migration ledger 및 관리자 대표 제한 SQL 기준으로 079~083 적용 검토. migration과 프런트/개인정보 고지는 함께 배포; 현재 운영 서비스는 이전 배포 그대로.
-3. 운영 MFA TOTP 활성 및 대표 계정 등록/복구 준비 확인. 통계 담당자 권한은 실제 담당자 확인 후 지정(현재 실계정 권한 변경 없음).
-4. 운영 Auth rate-limit/CAPTCHA/Storage 정책 읽기 검증. 본인확인 연동은 후속 별도 과제.
-5. 기존 상담/자격서류 전체 자동파기, 법정 보관기간 근거, 기존 모든 다운로드/접속로그 포괄 검증은 남음. 화면 구현만으로 법적 준수/본인확인 완료 보고 금지.
-- 이충경 계정/기록 접근 금지. PROJECT_BRIEF.md/CLAUDE.md/design-system.md 준수. 기존 이미지·지도·브랜드·요금 유지.
+## 2026-10-24 운영 적용 및 배너 최종 배포
+- 운영 코드 ad0c2be757bbf2e497bcbd6af2cba6e7a62de404 / Netlify 6adc971ef3f63652b2723230 ready. https://bohumso.netlify.app/ 실제 HTML 새 배너 확인.
+- 홈/지도 배너: '청구까지,' 뒤 명시적 줄바꿈, '가까운 전문가' nowrap. 글꼴·색·사진 유지. 운영 HTML/CSS/이미지 360/390/430/1280 검수, 목록 응답은 격리해 개인정보 조회 회피. artifacts/release-20261024/banner-*.png.
+- PDF: output/pdf/우리보험소-홈배너-수정지침.pdf. 한글 원본 폰트 사용, Poppler PNG 렌더 시각 확인. 의료·회원 개인정보 포함 안 함.
+- Supabase xyexphhspykwwlhfokfl: 사용자 요청으로 대시보드 열어 기존 로그인 세션 사용. 회원/상담 원문 조회 없이 메타데이터 점검. 운영 079~083 적용 후 ROLLBACK 검증 성공 → 동일 5개 SQL 한 트랜잭션 COMMIT/이력 저장/스키마 reload 완료.
+- 최종 DB 확인: migration_count=5, 새 private 테이블 RLS=true, MFA enforced=true, anonymous contact/admin execution=false, private buckets=true. 실제 익명 RPC 401, private schema 406, 관리자 초기 HTML 차단. artifacts/release-20261024/db-applied.png.
+- 실제 Auth 설정 읽기 확인: TOTP Enabled, 최대10개, AAL1 15분 제한 ON; SMS30/h, refresh150/5min, OTP30/5min, signup/signin30/5min, 메일 최소60초. CAPTCHA OFF. 설정값 변경하지 않음. 계정별 실제 인증 앱 등록/로그인은 본인 조작 필요, 대리 인증 없음.
+- GitHub DATABASE_URL Secret 미설정. 이전 migrate 워크플로 성공은 Apply 단계 SKIPPED였음. 이번에는 관리 화면으로 수동 적용했으므로 '자동 마이그레이션 성공'으로 보고하지 않음. 감사용 임시 workflow 제거, read-only CLI 감사 스크립트는 유지. migrate 채택 기준078로 변경해 미적용072/073 등 과거 SQL을 자동 실행하지 않도록 보호.
+- Netlify 전체 환경변수 조회는 자동 승인 검토에서 거절됨(비밀값 반환 우려). 우회하지 않고 DB관리 UI/공개설정/기존 CI 사용. 비밀값 출력·계정 병합·실상담 생성·수락·개인정보 backfill 없음.
+- 검수: verify #284 및 배너 포함 #285 모두 성공(224 pass/0fail/0skip), 최종 운영 #286 결과 성공: npm ci / npm run build / npm test, 224 pass·0 fail·0 skip. https://github.com/jkw2686/bohumso/actions/runs/40090263466. 로컬 build 및 migration-plan 7개/배너4폭 통과.
+- 후속: 실제 관리자 MFA 앱 연결·로그인 확인, 원할 경우 GitHub DATABASE_URL Secret을 소유자가 설정. 전체 과거 보유자료 자동파기/법정 근거 검토, 기존200건 이후 상담 상세 확장, 보험소/즉시방문 동일 시간당 제한 확대는 기존 후속 범위 유지. 법적 준수/실명 인증 완료를 뜻하지 않음.
+- 작업 중 이충경 계정·기록 접근하지 않음. 기존 public/help 6파일/outputs 작업분 보존.
