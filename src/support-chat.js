@@ -103,8 +103,8 @@ export async function mountSupportChat({client,host,userId,initialKind='INQUIRY'
  chatIcon(newHeader,'×','대화창 닫기',()=>show('history'));
  el('p','문의가 저장되면 대화창이 닫혀요.',createPane).className='support-chat-hint';
  const welcome=el('div',undefined,createPane);welcome.className='support-chat-welcome';
- el('span','보',welcome).className='support-avatar';el('h3','무엇을 도와드릴까요?',welcome);el('p',chatNotice,welcome);el('p',sensitiveNotice,welcome).id='supportNewSensitive';
- el('small','보험소 이용 문의를 남겨 주세요. 전문가 상담·예약 신청과는 별개예요.',welcome);
+ el('h3','어떤 점이 불편하셨나요?',welcome);el('p','확인 후 이 대화창으로 답변드려요.',welcome);el('p',sensitiveNotice,welcome).id='supportNewSensitive';
+ const newGuide=el('details',undefined,welcome);el('summary','문의 전 확인',newGuide);el('p',chatNotice,newGuide);el('p','보험소 이용 문의를 남겨 주세요. 전문가 상담·예약 신청과는 별개예요.',newGuide);
  const newFooter=el('div',undefined,createPane);newFooter.className='support-chat-footer';
  const form=el('form',undefined,newFooter);form.id='supportCreate';
  const options=el('details',undefined,form);options.className='support-chat-options';el('summary','문의 유형·개인정보 요청 (선택)',options);options.open=initialKind!=='INQUIRY';

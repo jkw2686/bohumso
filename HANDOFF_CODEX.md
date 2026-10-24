@@ -1,18 +1,13 @@
 # 인수인계
 이어받는 AI는 PROJECT_BRIEF.md, CLAUDE.md, design-system.md, HANDOFF.md를 먼저 읽고 git pull 후 다음 할 일부터 진행.
 
-## 2026-10-24 소비자 예약 간소화
-- src/booking-overview.js: 할 일 없을 때 상시 문구 제거, 상세의 지역 반복 제거, 취소·기타 처리 접기. 권한/상태/조회 범위 유지.
-- src/workflow.js: 고객 상세의 이름·시간·상태 반복 제거, 보험소 주소와 일정 단계 유지.
-- public/service-clarity.css: 소비자 화면 범위의 여백/카드/주 버튼/알림·검색 보조 영역 정리. 지도·전문가 화면 전역 스타일 미변경.
-- tests/booking-overview-browser.mjs: 접힌 취소 접근 및 중복 상태 없음 검증. 5폭/200%/조회실패와0건/더보기/뒤로/필터/저장실패/기존 일정확정·취소 통과. expert-phone-connection-browser 4폭/요청·수락·전화 통과. npm run build 성공.
-- 캡처 artifacts/booking-overview/before-calm-390.png → list-390.png (동일 격리 데이터). 운영 실예약 변경/전화/푸시 없음. DB·권한·과금·알림 정책 변경 없음.
-- 직전 사용자가 실제 상담 요청/수락 양측 알림 수신, 클릭 화면 및 전화 앱 열림을 직접 확인했다고 보고함. 기기 검증의 근거는 사용자 확인이며 에이전트 직접 관측 아님.
-- 배포: Git CD 진행, 결과 후속 기록. 기존 help6 줄바꿈/outputs 제외.
+## 2026-10-24 알림·고객센터 추가 간소화
+- 알림 목록: 제목·KST 시간·예약 확인 버튼 중심, 본문/읽음 여부는 알림 내용에 접기. 전체 시간은 time datetime/title로 보존. 자동 읽음·발송·권한 변경 없음.
+- 고객센터 새 문의: 간단한 질문·답변 안내·민감정보 주의사항, 세부 이용 안내만 접기. 문의 유형/개인정보 요청/보내기/초안/닫기 유지.
+- 변경: src/booking-notifications.js, src/support-chat.js, public/calm-pages.css 및 기존 브라우저 검수2개. 계정/메뉴 기존 구조 확인, 불필요한 재구성 없음.
+- 고객센터4폭/200%/초안보존/전송없음, 프로덕션 build 통과. 알림5폭/권한·로그인복귀·더보기·실패재시도 검사 진행. 운영 고객 데이터 조작·DB·요금·지도·예약 처리 변경 없음.
+- 전후/검수 캡처 artifacts/notifications/before-detail-calm-390.png, list-390.png, artifacts/calm-pages/composer-390.png (격리 테스트).
 
-다음 할 일: 배포 ready 및 운영 CSS 반영 확인. 별도 기능 미완성 없음. 사용자 새 요청 전 DB 조작 불필요.
+다음: 알림 검수 통과 확인 후 기존 Git CD 배포, ready/운영 파일 대조. 기존 help6줄바꿈·outputs 보존.
 
-## 배포 검증 완료
-- 운영 코드 f54d7c4fc055ff07aac29f322a8b378c19140dc0, Netlify6adc725afceecbda8dcdce78 ready, 2026-10-24T08:55:04.716Z. 운영 CSS HTTP200/로컬 파일 일치.
-- 로그인 운영 /requests에서 현재/지난 예약, 불필요한 상시 문구 없음, 접힌 조건 검색, 실제0건 정상 표시 확인. 운영 계정에는 소비자 예약이 없어 카드 내용은 격리 데이터 검수 결과로 구분. production-calm.png 저장.
-- 완료. 다음 사용자 요청부터 진행. 이 문서 커밋은 배포 생략.
+- 최종 알림 검수 통과: 5폭, 상세 열기/접기, 10→20→25 더보기, 실패/지연 재시도, 본인예약 이동·포커스, 타인예약 차단, 로그인복귀, 읽음/예약생성 API 호출 없음.
