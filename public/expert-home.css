@@ -74,3 +74,8 @@
 .expert-simple .expert-home-profile h2{margin:0 0 var(--space-2,8px);font-size:var(--text-lg,20px);line-height:1.35}
 .expert-simple .expert-home-profile p{margin:0 0 var(--space-2,8px)}
 .expert-simple .expert-home-profile .text-button{padding:0;min-height:44px;border:0;justify-content:flex-start;font-weight:600}
+/* Compact identity: photo, name/profession and detail action in one row. */
+.expert-simple .expert-screen-content>.expert-home-profile{grid-template-columns:64px minmax(0,1fr) auto;gap:var(--space-3,12px)}
+.expert-simple .expert-home-profile .expert-avatar{width:64px;height:64px}
+.expert-simple .expert-home-profile>.text-button{white-space:nowrap}
+.expert-simple .expert-home-profile h2{overflow-wrap:anywhere}
