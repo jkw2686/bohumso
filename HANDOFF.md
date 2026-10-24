@@ -1244,3 +1244,10 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 - code1de0c9a09e1bff8d71ce2a7455078047608ca59c, Netlify6adc773076ab551515fd09da ready.
 - 운영 admin-home.css/assets/account.js HTTP200 및 검수본 일치.
 - https://bohumso.netlify.app/admin
+
+## 최종 검증 완료
+- 수정 커밋 1de0688be6a60ed9055eae2fcf6170c54fcd9f83.
+- https://github.com/jkw2686/bohumso/actions/runs/40081743117 (verify #274): success. npm ci, npm run build, npm test 성공. 220 tests /220 pass /0 fail /0 skipped. 원격 실제 로그 확인.
+- 로컬 Node22도 실패 대상 2건을 포함해 통과 진행; 전체 판정은 완료된 CI 실행 기준. CI 성공 후 중복 로컬 실행은 자원 절약을 위해 중단. Node24 메모리 오류와 구분.
+- 기존 관리자 변경과 다른 작업분 보존. 테스트 삭제/skip/제품 로직 변경 없음.
+- 요청 작업 완료. 다음 AI는 새 요청부터 진행.
