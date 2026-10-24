@@ -8,3 +8,8 @@
 - 전후/검수 캡처 artifacts/notifications/before-detail-calm-390.png, list-390.png, artifacts/calm-pages/composer-390.png (격리 테스트).
 
 - 최종 알림 검수 통과: 5폭, 상세 열기/접기, 10→20→25 더보기, 실패/지연 재시도, 본인예약 이동·포커스, 타인예약 차단, 로그인복귀, 읽음/예약생성 API 호출 없음.
+
+## 운영 배포 완료
+- code ae23a61d61ee8277ccdbf835538ec1b0ccbb5de5 / Netlify6adc73f2ca9bb7db16cbf473 ready / 2026-10-24T09:01:51.665Z.
+- calm-pages.css HTTP200/로컬일치; assets/account.js 및 rights.js HTTP200/줄바꿈·chunk명 정규화 후 검수 빌드 일치. 압축 JS는 한글 이스케이프로 문자열 직접 검색 대신 전체파일 대조 사용.
+- 구현·격리검수·운영파일 배포 확인 완료. 실제 문의 전송/예약생성/알림발송 없음. 모바일 캡처는 테스트 데이터. 다음 사용자 요청부터 진행.
