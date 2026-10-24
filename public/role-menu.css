@@ -1,0 +1,4 @@
+.role-expert-nav{position:fixed;bottom:0;left:0;right:0;display:grid;background:var(--card,#fff);border:1px solid var(--border);border-radius:var(--radius,16px) var(--radius,16px) 0 0;padding:8px;z-index:1000}
+.role-expert-nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:48px;text-decoration:none;color:var(--brand-ink);font:inherit;font-size:var(--text-sm,14px)}
+.role-expert-nav .ui-icon{width:24px;height:24px}
+@media(min-width:900px){.role-expert-nav{max-width:720px;margin-inline:auto}}

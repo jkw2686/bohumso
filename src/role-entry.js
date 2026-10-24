@@ -5,8 +5,10 @@ const lock=()=>{document.documentElement.dataset.roleCheck='pending';if(document
 const release=()=>{document.documentElement.dataset.roleCheck='ready';document.getElementById('roleLoading')?.remove();};
 function menu(m){
  const expert=isExpertMember(m);window.bohumsoMemberRole=expert?'expert':'consumer';
+ if(expert){if(!document.querySelector('[data-role-menu-style]')){const css=document.createElement('link');css.rel='stylesheet';css.href='/role-menu.css';css.dataset.roleMenuStyle='';document.head.append(css);}if(!document.querySelector('[data-customer-nav]')){const nav=document.createElement('nav');nav.className='customer-nav';nav.dataset.customerNav='home';nav.dataset.roleCreated='';nav.setAttribute('aria-label','전문가 메뉴');document.body.append(nav);}document.body.classList.add('has-bottom-nav');}
+ else document.querySelectorAll('[data-role-created]').forEach(n=>n.remove());
  document.querySelectorAll('[data-customer-nav]').forEach(nav=>{
- if(!expert){nav.style.removeProperty('grid-template-columns');window.dispatchEvent(new Event('bohumso-role-menu'));return;}
+ nav.classList.toggle('role-expert-nav',expert);if(!expert){nav.style.removeProperty('grid-template-columns');window.dispatchEvent(new Event('bohumso-role-menu'));return;}
  const links=[['home','홈','/partner.html'],['calendar','상담 요청',m.partner_status==='approved'?'/partner-work.html':'/partner.html'],['person','내 정보','/partner.html?screen=settings']];
  nav.style.gridTemplateColumns='repeat(3,minmax(0,1fr))';nav.replaceChildren();for(const [icon,label,href]of links){const a=document.createElement('a');a.href=href;a.innerHTML=window.uiIcon?.(icon)||'';const span=document.createElement('span');span.textContent=label;a.append(span);nav.append(a);}
  });
