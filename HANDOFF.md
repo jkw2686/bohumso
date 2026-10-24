@@ -1157,3 +1157,13 @@ QA_ASSET_ORIGIN=https://bohumso.netlify.app 로 실행한 notifications-browser.
 - docs/promotion-booking-20261024.md: 변경 파일·검사·한계·전후 캡처. build와 격리 DB/신청·예약 목록·가입·지도 검수. 별도 staging 미발견; 실제 다중 PostgreSQL 연결 부하 시험/실휴대전화 새 플로우 미확인.
 - 다음: 최종 브라우저 통과 확인 → 코드 main push/Git CD → ready/커밋 대조 → 운영 새 관리자 화면 읽기 전용 확인. 적용된 076/077을 되돌려 074를 재실행하지 말 것.
 - PROJECT_BRIEF.md·CLAUDE.md·design-system.md 준수, 최신 직접 지시 우선. 운영 계정/실예약/전화번호 조회 확대 금지. 제외 사용자의 기록 접근 금지. 초기 help6 파일 줄바꿈 변경·outputs/signup-entry-20261018 보존/스테이징 제외.
+
+## 운영 배포 완료 (2026-10-24 15:19:06 KST)
+- 코드 d5bea90eb81efe3d677e30025b8f90104144635d, Netlify 6adc4dcdf5ab53ff6210f871 ready/커밋 일치, published_at 2026-10-24T06:19:06.110Z. Git CD로 게시.
+- 운영 account.js/promotion.js HTTP200, 줄바꿈·해시 chunk명 정규화 후 검수 빌드와 일치. admin-promotions/promotion/recruitment-regions HTTP200/브랜드·진입 번들 확인.
+- 실제 로그인된 운영 관리자 계정으로 /admin-promotions 진입: 무료기간·1명/N명/무제한·마감일 3개 입력, 만들기, 기존 링크0건 확인. 만들기/중지/혜택 적용/실예약/발송/결제 실행 없음. artifacts/promotion/admin-production.png 증거.
+- 최종 promotion-browser 신규 동의 완료/기존 복귀/4폭/관리자 구분 및 booking-overview 5폭·200%·권한/새로고침 검수도 통과. 지도 18조합 및 예약 신청 6크기/200%, DB 고객 최종확인·제안 미해결 차단 통과.
+- 사용자 링크: https://bohumso.netlify.app/map / 관리자만 https://bohumso.netlify.app/admin-promotions / https://bohumso.netlify.app/recruitment-regions . 가입자에게는 관리자 링크가 아니라 생성 후 복사한 /promotion?promotion=... 주소를 전달.
+- 이번 요청의 구현·DB·운영 배포 완료. 남은 실사용 확인: 실제 휴대전화/실회원 새 요청 왕복, 실제 다중 DB 연결 부하 시험(격리 큐와 구분). 운영 데이터를 시험 목적으로 새로 만들지 않았음.
+
+다음 작업은 새 사용자 요청 기준으로 진행. 이번 문서 저장 커밋은 [skip netlify] [skip ci]이며 운영 코드는 d5bea90을 유지한다.
