@@ -23,3 +23,11 @@ public/expert-home.css, tests/expert-home-browser.mjs, tests/optional-profile-br
 - 전: artifacts/expert-settings-before-home.png, expert-settings-before-schedule.png
 - 후(격리 모바일): artifacts/expert-home/home-390.png, detail-{screen}-390.png
 - 운영 배포 결과는 HANDOFF 최신 항목 참고.
+
+## 2026-10-24 14:25 KST — 세부 설정 간소화 배포 완료
+- code3d01bb757a72a8cfd8fc43c7f801b3732eeab9f9 / Netlify6adc4150f3f63652b260e870 ready / 2026-10-24T05:25:52.264Z.
+- 홈 프로필 가운데 정렬, 설정 단독 편집·저장1개, 상담 분야/요일 격자, 지역 한 화면, 알림/방문 설명 접기, 구독 기존 상품/이력 접기. 자격→등록정보 수정 경로 및 기존 해시 설정 링크 복원.
+- 운영 홈/상담 설정 로그인 상태로 표시 확인. CSS/account빌드 내용 일치(줄바꿈/청크명 제외). 운영 설정 저장·예약처리·자료업로드·과금·푸시발송 없음. DB/권한/요금정책 변경 없음.
+- 설정9화면4폭+등록정보/최종격자4폭, 주요 저장/실패입력/뒤로/200%, 프로필사진 전체·기존소개보존, 알림5폭 회귀, build 통과. docs/expert-settings-20261024.md 참고.
+- 전후실화면 artifacts/expert-settings-{before,after}-{home,schedule}.png. 격리모바일 artifacts/expert-home/detail-*-390.png.
+- 현재 요청 완료. 다음 요청부터 진행. PROJECT_BRIEF/CLAUDE/design-system/HANDOFF 먼저 읽기. 기존 생성 help6개 줄바꿈 변경은 포함하지 않음.
