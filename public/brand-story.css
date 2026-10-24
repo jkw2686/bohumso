@@ -1,0 +1,13 @@
+.brand-story{position:relative;isolation:isolate;overflow:hidden;background:#f4f1ec;color:var(--brand-ink,#01404b);border-radius:var(--radius,16px);margin:0 0 var(--space-4,16px);display:flex;align-items:center;min-width:0}
+.brand-story img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:75% 50%;z-index:-2}
+.brand-story>div{box-sizing:border-box;padding:var(--space-4,16px);width:66%;background:linear-gradient(90deg,rgba(249,247,243,.97) 0%,rgba(249,247,243,.88) 74%,transparent 100%)}
+.brand-story h2{margin:0 0 8px;font-size:24px;line-height:1.35;font-weight:600;word-break:keep-all}
+.brand-story p{margin:0;font-size:14px;line-height:1.5;word-break:keep-all}
+.brand-story-auth{min-height:220px}
+.brand-story-family{min-height:170px}
+.brand-story-family h2{font-size:20px}
+.map-page>.brand-story{margin:8px 12px;flex-shrink:0}
+.map-page>.brand-story>div{max-width:620px}
+@media(min-width:700px){.brand-story-auth{min-height:250px}.brand-story>div{padding:24px}.brand-story-family h2{font-size:24px}}
+@media(max-width:390px){.brand-story-auth{min-height:200px}.brand-story h2{font-size:22px}.brand-story-family h2{font-size:20px}.brand-story-family>div{width:74%}}
+@media(max-height:740px){.brand-story-auth{min-height:160px}}

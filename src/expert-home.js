@@ -31,7 +31,7 @@ export async function renderExpertHome({client,host,user,membership,config,messa
  let current=true;client.auth.onAuthStateChange((event,session)=>{if(event!=='INITIAL_SESSION'&&session?.user?.id!==user.id){current=false;host.replaceChildren();el('p','계정이 변경되었습니다. 다시 로그인해 주세요.',host);}});
  if(screen==='settings'){
  const rows=[['프로필 수정','profile',p?.display_name||'입력 필요'],['상담시간·방식','schedule',p?`${p.start_hour??9}:00–${p.end_hour??18}:00`:'미설정'],['활동지역','area',p?.primary_area||'미설정'],['연락처·공개 설정','contact',''],['알림 설정','notifications',''],['자격 확인','qualification',verified(p)?'확인 완료':p?.status==='VERIFICATION_PENDING'?'심사 중':'확인 필요'],...(p?.profession==='tax'?[]:[['구독·무료혜택','subscription','']])];
- const values=new Map();for(const [name,route,value]of rows){const a=link(root,'',url(route));a.className='expert-setting-row';el('span',name,a);values.set(route,el('small',value+' ›',a));}const results=await Promise.allSettled([readRpc(client,'expert_public_contact',{operation:'get'}),readRpc(client,'reservation_notification_settings',{operation:'get',payload:{}})]);if(!current)return true;const contact=results[0],notification=results[1];values.get('contact').textContent=contact.status==='fulfilled'?(contact.value.public?'공개 중 ›':'비공개 ›'):'확인 필요 ›';values.get('notifications').textContent=notification.status==='fulfilled'?(notification.value.enabled?'켜짐 ›':'꺼짐 ›'):'확인 필요 ›';return true;
+ const values=new Map();for(const [name,route,value]of rows){const a=link(root,'',url(route));a.className='expert-setting-row';el('span',name,a);values.set(route,el('small',value+' ›',a));}if(p?.profession==='planner')link(root,'청구 자료실 ›','/claim-resources.html').className='expert-setting-row';const results=await Promise.allSettled([readRpc(client,'expert_public_contact',{operation:'get'}),readRpc(client,'reservation_notification_settings',{operation:'get',payload:{}})]);if(!current)return true;const contact=results[0],notification=results[1];values.get('contact').textContent=contact.status==='fulfilled'?(contact.value.public?'공개 중 ›':'비공개 ›'):'확인 필요 ›';values.get('notifications').textContent=notification.status==='fulfilled'?(notification.value.enabled?'켜짐 ›':'꺼짐 ›'):'확인 필요 ›';return true;
  }
  if(screen==='profile'||screen==='contact'){
  await (screen==='profile'?renderOptionalProfile:renderPublicContact)(client,root,{standalone:true});if(screen==='contact')link(root,'예약 연락처 변경','/phone-verification.html?next='+encodeURIComponent(url('contact'))).className='text-button';
@@ -56,7 +56,8 @@ export async function renderExpertHome({client,host,user,membership,config,messa
  if(!current)return true;
  window.BohumsoProfile?.avatar(profile,optional||{});
  const identity=el('div',undefined,profile);el('h2',optional?.name||p?.display_name||'내 프로필',identity);el('p',p?.profession==='tax'?'세무사':p?.profession==='planner'?'보험설계사':'등록 전',identity);
- const preview=el('button','내 프로필 보기',identity);preview.type='button';preview.className='text-button';preview.onclick=async()=>{preview.disabled=true;try{const catalog=await readRpc(client,'planner_catalog',{area:'',wanted:''});if(!current)return;const published=catalog.planners?.find(x=>x.id===user.id&&!x.is_sample);if(published)window.BohumsoProfile.openDetail(published,{});else status.textContent='현재 고객 지도에 공개된 프로필이 없습니다. 자격 확인과 지도 표시 설정을 확인해 주세요.';}catch{status.textContent='프로필을 불러오지 못했습니다.';}finally{preview.disabled=false;}};
+ const preview=el('button','상세 보기',identity);preview.type='button';preview.className='text-button';preview.onclick=async()=>{preview.disabled=true;try{const catalog=await readRpc(client,'planner_catalog',{area:'',wanted:''});if(!current)return;const published=catalog.planners?.find(x=>x.id===user.id&&!x.is_sample);if(published)window.BohumsoProfile.openDetail(published,{ownProfile:true});else status.textContent='현재 고객 지도에 공개된 프로필이 없습니다. 자격 확인과 지도 표시 설정을 확인해 주세요.';}catch{status.textContent='프로필을 불러오지 못했습니다.';}finally{preview.disabled=false;}};
+ profile.style.cursor='pointer';profile.onclick=e=>{if(!e.target.closest('button'))preview.click();};
  const activity=el('section',undefined,root);activity.className='expert-home-activity';el('h2','활동 상태',activity);
  const mapRow=el('div',undefined,activity);mapRow.className='expert-toggle-row';el('span','지도에 표시',mapRow);const toggle=el('button','확인 중',mapRow);toggle.type='button';toggle.setAttribute('role','switch');toggle.setAttribute('aria-label','지도에 표시');toggle.disabled=true;
  const mapStatus=el('small','',activity);mapStatus.setAttribute('role','status');let shown=false;
@@ -64,16 +65,16 @@ export async function renderExpertHome({client,host,user,membership,config,messa
  try{const v=await readRpc(client,'expert_map_visibility',{operation:'get',enabled:null});if(current){paint(v.enabled);toggle.disabled=!v.can_change;if(!v.can_change)link(activity,'자격 확인 필요 · 확인하기',url('qualification'));}}catch{toggle.textContent='확인 필요';link(activity,'지도 설정 확인하기',url('settings'));}
  toggle.onclick=async()=>{if(toggle.disabled)return;toggle.disabled=true;try{const result=await client.rpc('expert_map_visibility',{operation:'set',enabled:!shown});if(result.error)throw result.error;const v=result.data;if(current){paint(v.enabled);mapStatus.textContent='저장했습니다.';}}catch{mapStatus.textContent='저장하지 못했습니다. 기존 상태를 유지합니다.';}finally{if(current)toggle.disabled=false;}};
  if(membership.partner_status==='approved'&&p?.profession==='planner')await renderInstant(client,activity,{compact:true});
- const reservations=el('section',undefined,root);reservations.className='expert-home-reservations';el('h2','예약',reservations);
+ const reservations=el('section',undefined,root);reservations.className='expert-home-reservations';el('h2','상담 요청',reservations);
  if(membership.partner_status==='approved')try{
  const w=await readRpc(client,'consultation_workspace',{workspace:'partner'});if(!current)return true;
  const rows=w.bookings||[],day=d=>new Date(d).toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'}),today=day(new Date());
  const pending=rows.filter(r=>!r.planner_ok&&['requested','coordinating'].includes(r.state));const upcoming=rows.filter(r=>['confirmed','scheduled'].includes(r.state)).sort((a,b)=>Date.parse(a.preferred_at)-Date.parse(b.preferred_at));
- el('p',`답변 대기 ${pending.length}건 · 오늘 예약 ${upcoming.filter(r=>day(r.preferred_at)===today).length}건`,reservations);
- const next=pending[0]||upcoming.find(r=>Date.parse(r.preferred_at)>=Date.now());if(next){el('p',next.connection_only?connectionStatus(next)+' · 전화로 조율':(states[next.state]||'확인 필요')+' · '+kst(next.preferred_at),reservations);}else el('p','예정된 예약이 없습니다',reservations);
- const all=link(reservations,'예약 전체 보기','/partner-work.html'+(next?'?request='+encodeURIComponent(next.id):''));all.className='btn';
- }catch{el('p','예약을 불러오지 못했습니다.',reservations);link(reservations,'예약 전체 보기','/partner-work.html');}
- else{el('p','예정된 예약이 없습니다',reservations);link(reservations,'자격 확인',url('qualification'));}
- const shortcuts=el('nav',undefined,root);shortcuts.className='expert-home-links';if(p?.profession==='planner')link(shortcuts,'청구 자료실','/claim-resources.html');link(shortcuts,'내 정보·설정',url('settings'));
+ el('p',`답변 대기 ${pending.length}건`,reservations);
+ const next=pending[0]||upcoming.find(r=>Date.parse(r.preferred_at)>=Date.now());if(next){el('p',next.connection_only?connectionStatus(next)+' · 전화로 조율':(states[next.state]||'확인 필요')+' · '+kst(next.preferred_at),reservations);}else el('p','새로운 상담 요청이 없습니다',reservations);
+ const all=link(reservations,'전체 보기','/partner-work.html'+(next?'?request='+encodeURIComponent(next.id):''));all.className='btn';
+ }catch{el('p','예약을 불러오지 못했습니다.',reservations);link(reservations,'전체 보기','/partner-work.html');}
+ else{el('p','새로운 상담 요청이 없습니다',reservations);link(reservations,'자격 확인',url('qualification'));}
+
  return true;
 }

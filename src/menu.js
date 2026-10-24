@@ -1,3 +1,4 @@
+import {isExpertMember} from './role-routing.js';
 import {expertNavigation} from './expert-navigation.js';
 import {MEMBER, memberService, memberState, invalidateMemberState, authURL} from './member-access.js';
 import '../public/expert-profile-card.js';
@@ -124,27 +125,9 @@ async function load() {
     const name = user.user_metadata?.full_name || user.user_metadata?.name || '회원님';
     const role = approved ? '전문가' : member.partner_status ? '전문가 신청 · 심사 현황 확인' : member.member ? '일반 회원' : '가입 마무리가 필요해요';
     profile(name, role);
-    if (approved) {
-      group('주요 업무',expertNavigation(member.profession).map(([label,href],i)=>[label,href,['calendar','clock','person'][i]]));
-      if(member.profession!=='tax')group('상담 관리', [
-        ['상담 요청', destination('partner-work', 'workflowFilters').replace('?from=menu', '?from=menu&state=requested'), 'support'],
-        ['예약 내역', destination('partner-work', 'workflowFilters'), 'calendar'],
-        ...(planner ? [['상담 가능 설정', destination('partner', 'consult-settings'), 'clock']] : []),
-        ['지금 방문 상담', destination('partner', 'instant-settings'), 'car'],
-      ]);
-      group('내 활동', [
-        ...(planner ? [['프로필 수정', destination('partner', 'profile-editor'), 'person']] : []),
-        ['활동 지역', destination('partner', 'activity-area'), 'pin'],
-        ['등록·심사 정보', destination('partner', 'partnerState'), 'shield'],
-      ]);
-      if(member.profession!=='tax')resources = group('업무 자료', [
-        ['청구 안내', destination('claim-resources'), 'document'],
-      ]);
-      common(true, config.paymentsEnabled !== false,member.profession==='tax');
-    } else {
-      publicMenus();
-      group('내 활동', [[member.partner_status ? '전문가 신청 현황' : '전문가로 활동하기', destination('partner'), 'person']]);
-    }
+    if(isExpertMember(member)){
+      group('전문가 메뉴',[['전문가 홈','/partner.html','home'],['상담 요청',approved?'/partner-work.html':'/partner.html','calendar'],['내 정보','/partner.html?screen=settings','person']]);
+    }else{publicMenus();}
     if(member.member)group('예약 알림', [['알림 내역·설정','/notifications.html','calendar']]);
     if(member.office_operator_status)group('보험소 운영', [['거점 신청·심사', '/partner.html?profession=office', 'home']]);
     if (!member.member) row(node('div', '', identity, 'menu-profile-action'), '가입 마무리', account);
@@ -169,7 +152,7 @@ async function load() {
       const updatedAvatar = window.BohumsoProfile.avatar(head, extra);
       if (oldAvatar) oldAvatar.replaceWith(updatedAvatar);
       const published = catalog?.error ? null : catalog?.data?.planners?.find(p => p.id === extra.id && !p.is_sample);
-      if (published) row(node('div', '', identity, 'menu-profile-action'), '내 프로필 보기', '/find.html?' + new URLSearchParams({planner: published.id, region: published.region || '', from: 'menu'}) + '#profile-' + encodeURIComponent(published.id));
+      if (published) row(node('div', '', identity, 'menu-profile-action'), '내 프로필 보기', '/map.html?' + new URLSearchParams({preview:'customer',planner: published.id, region: published.region || '', from: 'menu'}) + '#profile-' + encodeURIComponent(published.id));
     }
     if (growthResult?.data?.expert && resources) {
       const list = resources.querySelector('ul');
@@ -185,7 +168,6 @@ async function load() {
     identity.replaceChildren();
     node('p', '내 정보를 불러오지 못했어요.', identity);
     content.replaceChildren();
-    publicMenus();
     status.textContent = '연결을 확인하고 다시 시도해 주세요.';
     retry.hidden = false;
   } finally {

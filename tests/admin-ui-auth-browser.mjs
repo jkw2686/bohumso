@@ -66,7 +66,7 @@ try {
   await f.page.evaluate(()=>dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true})));
   assert.equal(await links(f.page).count(),0);
   await f.page.evaluate(()=>dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true})));
-  await settled(f.page);assert.equal(await links(f.page).count(),0);
+  await f.page.getByRole('button',{name:'다시 확인',exact:true}).waitFor();assert.equal(await links(f.page).count(),0);assert.equal(await f.page.locator('#menuContent').isVisible(),false);
   report.push({test:'BFCache lifecycle and failed role lookup (synthetic events)',result:'pass'});await f.ctx.close();
  }
  {

@@ -1,3 +1,4 @@
+import {isExpertMember,roleDestination} from './role-routing.js';
 import {mountAdminHomeNavigation} from './admin-home-navigation.js';
 import {mountPromotionAdminLinks,mountPromotionBenefit} from './promotion.js';
 import {renderExpertHome} from './expert-home.js';
@@ -52,7 +53,7 @@ async function refreshMembership(){const {data,error}=await client.rpc("my_membe
 async function renderAccount(){
  if(config.earlyAccess&&!membership.member&&await finishPublicSignup(client)){justCompleted=true;await refreshMembership();}
  if(config.closedBeta&&betaCode()&&!membership.beta){const done=await renderBetaFinish({client,root:$("accountContent"),onDone:async()=>{await refreshMembership();if(membership.beta_role==='EXPERT'){location.assign('/partner.html?next='+encodeURIComponent(pendingAction()));return;}await renderAccount();}});if(done){$("identity").textContent=user.email||user.phone||"내 계정";document.querySelector(".account-links").hidden=true;$("membershipForm").hidden=true;$("logout").onclick=async()=>{await client.auth.signOut();location.assign('/login.html');};return;}}
- const next=pendingAction();if(membership.member&&next!='/account.html'){clearAction();location.replace(next.startsWith('/partner.html?roleIntent=expert')&&membership.profession==='office'?'/partner.html?profession=office':next);return;}
+ const originalNext=pendingAction(),next=roleDestination(membership,originalNext)||originalNext;if(membership.member&&next!='/account.html'){clearAction();location.replace(next.startsWith('/partner.html?roleIntent=expert')&&membership.profession==='office'?'/partner.html?profession=office':next);return;}
  try{sessionStorage.removeItem("bohumso-signup-intent");}catch{}
  document.querySelector('h1').textContent=membership.member?'내 계정':'가입 마무리';
  document.querySelector('.account-links').hidden=!membership.member;
@@ -65,7 +66,7 @@ async function renderAccount(){
 
   const primary=document.createElement('a');primary.href=destination.href;primary.className='btn';primary.textContent=destination.label;nextPanel.append(primary);
   const identity=$('accountContent').querySelector('.account-identity');if(identity)$('accountContent').prepend(identity);
-  const expertLink=document.querySelector('.account-links a[href="/partner.html"],.account-links a[href="/partner"]');if(expertLink&&!membership.partner_status){const label=expertLink.querySelector('span:last-child')||expertLink;label.textContent='전문가로 참여하기';expertLink.href='/partner.html?roleIntent=expert';}
+  const expertLink=document.querySelector('.account-links a[href="/partner.html"],.account-links a[href="/partner"]');if(expertLink&&!membership.partner_status){expertLink.remove();}
  }
  if(membership.member&&!document.querySelector('[data-notification-entry]')){const a=document.createElement('a');a.href='/notifications.html';a.innerHTML=window.uiIcon?.('calendar')||'';a.append(document.createTextNode('예약 알림·설정'));a.dataset.notificationEntry='';document.querySelector('.account-links')?.append(a);}
  $("identity").textContent=user.email||user.phone||"내 계정";$("operator").textContent=config.operator;$("privacyContact").textContent=config.contact;

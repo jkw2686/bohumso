@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ko">
-<head>
+<head><script src="/role-gate.js"></script><script type="module" src="/assets/role-entry.js"></script>
 <meta charset="UTF-8">
 <!-- viewport-fit=cover: 노치·홈바 safe-area 사용을 위해 필요 -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="/vendor/leaflet.css">
 <link rel="stylesheet" href="/styles.css">
 <link rel="stylesheet" href="/map.css">
-<link rel="stylesheet" href="/brand.css"><link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png"><link rel="apple-touch-icon" href="/brand/apple-touch-icon.png?v=20261023"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#01404B"><link rel="stylesheet" href="/simple-ux.css"><link rel="stylesheet" href="/type-system.css"><link rel="stylesheet" href="/page-clarity.css"></head>
+<link rel="stylesheet" href="/brand.css"><link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png"><link rel="apple-touch-icon" href="/brand/apple-touch-icon.png?v=20261023"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#01404B"><link rel="stylesheet" href="/simple-ux.css"><link rel="stylesheet" href="/type-system.css"><link rel="stylesheet" href="/page-clarity.css"><link rel="stylesheet" href="/brand-story.css"></head>
 <body class="map-page">
 
 <header class="map-nav">
@@ -17,7 +17,7 @@
   <button class="btn ghost" id="regionToggle" type="button" aria-expanded="false" aria-controls="regionPicker">지역 검색</button>
 <button class="locate-fab" id="locateFab" type="button" aria-label="내 위치에서 찾기">
   <svg viewBox="0 0 24 24" aria-hidden="true" width="22" height="22"><path fill="currentColor" d="M12 8a4 4 0 100 8 4 4 0 000-8zm0-6a1 1 0 011 1v1.06A8.01 8.01 0 0119.94 11H21a1 1 0 110 2h-1.06A8.01 8.01 0 0113 19.94V21a1 1 0 11-2 0v-1.06A8.01 8.01 0 014.06 13H3a1 1 0 110-2h1.06A8.01 8.01 0 0111 4.06V3a1 1 0 011-1zm0 4a6 6 0 100 12 6 6 0 000-12z"/></svg><span>내 위치</span>
-</button></header><p class="region-title map-location-status" role="status"></p>
+</button></header><section class="brand-story brand-story-family" aria-label="우리보험소 소개"><img src="/brand/family-20261024.webp" alt="" width="1200" height="450" fetchpriority="high"><div><h2>가족을 돌보는 마음에,<br>청구의 부담까지 더해지지 않도록.</h2><p>서류 준비부터 보험금 청구까지, 가까운 전문가와 함께하세요.</p></div></section><p class="region-title map-location-status" role="status"></p>
 
 <!-- 위치 거부 시: 지역 직접 선택 -->
 <div class="region-picker" id="regionPicker" hidden>

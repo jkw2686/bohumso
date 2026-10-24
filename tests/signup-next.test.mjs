@@ -4,7 +4,7 @@ import {signupNext} from '../src/signup-next.js';
 import {memberState,pendingAction} from '../src/member-access.js';
 test('next action uses server membership, not intent',()=>{
  assert.equal(signupNext({member:false}),null);
- for(const [state,status,href] of [['ACTIVE_MEMBER',null,'/map.html?view=experts'],['EXPERT_DRAFT',null,'/partner.html'],['EXPERT_PENDING','pending','/partner.html'],['EXPERT_APPROVED','approved','/partner-work.html']])assert.equal(signupNext({member:true,state,partner_status:status,roleIntent:'expert'}).href,href);
+ for(const [state,status,href] of [['ACTIVE_MEMBER',null,'/map.html?view=experts'],['EXPERT_DRAFT',null,'/partner.html'],['EXPERT_PENDING','pending','/partner.html'],['EXPERT_APPROVED','approved','/partner.html']])assert.equal(signupNext({member:true,state,partner_status:status,roleIntent:'expert'}).href,href);
  assert.equal(signupNext({member:true,admin:true}).href,'/admin.html');
  assert.equal(signupNext({member:true,partner_status:'approved',profession:'office'}).href,'/partner.html');
  assert.equal(signupNext({member:true,partner_status:'rejected'}).label,'보완 내용 확인');

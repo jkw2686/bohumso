@@ -167,8 +167,6 @@
     var region = waitlistRegion();
     if (region) {
       waitlistButton(box, region, 'consumer', '오픈 알림 신청', 'btn');
-      var apply=document.createElement('a');apply.className='btn ghost';apply.textContent='전문가 활동신청';apply.href='/partner.html?'+new URLSearchParams({roleIntent:'expert',region:region});box.appendChild(apply);
-      waitlistButton(box, region, 'planner', '이 지역 활동 소식 받기', 'btn ghost');
     } else {
       var hint = document.createElement('p');
       hint.className = 'empty-actions-hint';

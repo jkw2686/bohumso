@@ -47,7 +47,7 @@
   var close=node('button','뒤로',header,'btn ghost');close.type='button';close.setAttribute('aria-label','프로필 닫고 이전 화면으로');
   header.prepend(close);
   var body=node('div','',dialog,'expert-detail-body'),token=crypto.randomUUID(),oldOverflow=document.body.style.overflow;
-  function render(profile,ctx){body.replaceChildren();identity(body,profile);
+  function render(profile,ctx){body.replaceChildren();identity(body,profile);if(ctx?.ownProfile){var mapLink=node('a','지도에서 내 프로필 확인',body);mapLink.href='/map.html?preview=customer&planner='+encodeURIComponent(profile.id);}
    node('p',profile.available?'상담 요청 가능':profile.newRequestsRestricted?'현재 새 상담 요청을 받을 수 없습니다.':'현재 상담 요청을 받지 않습니다.',body,'expert-detail-status');
    (profile.offices||[]).filter(function(o){return !o.available;}).forEach(function(o){node('p',o.name+' · 방문예약 중지',body,'expert-profile-note');});
    dialog.querySelector('.expert-detail-actions')?.remove();

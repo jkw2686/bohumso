@@ -15,7 +15,7 @@ export function pendingAction(){const query=new URLSearchParams(location.search)
 export function clearAction(){try{sessionStorage.removeItem(pendingKey);sessionStorage.removeItem('bohumso-booking-return');sessionStorage.removeItem('bohumso-signup-choice');sessionStorage.removeItem('bohumso-signup-intent');}catch{}}
 export function authURL(next,mode='signup'){return '/'+(mode==='login'?'login':'signup')+'.html?next='+encodeURIComponent(safeNext(next));}
 export function loginCallback(origin=location.origin,next=pendingAction()){return new URL('/account.html?next='+encodeURIComponent(safeNext(next)),origin).href;}
-export function accountReturn(next=pendingAction()){return '/account.html'+(next==='/account.html'?'':'?next='+encodeURIComponent(safeNext(next)));}
+export function accountReturn(next=pendingAction()){return '/account.html?next='+encodeURIComponent(next==='/account.html'?'/map.html':safeNext(next));}
 let service;
 // Only public configuration is shared across entry bundles; never identity or permissions.
 const configuration=Symbol.for('bohumso.public-config.request');

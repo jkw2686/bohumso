@@ -6,7 +6,7 @@ await mkdir('public/assets',{recursive:true});
 const chunks=resolve('public/assets/chunks');
 if(dirname(chunks)!==resolve('public/assets'))throw Error('Unexpected chunk directory');
 await rm(chunks,{recursive:true,force:true});
-const clientBuild=await build({entryPoints:{promotion:'src/promotion.js',menu:'src/menu.js',growth:'src/growth.js','support-badge':'src/support-badge.js',rights:'src/member-rights.js',account:'src/account.js',visit:'src/visit.js',member:'src/member-entry.js',urgent:'src/urgent.js',insurers:'src/insurer-contacts.js'},bundle:true,format:'esm',platform:'browser',target:['es2020'],outdir:'public/assets',splitting:true,chunkNames:'chunks/[name]-[hash]',metafile:true,minify:true});
+const clientBuild=await build({entryPoints:{'role-entry':'src/role-entry.js',promotion:'src/promotion.js',menu:'src/menu.js',growth:'src/growth.js','support-badge':'src/support-badge.js',rights:'src/member-rights.js',account:'src/account.js',visit:'src/visit.js',member:'src/member-entry.js',urgent:'src/urgent.js',insurers:'src/insurer-contacts.js'},bundle:true,format:'esm',platform:'browser',target:['es2020'],outdir:'public/assets',splitting:true,chunkNames:'chunks/[name]-[hash]',metafile:true,minify:true});
 await mkdir('artifacts',{recursive:true});
 await writeFile('artifacts/client-metafile.json',JSON.stringify(clientBuild.metafile));
 await build({entryPoints:['src/test-flow/ui.js'],bundle:true,format:'esm',platform:'browser',target:['es2022'],outfile:'artifacts/test-flow.js',minify:true});
